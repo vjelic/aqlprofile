@@ -1,0 +1,66 @@
+#include "pm4_factory.h"
+// Commandwriter includes
+#include "gfx9_cmd_builder.h"
+// PMC includes
+#include "gfx9_pmc_builder.h"
+// SQTT includes
+#include "gfx9_sqtt_builder.h"
+// Block info
+#include "gfxip/gfx9/gfx9_block_info.h"
+
+namespace aql_profile {
+using namespace gfxip::gfx9;
+
+class Gfx9Factory : public Pm4Factory {
+ public:
+  Gfx9Factory() : Pm4Factory(block_map) {
+    block_map.init(block_id_table, Gfx9HwBlocks, Gfx9HwBlockCount);
+  }
+  pm4_builder::CmdBuilder* getCmdBuilder();
+  pm4_builder::PmcBuilder* getPmcBuilder();
+  pm4_builder::SqttBuilder* getSqttBuilder();
+
+ private:
+  static uint32_t block_id_table[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER];
+  BlockMap block_map;
+};
+
+// GFX9 block ID mapping table
+uint32_t Gfx9Factory::block_id_table[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER] = {
+    kHsaAiCounterBlockIdCb0,   kBadBlockId /*CPF*/,        kHsaAiCounterBlockIdDb0,
+    kHsaAiCounterBlockIdGrbm,  kHsaAiCounterBlockIdGrbmSe, kHsaAiCounterBlockIdPaSu,
+    kHsaAiCounterBlockIdPaSc,  kHsaAiCounterBlockIdSpi,    kHsaAiCounterBlockIdSq,
+    kBadBlockId /*GFX8:SQES*/, kHsaAiCounterBlockIdSqGs,   kHsaAiCounterBlockIdSqVs,
+    kHsaAiCounterBlockIdSqPs,  kBadBlockId /*GFX8:SQLS*/,  kHsaAiCounterBlockIdSqHs,
+    kHsaAiCounterBlockIdSqCs,  kHsaAiCounterBlockIdSx,     kHsaAiCounterBlockIdTa0,
+    kHsaAiCounterBlockIdTca0,  kHsaAiCounterBlockIdTcc0,   kHsaAiCounterBlockIdTd0,
+    kHsaAiCounterBlockIdTcp0,  kHsaAiCounterBlockIdGds,    kHsaAiCounterBlockIdVgt,
+    kHsaAiCounterBlockIdIa,    kHsaAiCounterBlockIdMc,     kBadBlockId /*SRBM*/,
+    kHsaAiCounterBlockIdTcs,   kHsaAiCounterBlockIdWd,     kBadBlockId /*CPG*/,
+    kHsaAiCounterBlockIdCpc};
+
+Pm4Factory* Pm4Factory::Gfx9Create() {
+  auto p = new Gfx9Factory;
+  if (p == NULL) throw aql_profile_exc_msg("Gfx8Factory allocation failed");
+  return p;
+}
+
+pm4_builder::CmdBuilder* Gfx9Factory::getCmdBuilder() {
+  auto p = new pm4_builder::Gfx9CmdBuilder;
+  if (p == NULL) throw aql_profile_exc_msg("CmdBuilder allocation failed");
+  return p;
+}
+
+pm4_builder::PmcBuilder* Gfx9Factory::getPmcBuilder() {
+  auto p = new pm4_builder::Gfx9PmcBuilder;
+  if (p == NULL) throw aql_profile_exc_msg("PmcBuilder mgr allocation failed");
+  return p;
+}
+
+pm4_builder::SqttBuilder* Gfx9Factory::getSqttBuilder() {
+  auto p = new pm4_builder::Gfx9SqttBuilder;
+  if (p == NULL) throw aql_profile_exc_msg("SqttBuilder mgr allocation failed");
+  return p;
+}
+
+}  // aql_profile
