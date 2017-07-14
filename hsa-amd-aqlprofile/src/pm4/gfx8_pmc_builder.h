@@ -20,7 +20,7 @@ using namespace gfxip::gfx8;
 
 class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder {
  public:
-  void begin(CmdBuffer* cmdBuff, const CountersMap& countersMap) {
+  void begin(CmdBuffer* cmdBuff, const counters_vector& countersVec) {
     // Reset Grbm to its default state - broadcast
     BuildWriteUConfigRegPacket(cmdBuff, mmGRBM_GFX_INDEX__CI__VI, grbm_reset_value());
 
@@ -30,30 +30,30 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
 
     // Iterate through the list of blocks to generate Pm4 commands to
     // program corresponding perf counters of each block
-    for (CountersMap::const_iterator block_it = countersMap.begin(); block_it != countersMap.end();
-         ++block_it) {
-      const uint32_t block_id = block_it->first;
-      const CountersVec& counters = block_it->second;
-      const uint32_t counter_count = counters.size();
+    std::map<block_des_t, uint32_t, lt_block_des> index_map;
+    for (counters_vector::const_iterator it = countersVec.begin(); it != countersVec.end(); ++it) {
+      const block_des_t& block_des = it->first;
+      const uint32_t& counter_id = it->second;
 
-      // Iterate through each enabled perf counter and building
-      // corresponding Pm4 commands to program the various control
-      // registers involved
-      for (uint32_t ind = 0; ind < counter_count; ++ind) {
-        const uint32_t counter_id = counters[ind];
+      auto ret = index_map.insert({block_des, 0});
+      uint32_t& index = ret.first->second;
 
-        // Build the list of control registers to program which
-        // varies per perf counter block
-        uint32_t reg_addr[MAX_REG_NUM], reg_val[MAX_REG_NUM];
-        const uint32_t reg_num =
-            BuildCounterSelRegister(ind, reg_addr, reg_val, block_id, counter_id);
+      std::cout << index << ": " << block_des.id << ", " << block_des.index << ", " << counter_id
+                << std::endl;
 
-        // Build the list of Pm4 commands that support control
-        // register programming
-        for (uint32_t n = 0; n < reg_num; ++n) {
-          BuildWriteUConfigRegPacket(cmdBuff, reg_addr[n], reg_val[n]);
-        }
+      // Build the list of control registers to program which
+      // varies per perf counter block
+      uint32_t reg_addr[MAX_REG_NUM], reg_val[MAX_REG_NUM];
+      const uint32_t reg_num =
+          BuildCounterSelRegister(index, reg_addr, reg_val, block_des, counter_id);
+
+      // Build the list of Pm4 commands that support control
+      // register programming
+      for (uint32_t n = 0; n < reg_num; ++n) {
+        BuildWriteUConfigRegPacket(cmdBuff, reg_addr[n], reg_val[n]);
       }
+
+      ++index;
     }
 
     // Reset Grbm to its default state - broadcast
@@ -76,7 +76,7 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
     BuildWriteWaitIdlePacket(cmdBuff);
   }
 
-  uint32_t end(CmdBuffer* cmdBuff, const CountersMap& countersMap, void* dataBuff) {
+  uint32_t end(CmdBuffer* cmdBuff, const counters_vector& countersVec, void* dataBuff) {
     // Issue barrier command to wait for dispatch to complete
     BuildWriteWaitIdlePacket(cmdBuff);
 
@@ -91,44 +91,58 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
     BuildWriteUConfigRegPacket(cmdBuff, mmGRBM_GFX_INDEX__CI__VI, grbm_reset_value());
 
     // Iterate through the list of blocks to create PM4 packets to read counter values
-    uint32_t total_counter_num = 0;
-    for (CountersMap::const_iterator block_it = countersMap.begin(); block_it != countersMap.end();
-         ++block_it) {
-      const uint32_t block_id = block_it->first;
-      const uint32_t counter_count = block_it->second.size();
+    std::map<block_des_t, uint32_t, lt_block_des> index_map;
+    uint32_t read_counter = 0;
+    for (counters_vector::const_iterator it = countersVec.begin(); it != countersVec.end(); ++it) {
+      const block_des_t& block_des = it->first;
+      const uint32_t& counter_id = it->second;
 
-      for (uint32_t ind = 0; ind < counter_count; ++ind) {
-        // retrieve the registers to be set
-        uint32_t reg_addr[MAX_REG_NUM], reg_val[MAX_REG_NUM];
-        const uint32_t reg_num = BuildCounterReadRegisters(ind, block_id, reg_addr, reg_val);
+      auto ret = index_map.insert({block_des, 0});
+      uint32_t& index = ret.first->second;
 
-        for (uint32_t n = 0; n < reg_num; n++) {
-          if (reg_val[n] == COPY_DATA_FLAG) {
-            BuildCopyDataPacket(cmdBuff, COPY_DATA_SEL_REG, reg_addr[n], 0,
-                                ((uint32_t*)dataBuff) + total_counter_num, COPY_DATA_SEL_COUNT_1DW,
-                                false);
-            total_counter_num++;
-          } else {
-            BuildWriteUConfigRegPacket(cmdBuff, reg_addr[n], reg_val[n]);
-          }
+      // retrieve the registers to be set
+      uint32_t reg_addr[MAX_REG_NUM], reg_val[MAX_REG_NUM];
+      const uint32_t reg_num = BuildCounterReadRegisters(index, block_des, reg_addr, reg_val);
+
+      for (uint32_t n = 0; n < reg_num; n++) {
+        if (reg_val[n] == COPY_DATA_FLAG) {
+          BuildCopyDataPacket(cmdBuff, COPY_DATA_SEL_REG, reg_addr[n], 0,
+                              (uint32_t*)dataBuff + read_counter, COPY_DATA_SEL_COUNT_1DW, false);
+          ++read_counter;
+        } else {
+          BuildWriteUConfigRegPacket(cmdBuff, reg_addr[n], reg_val[n]);
         }
       }
+
+      ++index;
     }
 
     // Reset Grbm to its default state - broadcast
     BuildWriteUConfigRegPacket(cmdBuff, mmGRBM_GFX_INDEX__CI__VI, grbm_reset_value());
 
-    return total_counter_num * sizeof(uint32_t);
+    return read_counter * sizeof(uint32_t);
   }
 
-  uint32_t ProgramTcpCntrs(uint32_t tcpRegIdx, uint32_t* regAddr, uint32_t* regVal, uint32_t blkId,
-                           uint32_t blkCntrIdx) {
+ private:
+  // Used to reset GRBM to its default state
+  static uint32_t grbm_reset_value() {
+    // Initialize the value to use in resetting GRBM
+    regGRBM_GFX_INDEX grbm_gfx_index;
+    grbm_gfx_index.u32All = 0;
+    grbm_gfx_index.bitfields.INSTANCE_BROADCAST_WRITES = 1;
+    grbm_gfx_index.bitfields.SE_BROADCAST_WRITES = 1;
+    grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
+    return grbm_gfx_index.u32All;
+  }
+
+  uint32_t ProgramTcpCntrs(uint32_t tcpRegIdx, uint32_t* regAddr, uint32_t* regVal,
+                           block_des_t block_des, uint32_t blkCntrIdx) {
     regGRBM_GFX_INDEX grbm_gfx_index;
 
     grbm_gfx_index.u32All = 0;
     grbm_gfx_index.bitfields.SE_BROADCAST_WRITES = 1;
     grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
-    grbm_gfx_index.bitfields.INSTANCE_INDEX = blkId - kHsaViCounterBlockIdTcp0;
+    grbm_gfx_index.bitfields.INSTANCE_INDEX = block_des.index;
 
     uint32_t regIdx = 0;
     regVal[regIdx] = grbm_gfx_index.u32All;
@@ -146,14 +160,14 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
     return regIdx;
   }
 
-  uint32_t ProgramTdCntrs(uint32_t tdRegIdx, uint32_t* regAddr, uint32_t* regVal, uint32_t blkId,
-                          uint32_t blkCntrIdx) {
+  uint32_t ProgramTdCntrs(uint32_t tdRegIdx, uint32_t* regAddr, uint32_t* regVal,
+                          block_des_t block_des, uint32_t blkCntrIdx) {
     regGRBM_GFX_INDEX grbm_gfx_index;
 
     grbm_gfx_index.u32All = 0;
     grbm_gfx_index.bitfields.SE_BROADCAST_WRITES = 1;
     grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
-    grbm_gfx_index.bitfields.INSTANCE_INDEX = blkId - kHsaViCounterBlockIdTd0;
+    grbm_gfx_index.bitfields.INSTANCE_INDEX = block_des.index;
 
     uint32_t regIdx = 0;
     regVal[regIdx] = grbm_gfx_index.u32All;
@@ -170,14 +184,14 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
     return regIdx;
   }
 
-  uint32_t ProgramTccCntrs(uint32_t tccRegIdx, uint32_t* regAddr, uint32_t* regVal, uint32_t blkId,
-                           uint32_t blkCntrIdx) {
+  uint32_t ProgramTccCntrs(uint32_t tccRegIdx, uint32_t* regAddr, uint32_t* regVal,
+                           block_des_t block_des, uint32_t blkCntrIdx) {
     regGRBM_GFX_INDEX grbm_gfx_index;
 
     grbm_gfx_index.u32All = 0;
     grbm_gfx_index.bitfields.SE_BROADCAST_WRITES = 1;
     grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
-    grbm_gfx_index.bitfields.INSTANCE_INDEX = blkId - kHsaViCounterBlockIdTcc0;
+    grbm_gfx_index.bitfields.INSTANCE_INDEX = block_des.index;
 
     uint32_t regIdx = 0;
     regVal[regIdx] = grbm_gfx_index.u32All;
@@ -195,14 +209,14 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
     return regIdx;
   }
 
-  uint32_t ProgramTcaCntrs(uint32_t tcaRegIdx, uint32_t* regAddr, uint32_t* regVal, uint32_t blkId,
-                           uint32_t blkCntrIdx) {
+  uint32_t ProgramTcaCntrs(uint32_t tcaRegIdx, uint32_t* regAddr, uint32_t* regVal,
+                           block_des_t block_des, uint32_t blkCntrIdx) {
     regGRBM_GFX_INDEX grbm_gfx_index;
 
     grbm_gfx_index.u32All = 0;
     grbm_gfx_index.bitfields.SE_BROADCAST_WRITES = 1;
     grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
-    grbm_gfx_index.bitfields.INSTANCE_INDEX = blkId - kHsaViCounterBlockIdTca0;
+    grbm_gfx_index.bitfields.INSTANCE_INDEX = block_des.index;
 
     uint32_t regIdx = 0;
     regVal[regIdx] = grbm_gfx_index.u32All;
@@ -219,14 +233,14 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
     return regIdx;
   }
 
-  uint32_t ProgramTaCntrs(uint32_t taRegIdx, uint32_t* regAddr, uint32_t* regVal, uint32_t blkId,
-                          uint32_t blkCntrIdx) {
+  uint32_t ProgramTaCntrs(uint32_t taRegIdx, uint32_t* regAddr, uint32_t* regVal,
+                          block_des_t block_des, uint32_t blkCntrIdx) {
     regGRBM_GFX_INDEX grbm_gfx_index;
 
     grbm_gfx_index.u32All = 0;
     grbm_gfx_index.bitfields.SE_BROADCAST_WRITES = 1;
     grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
-    grbm_gfx_index.bitfields.INSTANCE_INDEX = blkId - kHsaViCounterBlockIdTa0;
+    grbm_gfx_index.bitfields.INSTANCE_INDEX = block_des.index;
 
     uint32_t regIdx = 0;
     regVal[regIdx] = grbm_gfx_index.u32All;
@@ -244,9 +258,8 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
     return regIdx;
   }
 
- private:
-  uint32_t ProgramSQCntrs(uint32_t sqRegIdx, uint32_t* regAddr, uint32_t* regVal, uint32_t blkId,
-                          uint32_t blkCntrIdx) {
+  uint32_t ProgramSQCntrs(uint32_t sqRegIdx, uint32_t* regAddr, uint32_t* regVal,
+                          block_des_t block_des, uint32_t blkCntrIdx) {
     uint32_t regIdx = 0;
 
     // Program the SQ Counter Select Register
@@ -273,7 +286,7 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
     // Program the SQ Counter Control Register
     regSQ_PERFCOUNTER_CTRL sq_cntr_ctrl;
     sq_cntr_ctrl.u32All = 0;
-    if (blkId == kHsaViCounterBlockIdSq) {
+    if (block_des.id == kHsaViCounterBlockIdSq) {
       sq_cntr_ctrl.bits.ES_EN = 0x1;
       sq_cntr_ctrl.bits.GS_EN = 0x1;
       sq_cntr_ctrl.bits.VS_EN = 0x1;
@@ -281,19 +294,19 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
       sq_cntr_ctrl.bits.LS_EN = 0x1;
       sq_cntr_ctrl.bits.HS_EN = 0x1;
       sq_cntr_ctrl.bits.CS_EN = 0x1;
-    } else if (blkId == kHsaViCounterBlockIdSqEs) {
+    } else if (block_des.id == kHsaViCounterBlockIdSqEs) {
       sq_cntr_ctrl.bits.ES_EN = 0x1;
-    } else if (blkId == kHsaViCounterBlockIdSqGs) {
+    } else if (block_des.id == kHsaViCounterBlockIdSqGs) {
       sq_cntr_ctrl.bits.GS_EN = 0x1;
-    } else if (blkId == kHsaViCounterBlockIdSqVs) {
+    } else if (block_des.id == kHsaViCounterBlockIdSqVs) {
       sq_cntr_ctrl.bits.VS_EN = 0x1;
-    } else if (blkId == kHsaViCounterBlockIdSqPs) {
+    } else if (block_des.id == kHsaViCounterBlockIdSqPs) {
       sq_cntr_ctrl.bits.PS_EN = 0x1;
-    } else if (blkId == kHsaViCounterBlockIdSqLs) {
+    } else if (block_des.id == kHsaViCounterBlockIdSqLs) {
       sq_cntr_ctrl.bits.LS_EN = 0x1;
-    } else if (blkId == kHsaViCounterBlockIdSqHs) {
+    } else if (block_des.id == kHsaViCounterBlockIdSqHs) {
       sq_cntr_ctrl.bits.HS_EN = 0x1;
-    } else if (blkId == kHsaViCounterBlockIdSqCs) {
+    } else if (block_des.id == kHsaViCounterBlockIdSqCs) {
       sq_cntr_ctrl.bits.CS_EN = 0x1;
     }
 
@@ -305,12 +318,13 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
   }
 
   uint32_t BuildCounterSelRegister(uint32_t cntrIdx, uint32_t* regAddr, uint32_t* regVal,
-                                   uint32_t blkId, uint32_t blkCntrIdx) {
-    uint32_t instance_index = 0;
+                                   block_des_t block_des, uint32_t blkCntrIdx) {
+    const uint32_t block_id = block_des.id;
+    const uint32_t instance_index = block_des.index;
     regGRBM_GFX_INDEX grbm_gfx_index = {0};
     uint32_t regIdx = 0;
 
-    switch (blkId) {
+    switch (block_id) {
       // Program counters belonging to SQ block
       case kHsaViCounterBlockIdSq:
       case kHsaViCounterBlockIdSqEs:
@@ -320,14 +334,9 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
       case kHsaViCounterBlockIdSqLs:
       case kHsaViCounterBlockIdSqHs:
       case kHsaViCounterBlockIdSqCs:
-        return ProgramSQCntrs(cntrIdx, regAddr, regVal, blkId, blkCntrIdx);
-
-      case kHsaViCounterBlockIdCb0:
-      case kHsaViCounterBlockIdCb1:
-      case kHsaViCounterBlockIdCb2:
-      case kHsaViCounterBlockIdCb3: {
+        return ProgramSQCntrs(cntrIdx, regAddr, regVal, block_des, blkCntrIdx);
+      case kHsaViCounterBlockIdCb: {
         regIdx = 0;
-        instance_index = blkId - kHsaViCounterBlockIdCb0;
         grbm_gfx_index.u32All = 0;
         grbm_gfx_index.bitfields.INSTANCE_INDEX = instance_index;
         grbm_gfx_index.bitfields.SE_BROADCAST_WRITES = 1;
@@ -379,7 +388,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
 
         break;
       }
-
       case kHsaViCounterBlockIdCpf: {
         regCPF_PERFCOUNTER0_SELECT__CI__VI cpf_perf_counter_select;
         cpf_perf_counter_select.u32All = 0;
@@ -390,12 +398,7 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         regIdx = 1;
         break;
       }
-
-      case kHsaViCounterBlockIdDb0:
-      case kHsaViCounterBlockIdDb1:
-      case kHsaViCounterBlockIdDb2:
-      case kHsaViCounterBlockIdDb3: {
-        instance_index = blkId - kHsaViCounterBlockIdDb0;
+      case kHsaViCounterBlockIdDb: {
         regIdx = 0;
         grbm_gfx_index.u32All = 0;
         grbm_gfx_index.bitfields.INSTANCE_INDEX = instance_index;
@@ -439,7 +442,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         regIdx++;
         break;
       }
-
       case kHsaViCounterBlockIdGrbm: {
         regGRBM_PERFCOUNTER0_SELECT grbm_perf_counter_select;
         grbm_perf_counter_select.u32All = 0;
@@ -449,7 +451,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         regIdx = 1;
         break;
       }
-
       case kHsaViCounterBlockIdGrbmSe: {
         regGRBM_SE0_PERFCOUNTER_SELECT grbm_se0_perf_counter_select;
         grbm_se0_perf_counter_select.u32All = 0;
@@ -459,7 +460,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         regIdx = 1;
         break;
       }
-
       case kHsaViCounterBlockIdPaSu: {
         regPA_SU_PERFCOUNTER0_SELECT pa_su_perf_counter_select;
         pa_su_perf_counter_select.u32All = 0;
@@ -469,7 +469,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         regIdx = 1;
         break;
       }
-
       case kHsaViCounterBlockIdPaSc: {
         regPA_SC_PERFCOUNTER0_SELECT pa_sc_perf_counter_select;
         pa_sc_perf_counter_select.u32All = 0;
@@ -479,7 +478,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         regIdx = 1;
         break;
       }
-
       case kHsaViCounterBlockIdSpi: {
         regSPI_PERFCOUNTER0_SELECT spi_perf_counter_select;
         spi_perf_counter_select.u32All = 0;
@@ -489,7 +487,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         regIdx = 1;
         break;
       }
-
       case kHsaViCounterBlockIdSx: {
         regIdx = 0;
         regVal[regIdx] = 0;
@@ -528,83 +525,16 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         regIdx++;
         break;
       }
-
-      case kHsaViCounterBlockIdTa0:
-      case kHsaViCounterBlockIdTa1:
-      case kHsaViCounterBlockIdTa2:
-      case kHsaViCounterBlockIdTa3:
-      case kHsaViCounterBlockIdTa4:
-      case kHsaViCounterBlockIdTa5:
-      case kHsaViCounterBlockIdTa6:
-      case kHsaViCounterBlockIdTa7:
-      case kHsaViCounterBlockIdTa8:
-      case kHsaViCounterBlockIdTa9:
-      case kHsaViCounterBlockIdTa10:
-      case kHsaViCounterBlockIdTa11:
-      case kHsaViCounterBlockIdTa12:
-      case kHsaViCounterBlockIdTa13:
-      case kHsaViCounterBlockIdTa14:
-      case kHsaViCounterBlockIdTa15:
-        return ProgramTaCntrs(cntrIdx, regAddr, regVal, blkId, blkCntrIdx);
-
-      case kHsaViCounterBlockIdTca0:
-      case kHsaViCounterBlockIdTca1:
-        return ProgramTcaCntrs(cntrIdx, regAddr, regVal, blkId, blkCntrIdx);
-
-      case kHsaViCounterBlockIdTcc0:
-      case kHsaViCounterBlockIdTcc1:
-      case kHsaViCounterBlockIdTcc2:
-      case kHsaViCounterBlockIdTcc3:
-      case kHsaViCounterBlockIdTcc4:
-      case kHsaViCounterBlockIdTcc5:
-      case kHsaViCounterBlockIdTcc6:
-      case kHsaViCounterBlockIdTcc7:
-      case kHsaViCounterBlockIdTcc8:
-      case kHsaViCounterBlockIdTcc9:
-      case kHsaViCounterBlockIdTcc10:
-      case kHsaViCounterBlockIdTcc11:
-      case kHsaViCounterBlockIdTcc12:
-      case kHsaViCounterBlockIdTcc13:
-      case kHsaViCounterBlockIdTcc14:
-      case kHsaViCounterBlockIdTcc15:
-        return ProgramTccCntrs(cntrIdx, regAddr, regVal, blkId, blkCntrIdx);
-
-      case kHsaViCounterBlockIdTd0:
-      case kHsaViCounterBlockIdTd1:
-      case kHsaViCounterBlockIdTd2:
-      case kHsaViCounterBlockIdTd3:
-      case kHsaViCounterBlockIdTd4:
-      case kHsaViCounterBlockIdTd5:
-      case kHsaViCounterBlockIdTd6:
-      case kHsaViCounterBlockIdTd7:
-      case kHsaViCounterBlockIdTd8:
-      case kHsaViCounterBlockIdTd9:
-      case kHsaViCounterBlockIdTd10:
-      case kHsaViCounterBlockIdTd11:
-      case kHsaViCounterBlockIdTd12:
-      case kHsaViCounterBlockIdTd13:
-      case kHsaViCounterBlockIdTd14:
-      case kHsaViCounterBlockIdTd15:
-        return ProgramTdCntrs(cntrIdx, regAddr, regVal, blkId, blkCntrIdx);
-
-      case kHsaViCounterBlockIdTcp0:
-      case kHsaViCounterBlockIdTcp1:
-      case kHsaViCounterBlockIdTcp2:
-      case kHsaViCounterBlockIdTcp3:
-      case kHsaViCounterBlockIdTcp4:
-      case kHsaViCounterBlockIdTcp5:
-      case kHsaViCounterBlockIdTcp6:
-      case kHsaViCounterBlockIdTcp7:
-      case kHsaViCounterBlockIdTcp8:
-      case kHsaViCounterBlockIdTcp9:
-      case kHsaViCounterBlockIdTcp10:
-      case kHsaViCounterBlockIdTcp11:
-      case kHsaViCounterBlockIdTcp12:
-      case kHsaViCounterBlockIdTcp13:
-      case kHsaViCounterBlockIdTcp14:
-      case kHsaViCounterBlockIdTcp15:
-        return ProgramTcpCntrs(cntrIdx, regAddr, regVal, blkId, blkCntrIdx);
-
+      case kHsaViCounterBlockIdTa:
+        return ProgramTaCntrs(cntrIdx, regAddr, regVal, block_des, blkCntrIdx);
+      case kHsaViCounterBlockIdTca:
+        return ProgramTcaCntrs(cntrIdx, regAddr, regVal, block_des, blkCntrIdx);
+      case kHsaViCounterBlockIdTcc:
+        return ProgramTccCntrs(cntrIdx, regAddr, regVal, block_des, blkCntrIdx);
+      case kHsaViCounterBlockIdTd:
+        return ProgramTdCntrs(cntrIdx, regAddr, regVal, block_des, blkCntrIdx);
+      case kHsaViCounterBlockIdTcp:
+        return ProgramTcpCntrs(cntrIdx, regAddr, regVal, block_des, blkCntrIdx);
       case kHsaViCounterBlockIdGds: {
         regGDS_PERFCOUNTER0_SELECT gds_perf_counter_select;
         gds_perf_counter_select.u32All = 0;
@@ -614,7 +544,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         regIdx = 1;
         break;
       }
-
       case kHsaViCounterBlockIdVgt: {
         regVGT_PERFCOUNTER0_SELECT__CI__VI vgt_perf_counter_select;
         vgt_perf_counter_select.u32All = 0;
@@ -624,7 +553,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         regIdx = 1;
         break;
       }
-
       case kHsaViCounterBlockIdIa: {
         regIA_PERFCOUNTER0_SELECT__CI__VI ia_perf_counter_select;
         ia_perf_counter_select.u32All = 0;
@@ -634,7 +562,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         regIdx = 1;
         break;
       }
-
       /*
           case kHsaViCounterBlockIdMc: {
             // To be investigated later
@@ -647,7 +574,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
           }
           break;
       */
-
       case kHsaViCounterBlockIdSrbm: {
         regSRBM_PERFCOUNTER0_SELECT srbm_perf_counter_select;
         srbm_perf_counter_select.u32All = 0;
@@ -657,7 +583,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         regIdx = 1;
         break;
       }
-
       /*
           case kHsaViCounterBlockIdTcs: {
             regTCS_PERFCOUNTER0_SELECT__CI tcs_perf_counter_select;
@@ -669,7 +594,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
             break;
           }
       */
-
       case kHsaViCounterBlockIdWd: {
         regWD_PERFCOUNTER0_SELECT__CI__VI wd_perf_counter_select;
         wd_perf_counter_select.u32All = 0;
@@ -679,7 +603,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         regIdx = 1;
         break;
       }
-
       case kHsaViCounterBlockIdCpg: {
         regCPG_PERFCOUNTER0_SELECT__CI__VI cpg_perf_counter_select;
         cpg_perf_counter_select.u32All = 0;
@@ -689,7 +612,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         regIdx = 1;
         break;
       }
-
       case kHsaViCounterBlockIdCpc: {
         regCPC_PERFCOUNTER0_SELECT__CI__VI cpc_perf_counter_select;
         cpc_perf_counter_select.u32All = 0;
@@ -699,7 +621,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         regIdx = 1;
         break;
       }
-
       /*
       case kHsaViCounterBlockIdMc: {
         AddPriviledgedCountersToList(ViBlockIdMc, blkCntrIdx);
@@ -707,14 +628,12 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         regIdx = 0;
         break;
       }
-
       case kHsaViCounterBlockIdIommuV2: {
         AddPriviledgedCountersToList(ViBlockIdIommuV2, blkCntrIdx);
         //Num of regs equals to 0 means it is processed by KFD
         regIdx = 0;
         break;
       }
-
       case kHsaViCounterBlockIdKernelDriver: {
         AddPriviledgedCountersToList(ViBlockIdKernelDriver, blkCntrIdx);
         //Num of regs equals to 0 means it is processed by KFD
@@ -722,7 +641,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         break;
       }
       */
-
       default: {
         regIdx = 0;
         break;
@@ -732,12 +650,14 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
     return regIdx;
   }
 
-  uint32_t BuildCounterReadRegisters(uint32_t reg_index, uint32_t block_id, uint32_t* reg_addr,
+  uint32_t BuildCounterReadRegisters(uint32_t reg_index, block_des_t block_des, uint32_t* reg_addr,
                                      uint32_t* reg_val) {
     uint32_t ii;
     uint32_t reg_num = 0;
-    uint32_t instance_index;
+    const uint32_t block_id = block_des.id;
+    const uint32_t instance_index = block_des.index;
     regGRBM_GFX_INDEX grbm_gfx_index;
+
     switch (block_id) {
       case kHsaViCounterBlockIdSq:
       case kHsaViCounterBlockIdSqEs:
@@ -767,12 +687,7 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         }
         break;
       }
-
-      case kHsaViCounterBlockIdCb0:
-      case kHsaViCounterBlockIdCb1:
-      case kHsaViCounterBlockIdCb2:
-      case kHsaViCounterBlockIdCb3: {
-        instance_index = block_id - kHsaViCounterBlockIdCb0;
+      case kHsaViCounterBlockIdCb: {
         for (ii = 0; ii < se_number_; ii++) {
           grbm_gfx_index.u32All = 0;
           grbm_gfx_index.bitfields.INSTANCE_INDEX = instance_index;
@@ -793,7 +708,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         }
         break;
       }
-
       case kHsaViCounterBlockIdCpf: {
         reg_addr[reg_num] = mmGRBM_GFX_INDEX__CI__VI;
         reg_val[reg_num] = grbm_reset_value();
@@ -808,12 +722,7 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         reg_num++;
         break;
       }
-
-      case kHsaViCounterBlockIdDb0:
-      case kHsaViCounterBlockIdDb1:
-      case kHsaViCounterBlockIdDb2:
-      case kHsaViCounterBlockIdDb3: {
-        instance_index = block_id - kHsaViCounterBlockIdDb0;
+      case kHsaViCounterBlockIdDb: {
         for (ii = 0; ii < se_number_; ii++) {
           grbm_gfx_index.u32All = 0;
           grbm_gfx_index.bitfields.INSTANCE_INDEX = instance_index;
@@ -834,7 +743,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         }
         break;
       }
-
       case kHsaViCounterBlockIdGrbm: {
         reg_addr[reg_num] = mmGRBM_GFX_INDEX__CI__VI;
         reg_val[reg_num] = grbm_reset_value();
@@ -849,7 +757,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         reg_num++;
         break;
       }
-
       case kHsaViCounterBlockIdGrbmSe: {
         reg_addr[reg_num] = mmGRBM_GFX_INDEX__CI__VI;
         reg_val[reg_num] = grbm_reset_value();
@@ -864,7 +771,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         reg_num++;
         break;
       }
-
       case kHsaViCounterBlockIdPaSu: {
         for (ii = 0; ii < se_number_; ii++) {
           grbm_gfx_index.u32All = 0;
@@ -886,7 +792,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         }
         break;
       }
-
       case kHsaViCounterBlockIdPaSc: {
         for (ii = 0; ii < se_number_; ii++) {
           grbm_gfx_index.u32All = 0;
@@ -908,7 +813,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         }
         break;
       }
-
       case kHsaViCounterBlockIdSpi: {
         for (ii = 0; ii < se_number_; ii++) {
           grbm_gfx_index.u32All = 0;
@@ -930,7 +834,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         }
         break;
       }
-
       case kHsaViCounterBlockIdSx: {
         for (ii = 0; ii < se_number_; ii++) {
           grbm_gfx_index.u32All = 0;
@@ -952,24 +855,7 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         }
         break;
       }
-
-      case kHsaViCounterBlockIdTa0:
-      case kHsaViCounterBlockIdTa1:
-      case kHsaViCounterBlockIdTa2:
-      case kHsaViCounterBlockIdTa3:
-      case kHsaViCounterBlockIdTa4:
-      case kHsaViCounterBlockIdTa5:
-      case kHsaViCounterBlockIdTa6:
-      case kHsaViCounterBlockIdTa7:
-      case kHsaViCounterBlockIdTa8:
-      case kHsaViCounterBlockIdTa9:
-      case kHsaViCounterBlockIdTa10:
-      case kHsaViCounterBlockIdTa11:
-      case kHsaViCounterBlockIdTa12:
-      case kHsaViCounterBlockIdTa13:
-      case kHsaViCounterBlockIdTa14:
-      case kHsaViCounterBlockIdTa15: {
-        instance_index = block_id - kHsaViCounterBlockIdTa0;
+      case kHsaViCounterBlockIdTa: {
         for (ii = 0; ii < se_number_; ii++) {
           grbm_gfx_index.u32All = 0;
           grbm_gfx_index.bitfields.INSTANCE_INDEX = instance_index;
@@ -990,10 +876,7 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         }
         break;
       }
-
-      case kHsaViCounterBlockIdTca0:
-      case kHsaViCounterBlockIdTca1: {
-        instance_index = block_id - kHsaViCounterBlockIdTca0;
+      case kHsaViCounterBlockIdTca: {
         grbm_gfx_index.u32All = 0;
         grbm_gfx_index.bitfields.INSTANCE_INDEX = instance_index;
         grbm_gfx_index.bitfields.SE_BROADCAST_WRITES = 1;
@@ -1012,24 +895,7 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         reg_num++;
         break;
       }
-
-      case kHsaViCounterBlockIdTcc0:
-      case kHsaViCounterBlockIdTcc1:
-      case kHsaViCounterBlockIdTcc2:
-      case kHsaViCounterBlockIdTcc3:
-      case kHsaViCounterBlockIdTcc4:
-      case kHsaViCounterBlockIdTcc5:
-      case kHsaViCounterBlockIdTcc6:
-      case kHsaViCounterBlockIdTcc7:
-      case kHsaViCounterBlockIdTcc8:
-      case kHsaViCounterBlockIdTcc9:
-      case kHsaViCounterBlockIdTcc10:
-      case kHsaViCounterBlockIdTcc11:
-      case kHsaViCounterBlockIdTcc12:
-      case kHsaViCounterBlockIdTcc13:
-      case kHsaViCounterBlockIdTcc14:
-      case kHsaViCounterBlockIdTcc15: {
-        instance_index = block_id - kHsaViCounterBlockIdTcc0;
+      case kHsaViCounterBlockIdTcc: {
         grbm_gfx_index.u32All = 0;
         grbm_gfx_index.bitfields.INSTANCE_INDEX = instance_index;
         grbm_gfx_index.bitfields.SE_BROADCAST_WRITES = 1;
@@ -1047,24 +913,7 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         reg_num++;
         break;
       }
-
-      case kHsaViCounterBlockIdTd0:
-      case kHsaViCounterBlockIdTd1:
-      case kHsaViCounterBlockIdTd2:
-      case kHsaViCounterBlockIdTd3:
-      case kHsaViCounterBlockIdTd4:
-      case kHsaViCounterBlockIdTd5:
-      case kHsaViCounterBlockIdTd6:
-      case kHsaViCounterBlockIdTd7:
-      case kHsaViCounterBlockIdTd8:
-      case kHsaViCounterBlockIdTd9:
-      case kHsaViCounterBlockIdTd10:
-      case kHsaViCounterBlockIdTd11:
-      case kHsaViCounterBlockIdTd12:
-      case kHsaViCounterBlockIdTd13:
-      case kHsaViCounterBlockIdTd14:
-      case kHsaViCounterBlockIdTd15: {
-        instance_index = block_id - kHsaViCounterBlockIdTd0;
+      case kHsaViCounterBlockIdTd: {
         for (ii = 0; ii < se_number_; ii++) {
           grbm_gfx_index.u32All = 0;
           grbm_gfx_index.bitfields.INSTANCE_INDEX = instance_index;
@@ -1084,24 +933,7 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         }
         break;
       }
-
-      case kHsaViCounterBlockIdTcp0:
-      case kHsaViCounterBlockIdTcp1:
-      case kHsaViCounterBlockIdTcp2:
-      case kHsaViCounterBlockIdTcp3:
-      case kHsaViCounterBlockIdTcp4:
-      case kHsaViCounterBlockIdTcp5:
-      case kHsaViCounterBlockIdTcp6:
-      case kHsaViCounterBlockIdTcp7:
-      case kHsaViCounterBlockIdTcp8:
-      case kHsaViCounterBlockIdTcp9:
-      case kHsaViCounterBlockIdTcp10:
-      case kHsaViCounterBlockIdTcp11:
-      case kHsaViCounterBlockIdTcp12:
-      case kHsaViCounterBlockIdTcp13:
-      case kHsaViCounterBlockIdTcp14:
-      case kHsaViCounterBlockIdTcp15: {
-        instance_index = block_id - kHsaViCounterBlockIdTcp0;
+      case kHsaViCounterBlockIdTcp: {
         for (ii = 0; ii < se_number_; ii++) {
           grbm_gfx_index.u32All = 0;
           grbm_gfx_index.bitfields.INSTANCE_INDEX = instance_index;
@@ -1122,7 +954,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         }
         break;
       }
-
       case kHsaViCounterBlockIdGds: {
         reg_addr[reg_num] = mmGRBM_GFX_INDEX__CI__VI;
         reg_val[reg_num] = grbm_reset_value();
@@ -1137,7 +968,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         reg_num++;
         break;
       }
-
       case kHsaViCounterBlockIdVgt: {
         for (ii = 0; ii < se_number_; ii++) {
           grbm_gfx_index.u32All = 0;
@@ -1159,7 +989,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         }
         break;
       }
-
       case kHsaViCounterBlockIdIa: {
         for (ii = 0; ii < se_number_; ii++) {
           grbm_gfx_index.u32All = 0;
@@ -1241,7 +1070,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         reg_num++;
         break;
       }
-
       case kHsaViCounterBlockIdCpg: {
         reg_addr[reg_num] = mmGRBM_GFX_INDEX__CI__VI;
         reg_val[reg_num] = grbm_reset_value();
@@ -1256,7 +1084,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         reg_num++;
         break;
       }
-
       case kHsaViCounterBlockIdCpc: {
         reg_addr[reg_num] = mmGRBM_GFX_INDEX__CI__VI;
         reg_val[reg_num] = grbm_reset_value();
@@ -1285,17 +1112,6 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
     }
 
     return reg_num;
-  }
-
-  // Used to reset GRBM to its default state
-  static uint32_t grbm_reset_value() {
-    // Initialize the value to use in resetting GRBM
-    regGRBM_GFX_INDEX grbm_gfx_index;
-    grbm_gfx_index.u32All = 0;
-    grbm_gfx_index.bitfields.INSTANCE_BROADCAST_WRITES = 1;
-    grbm_gfx_index.bitfields.SE_BROADCAST_WRITES = 1;
-    grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
-    return grbm_gfx_index.u32All;
   }
 };
 

@@ -65,24 +65,14 @@ namespace gfx8 {
 
 // Enumeration of VI hardware counter blocks
 typedef enum HsaViCounterBlockId {
-  kHsaViCounterBlockIdCb0 = 0,
-  kHsaViCounterBlockIdCb1,
-  kHsaViCounterBlockIdCb2,
-  kHsaViCounterBlockIdCb3,
-
+  kHsaViCounterBlockIdCb = 0,
   kHsaViCounterBlockIdCpf,
-
-  kHsaViCounterBlockIdDb0,
-  kHsaViCounterBlockIdDb1,
-  kHsaViCounterBlockIdDb2,
-  kHsaViCounterBlockIdDb3,
-
+  kHsaViCounterBlockIdDb,
   kHsaViCounterBlockIdGrbm,
   kHsaViCounterBlockIdGrbmSe,
   kHsaViCounterBlockIdPaSu,
   kHsaViCounterBlockIdPaSc,
   kHsaViCounterBlockIdSpi,
-
   kHsaViCounterBlockIdSq,
   kHsaViCounterBlockIdSqEs,
   kHsaViCounterBlockIdSqGs,
@@ -91,86 +81,17 @@ typedef enum HsaViCounterBlockId {
   kHsaViCounterBlockIdSqLs,
   kHsaViCounterBlockIdSqHs,
   kHsaViCounterBlockIdSqCs,
-
   kHsaViCounterBlockIdSx,
-
-  kHsaViCounterBlockIdTa0,
-  kHsaViCounterBlockIdTa1,
-  kHsaViCounterBlockIdTa2,
-  kHsaViCounterBlockIdTa3,
-  kHsaViCounterBlockIdTa4,
-  kHsaViCounterBlockIdTa5,
-  kHsaViCounterBlockIdTa6,
-  kHsaViCounterBlockIdTa7,
-  kHsaViCounterBlockIdTa8,
-  kHsaViCounterBlockIdTa9,
-  kHsaViCounterBlockIdTa10,
-  kHsaViCounterBlockIdTa11,
-  kHsaViCounterBlockIdTa12,
-  kHsaViCounterBlockIdTa13,
-  kHsaViCounterBlockIdTa14,
-  kHsaViCounterBlockIdTa15,
-
-  kHsaViCounterBlockIdTca0,
-  kHsaViCounterBlockIdTca1,
-
-  kHsaViCounterBlockIdTcc0,
-  kHsaViCounterBlockIdTcc1,
-  kHsaViCounterBlockIdTcc2,
-  kHsaViCounterBlockIdTcc3,
-  kHsaViCounterBlockIdTcc4,
-  kHsaViCounterBlockIdTcc5,
-  kHsaViCounterBlockIdTcc6,
-  kHsaViCounterBlockIdTcc7,
-  kHsaViCounterBlockIdTcc8,
-  kHsaViCounterBlockIdTcc9,
-  kHsaViCounterBlockIdTcc10,
-  kHsaViCounterBlockIdTcc11,
-  kHsaViCounterBlockIdTcc12,
-  kHsaViCounterBlockIdTcc13,
-  kHsaViCounterBlockIdTcc14,
-  kHsaViCounterBlockIdTcc15,
-
-  kHsaViCounterBlockIdTd0,
-  kHsaViCounterBlockIdTd1,
-  kHsaViCounterBlockIdTd2,
-  kHsaViCounterBlockIdTd3,
-  kHsaViCounterBlockIdTd4,
-  kHsaViCounterBlockIdTd5,
-  kHsaViCounterBlockIdTd6,
-  kHsaViCounterBlockIdTd7,
-  kHsaViCounterBlockIdTd8,
-  kHsaViCounterBlockIdTd9,
-  kHsaViCounterBlockIdTd10,
-  kHsaViCounterBlockIdTd11,
-  kHsaViCounterBlockIdTd12,
-  kHsaViCounterBlockIdTd13,
-  kHsaViCounterBlockIdTd14,
-  kHsaViCounterBlockIdTd15,
-
-  kHsaViCounterBlockIdTcp0,
-  kHsaViCounterBlockIdTcp1,
-  kHsaViCounterBlockIdTcp2,
-  kHsaViCounterBlockIdTcp3,
-  kHsaViCounterBlockIdTcp4,
-  kHsaViCounterBlockIdTcp5,
-  kHsaViCounterBlockIdTcp6,
-  kHsaViCounterBlockIdTcp7,
-  kHsaViCounterBlockIdTcp8,
-  kHsaViCounterBlockIdTcp9,
-  kHsaViCounterBlockIdTcp10,
-  kHsaViCounterBlockIdTcp11,
-  kHsaViCounterBlockIdTcp12,
-  kHsaViCounterBlockIdTcp13,
-  kHsaViCounterBlockIdTcp14,
-  kHsaViCounterBlockIdTcp15,
-
+  kHsaViCounterBlockIdTa,
+  kHsaViCounterBlockIdTca,
+  kHsaViCounterBlockIdTcc,
+  kHsaViCounterBlockIdTd,
+  kHsaViCounterBlockIdTcp,
   kHsaViCounterBlockIdGds,
   kHsaViCounterBlockIdVgt,
   kHsaViCounterBlockIdIa,
   kHsaViCounterBlockIdMc,
   kHsaViCounterBlockIdSrbm,
-
   kHsaViCounterBlockIdTcs,
   kHsaViCounterBlockIdWd,
   kHsaViCounterBlockIdCpg,
@@ -182,7 +103,7 @@ typedef enum HsaViCounterBlockId {
 
   kHsaViCounterBlockIdCpPipeStats,
   kHsaViCounterBlockIdHwInfo,
-  kHsaViCounterBlockIdBlocksFirst = kHsaViCounterBlockIdCb0,
+  kHsaViCounterBlockIdBlocksFirst = kHsaViCounterBlockIdCb,
   kHsaViCounterBlockIdBlocksLast = kHsaViCounterBlockIdHwInfo
 } HsaViCounterBlockId;
 
@@ -192,49 +113,29 @@ typedef enum HsaViCounterBlockId {
  */
 static const GpuBlockInfo Gfx8HwBlocks[] = {
     // Counter block CB
-    {"VI_CB0", kHsaViCounterBlockIdCb0, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_CB,
+    {"VI_CB", kHsaViCounterBlockIdCb, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_CB,
      CntlMethodBySeAndInstance, 395, VI_COUNTER_NUM_PER_CB, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_CB1", kHsaViCounterBlockIdCb1, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_CB,
-     CntlMethodBySeAndInstance, 395, VI_COUNTER_NUM_PER_CB, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_CB2", kHsaViCounterBlockIdCb2, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_CB,
-     CntlMethodBySeAndInstance, 395, VI_COUNTER_NUM_PER_CB, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_CB3", kHsaViCounterBlockIdCb3, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_CB,
-     CntlMethodBySeAndInstance, 395, VI_COUNTER_NUM_PER_CB, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block CPF
     {"VI_CPF", kHsaViCounterBlockIdCpf, VI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodNone, 19,
      VI_COUNTER_NUM_PER_CPF, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block DB
-    {"VI_DB0", kHsaViCounterBlockIdDb0, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_DB,
+    {"VI_DB", kHsaViCounterBlockIdDb, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_DB,
      CntlMethodBySeAndInstance, 256, VI_COUNTER_NUM_PER_DB, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_DB1", kHsaViCounterBlockIdDb1, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_DB,
-     CntlMethodBySeAndInstance, 256, VI_COUNTER_NUM_PER_DB, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_DB2", kHsaViCounterBlockIdDb2, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_DB,
-     CntlMethodBySeAndInstance, 256, VI_COUNTER_NUM_PER_DB, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_DB3", kHsaViCounterBlockIdDb3, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_DB,
-     CntlMethodBySeAndInstance, 256, VI_COUNTER_NUM_PER_DB, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block GRBM
     {"VI_GRBM", kHsaViCounterBlockIdGrbm, VI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodNone, 33,
      VI_COUNTER_NUM_PER_GRBM, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block GRBMSE
     {"VI_GRBMSE", kHsaViCounterBlockIdGrbmSe, VI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodNone, 14,
      VI_COUNTER_NUM_PER_GRBMSE, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block PA_SU
     {"VI_PA_SU", kHsaViCounterBlockIdPaSu, VI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodBySe, 152,
      VI_COUNTER_NUM_PER_PA_SU, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block PA_SC
     {"VI_PA_SC", kHsaViCounterBlockIdPaSc, VI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodBySe, 396,
      VI_COUNTER_NUM_PER_PA_SC, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block SPI
     {"VI_SPI", kHsaViCounterBlockIdSpi, VI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodBySe, 196,
      VI_COUNTER_NUM_PER_SPI, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block SQ
     {"VI_SQ", kHsaViCounterBlockIdSq, VI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodBySe, 298,
      VI_COUNTER_NUM_PER_SQ, 0, 0, true, 0, 0, false, 0, 0},
@@ -252,193 +153,54 @@ static const GpuBlockInfo Gfx8HwBlocks[] = {
      VI_COUNTER_NUM_PER_SQ, 0, 0, true, 0, 0, false, 0, 0},
     {"VI_SQ_CS", kHsaViCounterBlockIdSqCs, VI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodBySe, 298,
      VI_COUNTER_NUM_PER_SQ, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block SX
     {"VI_SX", kHsaViCounterBlockIdSx, VI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodBySe, 33,
      VI_COUNTER_NUM_PER_SX, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block TA
-    {"VI_TA0", kHsaViCounterBlockIdTa0, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TA,
+    {"VI_TA", kHsaViCounterBlockIdTa, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TA,
      CntlMethodBySeAndInstance, 118, VI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TA1", kHsaViCounterBlockIdTa1, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, VI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TA2", kHsaViCounterBlockIdTa2, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, VI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TA3", kHsaViCounterBlockIdTa3, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, VI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TA4", kHsaViCounterBlockIdTa4, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, VI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TA5", kHsaViCounterBlockIdTa5, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, VI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TA6", kHsaViCounterBlockIdTa6, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, VI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TA7", kHsaViCounterBlockIdTa7, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, VI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TA8", kHsaViCounterBlockIdTa8, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, VI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TA9", kHsaViCounterBlockIdTa9, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, VI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TA10", kHsaViCounterBlockIdTa10, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, VI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TA11", kHsaViCounterBlockIdTa11, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, VI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TA12", kHsaViCounterBlockIdTa12, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, VI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TA13", kHsaViCounterBlockIdTa13, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, VI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TA14", kHsaViCounterBlockIdTa14, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, VI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TA15", kHsaViCounterBlockIdTa15, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, VI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block TCA
-    {"VI_TCA0", kHsaViCounterBlockIdTca0, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCA,
+    {"VI_TCA", kHsaViCounterBlockIdTca, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCA,
      CntlMethodByInstance, 34, VI_COUNTER_NUM_PER_TCA, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCA1", kHsaViCounterBlockIdTca1, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCA,
-     CntlMethodByInstance, 34, VI_COUNTER_NUM_PER_TCA, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block TCC
-    {"VI_TCC0", kHsaViCounterBlockIdTcc0, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCC,
+    {"VI_TCC", kHsaViCounterBlockIdTcc, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCC,
      CntlMethodByInstance, 191, VI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCC1", kHsaViCounterBlockIdTcc1, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCC,
-     CntlMethodByInstance, 191, VI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCC2", kHsaViCounterBlockIdTcc2, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCC,
-     CntlMethodByInstance, 191, VI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCC3", kHsaViCounterBlockIdTcc3, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCC,
-     CntlMethodByInstance, 191, VI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCC4", kHsaViCounterBlockIdTcc4, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCC,
-     CntlMethodByInstance, 191, VI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCC5", kHsaViCounterBlockIdTcc5, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCC,
-     CntlMethodByInstance, 191, VI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCC6", kHsaViCounterBlockIdTcc6, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCC,
-     CntlMethodByInstance, 191, VI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCC7", kHsaViCounterBlockIdTcc7, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCC,
-     CntlMethodByInstance, 191, VI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCC8", kHsaViCounterBlockIdTcc8, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCC,
-     CntlMethodByInstance, 191, VI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCC9", kHsaViCounterBlockIdTcc9, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCC,
-     CntlMethodByInstance, 191, VI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCC10", kHsaViCounterBlockIdTcc10, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCC,
-     CntlMethodByInstance, 191, VI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCC11", kHsaViCounterBlockIdTcc11, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCC,
-     CntlMethodByInstance, 191, VI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCC12", kHsaViCounterBlockIdTcc12, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCC,
-     CntlMethodByInstance, 191, VI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCC13", kHsaViCounterBlockIdTcc13, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCC,
-     CntlMethodByInstance, 191, VI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCC14", kHsaViCounterBlockIdTcc14, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCC,
-     CntlMethodByInstance, 191, VI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCC15", kHsaViCounterBlockIdTcc15, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCC,
-     CntlMethodByInstance, 191, VI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block TD
-    {"VI_TD0", kHsaViCounterBlockIdTd0, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TD,
+    {"VI_TD", kHsaViCounterBlockIdTd, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TD,
      CntlMethodBySeAndInstance, 54, VI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TD1", kHsaViCounterBlockIdTd1, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, VI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TD2", kHsaViCounterBlockIdTd2, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, VI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TD3", kHsaViCounterBlockIdTd3, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, VI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TD4", kHsaViCounterBlockIdTd4, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, VI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TD5", kHsaViCounterBlockIdTd5, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, VI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TD6", kHsaViCounterBlockIdTd6, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, VI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TD7", kHsaViCounterBlockIdTd7, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, VI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TD8", kHsaViCounterBlockIdTd8, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, VI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TD9", kHsaViCounterBlockIdTd9, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, VI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TD10", kHsaViCounterBlockIdTd10, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, VI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TD11", kHsaViCounterBlockIdTd11, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, VI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TD12", kHsaViCounterBlockIdTd12, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, VI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TD13", kHsaViCounterBlockIdTd13, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, VI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TD14", kHsaViCounterBlockIdTd14, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, VI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TD15", kHsaViCounterBlockIdTd15, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, VI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block TCP
-    {"VI_TCP0", kHsaViCounterBlockIdTcp0, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCP,
+    {"VI_TCP", kHsaViCounterBlockIdTcp, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCP,
      CntlMethodBySeAndInstance, 182, VI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCP1", kHsaViCounterBlockIdTcp1, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, VI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCP2", kHsaViCounterBlockIdTcp2, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, VI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCP3", kHsaViCounterBlockIdTcp3, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, VI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCP4", kHsaViCounterBlockIdTcp4, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, VI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCP5", kHsaViCounterBlockIdTcp5, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, VI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCP6", kHsaViCounterBlockIdTcp6, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, VI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCP7", kHsaViCounterBlockIdTcp7, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, VI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCP8", kHsaViCounterBlockIdTcp8, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, VI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCP9", kHsaViCounterBlockIdTcp9, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, VI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCP10", kHsaViCounterBlockIdTcp10, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, VI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCP11", kHsaViCounterBlockIdTcp11, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, VI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCP12", kHsaViCounterBlockIdTcp12, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, VI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCP13", kHsaViCounterBlockIdTcp13, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, VI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCP14", kHsaViCounterBlockIdTcp14, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, VI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"VI_TCP15", kHsaViCounterBlockIdTcp15, VI_MAX_NUM_SHADER_ENGINES, 2, VI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, VI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block GDS
     {"VI_GDS", kHsaViCounterBlockIdGds, VI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodNone, 120,
      VI_COUNTER_NUM_PER_GDS, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block VGT
     {"VI_VGT", kHsaViCounterBlockIdVgt, VI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodBySe, 145,
      VI_COUNTER_NUM_PER_VGT, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block IA
     {"VI_IA", kHsaViCounterBlockIdIa, VI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodBySe, 23,
      VI_COUNTER_NUM_PER_IA, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block MC
     {"VI_MC", kHsaViCounterBlockIdMc, VI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodNone, 22,
      VI_COUNTER_NUM_PER_MC, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block SRBM
     {"VI_SRBM", kHsaViCounterBlockIdSrbm, VI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodNone, 19,
      VI_COUNTER_NUM_PER_SRBM, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block WD
     {"VI_WD", kHsaViCounterBlockIdWd, VI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodNone, 36,
      VI_COUNTER_NUM_PER_WD, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block CPG
     {"VI_CPG", kHsaViCounterBlockIdCpg, VI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodNone, 48,
      VI_COUNTER_NUM_PER_CPG, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block CPC
     {"VI_CPC", kHsaViCounterBlockIdCpc, VI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodNone, 24,
      VI_COUNTER_NUM_PER_CPC, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block IOMMUV2
     {"VI_IOMMUV2", kHsaViCounterBlockIdIommuV2, VI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodNone, 25,
      8, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block KernelDriver
     {"VI_KD", kHsaViCounterBlockIdKernelDriver, VI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodNone, 0,
      0, 0, 0, true, 0, 0, false, 0, 0},
-
     // Name of the last line should be empty to indicate end of all counter groups
     {"", kHsaViCounterBlockIdBlocksLast, 0, 0, 0, CntlMethodNone, 0, 0, 0, 0, false, 0, 0, false, 0,
      0}};

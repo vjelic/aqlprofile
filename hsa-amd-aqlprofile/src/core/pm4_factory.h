@@ -27,17 +27,7 @@ class BlockMap {
   typedef std::map<uint32_t, const gfxip::GpuBlockInfo*> map_t;
   typedef map_t::const_iterator iter_t;
 
-  void init(uint32_t* id_table, const gfxip::GpuBlockInfo* info_table, const uint32_t& info_count) {
-    if (block_map.size() == 0) fill(id_table, info_table, info_count);
-  }
-
-  const gfxip::GpuBlockInfo* get(const uint32_t& id) const {
-    iter_t it = block_map.find(id);
-    return (it != block_map.end()) ? it->second : NULL;
-  }
-
- private:
-  void fill(uint32_t* id_table, const gfxip::GpuBlockInfo* info_table, const uint32_t& info_count) {
+  BlockMap(uint32_t* id_table, const gfxip::GpuBlockInfo* info_table, const uint32_t& info_count) {
     map_t info_map;
     for (uint32_t i = 0; i < info_count; ++i) {
       const gfxip::GpuBlockInfo& entry = info_table[i];
@@ -49,6 +39,12 @@ class BlockMap {
     }
   }
 
+  const gfxip::GpuBlockInfo* get(const uint32_t& id) const {
+    iter_t it = block_map.find(id);
+    return (it != block_map.end()) ? it->second : NULL;
+  }
+
+ private:
   map_t block_map;
 };
 
@@ -78,9 +74,7 @@ class Pm4Factory {
     return info;
   }
 
-  uint32_t getBlockId(const event_t* event) const {
-    return getBlockInfo(event)->counterGroupId + event->block_index;
-  }
+  uint32_t getBlockId(const event_t* event) const { return getBlockInfo(event)->counterGroupId; }
 
  protected:
   explicit Pm4Factory(const BlockMap& map) : block_map(map) {}

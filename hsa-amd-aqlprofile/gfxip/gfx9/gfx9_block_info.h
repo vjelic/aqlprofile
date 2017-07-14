@@ -82,119 +82,37 @@ namespace gfx9 {
 
 // Enumeration of AI hardware counter blocks
 typedef enum HsaAiCounterBlockId {
-  kHsaAiCounterBlockIdCb0 = 0,
-  kHsaAiCounterBlockIdCb1,
-  kHsaAiCounterBlockIdCb2,
-  kHsaAiCounterBlockIdCb3,
-
+  kHsaAiCounterBlockIdCb = 0,
   // Temp commented out for Vega10
   // kHsaAiCounterBlockIdCpf,
-
-  kHsaAiCounterBlockIdDb0,
-  kHsaAiCounterBlockIdDb1,
-  kHsaAiCounterBlockIdDb2,
-  kHsaAiCounterBlockIdDb3,
-
+  kHsaAiCounterBlockIdDb,
   kHsaAiCounterBlockIdGrbm,
   kHsaAiCounterBlockIdGrbmSe,
   kHsaAiCounterBlockIdPaSu,
   kHsaAiCounterBlockIdPaSc,
   kHsaAiCounterBlockIdSpi,
-
   kHsaAiCounterBlockIdSq,
   kHsaAiCounterBlockIdSqGs,
   kHsaAiCounterBlockIdSqVs,
   kHsaAiCounterBlockIdSqPs,
   kHsaAiCounterBlockIdSqHs,
   kHsaAiCounterBlockIdSqCs,
-
   kHsaAiCounterBlockIdSx,
-
-  kHsaAiCounterBlockIdTa0,
-  kHsaAiCounterBlockIdTa1,
-  kHsaAiCounterBlockIdTa2,
-  kHsaAiCounterBlockIdTa3,
-  kHsaAiCounterBlockIdTa4,
-  kHsaAiCounterBlockIdTa5,
-  kHsaAiCounterBlockIdTa6,
-  kHsaAiCounterBlockIdTa7,
-  kHsaAiCounterBlockIdTa8,
-  kHsaAiCounterBlockIdTa9,
-  kHsaAiCounterBlockIdTa10,
-  kHsaAiCounterBlockIdTa11,
-  kHsaAiCounterBlockIdTa12,
-  kHsaAiCounterBlockIdTa13,
-  kHsaAiCounterBlockIdTa14,
-  kHsaAiCounterBlockIdTa15,
-
-  kHsaAiCounterBlockIdTca0,
-  kHsaAiCounterBlockIdTca1,
-
-  kHsaAiCounterBlockIdTcc0,
-  kHsaAiCounterBlockIdTcc1,
-  kHsaAiCounterBlockIdTcc2,
-  kHsaAiCounterBlockIdTcc3,
-  kHsaAiCounterBlockIdTcc4,
-  kHsaAiCounterBlockIdTcc5,
-  kHsaAiCounterBlockIdTcc6,
-  kHsaAiCounterBlockIdTcc7,
-  kHsaAiCounterBlockIdTcc8,
-  kHsaAiCounterBlockIdTcc9,
-  kHsaAiCounterBlockIdTcc10,
-  kHsaAiCounterBlockIdTcc11,
-  kHsaAiCounterBlockIdTcc12,
-  kHsaAiCounterBlockIdTcc13,
-  kHsaAiCounterBlockIdTcc14,
-  kHsaAiCounterBlockIdTcc15,
-
-  kHsaAiCounterBlockIdTd0,
-  kHsaAiCounterBlockIdTd1,
-  kHsaAiCounterBlockIdTd2,
-  kHsaAiCounterBlockIdTd3,
-  kHsaAiCounterBlockIdTd4,
-  kHsaAiCounterBlockIdTd5,
-  kHsaAiCounterBlockIdTd6,
-  kHsaAiCounterBlockIdTd7,
-  kHsaAiCounterBlockIdTd8,
-  kHsaAiCounterBlockIdTd9,
-  kHsaAiCounterBlockIdTd10,
-  kHsaAiCounterBlockIdTd11,
-  kHsaAiCounterBlockIdTd12,
-  kHsaAiCounterBlockIdTd13,
-  kHsaAiCounterBlockIdTd14,
-  kHsaAiCounterBlockIdTd15,
-
-  kHsaAiCounterBlockIdTcp0,
-  kHsaAiCounterBlockIdTcp1,
-  kHsaAiCounterBlockIdTcp2,
-  kHsaAiCounterBlockIdTcp3,
-  kHsaAiCounterBlockIdTcp4,
-  kHsaAiCounterBlockIdTcp5,
-  kHsaAiCounterBlockIdTcp6,
-  kHsaAiCounterBlockIdTcp7,
-  kHsaAiCounterBlockIdTcp8,
-  kHsaAiCounterBlockIdTcp9,
-  kHsaAiCounterBlockIdTcp10,
-  kHsaAiCounterBlockIdTcp11,
-  kHsaAiCounterBlockIdTcp12,
-  kHsaAiCounterBlockIdTcp13,
-  kHsaAiCounterBlockIdTcp14,
-  kHsaAiCounterBlockIdTcp15,
-
+  kHsaAiCounterBlockIdTa,
+  kHsaAiCounterBlockIdTca,
+  kHsaAiCounterBlockIdTcc,
+  kHsaAiCounterBlockIdTd,
+  kHsaAiCounterBlockIdTcp,
   kHsaAiCounterBlockIdGds,
   kHsaAiCounterBlockIdVgt,
   kHsaAiCounterBlockIdIa,
   kHsaAiCounterBlockIdMc,
-
   // Temp commented out for Vega10
   // kHsaAiCounterBlockIdSrbm,
-
   kHsaAiCounterBlockIdTcs,
   kHsaAiCounterBlockIdWd,
-
   // Temp commented out for Vega10
   // kHsaAiCounterBlockIdCpg,
-
   kHsaAiCounterBlockIdCpc,
 
   // Counters retrieved by KFD
@@ -203,7 +121,7 @@ typedef enum HsaAiCounterBlockId {
 
   kHsaAiCounterBlockIdCpPipeStats,
   kHsaAiCounterBlockIdHwInfo,
-  kHsaAiCounterBlockIdBlocksFirst = kHsaAiCounterBlockIdCb0,
+  kHsaAiCounterBlockIdBlocksFirst = kHsaAiCounterBlockIdCb,
   kHsaAiCounterBlockIdBlocksLast = kHsaAiCounterBlockIdHwInfo
 } HsaAiCounterBlockId;
 
@@ -213,52 +131,32 @@ typedef enum HsaAiCounterBlockId {
  */
 static const GpuBlockInfo Gfx9HwBlocks[] = {
     // Counter block CB
-    {"AI_CB0", kHsaAiCounterBlockIdCb0, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_CB,
+    {"AI_CB", kHsaAiCounterBlockIdCb, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_CB,
      CntlMethodBySeAndInstance, 395, AI_COUNTER_NUM_PER_CB, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_CB1", kHsaAiCounterBlockIdCb1, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_CB,
-     CntlMethodBySeAndInstance, 395, AI_COUNTER_NUM_PER_CB, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_CB2", kHsaAiCounterBlockIdCb2, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_CB,
-     CntlMethodBySeAndInstance, 395, AI_COUNTER_NUM_PER_CB, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_CB3", kHsaAiCounterBlockIdCb3, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_CB,
-     CntlMethodBySeAndInstance, 395, AI_COUNTER_NUM_PER_CB, 0, 0, true, 0, 0, false, 0, 0},
-
     // Temp commented for Vega10
     // Counter block CPF
     /*
     {"AI_CPF", kHsaAiCounterBlockIdCpf, AI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodNone, 19,
     AI_COUNTER_NUM_PER_CPF, 0, 0, true, 0, 0, false, 0, 0},
     */
-
     // Counter block DB
-    {"AI_DB0", kHsaAiCounterBlockIdDb0, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_DB,
+    {"AI_DB", kHsaAiCounterBlockIdDb, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_DB,
      CntlMethodBySeAndInstance, 256, AI_COUNTER_NUM_PER_DB, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_DB1", kHsaAiCounterBlockIdDb1, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_DB,
-     CntlMethodBySeAndInstance, 256, AI_COUNTER_NUM_PER_DB, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_DB2", kHsaAiCounterBlockIdDb2, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_DB,
-     CntlMethodBySeAndInstance, 256, AI_COUNTER_NUM_PER_DB, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_DB3", kHsaAiCounterBlockIdDb3, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_DB,
-     CntlMethodBySeAndInstance, 256, AI_COUNTER_NUM_PER_DB, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block GRBM
     {"AI_GRBM", kHsaAiCounterBlockIdGrbm, AI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodNone, 33,
      AI_COUNTER_NUM_PER_GRBM, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block GRBMSE
     {"AI_GRBMSE", kHsaAiCounterBlockIdGrbmSe, AI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodNone, 14,
      AI_COUNTER_NUM_PER_GRBMSE, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block PA_SU
     {"AI_PA_SU", kHsaAiCounterBlockIdPaSu, AI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodBySe, 152,
      AI_COUNTER_NUM_PER_PA_SU, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block PA_SC
     {"AI_PA_SC", kHsaAiCounterBlockIdPaSc, AI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodBySe, 396,
      AI_COUNTER_NUM_PER_PA_SC, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block SPI
     {"AI_SPI", kHsaAiCounterBlockIdSpi, AI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodBySe, 196,
      AI_COUNTER_NUM_PER_SPI, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block SQ
     {"AI_SQ", kHsaAiCounterBlockIdSq, AI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodBySe, 171,
      AI_COUNTER_NUM_PER_SQ, 0, 0, true, 0, 0, false, 0, 0},
@@ -272,200 +170,60 @@ static const GpuBlockInfo Gfx9HwBlocks[] = {
      AI_COUNTER_NUM_PER_SQ, 0, 0, true, 0, 0, false, 0, 0},
     {"AI_SQ_CS", kHsaAiCounterBlockIdSqCs, AI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodBySe, 298,
      AI_COUNTER_NUM_PER_SQ, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block SX
     {"AI_SX", kHsaAiCounterBlockIdSx, AI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodBySe, 33,
      AI_COUNTER_NUM_PER_SX, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block TA
-    {"AI_TA0", kHsaAiCounterBlockIdTa0, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TA,
+    {"AI_TA", kHsaAiCounterBlockIdTa, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TA,
      CntlMethodBySeAndInstance, 118, AI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TA1", kHsaAiCounterBlockIdTa1, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, AI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TA2", kHsaAiCounterBlockIdTa2, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, AI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TA3", kHsaAiCounterBlockIdTa3, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, AI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TA4", kHsaAiCounterBlockIdTa4, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, AI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TA5", kHsaAiCounterBlockIdTa5, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, AI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TA6", kHsaAiCounterBlockIdTa6, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, AI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TA7", kHsaAiCounterBlockIdTa7, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, AI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TA8", kHsaAiCounterBlockIdTa8, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, AI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TA9", kHsaAiCounterBlockIdTa9, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, AI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TA10", kHsaAiCounterBlockIdTa10, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, AI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TA11", kHsaAiCounterBlockIdTa11, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, AI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TA12", kHsaAiCounterBlockIdTa12, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, AI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TA13", kHsaAiCounterBlockIdTa13, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, AI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TA14", kHsaAiCounterBlockIdTa14, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, AI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TA15", kHsaAiCounterBlockIdTa15, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TA,
-     CntlMethodBySeAndInstance, 118, AI_COUNTER_NUM_PER_TA, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block TCA
-    {"AI_TCA0", kHsaAiCounterBlockIdTca0, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCA,
+    {"AI_TCA", kHsaAiCounterBlockIdTca, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCA,
      CntlMethodByInstance, 34, AI_COUNTER_NUM_PER_TCA, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCA1", kHsaAiCounterBlockIdTca1, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCA,
-     CntlMethodByInstance, 34, AI_COUNTER_NUM_PER_TCA, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block TCC
-    {"AI_TCC0", kHsaAiCounterBlockIdTcc0, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCC,
+    {"AI_TCC", kHsaAiCounterBlockIdTcc, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCC,
      CntlMethodByInstance, 191, AI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCC1", kHsaAiCounterBlockIdTcc1, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCC,
-     CntlMethodByInstance, 191, AI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCC2", kHsaAiCounterBlockIdTcc2, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCC,
-     CntlMethodByInstance, 191, AI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCC3", kHsaAiCounterBlockIdTcc3, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCC,
-     CntlMethodByInstance, 191, AI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCC4", kHsaAiCounterBlockIdTcc4, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCC,
-     CntlMethodByInstance, 191, AI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCC5", kHsaAiCounterBlockIdTcc5, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCC,
-     CntlMethodByInstance, 191, AI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCC6", kHsaAiCounterBlockIdTcc6, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCC,
-     CntlMethodByInstance, 191, AI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCC7", kHsaAiCounterBlockIdTcc7, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCC,
-     CntlMethodByInstance, 191, AI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCC8", kHsaAiCounterBlockIdTcc8, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCC,
-     CntlMethodByInstance, 191, AI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCC9", kHsaAiCounterBlockIdTcc9, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCC,
-     CntlMethodByInstance, 191, AI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCC10", kHsaAiCounterBlockIdTcc10, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCC,
-     CntlMethodByInstance, 191, AI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCC11", kHsaAiCounterBlockIdTcc11, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCC,
-     CntlMethodByInstance, 191, AI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCC12", kHsaAiCounterBlockIdTcc12, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCC,
-     CntlMethodByInstance, 191, AI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCC13", kHsaAiCounterBlockIdTcc13, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCC,
-     CntlMethodByInstance, 191, AI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCC14", kHsaAiCounterBlockIdTcc14, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCC,
-     CntlMethodByInstance, 191, AI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCC15", kHsaAiCounterBlockIdTcc15, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCC,
-     CntlMethodByInstance, 191, AI_COUNTER_NUM_PER_TCC, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block TD
-    {"AI_TD0", kHsaAiCounterBlockIdTd0, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TD,
+    {"AI_TD", kHsaAiCounterBlockIdTd, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TD,
      CntlMethodBySeAndInstance, 54, AI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TD1", kHsaAiCounterBlockIdTd1, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, AI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TD2", kHsaAiCounterBlockIdTd2, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, AI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TD3", kHsaAiCounterBlockIdTd3, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, AI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TD4", kHsaAiCounterBlockIdTd4, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, AI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TD5", kHsaAiCounterBlockIdTd5, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, AI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TD6", kHsaAiCounterBlockIdTd6, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, AI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TD7", kHsaAiCounterBlockIdTd7, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, AI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TD8", kHsaAiCounterBlockIdTd8, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, AI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TD9", kHsaAiCounterBlockIdTd9, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, AI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TD10", kHsaAiCounterBlockIdTd10, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, AI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TD11", kHsaAiCounterBlockIdTd11, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, AI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TD12", kHsaAiCounterBlockIdTd12, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, AI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TD13", kHsaAiCounterBlockIdTd13, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, AI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TD14", kHsaAiCounterBlockIdTd14, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, AI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TD15", kHsaAiCounterBlockIdTd15, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TD,
-     CntlMethodBySeAndInstance, 54, AI_COUNTER_NUM_PER_TD, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block TCP
-    {"AI_TCP0", kHsaAiCounterBlockIdTcp0, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCP,
+    {"AI_TCP", kHsaAiCounterBlockIdTcp, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCP,
      CntlMethodBySeAndInstance, 182, AI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCP1", kHsaAiCounterBlockIdTcp1, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, AI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCP2", kHsaAiCounterBlockIdTcp2, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, AI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCP3", kHsaAiCounterBlockIdTcp3, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, AI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCP4", kHsaAiCounterBlockIdTcp4, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, AI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCP5", kHsaAiCounterBlockIdTcp5, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, AI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCP6", kHsaAiCounterBlockIdTcp6, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, AI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCP7", kHsaAiCounterBlockIdTcp7, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, AI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCP8", kHsaAiCounterBlockIdTcp8, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, AI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCP9", kHsaAiCounterBlockIdTcp9, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, AI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCP10", kHsaAiCounterBlockIdTcp10, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, AI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCP11", kHsaAiCounterBlockIdTcp11, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, AI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCP12", kHsaAiCounterBlockIdTcp12, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, AI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCP13", kHsaAiCounterBlockIdTcp13, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, AI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCP14", kHsaAiCounterBlockIdTcp14, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, AI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-    {"AI_TCP15", kHsaAiCounterBlockIdTcp15, AI_MAX_NUM_SHADER_ENGINES, 2, AI_NUM_TCP,
-     CntlMethodBySeAndInstance, 182, AI_COUNTER_NUM_PER_TCP, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block GDS
     {"AI_GDS", kHsaAiCounterBlockIdGds, AI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodNone, 120,
      AI_COUNTER_NUM_PER_GDS, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block VGT
     {"AI_VGT", kHsaAiCounterBlockIdVgt, AI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodBySe, 145,
      AI_COUNTER_NUM_PER_VGT, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block IA
     {"AI_IA", kHsaAiCounterBlockIdIa, AI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodBySe, 23,
      AI_COUNTER_NUM_PER_IA, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block MC
     {"AI_MC", kHsaAiCounterBlockIdMc, AI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodNone, 22,
      AI_COUNTER_NUM_PER_MC, 0, 0, true, 0, 0, false, 0, 0},
-
     // Temp commented out for Vega10
     // Counter block SRBM
     /*
     {"AI_SRBM", kHsaAiCounterBlockIdSrbm, AI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodNone, 19,
     AI_COUNTER_NUM_PER_SRBM, 0, 0, true, 0, 0, false, 0, 0},
     */
-
     // Counter block WD
     {"AI_WD", kHsaAiCounterBlockIdWd, AI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodNone, 36,
      AI_COUNTER_NUM_PER_WD, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block CPG
     // Temp commented for Vega10
     /*
     {"AI_CPG", kHsaAiCounterBlockIdCpg, AI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodNone, 48,
     AI_COUNTER_NUM_PER_CPG, 0, 0, true, 0, 0, false, 0, 0},
     */
-
     // Counter block CPC
-    // Temp commented for Vega10
     {"AI_CPC", kHsaAiCounterBlockIdCpc, AI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodNone, 34,
      AI_COUNTER_NUM_PER_CPC, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block IOMMUV2
     {"AI_IOMMUV2", kHsaAiCounterBlockIdIommuV2, AI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodNone, 25,
      8, 0, 0, true, 0, 0, false, 0, 0},
-
     // Counter block KernelDriver
     {"AI_KD", kHsaAiCounterBlockIdKernelDriver, AI_MAX_NUM_SHADER_ENGINES, 2, 1, CntlMethodNone, 0,
      0, 0, 0, true, 0, 0, false, 0, 0},
-
     // Name of the last line should be empty to indicate end of all counter groups
     {"", kHsaAiCounterBlockIdBlocksLast, 0, 0, 0, CntlMethodNone, 0, 0, 0, 0, false, 0, 0, false, 0,
      0}};

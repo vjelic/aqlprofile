@@ -96,40 +96,16 @@ class CommandBufferMgr {
   }
 };
 
-static inline pm4_builder::CountersMap CountersMapCreate(const profile_t* profile,
-                                                         const Pm4Factory* pm4_factory) {
-  pm4_builder::CountersMap countersMap;
+
+static inline pm4_builder::counters_vector CountersVec(const profile_t* profile,
+                                                       const Pm4Factory* pm4_factory) {
+  pm4_builder::counters_vector vec;
   for (const hsa_ven_amd_aqlprofile_event_t* p = profile->events;
        p < profile->events + profile->event_count; ++p) {
-    countersMap[pm4_factory->getBlockId(p)].push_back(p->counter_id);
+    pm4_builder::block_des_t block_des = {pm4_factory->getBlockId(p), p->block_index};
+    vec.push_back({block_des, p->counter_id});
   }
-  return countersMap;
-}
-
-typedef std::vector<const event_t*> EventsVec;
-static inline EventsVec EventsVecCreate(const profile_t* profile, const Pm4Factory* pm4_factory) {
-  pm4_builder::CountersMap countersMap = CountersMapCreate(profile, pm4_factory);
-
-  std::map<uint32_t, const event_t*> id_map;
-  for (const hsa_ven_amd_aqlprofile_event_t* p = profile->events;
-       p < profile->events + profile->event_count; ++p) {
-    id_map.insert(decltype(id_map)::value_type(pm4_factory->getBlockId(p), p));
-  }
-
-  // Iterate through the list of blocks/counters to generate correct order events vector
-  EventsVec eventsVec;
-  for (pm4_builder::CountersMap::const_iterator block_it = countersMap.begin();
-       block_it != countersMap.end(); ++block_it) {
-    const uint32_t block_id = block_it->first;
-    const pm4_builder::CountersVec& counters = block_it->second;
-    const uint32_t counter_count = counters.size();
-
-    for (uint32_t ind = 0; ind < counter_count; ++ind) {
-      eventsVec.push_back(id_map[block_id] + ind);
-    }
-  }
-
-  return eventsVec;
+  return vec;
 }
 
 static inline bool is_event_match(const event_t& event1, const event_t& event2) {
@@ -223,15 +199,15 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(
 
     if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_PMC) {
       pm4_builder::PmcBuilder* pmc_builder = pm4_factory->getPmcBuilder();
+      const pm4_builder::counters_vector countersVec = CountersVec(profile, pm4_factory);
 
       // Generate start commands
-      const pm4_builder::CountersMap countersMap = CountersMapCreate(profile, pm4_factory);
-      pmc_builder->begin(&commands, countersMap);
+      pmc_builder->begin(&commands, countersVec);
       cmdBufMgr.setPreSize(commands.size());
 
       // Generate stop commands
       const uint32_t data_size =
-          pmc_builder->end(&commands, countersMap, profile->output_buffer.ptr);
+          pmc_builder->end(&commands, countersVec, profile->output_buffer.ptr);
       ERR_CHECK(data_size == 0, HSA_STATUS_ERROR, "PMC mgr end(): data size set to zero");
       assert(data_size <= profile->output_buffer.size);
       if (data_size > profile->output_buffer.size) {
@@ -415,10 +391,8 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
 
       pm4_builder::PmcBuilder* pmc_builder = pm4_factory->getPmcBuilder();
 
-      aql_profile::EventsVec eventsVec = EventsVecCreate(profile, pm4_factory);
-      for (aql_profile::EventsVec::const_iterator it = eventsVec.begin(); it != eventsVec.end();
-           ++it) {
-        const hsa_ven_amd_aqlprofile_event_t* p = *it;
+      for (const hsa_ven_amd_aqlprofile_event_t* p = profile->events;
+           p < profile->events + profile->event_count; ++p) {
         const gfxip::CntlMethod method = pm4_factory->getBlockInfo(p)->method;
         // A perfcounter data sample per ShaderEngine
         const uint32_t block_samples_count =
