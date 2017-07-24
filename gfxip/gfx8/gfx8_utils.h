@@ -3,9 +3,6 @@
 #ifndef _GFX8_UTILS_H_
 #define _GFX8_UTILS_H_
 
-namespace gfxip {
-namespace gfx8 {
-
 static const uint8_t EventTypeToIndexTable[] = {
     0,                                        // Reserved_0x00                   0x00000000
     EVENT_WRITE_INDEX_SAMPLE_STREAMOUTSTATS,  // SAMPLE_STREAMOUTSTATS1
@@ -87,8 +84,5 @@ enum BufIndexStride {
   kBufIndexStride32 = 2,
   kBufIndexStride64 = 3
 };
-
-}  // gfx8
-}  // gfxip
 
 #endif  //  _GFX8_UTILS_H_

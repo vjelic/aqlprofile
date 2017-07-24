@@ -9,10 +9,9 @@
 #include <sstream>
 
 #include "pm4/cmd_builder.h"
-#include "pm4/gfx8_def.h"
+#include "def/gfx8_def.h"
 
 namespace pm4_builder {
-using namespace gfxip::gfx8;
 
 // Desc: Initializer for various Gpu command headers
 template <class T> static void GenerateCmdHeader(T* pm4, IT_OpCodeType op_code) {

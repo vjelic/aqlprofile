@@ -7,7 +7,7 @@
 
 #include "core/aql_profile.h"
 #include "core/amd_aql_pm4_ib_packet.h"
-#include "pm4/gfx8_def.h"
+#include "def/gfx8_def.h"
 
 namespace aql_profile {
 
@@ -23,7 +23,7 @@ void* legacyAqlAcquire(const packet_t* aql_packet, void* data) {
   aql_barrier->header |= aql_header_type;
   aql_barrier->header |= aql_header_barrier;
   aql_barrier->header |= aql_header_acquire;
-  return data + sizeof(hsa_barrier_and_packet_t);
+  return (char*)data + sizeof(hsa_barrier_and_packet_t);
 }
 
 void* legacyAqlRelease(const packet_t* aql_packet, void* data) {
@@ -37,7 +37,7 @@ void* legacyAqlRelease(const packet_t* aql_packet, void* data) {
   aql_barrier->header |= aql_header_barrier;
   aql_barrier->header |= aql_header_release;
   aql_barrier->completion_signal = aql_packet->completion_signal;
-  return data + sizeof(hsa_barrier_and_packet_t);
+  return (char*)data + sizeof(hsa_barrier_and_packet_t);
 }
 
 void* legacyPm4(const packet_t* aql_packet, void* data) {
@@ -89,7 +89,7 @@ void* legacyPm4(const packet_t* aql_packet, void* data) {
   std::clog << std::setfill(' ') << std::endl;
 #endif
 
-  return data + slot_size_b;
+  return (char*)data + slot_size_b;
 }
 
 }  // namespace aql_profile

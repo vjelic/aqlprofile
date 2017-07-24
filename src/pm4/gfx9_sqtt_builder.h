@@ -5,10 +5,9 @@
 
 #include "pm4/sqtt_builder.h"
 #include "pm4/gfx9_cmd_builder.h"
-#include "pm4/gfx9_def.h"
+#include "def/gfx9_def.h"
 
 namespace pm4_builder {
-using namespace gfxip::gfx9;
 
 struct Gfx9ThreadTraceCfgRegs {
   Gfx9ThreadTraceCfgRegs(const ThreadTraceConfig* config) {

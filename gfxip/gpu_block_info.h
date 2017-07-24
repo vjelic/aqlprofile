@@ -3,8 +3,9 @@
 
 #include <stdint.h>
 
-namespace gfxip {
+#define GPU_BLOCK_NAME_SIZE 15
 
+namespace gfxip {
 typedef enum CntlMethod {
   CntlMethodNone = 0,
   CntlMethodByInstance = 1,
@@ -12,21 +13,28 @@ typedef enum CntlMethod {
   CntlMethodBySeAndInstance = 3
 } CntlMethod;
 
-// Structure which contains information about a specific hardware block for CI.
-#define GPU_BLOCK_NAME_SIZE 15
+// Register address corresponding to each counter
+typedef struct GpuCounterRegInfo_ {
+  // counter select register address
+  uint32_t counterSelRegAddr;
 
+  // counter control register address
+  uint32_t counterCntlRegAddr;
+
+  // counter read register address low
+  uint32_t counterReadRegAddrLo;
+
+  // counter read register address high
+  uint32_t counterReadRegAddrHi;
+} GpuCounterRegInfo;
+
+// Structure which contains information about a specific hardware block for CI.
 typedef struct GpuBlockInfo_ {
   // Unique string identifier of the block.
   const char blockName[GPU_BLOCK_NAME_SIZE];
 
   // Unique string identifier of the block.
   uint32_t counterGroupId;
-
-  // Maximum number of shader engines
-  uint32_t maxShaderEngineCount;
-
-  // Maximum number of shader arrays
-  uint32_t maxShaderArrayCount;
 
   // Maximum number of block instances in the group per shader array
   uint32_t maxInstanceCount;
@@ -52,40 +60,10 @@ typedef struct GpuBlockInfo_ {
   // Block counters can be configured with additional filters
   bool hasFilters;
 
-  //------------------------------------------
-  // Trace specific stuff regarding when they get locked
+  // Counter registers addresses
+  const GpuCounterRegInfo *counter_reg_info;
 
-  // Buffer size in bytes
-  uint32_t bufferSize;
-
-  // Current write pointer offset from beginning of the buffer
-  uint32_t wptrOffset;
-
-  // Flag that buffer might have wrapped
-  bool wrapped;
-
-  // If buffer has wrapped, this could indicate approximate
-  // total amount of data that was dumpued in the trace buffer
-  uint32_t dataSizeEstimate;
-
-  // Buffer data pointer
-  void* pData;
 } GpuBlockInfo;
-
-// Register address corresponding to each counter
-typedef struct GpuCounterRegInfo_ {
-  // counter select register address
-  uint32_t counterSelRegAddr;
-
-  // counter control register address
-  uint32_t counterCntlRegAddr;
-
-  // counter read register address low
-  uint32_t counterReadRegAddrLo;
-
-  // counter read register address high
-  uint32_t counterReadRegAddrHi;
-} GpuCounterRegInfo;
 
 }  // namespace gfxip
 

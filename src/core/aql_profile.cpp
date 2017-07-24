@@ -20,6 +20,8 @@
     }                                                                                              \
   }
 
+using namespace gfxip;
+
 namespace aql_profile {
 
 // Command buffer partitioning manager
@@ -56,7 +58,7 @@ class CommandBufferMgr {
     }
     if (buffer.size == 0)
       throw aql_profile_exc_msg("CommandBufferMgr::setPostfix(): buffer size set to zero");
-    return (buffer.size != 0) ? buffer.ptr + buffer.size : NULL;
+    return (buffer.size != 0) ? (char*)(buffer.ptr) + buffer.size : NULL;
   }
 
   bool setPreSize(const uint32_t& size) {
@@ -90,7 +92,7 @@ class CommandBufferMgr {
 
   descriptor_t getPostDescr() {
     descriptor_t descr;
-    descr.ptr = buffer.ptr + getPostOffset();
+    descr.ptr = (char*)(buffer.ptr) + getPostOffset();
     descr.size = info->postcmds_size;
     return descr;
   }
@@ -289,7 +291,7 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(
     const aql_profile::descriptor_t pre_descr = cmdBufMgr.getPreDescr();
     const aql_profile::descriptor_t post_descr = cmdBufMgr.getPostDescr();
     memcpy(pre_descr.ptr, commands.data(), pre_descr.size);
-    memcpy(post_descr.ptr, commands.data() + pre_descr.size, post_descr.size);
+    memcpy(post_descr.ptr, (char*)(commands.data()) + pre_descr.size, post_descr.size);
 
     // Populate start aql packet
     pm4_builder::CmdBuilder* cmd_writer = pm4_factory->getCmdBuilder();
@@ -393,10 +395,10 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
 
       for (const hsa_ven_amd_aqlprofile_event_t* p = profile->events;
            p < profile->events + profile->event_count; ++p) {
-        const gfxip::CntlMethod method = pm4_factory->getBlockInfo(p)->method;
+        const CntlMethod method = pm4_factory->getBlockInfo(p)->method;
         // A perfcounter data sample per ShaderEngine
         const uint32_t block_samples_count =
-            (method == gfxip::CntlMethodBySe || method == gfxip::CntlMethodBySeAndInstance)
+            (method == CntlMethodBySe || method == CntlMethodBySeAndInstance)
             ? se_number
             : 1;
         for (uint32_t i = 0; i < block_samples_count; ++i) {
@@ -469,7 +471,7 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
           break;
         }
 
-        sample_ptr += sample_capacity;
+        sample_ptr = (char*)sample_ptr + sample_capacity;
       }
     } else {
       ERR_LOGGING << "Bad profile type (" << profile->type << ")";

@@ -31,11 +31,12 @@ class event_exception : public aql_profile_exc_val<event_t> {
   event_exception(const std::string& m, const event_t& ev) : aql_profile_exc_val(m, ev) {}
 };
 
-static std::ostream& operator<<(std::ostream& os, const event_t& ev) {
+}  // namespace aql_profile
+
+static std::ostream& operator<<(std::ostream& os, const aql_profile::event_t& ev) {
   os << "event( block(" << ev.block_name << "." << ev.block_index << "), Id(" << ev.counter_id
      << "))";
   return os;
 }
-}  // namespace aql_profile
 
 #endif  // _AQL_PROFILE_H_

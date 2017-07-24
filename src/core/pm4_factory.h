@@ -21,16 +21,17 @@ class SqttBuilder;
 }
 
 namespace aql_profile {
+using namespace gfxip;
 
 class BlockMap {
  public:
-  typedef std::map<uint32_t, const gfxip::GpuBlockInfo*> map_t;
+  typedef std::map<uint32_t, const GpuBlockInfo*> map_t;
   typedef map_t::const_iterator iter_t;
 
-  BlockMap(uint32_t* id_table, const gfxip::GpuBlockInfo* info_table, const uint32_t& info_count) {
+  BlockMap(uint32_t* id_table, const GpuBlockInfo* info_table, const uint32_t& info_count) {
     map_t info_map;
     for (uint32_t i = 0; i < info_count; ++i) {
-      const gfxip::GpuBlockInfo& entry = info_table[i];
+      const GpuBlockInfo& entry = info_table[i];
       info_map[entry.counterGroupId] = &entry;
     }
     for (uint32_t i = 0; i < HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER; ++i) {
@@ -39,7 +40,7 @@ class BlockMap {
     }
   }
 
-  const gfxip::GpuBlockInfo* get(const uint32_t& id) const {
+  const GpuBlockInfo* get(const uint32_t& id) const {
     iter_t it = block_map.find(id);
     return (it != block_map.end()) ? it->second : NULL;
   }
@@ -62,10 +63,10 @@ class Pm4Factory {
   virtual pm4_builder::PmcBuilder* getPmcBuilder() = 0;
   virtual pm4_builder::SqttBuilder* getSqttBuilder() = 0;
 
-  const getShaderEnginesNumber() { return 4; }
+  const uint32_t getShaderEnginesNumber() { return 4; }
 
-  const gfxip::GpuBlockInfo* getBlockInfo(const event_t* event) const {
-    const gfxip::GpuBlockInfo* info = block_map.get(event->block_name);
+  const GpuBlockInfo* getBlockInfo(const event_t* event) const {
+    const GpuBlockInfo* info = block_map.get(event->block_name);
     if (info == NULL) throw event_exception(std::string("Bad block, "), *event);
     if (event->block_index >= info->maxInstanceCount)
       throw event_exception(std::string("Bad block index, "), *event);

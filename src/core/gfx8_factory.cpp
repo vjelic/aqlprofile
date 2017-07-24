@@ -1,11 +1,10 @@
 #include "core/pm4_factory.h"
+#include "def/gfx8_def.h"
 #include "pm4/gfx8_cmd_builder.h"
 #include "pm4/gfx8_pmc_builder.h"
 #include "pm4/gfx8_sqtt_builder.h"
-#include "gfxip/gfx8/gfx8_block_info.h"
 
 namespace aql_profile {
-using namespace gfxip::gfx8;
 
 class Gfx8Factory : public Pm4Factory {
  public:

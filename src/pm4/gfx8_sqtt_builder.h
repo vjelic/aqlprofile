@@ -3,7 +3,7 @@
 
 #include "pm4/sqtt_builder.h"
 #include "pm4/gfx8_cmd_builder.h"
-#include "pm4/gfx8_def.h"
+#include "def/gfx8_def.h"
 
 namespace pm4_builder {
 

@@ -42,6 +42,10 @@ set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-threadsafe-statics" )
 set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fms-extensions" )
 set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fmerge-all-constants" )
 set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC" )
+# CLANG options
+if ( $ENV{CXX} STREQUAL "/usr/bin/clang++" )
+set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ferror-limit=1000000" )
+endif()
 
 #
 # Check env vars
@@ -67,11 +71,11 @@ endif ()
 #
 # Extend Compiler flags based on Processor architecture
 #
-if ( CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
+if ( ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64" )
   set ( NBIT 64 )
   set ( NBITSTR "64" )
   set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64  -msse -msse2" )
-elseif ( CMAKE_SYSTEM_PROCESSOR STREQUAL "x86" )
+elseif ( ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86" )
   set ( NBIT 32 )
   set ( NBITSTR "" )
   set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32" )

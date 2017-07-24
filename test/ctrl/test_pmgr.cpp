@@ -39,7 +39,7 @@ bool TestPMgr::addPacketGfx9(const packet_t* packet) {
 
   // Disable packet so that submission to HW is complete
   const auto header = HSA_PACKET_TYPE_VENDOR_SPECIFIC << HSA_PACKET_HEADER_TYPE;
-  aql_packet.header &= (~((1 << HSA_PACKET_HEADER_WIDTH_TYPE) - 1)) << HSA_PACKET_HEADER_TYPE;
+  aql_packet.header &= (~((1ul << HSA_PACKET_HEADER_WIDTH_TYPE) - 1)) << HSA_PACKET_HEADER_TYPE;
   aql_packet.header |= HSA_PACKET_TYPE_INVALID << HSA_PACKET_HEADER_TYPE;
 
   // Copy Aql packet into queue buffer

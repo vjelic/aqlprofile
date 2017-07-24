@@ -6,12 +6,10 @@
 
 #include "pm4/pmc_builder.h"
 #include "pm4/gfx8_cmd_builder.h"
-#include "pm4/gfx8_def.h"
+#include "def/gfx8_def.h"
 
 namespace pm4_builder {
 using namespace std;
-using namespace pm4_builder;
-using namespace gfxip::gfx8;
 
 class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder {
  public:
@@ -116,13 +114,46 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
   }
 
  private:
-  // Used to reset GRBM to its default state
+  // GRBM broadcasting mode
   static uint32_t grbm_reset_value() {
     // Initialize the value to use in resetting GRBM
     regGRBM_GFX_INDEX grbm_gfx_index;
     grbm_gfx_index.u32All = 0;
     grbm_gfx_index.bitfields.INSTANCE_BROADCAST_WRITES = 1;
     grbm_gfx_index.bitfields.SE_BROADCAST_WRITES = 1;
+    grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
+    return grbm_gfx_index.u32All;
+  }
+
+  // GRBM SE indexing
+  static uint32_t grbm_iindex_value(const uint32_t & instance_index) {
+    // Initialize the value to use in resetting GRBM
+    regGRBM_GFX_INDEX grbm_gfx_index;
+    grbm_gfx_index.u32All = 0;
+    grbm_gfx_index.bitfields.INSTANCE_INDEX = instance_index;
+    grbm_gfx_index.bitfields.SE_BROADCAST_WRITES = 1;
+    grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
+    return grbm_gfx_index.u32All;
+  }
+
+  // GRBM SE indexing
+  static uint32_t grbm_seindex_value(const uint32_t & se_index) {
+    // Initialize the value to use in resetting GRBM
+    regGRBM_GFX_INDEX grbm_gfx_index;
+    grbm_gfx_index.u32All = 0;
+    grbm_gfx_index.bitfields.INSTANCE_INDEX = 1;
+    grbm_gfx_index.bitfields.SE_INDEX = se_index;
+    grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
+    return grbm_gfx_index.u32All;
+  }
+
+  // GRBM SE/BlockInstance indexing
+  static uint32_t grbm_bindex_value(const uint32_t & instance_index, const uint32_t & se_index) {
+    // Initialize the value to use in resetting GRBM
+    regGRBM_GFX_INDEX grbm_gfx_index;
+    grbm_gfx_index.u32All = 0;
+    grbm_gfx_index.bitfields.INSTANCE_INDEX = instance_index;
+    grbm_gfx_index.bitfields.SE_INDEX = se_index;
     grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
     return grbm_gfx_index.u32All;
   }
@@ -644,11 +675,10 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
 
   uint32_t BuildCounterReadRegisters(uint32_t reg_index, block_des_t block_des, uint32_t* reg_addr,
                                      uint32_t* reg_val) {
-    uint32_t ii;
+    uint32_t se_index;
     uint32_t reg_num = 0;
     const uint32_t block_id = block_des.id;
     const uint32_t instance_index = block_des.index;
-    regGRBM_GFX_INDEX grbm_gfx_index;
 
     switch (block_id) {
       case kHsaViCounterBlockIdSq:
@@ -659,14 +689,9 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
       case kHsaViCounterBlockIdSqLs:
       case kHsaViCounterBlockIdSqHs:
       case kHsaViCounterBlockIdSqCs: {
-        for (ii = 0; ii < se_number_; ii++) {
-          grbm_gfx_index.u32All = 0;
-          grbm_gfx_index.bitfields.INSTANCE_BROADCAST_WRITES = 1;
-          grbm_gfx_index.bitfields.SE_INDEX = ii;
-          grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
-
+        for (se_index = 0; se_index < se_number_; se_index++) {
           reg_addr[reg_num] = mmGRBM_GFX_INDEX__CI__VI;
-          reg_val[reg_num] = grbm_gfx_index.u32All;
+          reg_val[reg_num] = grbm_seindex_value(se_index);
           reg_num++;
 
           reg_addr[reg_num] = ViSqCounterRegAddr[reg_index].counterReadRegAddrLo;
@@ -680,14 +705,9 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         break;
       }
       case kHsaViCounterBlockIdCb: {
-        for (ii = 0; ii < se_number_; ii++) {
-          grbm_gfx_index.u32All = 0;
-          grbm_gfx_index.bitfields.INSTANCE_INDEX = instance_index;
-          grbm_gfx_index.bitfields.SE_INDEX = ii;
-          grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
-
+        for (se_index = 0; se_index < se_number_; se_index++) {
           reg_addr[reg_num] = mmGRBM_GFX_INDEX__CI__VI;
-          reg_val[reg_num] = grbm_gfx_index.u32All;
+          reg_val[reg_num] = grbm_bindex_value(instance_index, se_index);
           reg_num++;
 
           reg_addr[reg_num] = ViCbCounterRegAddr[reg_index].counterReadRegAddrLo;
@@ -715,14 +735,9 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         break;
       }
       case kHsaViCounterBlockIdDb: {
-        for (ii = 0; ii < se_number_; ii++) {
-          grbm_gfx_index.u32All = 0;
-          grbm_gfx_index.bitfields.INSTANCE_INDEX = instance_index;
-          grbm_gfx_index.bitfields.SE_INDEX = ii;
-          grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
-
+        for (se_index = 0; se_index < se_number_; se_index++) {
           reg_addr[reg_num] = mmGRBM_GFX_INDEX__CI__VI;
-          reg_val[reg_num] = grbm_gfx_index.u32All;
+          reg_val[reg_num] = grbm_bindex_value(instance_index, se_index);
           reg_num++;
 
           reg_addr[reg_num] = ViDbCounterRegAddr[reg_index].counterReadRegAddrLo;
@@ -764,14 +779,9 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         break;
       }
       case kHsaViCounterBlockIdPaSu: {
-        for (ii = 0; ii < se_number_; ii++) {
-          grbm_gfx_index.u32All = 0;
-          grbm_gfx_index.bitfields.INSTANCE_BROADCAST_WRITES = 1;
-          grbm_gfx_index.bitfields.SE_INDEX = ii;
-          grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
-
+        for (se_index = 0; se_index < se_number_; se_index++) {
           reg_addr[reg_num] = mmGRBM_GFX_INDEX__CI__VI;
-          reg_val[reg_num] = grbm_gfx_index.u32All;
+          reg_val[reg_num] = grbm_seindex_value(se_index);
           reg_num++;
 
           reg_addr[reg_num] = ViPaSuCounterRegAddr[reg_index].counterReadRegAddrLo;
@@ -785,14 +795,9 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         break;
       }
       case kHsaViCounterBlockIdPaSc: {
-        for (ii = 0; ii < se_number_; ii++) {
-          grbm_gfx_index.u32All = 0;
-          grbm_gfx_index.bitfields.INSTANCE_BROADCAST_WRITES = 1;
-          grbm_gfx_index.bitfields.SE_INDEX = ii;
-          grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
-
+        for (se_index = 0; se_index < se_number_; se_index++) {
           reg_addr[reg_num] = mmGRBM_GFX_INDEX__CI__VI;
-          reg_val[reg_num] = grbm_gfx_index.u32All;
+          reg_val[reg_num] = grbm_seindex_value(se_index);
           reg_num++;
 
           reg_addr[reg_num] = ViPaScCounterRegAddr[reg_index].counterReadRegAddrLo;
@@ -806,14 +811,9 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         break;
       }
       case kHsaViCounterBlockIdSpi: {
-        for (ii = 0; ii < se_number_; ii++) {
-          grbm_gfx_index.u32All = 0;
-          grbm_gfx_index.bitfields.INSTANCE_BROADCAST_WRITES = 1;
-          grbm_gfx_index.bitfields.SE_INDEX = ii;
-          grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
-
+        for (se_index = 0; se_index < se_number_; se_index++) {
           reg_addr[reg_num] = mmGRBM_GFX_INDEX__CI__VI;
-          reg_val[reg_num] = grbm_gfx_index.u32All;
+          reg_val[reg_num] = grbm_seindex_value(se_index);
           reg_num++;
 
           reg_addr[reg_num] = ViSpiCounterRegAddr[reg_index].counterReadRegAddrLo;
@@ -827,14 +827,9 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         break;
       }
       case kHsaViCounterBlockIdSx: {
-        for (ii = 0; ii < se_number_; ii++) {
-          grbm_gfx_index.u32All = 0;
-          grbm_gfx_index.bitfields.INSTANCE_BROADCAST_WRITES = 1;
-          grbm_gfx_index.bitfields.SE_INDEX = ii;
-          grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
-
+        for (se_index = 0; se_index < se_number_; se_index++) {
           reg_addr[reg_num] = mmGRBM_GFX_INDEX__CI__VI;
-          reg_val[reg_num] = grbm_gfx_index.u32All;
+          reg_val[reg_num] = grbm_seindex_value(se_index);
           reg_num++;
 
           reg_addr[reg_num] = ViSxCounterRegAddr[reg_index].counterReadRegAddrLo;
@@ -848,14 +843,9 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         break;
       }
       case kHsaViCounterBlockIdTa: {
-        for (ii = 0; ii < se_number_; ii++) {
-          grbm_gfx_index.u32All = 0;
-          grbm_gfx_index.bitfields.INSTANCE_INDEX = instance_index;
-          grbm_gfx_index.bitfields.SE_INDEX = ii;
-          grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
-
+        for (se_index = 0; se_index < se_number_; se_index++) {
           reg_addr[reg_num] = mmGRBM_GFX_INDEX__CI__VI;
-          reg_val[reg_num] = grbm_gfx_index.u32All;
+          reg_val[reg_num] = grbm_bindex_value(instance_index, se_index);
           reg_num++;
 
           reg_addr[reg_num] = ViTaCounterRegAddr[reg_index].counterReadRegAddrLo;
@@ -869,13 +859,8 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         break;
       }
       case kHsaViCounterBlockIdTca: {
-        grbm_gfx_index.u32All = 0;
-        grbm_gfx_index.bitfields.INSTANCE_INDEX = instance_index;
-        grbm_gfx_index.bitfields.SE_BROADCAST_WRITES = 1;
-        grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
-
         reg_addr[reg_num] = mmGRBM_GFX_INDEX__CI__VI;
-        reg_val[reg_num] = grbm_gfx_index.u32All;
+        reg_val[reg_num] = grbm_iindex_value(instance_index);
         reg_num++;
 
         reg_addr[reg_num] = ViTcaCounterRegAddr[reg_index].counterReadRegAddrLo;
@@ -888,12 +873,8 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         break;
       }
       case kHsaViCounterBlockIdTcc: {
-        grbm_gfx_index.u32All = 0;
-        grbm_gfx_index.bitfields.INSTANCE_INDEX = instance_index;
-        grbm_gfx_index.bitfields.SE_BROADCAST_WRITES = 1;
-        grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
         reg_addr[reg_num] = mmGRBM_GFX_INDEX__CI__VI;
-        reg_val[reg_num] = grbm_gfx_index.u32All;
+        reg_val[reg_num] = grbm_iindex_value(instance_index);
         reg_num++;
 
         reg_addr[reg_num] = ViTccCounterRegAddr[reg_index].counterReadRegAddrLo;
@@ -906,13 +887,9 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         break;
       }
       case kHsaViCounterBlockIdTd: {
-        for (ii = 0; ii < se_number_; ii++) {
-          grbm_gfx_index.u32All = 0;
-          grbm_gfx_index.bitfields.INSTANCE_INDEX = instance_index;
-          grbm_gfx_index.bitfields.SE_INDEX = ii;
-          grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
+        for (se_index = 0; se_index < se_number_; se_index++) {
           reg_addr[reg_num] = mmGRBM_GFX_INDEX__CI__VI;
-          reg_val[reg_num] = grbm_gfx_index.u32All;
+          reg_val[reg_num] = grbm_bindex_value(instance_index, se_index);
           reg_num++;
 
           reg_addr[reg_num] = ViTdCounterRegAddr[reg_index].counterReadRegAddrLo;
@@ -926,14 +903,9 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         break;
       }
       case kHsaViCounterBlockIdTcp: {
-        for (ii = 0; ii < se_number_; ii++) {
-          grbm_gfx_index.u32All = 0;
-          grbm_gfx_index.bitfields.INSTANCE_INDEX = instance_index;
-          grbm_gfx_index.bitfields.SE_INDEX = ii;
-          grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
-
+        for (se_index = 0; se_index < se_number_; se_index++) {
           reg_addr[reg_num] = mmGRBM_GFX_INDEX__CI__VI;
-          reg_val[reg_num] = grbm_gfx_index.u32All;
+          reg_val[reg_num] = grbm_bindex_value(instance_index, se_index);
           reg_num++;
 
           reg_addr[reg_num] = ViTcpCounterRegAddr[reg_index].counterReadRegAddrLo;
@@ -961,14 +933,9 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         break;
       }
       case kHsaViCounterBlockIdVgt: {
-        for (ii = 0; ii < se_number_; ii++) {
-          grbm_gfx_index.u32All = 0;
-          grbm_gfx_index.bitfields.INSTANCE_BROADCAST_WRITES = 1;
-          grbm_gfx_index.bitfields.SE_INDEX = ii;
-          grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
-
+        for (se_index = 0; se_index < se_number_; se_index++) {
           reg_addr[reg_num] = mmGRBM_GFX_INDEX__CI__VI;
-          reg_val[reg_num] = grbm_gfx_index.u32All;
+          reg_val[reg_num] = grbm_seindex_value(se_index);
           reg_num++;
 
           reg_addr[reg_num] = ViVgtCounterRegAddr[reg_index].counterReadRegAddrLo;
@@ -982,14 +949,9 @@ class Gfx8PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx8CmdBuilder 
         break;
       }
       case kHsaViCounterBlockIdIa: {
-        for (ii = 0; ii < se_number_; ii++) {
-          grbm_gfx_index.u32All = 0;
-          grbm_gfx_index.bitfields.INSTANCE_BROADCAST_WRITES = 1;
-          grbm_gfx_index.bitfields.SE_INDEX = ii;
-          grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
-
+        for (se_index = 0; se_index < se_number_; se_index++) {
           reg_addr[reg_num] = mmGRBM_GFX_INDEX__CI__VI;
-          reg_val[reg_num] = grbm_gfx_index.u32All;
+          reg_val[reg_num] = grbm_seindex_value(se_index);
           reg_num++;
 
           reg_addr[reg_num] = ViIaCounterRegAddr[reg_index].counterReadRegAddrLo;

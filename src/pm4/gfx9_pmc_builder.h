@@ -6,12 +6,10 @@
 
 #include "pm4/pmc_builder.h"
 #include "pm4/gfx9_cmd_builder.h"
-#include "pm4/gfx9_def.h"
+#include "def/gfx9_def.h"
 
 namespace pm4_builder {
 using namespace std;
-using namespace pm4_builder;
-using namespace gfxip::gfx9;
 
 class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder {
  public:
