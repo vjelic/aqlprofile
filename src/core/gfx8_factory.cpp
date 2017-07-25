@@ -1,7 +1,7 @@
 #include "core/pm4_factory.h"
 #include "def/gfx8_def.h"
 #include "pm4/gfx8_cmd_builder.h"
-#include "pm4/gfx8_pmc_builder.h"
+#include "pm4/pmc_builder.h"
 #include "pm4/gfx8_sqtt_builder.h"
 
 namespace aql_profile {
@@ -46,7 +46,7 @@ pm4_builder::CmdBuilder* Gfx8Factory::getCmdBuilder() {
 }
 
 pm4_builder::PmcBuilder* Gfx8Factory::getPmcBuilder() {
-  auto p = new pm4_builder::Gfx8PmcBuilder;
+  auto p = new pm4_builder::GpuPmcBuilder<pm4_builder::Gfx8CmdBuilder, gfx8_cntx_prim>;
   if (p == NULL) throw aql_profile_exc_msg("PmcBuilder mgr allocation failed");
   return p;
 }
