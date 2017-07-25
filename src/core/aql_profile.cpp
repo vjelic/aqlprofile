@@ -104,8 +104,9 @@ static inline pm4_builder::counters_vector CountersVec(const profile_t* profile,
   pm4_builder::counters_vector vec;
   for (const hsa_ven_amd_aqlprofile_event_t* p = profile->events;
        p < profile->events + profile->event_count; ++p) {
-    pm4_builder::block_des_t block_des = {pm4_factory->getBlockId(p), p->block_index};
-    vec.push_back({block_des, p->counter_id});
+    const pm4_builder::block_des_t block_des = {pm4_factory->getBlockId(p), p->block_index};
+    const GpuBlockInfo* block_info = pm4_factory->getBlockInfo(p);
+    vec.push_back({p->counter_id, block_des, block_info});
   }
   return vec;
 }
@@ -153,7 +154,7 @@ hsa_status_t default_sqttdata_callback(hsa_ven_amd_aqlprofile_info_type_t info_t
   return status;
 }
 
-std::mutex Logger::mutex;
+Logger::mutex_t Logger::mutex;
 Logger* Logger::instance = NULL;
 std::mutex Pm4Factory::mutex;
 Pm4Factory::instances_t Pm4Factory::instances;
@@ -210,7 +211,7 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(
       // Generate stop commands
       const uint32_t data_size =
           pmc_builder->end(&commands, countersVec, profile->output_buffer.ptr);
-      ERR_CHECK(data_size == 0, HSA_STATUS_ERROR, "PMC mgr end(): data size set to zero");
+      ERR_CHECK(data_size == 0, HSA_STATUS_ERROR, "PMC Builder end(): data size set to zero");
       assert(data_size <= profile->output_buffer.size);
       if (data_size > profile->output_buffer.size) {
         ERR_LOGGING << "data size assertion failed, data_size(" << data_size << "), buffer size("

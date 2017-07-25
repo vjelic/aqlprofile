@@ -32,7 +32,7 @@ class BlockMap {
     map_t info_map;
     for (uint32_t i = 0; i < info_count; ++i) {
       const GpuBlockInfo& entry = info_table[i];
-      info_map[entry.counterGroupId] = &entry;
+      info_map[entry.id] = &entry;
     }
     for (uint32_t i = 0; i < HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER; ++i) {
       iter_t it = info_map.find(id_table[i]);
@@ -68,14 +68,14 @@ class Pm4Factory {
   const GpuBlockInfo* getBlockInfo(const event_t* event) const {
     const GpuBlockInfo* info = block_map.get(event->block_name);
     if (info == NULL) throw event_exception(std::string("Bad block, "), *event);
-    if (event->block_index >= info->maxInstanceCount)
+    if (event->block_index >= info->instance_count)
       throw event_exception(std::string("Bad block index, "), *event);
-    if (event->counter_id > info->maxEventId)
+    if (event->counter_id > info->event_id_max)
       throw event_exception(std::string("Bad event ID, "), *event);
     return info;
   }
 
-  uint32_t getBlockId(const event_t* event) const { return getBlockInfo(event)->counterGroupId; }
+  uint32_t getBlockId(const event_t* event) const { return getBlockInfo(event)->id; }
 
  protected:
   explicit Pm4Factory(const BlockMap& map) : block_map(map) {}

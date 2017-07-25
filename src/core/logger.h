@@ -22,6 +22,8 @@ namespace aql_profile {
 
 class Logger {
  public:
+  typedef std::recursive_mutex mutex_t;
+
   template <typename T> Logger& operator<<(const T& m) {
     std::ostringstream oss;
     oss << m;
@@ -44,18 +46,18 @@ class Logger {
 
   static const std::string& LastMessage() {
     Logger& logger = Instance();
-    std::lock_guard<std::mutex> lck(mutex);
+    std::lock_guard<mutex_t> lck(mutex);
     return logger.message[GetTid()];
   }
 
   static Logger& Instance() {
-    std::lock_guard<std::mutex> lck(mutex);
+    std::lock_guard<mutex_t> lck(mutex);
     if (instance == NULL) instance = new Logger();
     return *instance;
   }
 
   static void Destroy() {
-    std::lock_guard<std::mutex> lck(mutex);
+    std::lock_guard<mutex_t> lck(mutex);
     if (instance != NULL) delete instance;
     instance = NULL;
   }
@@ -80,7 +82,7 @@ class Logger {
   }
 
   void resetStreaming() {
-    std::lock_guard<std::mutex> lck(mutex);
+    std::lock_guard<mutex_t> lck(mutex);
     if (messaging) {
       message[GetTid()] = "";
     }
@@ -89,7 +91,7 @@ class Logger {
   }
 
   void put(const std::string& m) {
-    std::lock_guard<std::mutex> lck(mutex);
+    std::lock_guard<mutex_t> lck(mutex);
     if (messaging) {
       message[GetTid()] += m;
     }
@@ -118,7 +120,7 @@ class Logger {
   bool streaming;
   bool messaging;
 
-  static std::mutex mutex;
+  static mutex_t mutex;
   static Logger* instance;
   std::map<uint32_t, std::string> message;
 };

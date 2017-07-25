@@ -128,7 +128,7 @@ typedef enum HsaAiCounterBlockId {
 /*
  * SQ
  */
-static const GpuCounterRegInfo AiSqCounterRegAddr[] = {
+static const CounterRegInfo AiSqCounterRegAddr[] = {
     {mmSQ_PERFCOUNTER0_SELECT, mmSQ_PERFCOUNTER_CTRL, mmSQ_PERFCOUNTER0_LO, mmSQ_PERFCOUNTER0_HI},
     {mmSQ_PERFCOUNTER1_SELECT, mmSQ_PERFCOUNTER_CTRL, mmSQ_PERFCOUNTER1_LO, mmSQ_PERFCOUNTER1_HI},
     {mmSQ_PERFCOUNTER2_SELECT, mmSQ_PERFCOUNTER_CTRL, mmSQ_PERFCOUNTER2_LO, mmSQ_PERFCOUNTER2_HI},
@@ -155,7 +155,7 @@ static const GpuCounterRegInfo AiSqCounterRegAddr[] = {
 /*
  * DRMDMA
  */
-static const GpuCounterRegInfo AiDrmdmaCounterRegAddr[] = {
+static const CounterRegInfo AiDrmdmaCounterRegAddr[] = {
     {mmSDMA0_PERFMON_CNTL, 0, mmSDMA0_PERFCOUNTER0_RESULT, 0},
     {mmSDMA0_PERFMON_CNTL, 0, mmSDMA0_PERFCOUNTER1_RESULT, 0},
     {mmSDMA1_PERFMON_CNTL, 0, mmSDMA1_PERFCOUNTER0_RESULT, 0},
@@ -165,21 +165,21 @@ static const GpuCounterRegInfo AiDrmdmaCounterRegAddr[] = {
 /*
  * IH
  */
-static const GpuCounterRegInfo AiIhCounterRegAddr[] = {
+static const CounterRegInfo AiIhCounterRegAddr[] = {
     {mmIH_PERFMON_CNTL, 0, mmIH_PERFCOUNTER0_RESULT, 0},
     {mmIH_PERFMON_CNTL, 0, mmIH_PERFCOUNTER1_RESULT, 0}};
 
 /*
  * CPF
  */
-static const GpuCounterRegInfo AiCpfCounterRegAddr[] = {
+static const CounterRegInfo AiCpfCounterRegAddr[] = {
     {mmCPF_PERFCOUNTER0_SELECT, 0, mmCPF_PERFCOUNTER0_LO, mmCPF_PERFCOUNTER0_HI},
     {mmCPF_PERFCOUNTER1_SELECT, 0, mmCPF_PERFCOUNTER1_LO, mmCPF_PERFCOUNTER1_HI}};
 
 /*
  * DRM
  */
-static const GpuCounterRegInfo AiDrmCounterRegAddr[] = {
+static const CounterRegInfo AiDrmCounterRegAddr[] = {
     /*
     {mmDRM_PERFCOUNTER1_SELECT, 0, mmDRM_PERFCOUNTER1_LO, mmDRM_PERFCOUNTER1_HI},
     {mmDRM_PERFCOUNTER2_SELECT, 0, mmDRM_PERFCOUNTER2_LO, mmDRM_PERFCOUNTER2_HI}
@@ -189,14 +189,14 @@ static const GpuCounterRegInfo AiDrmCounterRegAddr[] = {
 /*
  * GRBM
  */
-static const GpuCounterRegInfo AiGrbmCounterRegAddr[] = {
+static const CounterRegInfo AiGrbmCounterRegAddr[] = {
     {mmGRBM_PERFCOUNTER0_SELECT, 0, mmGRBM_PERFCOUNTER0_LO, mmGRBM_PERFCOUNTER0_HI},
     {mmGRBM_PERFCOUNTER1_SELECT, 0, mmGRBM_PERFCOUNTER1_LO, mmGRBM_PERFCOUNTER1_HI}};
 
 /*
  * GRBM_SE
  */
-static const GpuCounterRegInfo AiGrbmSeCounterRegAddr[] = {
+static const CounterRegInfo AiGrbmSeCounterRegAddr[] = {
     {mmGRBM_SE0_PERFCOUNTER_SELECT, 0, mmGRBM_SE0_PERFCOUNTER_LO, mmGRBM_SE0_PERFCOUNTER_HI},
     {mmGRBM_SE1_PERFCOUNTER_SELECT, 0, mmGRBM_SE1_PERFCOUNTER_LO, mmGRBM_SE1_PERFCOUNTER_HI},
     {mmGRBM_SE2_PERFCOUNTER_SELECT, 0, mmGRBM_SE2_PERFCOUNTER_LO, mmGRBM_SE2_PERFCOUNTER_HI},
@@ -205,7 +205,7 @@ static const GpuCounterRegInfo AiGrbmSeCounterRegAddr[] = {
 /*
  * PA_SU
  */
-static const GpuCounterRegInfo AiPaSuCounterRegAddr[] = {
+static const CounterRegInfo AiPaSuCounterRegAddr[] = {
     {mmPA_SU_PERFCOUNTER0_SELECT, 0, mmPA_SU_PERFCOUNTER0_LO, mmPA_SU_PERFCOUNTER0_HI},
     {mmPA_SU_PERFCOUNTER1_SELECT, 0, mmPA_SU_PERFCOUNTER1_LO, mmPA_SU_PERFCOUNTER1_HI},
     {mmPA_SU_PERFCOUNTER2_SELECT, 0, mmPA_SU_PERFCOUNTER2_LO, mmPA_SU_PERFCOUNTER2_HI},
@@ -214,7 +214,7 @@ static const GpuCounterRegInfo AiPaSuCounterRegAddr[] = {
 /*
  * PA_SC
  */
-static const GpuCounterRegInfo AiPaScCounterRegAddr[] = {
+static const CounterRegInfo AiPaScCounterRegAddr[] = {
     {mmPA_SC_PERFCOUNTER0_SELECT, 0, mmPA_SC_PERFCOUNTER0_LO, mmPA_SC_PERFCOUNTER0_HI},
     {mmPA_SC_PERFCOUNTER1_SELECT, 0, mmPA_SC_PERFCOUNTER1_LO, mmPA_SC_PERFCOUNTER1_HI},
     {mmPA_SC_PERFCOUNTER2_SELECT, 0, mmPA_SC_PERFCOUNTER2_LO, mmPA_SC_PERFCOUNTER2_HI},
@@ -223,7 +223,7 @@ static const GpuCounterRegInfo AiPaScCounterRegAddr[] = {
 /*
  * SPI
  */
-static const GpuCounterRegInfo AiSpiCounterRegAddr[] = {
+static const CounterRegInfo AiSpiCounterRegAddr[] = {
     {mmSPI_PERFCOUNTER0_SELECT, 0, mmSPI_PERFCOUNTER0_LO, mmSPI_PERFCOUNTER0_HI},
     {mmSPI_PERFCOUNTER1_SELECT, 0, mmSPI_PERFCOUNTER1_LO, mmSPI_PERFCOUNTER1_HI},
     {mmSPI_PERFCOUNTER2_SELECT, 0, mmSPI_PERFCOUNTER2_LO, mmSPI_PERFCOUNTER2_HI},
@@ -234,7 +234,7 @@ static const GpuCounterRegInfo AiSpiCounterRegAddr[] = {
 /*
  * TCA
  */
-static const GpuCounterRegInfo AiTcaCounterRegAddr[] = {
+static const CounterRegInfo AiTcaCounterRegAddr[] = {
     {mmTCA_PERFCOUNTER0_SELECT, 0, mmTCA_PERFCOUNTER0_LO, mmTCA_PERFCOUNTER0_HI},
     {mmTCA_PERFCOUNTER1_SELECT, 0, mmTCA_PERFCOUNTER1_LO, mmTCA_PERFCOUNTER1_HI},
     {mmTCA_PERFCOUNTER2_SELECT, 0, mmTCA_PERFCOUNTER2_LO, mmTCA_PERFCOUNTER2_HI},
@@ -243,7 +243,7 @@ static const GpuCounterRegInfo AiTcaCounterRegAddr[] = {
 /*
  * TCC
  */
-static const GpuCounterRegInfo AiTccCounterRegAddr[] = {
+static const CounterRegInfo AiTccCounterRegAddr[] = {
     {mmTCC_PERFCOUNTER0_SELECT, 0, mmTCC_PERFCOUNTER0_LO, mmTCC_PERFCOUNTER0_HI},
     {mmTCC_PERFCOUNTER1_SELECT, 0, mmTCC_PERFCOUNTER1_LO, mmTCC_PERFCOUNTER1_HI},
     {mmTCC_PERFCOUNTER2_SELECT, 0, mmTCC_PERFCOUNTER2_LO, mmTCC_PERFCOUNTER2_HI},
@@ -252,7 +252,7 @@ static const GpuCounterRegInfo AiTccCounterRegAddr[] = {
 /*
  * TCP
  */
-static const GpuCounterRegInfo AiTcpCounterRegAddr[] = {
+static const CounterRegInfo AiTcpCounterRegAddr[] = {
     {mmTCP_PERFCOUNTER0_SELECT, 0, mmTCP_PERFCOUNTER0_LO, mmTCP_PERFCOUNTER0_HI},
     {mmTCP_PERFCOUNTER1_SELECT, 0, mmTCP_PERFCOUNTER1_LO, mmTCP_PERFCOUNTER1_HI},
     {mmTCP_PERFCOUNTER2_SELECT, 0, mmTCP_PERFCOUNTER2_LO, mmTCP_PERFCOUNTER2_HI},
@@ -261,7 +261,7 @@ static const GpuCounterRegInfo AiTcpCounterRegAddr[] = {
 /*
  * CB
  */
-static const GpuCounterRegInfo AiCbCounterRegAddr[] = {
+static const CounterRegInfo AiCbCounterRegAddr[] = {
     {mmCB_PERFCOUNTER0_SELECT, 0, mmCB_PERFCOUNTER0_LO, mmCB_PERFCOUNTER0_HI},
     {mmCB_PERFCOUNTER1_SELECT, 0, mmCB_PERFCOUNTER1_LO, mmCB_PERFCOUNTER1_HI},
     {mmCB_PERFCOUNTER2_SELECT, 0, mmCB_PERFCOUNTER2_LO, mmCB_PERFCOUNTER2_HI},
@@ -270,7 +270,7 @@ static const GpuCounterRegInfo AiCbCounterRegAddr[] = {
 /*
  * DB
  */
-static const GpuCounterRegInfo AiDbCounterRegAddr[] = {
+static const CounterRegInfo AiDbCounterRegAddr[] = {
     {mmDB_PERFCOUNTER0_SELECT, 0, mmDB_PERFCOUNTER0_LO, mmDB_PERFCOUNTER0_HI},
     {mmDB_PERFCOUNTER1_SELECT, 0, mmDB_PERFCOUNTER1_LO, mmDB_PERFCOUNTER1_HI},
     {mmDB_PERFCOUNTER2_SELECT, 0, mmDB_PERFCOUNTER2_LO, mmDB_PERFCOUNTER2_HI},
@@ -279,14 +279,14 @@ static const GpuCounterRegInfo AiDbCounterRegAddr[] = {
 /*
  * RLC
  */
-static const GpuCounterRegInfo AiRlcCounterRegAddr[] = {
+static const CounterRegInfo AiRlcCounterRegAddr[] = {
     {mmRLC_PERFCOUNTER0_SELECT, 0, mmRLC_PERFCOUNTER0_LO, mmRLC_PERFCOUNTER0_HI},
     {mmRLC_PERFCOUNTER1_SELECT, 0, mmRLC_PERFCOUNTER1_LO, mmRLC_PERFCOUNTER1_HI}};
 
 /*
  * SC
  */
-static const GpuCounterRegInfo AiScCounterRegAddr[] = {
+static const CounterRegInfo AiScCounterRegAddr[] = {
     {mmPA_SC_PERFCOUNTER0_SELECT, 0, mmPA_SC_PERFCOUNTER0_LO, mmPA_SC_PERFCOUNTER0_HI},
     {mmPA_SC_PERFCOUNTER1_SELECT, 0, mmPA_SC_PERFCOUNTER1_LO, mmPA_SC_PERFCOUNTER1_HI},
     {mmPA_SC_PERFCOUNTER2_SELECT, 0, mmPA_SC_PERFCOUNTER2_LO, mmPA_SC_PERFCOUNTER2_HI},
@@ -299,7 +299,7 @@ static const GpuCounterRegInfo AiScCounterRegAddr[] = {
 /*
  * SX
  */
-static const GpuCounterRegInfo AiSxCounterRegAddr[] = {
+static const CounterRegInfo AiSxCounterRegAddr[] = {
     {mmSX_PERFCOUNTER0_SELECT, 0, mmSX_PERFCOUNTER0_LO, mmSX_PERFCOUNTER0_HI},
     {mmSX_PERFCOUNTER1_SELECT, 0, mmSX_PERFCOUNTER1_LO, mmSX_PERFCOUNTER1_HI},
     {mmSX_PERFCOUNTER2_SELECT, 0, mmSX_PERFCOUNTER2_LO, mmSX_PERFCOUNTER2_HI},
@@ -308,21 +308,21 @@ static const GpuCounterRegInfo AiSxCounterRegAddr[] = {
 /*
  * TA
  */
-static const GpuCounterRegInfo AiTaCounterRegAddr[] = {
+static const CounterRegInfo AiTaCounterRegAddr[] = {
     {mmTA_PERFCOUNTER0_SELECT, 0, mmTA_PERFCOUNTER0_LO, mmTA_PERFCOUNTER0_HI},
     {mmTA_PERFCOUNTER1_SELECT, 0, mmTA_PERFCOUNTER1_LO, mmTA_PERFCOUNTER1_HI}};
 
 /*
  * TD
  */
-static const GpuCounterRegInfo AiTdCounterRegAddr[] = {
+static const CounterRegInfo AiTdCounterRegAddr[] = {
     {mmTD_PERFCOUNTER0_SELECT, 0, mmTD_PERFCOUNTER0_LO, mmTD_PERFCOUNTER0_HI},
     {mmTD_PERFCOUNTER1_SELECT, 0, mmTD_PERFCOUNTER1_LO, mmTD_PERFCOUNTER1_HI}};
 
 /*
  * GDS
  */
-static const GpuCounterRegInfo AiGdsCounterRegAddr[] = {
+static const CounterRegInfo AiGdsCounterRegAddr[] = {
     {mmGDS_PERFCOUNTER0_SELECT, 0, mmGDS_PERFCOUNTER0_LO, mmGDS_PERFCOUNTER0_HI},
     {mmGDS_PERFCOUNTER1_SELECT, 0, mmGDS_PERFCOUNTER1_LO, mmGDS_PERFCOUNTER1_HI},
     {mmGDS_PERFCOUNTER2_SELECT, 0, mmGDS_PERFCOUNTER2_LO, mmGDS_PERFCOUNTER2_HI},
@@ -331,7 +331,7 @@ static const GpuCounterRegInfo AiGdsCounterRegAddr[] = {
 /*
  * VGT
  */
-static const GpuCounterRegInfo AiVgtCounterRegAddr[] = {
+static const CounterRegInfo AiVgtCounterRegAddr[] = {
     {mmVGT_PERFCOUNTER0_SELECT, 0, mmVGT_PERFCOUNTER0_LO, mmVGT_PERFCOUNTER0_HI},
     {mmVGT_PERFCOUNTER1_SELECT, 0, mmVGT_PERFCOUNTER1_LO, mmVGT_PERFCOUNTER1_HI},
     {mmVGT_PERFCOUNTER2_SELECT, 0, mmVGT_PERFCOUNTER2_LO, mmVGT_PERFCOUNTER2_HI},
@@ -340,7 +340,7 @@ static const GpuCounterRegInfo AiVgtCounterRegAddr[] = {
 /*
  * IA
  */
-static const GpuCounterRegInfo AiIaCounterRegAddr[] = {
+static const CounterRegInfo AiIaCounterRegAddr[] = {
     {mmIA_PERFCOUNTER0_SELECT, 0, mmIA_PERFCOUNTER0_LO, mmIA_PERFCOUNTER0_HI},
     {mmIA_PERFCOUNTER1_SELECT, 0, mmIA_PERFCOUNTER1_LO, mmIA_PERFCOUNTER1_HI},
     {mmIA_PERFCOUNTER2_SELECT, 0, mmIA_PERFCOUNTER2_LO, mmIA_PERFCOUNTER2_HI},
@@ -349,7 +349,7 @@ static const GpuCounterRegInfo AiIaCounterRegAddr[] = {
 /*
  * MC
  */
-static const GpuCounterRegInfo AiMcCounterRegAddr[] = {
+static const CounterRegInfo AiMcCounterRegAddr[] = {
     /*
 
     {mmMC_SEQ_PERF_SEQ_CTL__SI__VI, 0, mmMC_SEQ_PERF_SEQ_CNT_A_I0__VI,
@@ -367,7 +367,7 @@ static const GpuCounterRegInfo AiMcCounterRegAddr[] = {
 /*
  * SRBM
  */
-static const GpuCounterRegInfo AiSrbmCounterRegAddr[] = {
+static const CounterRegInfo AiSrbmCounterRegAddr[] = {
     /*
     {mmSRBM_PERFCOUNTER0_SELECT, 0, mmSRBM_PERFCOUNTER0_LO,
      mmSRBM_PERFCOUNTER0_HI},
@@ -379,7 +379,7 @@ static const GpuCounterRegInfo AiSrbmCounterRegAddr[] = {
 /*
  * WD
  */
-static const GpuCounterRegInfo AiWdCounterRegAddr[] = {
+static const CounterRegInfo AiWdCounterRegAddr[] = {
     {mmWD_PERFCOUNTER0_SELECT, 0, mmWD_PERFCOUNTER0_LO, mmWD_PERFCOUNTER0_HI},
     {mmWD_PERFCOUNTER1_SELECT, 0, mmWD_PERFCOUNTER1_LO, mmWD_PERFCOUNTER1_HI},
     {mmWD_PERFCOUNTER2_SELECT, 0, mmWD_PERFCOUNTER2_LO, mmWD_PERFCOUNTER2_HI},
@@ -388,14 +388,14 @@ static const GpuCounterRegInfo AiWdCounterRegAddr[] = {
 /*
  * CPG
  */
-static const GpuCounterRegInfo AiCpgCounterRegAddr[] = {
+static const CounterRegInfo AiCpgCounterRegAddr[] = {
     {mmCPG_PERFCOUNTER0_SELECT, 0, mmCPG_PERFCOUNTER0_LO, mmCPG_PERFCOUNTER0_HI},
     {mmCPG_PERFCOUNTER1_SELECT, 0, mmCPG_PERFCOUNTER1_LO, mmCPG_PERFCOUNTER1_HI}};
 
 /*
  * CPC
  */
-static const GpuCounterRegInfo AiCpcCounterRegAddr[] = {
+static const CounterRegInfo AiCpcCounterRegAddr[] = {
     {mmCPC_PERFCOUNTER0_SELECT, 0, mmCPC_PERFCOUNTER0_LO, mmCPC_PERFCOUNTER0_HI},
     {mmCPC_PERFCOUNTER1_SELECT, 0, mmCPC_PERFCOUNTER1_LO, mmCPC_PERFCOUNTER1_HI}};
 

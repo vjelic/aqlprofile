@@ -28,9 +28,9 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
     // Iterate through the list of blocks to generate Pm4 commands to
     // program corresponding perf counters of each block
     std::map<block_des_t, uint32_t, lt_block_des> index_map;
-    for (counters_vector::const_iterator it = countersVec.begin(); it != countersVec.end(); ++it) {
-      const block_des_t& block_des = it->first;
-      const uint32_t& counter_id = it->second;
+    for (const auto & counter_des: countersVec) {
+      const block_des_t& block_des = counter_des.block_des;
+      const uint32_t& counter_id = counter_des.id;
 
       auto ret = index_map.insert({block_des, 0});
       uint32_t& index = ret.first->second;
@@ -87,9 +87,9 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
     // Iterate through the list of blocks to create PM4 packets to read counter values
     std::map<block_des_t, uint32_t, lt_block_des> index_map;
     uint32_t read_counter = 0;
-    for (counters_vector::const_iterator it = countersVec.begin(); it != countersVec.end(); ++it) {
-      const block_des_t& block_des = it->first;
-      const uint32_t& counter_id = it->second;
+    for (const auto & counter_des: countersVec) {
+      const block_des_t& block_des = counter_des.block_des;
+      const uint32_t& counter_id = counter_des.id;
 
       auto ret = index_map.insert({block_des, 0});
       uint32_t& index = ret.first->second;
@@ -152,7 +152,7 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
     tcp_perf_counter_select.bits.PERF_SEL = blkCntrIdx;
 
     regVal[regIdx] = tcp_perf_counter_select.u32All;
-    regAddr[regIdx] = AiTcpCounterRegAddr[tcpRegIdx].counterSelRegAddr;
+    regAddr[regIdx] = AiTcpCounterRegAddr[tcpRegIdx].select_addr;
     regIdx++;
 
     return regIdx;
@@ -176,7 +176,7 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
     td_perf_counter_select.u32All = 0;
     td_perf_counter_select.bits.PERF_SEL = blkCntrIdx;
     regVal[regIdx] = td_perf_counter_select.u32All;
-    regAddr[regIdx] = AiTdCounterRegAddr[tdRegIdx].counterSelRegAddr;
+    regAddr[regIdx] = AiTdCounterRegAddr[tdRegIdx].select_addr;
     regIdx++;
 
     return regIdx;
@@ -201,7 +201,7 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
     tcc_perf_counter_select.bits.PERF_SEL = blkCntrIdx;
 
     regVal[regIdx] = tcc_perf_counter_select.u32All;
-    regAddr[regIdx] = AiTccCounterRegAddr[tccRegIdx].counterSelRegAddr;
+    regAddr[regIdx] = AiTccCounterRegAddr[tccRegIdx].select_addr;
     regIdx++;
 
     return regIdx;
@@ -226,7 +226,7 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
     tca_perf_counter_select.bits.PERF_SEL = blkCntrIdx;
 
     regVal[regIdx] = tca_perf_counter_select.u32All;
-    regAddr[regIdx] = AiTcaCounterRegAddr[tcaRegIdx].counterSelRegAddr;
+    regAddr[regIdx] = AiTcaCounterRegAddr[tcaRegIdx].select_addr;
     regIdx++;
     return regIdx;
   }
@@ -250,7 +250,7 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
     ta_perf_counter_select.bits.PERF_SEL = blkCntrIdx;
 
     regVal[regIdx] = ta_perf_counter_select.u32All;
-    regAddr[regIdx] = AiTaCounterRegAddr[taRegIdx].counterSelRegAddr;
+    regAddr[regIdx] = AiTaCounterRegAddr[taRegIdx].select_addr;
     regIdx++;
 
     return regIdx;
@@ -268,7 +268,7 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
     sq_cntr_sel.bits.SQC_CLIENT_MASK = 0xF;
     sq_cntr_sel.bits.PERF_SEL = blkCntrIdx;
     regVal[regIdx] = sq_cntr_sel.u32All;
-    regAddr[regIdx] = AiSqCounterRegAddr[sqRegIdx].counterSelRegAddr;
+    regAddr[regIdx] = AiSqCounterRegAddr[sqRegIdx].select_addr;
     regIdx++;
 
     // Program the SQ Counter Mask Register
@@ -303,7 +303,7 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
     }
 
     regVal[regIdx] = sq_cntr_ctrl.u32All;
-    regAddr[regIdx] = AiSqCounterRegAddr[sqRegIdx].counterCntlRegAddr;
+    regAddr[regIdx] = AiSqCounterRegAddr[sqRegIdx].control_addr;
     regIdx++;
 
     return regIdx;
@@ -373,7 +373,7 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         cb_perf_counter_select.bits.PERF_SEL = blkCntrIdx;
 
         regVal[regIdx] = cb_perf_counter_select.u32All;
-        regAddr[regIdx] = AiCbCounterRegAddr[cntrIdx].counterSelRegAddr;
+        regAddr[regIdx] = AiCbCounterRegAddr[cntrIdx].select_addr;
         regIdx++;
 
         break;
@@ -386,7 +386,7 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         cpf_perf_counter_select.bits.PERF_SEL = blkCntrIdx;
 
         regVal[0] = cpf_perf_counter_select.u32All;
-        regAddr[0] = AiCpfCounterRegAddr[cntrIdx].counterSelRegAddr;
+        regAddr[0] = AiCpfCounterRegAddr[cntrIdx].select_addr;
         regIdx = 1;
         break;
       }
@@ -431,7 +431,7 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         db_perf_counter_select.u32All = 0;
         db_perf_counter_select.bits.PERF_SEL = blkCntrIdx;
         regVal[regIdx] = db_perf_counter_select.u32All;
-        regAddr[regIdx] = AiDbCounterRegAddr[cntrIdx].counterSelRegAddr;
+        regAddr[regIdx] = AiDbCounterRegAddr[cntrIdx].select_addr;
         regIdx++;
         break;
       }
@@ -440,7 +440,7 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         grbm_perf_counter_select.u32All = 0;
         grbm_perf_counter_select.bits.PERF_SEL = blkCntrIdx;
         regVal[0] = grbm_perf_counter_select.u32All;
-        regAddr[0] = AiGrbmCounterRegAddr[cntrIdx].counterSelRegAddr;
+        regAddr[0] = AiGrbmCounterRegAddr[cntrIdx].select_addr;
         regIdx = 1;
         break;
       }
@@ -449,7 +449,7 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         grbm_se0_perf_counter_select.u32All = 0;
         grbm_se0_perf_counter_select.bits.PERF_SEL = blkCntrIdx;
         regVal[0] = grbm_se0_perf_counter_select.u32All;
-        regAddr[0] = AiGrbmSeCounterRegAddr[cntrIdx].counterSelRegAddr;
+        regAddr[0] = AiGrbmSeCounterRegAddr[cntrIdx].select_addr;
         regIdx = 1;
         break;
       }
@@ -458,7 +458,7 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         pa_su_perf_counter_select.u32All = 0;
         pa_su_perf_counter_select.bits.PERF_SEL = blkCntrIdx;
         regVal[0] = pa_su_perf_counter_select.u32All;
-        regAddr[0] = AiPaSuCounterRegAddr[cntrIdx].counterSelRegAddr;
+        regAddr[0] = AiPaSuCounterRegAddr[cntrIdx].select_addr;
         regIdx = 1;
         break;
       }
@@ -467,7 +467,7 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         pa_sc_perf_counter_select.u32All = 0;
         pa_sc_perf_counter_select.bits.PERF_SEL = blkCntrIdx;
         regVal[0] = pa_sc_perf_counter_select.u32All;
-        regAddr[0] = AiPaScCounterRegAddr[cntrIdx].counterSelRegAddr;
+        regAddr[0] = AiPaScCounterRegAddr[cntrIdx].select_addr;
         regIdx = 1;
         break;
       }
@@ -476,7 +476,7 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         spi_perf_counter_select.u32All = 0;
         spi_perf_counter_select.bits.PERF_SEL = blkCntrIdx;
         regVal[0] = spi_perf_counter_select.u32All;
-        regAddr[0] = AiSpiCounterRegAddr[cntrIdx].counterSelRegAddr;
+        regAddr[0] = AiSpiCounterRegAddr[cntrIdx].select_addr;
         regIdx = 1;
         break;
       }
@@ -514,7 +514,7 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         sx_perf_counter_select.u32All = 0;
         sx_perf_counter_select.bits.PERFCOUNTER_SELECT = blkCntrIdx;
         regVal[regIdx] = sx_perf_counter_select.u32All;
-        regAddr[regIdx] = AiSxCounterRegAddr[cntrIdx].counterSelRegAddr;
+        regAddr[regIdx] = AiSxCounterRegAddr[cntrIdx].select_addr;
         regIdx++;
         break;
       }
@@ -533,7 +533,7 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         gds_perf_counter_select.u32All = 0;
         gds_perf_counter_select.bits.PERFCOUNTER_SELECT = blkCntrIdx;
         regVal[0] = gds_perf_counter_select.u32All;
-        regAddr[0] = AiGdsCounterRegAddr[cntrIdx].counterSelRegAddr;
+        regAddr[0] = AiGdsCounterRegAddr[cntrIdx].select_addr;
         regIdx = 1;
         break;
       }
@@ -542,7 +542,7 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         vgt_perf_counter_select.u32All = 0;
         vgt_perf_counter_select.bits.PERF_SEL = blkCntrIdx;
         regVal[0] = vgt_perf_counter_select.u32All;
-        regAddr[0] = AiVgtCounterRegAddr[cntrIdx].counterSelRegAddr;
+        regAddr[0] = AiVgtCounterRegAddr[cntrIdx].select_addr;
         regIdx = 1;
         break;
       }
@@ -551,7 +551,7 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         ia_perf_counter_select.u32All = 0;
         ia_perf_counter_select.bits.PERF_SEL = blkCntrIdx;
         regVal[0] = ia_perf_counter_select.u32All;
-        regAddr[0] = AiIaCounterRegAddr[cntrIdx].counterSelRegAddr;
+        regAddr[0] = AiIaCounterRegAddr[cntrIdx].select_addr;
         regIdx = 1;
         break;
       }
@@ -562,7 +562,7 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         //mc_perfcounter_select.u32All = 0;
         //mc_perfcounter_select.bits.PERF_SEL = blkCntrIdx;
         //regVal[0] = mc_perfcounter_select.u32All;
-        //regAddr[0] = AiMcCounterRegAddr[cntrIdx].counterSelRegAddr;
+        //regAddr[0] = AiMcCounterRegAddr[cntrIdx].select_addr;
         //regIdx = 1;
       }
       break;
@@ -574,7 +574,7 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         srbm_perf_counter_select.u32All = 0;
         srbm_perf_counter_select.bits.PERF_SEL = blkCntrIdx;
         regVal[0] = srbm_perf_counter_select.u32All;
-        regAddr[0] = AiSrbmCounterRegAddr[cntrIdx].counterSelRegAddr;
+        regAddr[0] = AiSrbmCounterRegAddr[cntrIdx].select_addr;
         regIdx = 1;
         break;
       }
@@ -585,7 +585,7 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         tcs_perf_counter_select.u32All = 0;
         tcs_perf_counter_select.bits.PERF_SEL = blkCntrIdx;
         regVal[0] = tcs_perf_counter_select.u32All;
-        regAddr[0] = AiTcsCounterRegAddr[cntrIdx].counterSelRegAddr;
+        regAddr[0] = AiTcsCounterRegAddr[cntrIdx].select_addr;
         regIdx = 1;
         break;
       }
@@ -595,7 +595,7 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         wd_perf_counter_select.u32All = 0;
         wd_perf_counter_select.bits.PERF_SEL = blkCntrIdx;
         regVal[0] = wd_perf_counter_select.u32All;
-        regAddr[0] = AiWdCounterRegAddr[cntrIdx].counterSelRegAddr;
+        regAddr[0] = AiWdCounterRegAddr[cntrIdx].select_addr;
         regIdx = 1;
         break;
       }
@@ -606,7 +606,7 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         cpg_perf_counter_select.u32All = 0;
         cpg_perf_counter_select.bits.PERF_SEL = blkCntrIdx;
         regVal[0] = cpg_perf_counter_select.u32All;
-        regAddr[0] = AiCpgCounterRegAddr[cntrIdx].counterSelRegAddr;
+        regAddr[0] = AiCpgCounterRegAddr[cntrIdx].select_addr;
         regIdx = 1;
         break;
       }
@@ -616,7 +616,7 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         cpc_perf_counter_select.u32All = 0;
         cpc_perf_counter_select.bits.CNTR_SEL0 = blkCntrIdx;
         regVal[0] = cpc_perf_counter_select.u32All;
-        regAddr[0] = AiCpcCounterRegAddr[cntrIdx].counterSelRegAddr;
+        regAddr[0] = AiCpcCounterRegAddr[cntrIdx].select_addr;
         regIdx = 1;
         break;
       }
@@ -673,11 +673,11 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
           reg_val[reg_num] = grbm_gfx_index.u32All;
           reg_num++;
 
-          reg_addr[reg_num] = AiSqCounterRegAddr[reg_index].counterReadRegAddrLo;
+          reg_addr[reg_num] = AiSqCounterRegAddr[reg_index].register_addr_lo;
           reg_val[reg_num] = COPY_DATA_FLAG;
           reg_num++;
 
-          reg_addr[reg_num] = AiSqCounterRegAddr[reg_index].counterReadRegAddrHi;
+          reg_addr[reg_num] = AiSqCounterRegAddr[reg_index].register_addr_hi;
           reg_val[reg_num] = COPY_DATA_FLAG;
           reg_num++;
         }
@@ -694,11 +694,11 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
           reg_val[reg_num] = grbm_gfx_index.u32All;
           reg_num++;
 
-          reg_addr[reg_num] = AiCbCounterRegAddr[reg_index].counterReadRegAddrLo;
+          reg_addr[reg_num] = AiCbCounterRegAddr[reg_index].register_addr_lo;
           reg_val[reg_num] = COPY_DATA_FLAG;
           reg_num++;
 
-          reg_addr[reg_num] = AiCbCounterRegAddr[reg_index].counterReadRegAddrHi;
+          reg_addr[reg_num] = AiCbCounterRegAddr[reg_index].register_addr_hi;
           reg_val[reg_num] = COPY_DATA_FLAG;
           reg_num++;
         }
@@ -711,11 +711,11 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         reg_val[reg_num] = grbm_reset_value();
         reg_num++;
 
-        reg_addr[reg_num] = AiCpfCounterRegAddr[reg_index].counterReadRegAddrLo;
+        reg_addr[reg_num] = AiCpfCounterRegAddr[reg_index].register_addr_lo;
         reg_val[reg_num] = COPY_DATA_FLAG;
         reg_num++;
 
-        reg_addr[reg_num] = AiCpfCounterRegAddr[reg_index].counterReadRegAddrHi;
+        reg_addr[reg_num] = AiCpfCounterRegAddr[reg_index].register_addr_hi;
         reg_val[reg_num] = COPY_DATA_FLAG;
         reg_num++;
         break;
@@ -732,11 +732,11 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
           reg_val[reg_num] = grbm_gfx_index.u32All;
           reg_num++;
 
-          reg_addr[reg_num] = AiDbCounterRegAddr[reg_index].counterReadRegAddrLo;
+          reg_addr[reg_num] = AiDbCounterRegAddr[reg_index].register_addr_lo;
           reg_val[reg_num] = COPY_DATA_FLAG;
           reg_num++;
 
-          reg_addr[reg_num] = AiDbCounterRegAddr[reg_index].counterReadRegAddrHi;
+          reg_addr[reg_num] = AiDbCounterRegAddr[reg_index].register_addr_hi;
           reg_val[reg_num] = COPY_DATA_FLAG;
           reg_num++;
         }
@@ -747,11 +747,11 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         reg_val[reg_num] = grbm_reset_value();
         reg_num++;
 
-        reg_addr[reg_num] = AiGrbmCounterRegAddr[reg_index].counterReadRegAddrLo;
+        reg_addr[reg_num] = AiGrbmCounterRegAddr[reg_index].register_addr_lo;
         reg_val[reg_num] = COPY_DATA_FLAG;
         reg_num++;
 
-        reg_addr[reg_num] = AiGrbmCounterRegAddr[reg_index].counterReadRegAddrHi;
+        reg_addr[reg_num] = AiGrbmCounterRegAddr[reg_index].register_addr_hi;
         reg_val[reg_num] = COPY_DATA_FLAG;
         reg_num++;
         break;
@@ -761,11 +761,11 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         reg_val[reg_num] = grbm_reset_value();
         reg_num++;
 
-        reg_addr[reg_num] = AiGrbmSeCounterRegAddr[reg_index].counterReadRegAddrLo;
+        reg_addr[reg_num] = AiGrbmSeCounterRegAddr[reg_index].register_addr_lo;
         reg_val[reg_num] = COPY_DATA_FLAG;
         reg_num++;
 
-        reg_addr[reg_num] = AiGrbmSeCounterRegAddr[reg_index].counterReadRegAddrHi;
+        reg_addr[reg_num] = AiGrbmSeCounterRegAddr[reg_index].register_addr_hi;
         reg_val[reg_num] = COPY_DATA_FLAG;
         reg_num++;
         break;
@@ -781,11 +781,11 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
           reg_val[reg_num] = grbm_gfx_index.u32All;
           reg_num++;
 
-          reg_addr[reg_num] = AiPaSuCounterRegAddr[reg_index].counterReadRegAddrLo;
+          reg_addr[reg_num] = AiPaSuCounterRegAddr[reg_index].register_addr_lo;
           reg_val[reg_num] = COPY_DATA_FLAG;
           reg_num++;
 
-          reg_addr[reg_num] = AiPaSuCounterRegAddr[reg_index].counterReadRegAddrHi;
+          reg_addr[reg_num] = AiPaSuCounterRegAddr[reg_index].register_addr_hi;
           reg_val[reg_num] = COPY_DATA_FLAG;
           reg_num++;
         }
@@ -802,11 +802,11 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
           reg_val[reg_num] = grbm_gfx_index.u32All;
           reg_num++;
 
-          reg_addr[reg_num] = AiPaScCounterRegAddr[reg_index].counterReadRegAddrLo;
+          reg_addr[reg_num] = AiPaScCounterRegAddr[reg_index].register_addr_lo;
           reg_val[reg_num] = COPY_DATA_FLAG;
           reg_num++;
 
-          reg_addr[reg_num] = AiPaScCounterRegAddr[reg_index].counterReadRegAddrHi;
+          reg_addr[reg_num] = AiPaScCounterRegAddr[reg_index].register_addr_hi;
           reg_val[reg_num] = COPY_DATA_FLAG;
           reg_num++;
         }
@@ -823,11 +823,11 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
           reg_val[reg_num] = grbm_gfx_index.u32All;
           reg_num++;
 
-          reg_addr[reg_num] = AiSpiCounterRegAddr[reg_index].counterReadRegAddrLo;
+          reg_addr[reg_num] = AiSpiCounterRegAddr[reg_index].register_addr_lo;
           reg_val[reg_num] = COPY_DATA_FLAG;
           reg_num++;
 
-          reg_addr[reg_num] = AiSpiCounterRegAddr[reg_index].counterReadRegAddrHi;
+          reg_addr[reg_num] = AiSpiCounterRegAddr[reg_index].register_addr_hi;
           reg_val[reg_num] = COPY_DATA_FLAG;
           reg_num++;
         }
@@ -844,11 +844,11 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
           reg_val[reg_num] = grbm_gfx_index.u32All;
           reg_num++;
 
-          reg_addr[reg_num] = AiSxCounterRegAddr[reg_index].counterReadRegAddrLo;
+          reg_addr[reg_num] = AiSxCounterRegAddr[reg_index].register_addr_lo;
           reg_val[reg_num] = COPY_DATA_FLAG;
           reg_num++;
 
-          reg_addr[reg_num] = AiSxCounterRegAddr[reg_index].counterReadRegAddrHi;
+          reg_addr[reg_num] = AiSxCounterRegAddr[reg_index].register_addr_hi;
           reg_val[reg_num] = COPY_DATA_FLAG;
           reg_num++;
         }
@@ -865,11 +865,11 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
           reg_val[reg_num] = grbm_gfx_index.u32All;
           reg_num++;
 
-          reg_addr[reg_num] = AiTaCounterRegAddr[reg_index].counterReadRegAddrLo;
+          reg_addr[reg_num] = AiTaCounterRegAddr[reg_index].register_addr_lo;
           reg_val[reg_num] = COPY_DATA_FLAG;
           reg_num++;
 
-          reg_addr[reg_num] = AiTaCounterRegAddr[reg_index].counterReadRegAddrHi;
+          reg_addr[reg_num] = AiTaCounterRegAddr[reg_index].register_addr_hi;
           reg_val[reg_num] = COPY_DATA_FLAG;
           reg_num++;
         }
@@ -885,11 +885,11 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         reg_val[reg_num] = grbm_gfx_index.u32All;
         reg_num++;
 
-        reg_addr[reg_num] = AiTcaCounterRegAddr[reg_index].counterReadRegAddrLo;
+        reg_addr[reg_num] = AiTcaCounterRegAddr[reg_index].register_addr_lo;
         reg_val[reg_num] = COPY_DATA_FLAG;
         reg_num++;
 
-        reg_addr[reg_num] = AiTcaCounterRegAddr[reg_index].counterReadRegAddrHi;
+        reg_addr[reg_num] = AiTcaCounterRegAddr[reg_index].register_addr_hi;
         reg_val[reg_num] = COPY_DATA_FLAG;
         reg_num++;
         break;
@@ -904,11 +904,11 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         reg_val[reg_num] = grbm_gfx_index.u32All;
         reg_num++;
 
-        reg_addr[reg_num] = AiTccCounterRegAddr[reg_index].counterReadRegAddrLo;
+        reg_addr[reg_num] = AiTccCounterRegAddr[reg_index].register_addr_lo;
         reg_val[reg_num] = COPY_DATA_FLAG;
         reg_num++;
 
-        reg_addr[reg_num] = AiTccCounterRegAddr[reg_index].counterReadRegAddrHi;
+        reg_addr[reg_num] = AiTccCounterRegAddr[reg_index].register_addr_hi;
         reg_val[reg_num] = COPY_DATA_FLAG;
         reg_num++;
         break;
@@ -924,11 +924,11 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
           reg_val[reg_num] = grbm_gfx_index.u32All;
           reg_num++;
 
-          reg_addr[reg_num] = AiTdCounterRegAddr[reg_index].counterReadRegAddrLo;
+          reg_addr[reg_num] = AiTdCounterRegAddr[reg_index].register_addr_lo;
           reg_val[reg_num] = COPY_DATA_FLAG;
           reg_num++;
 
-          reg_addr[reg_num] = AiTdCounterRegAddr[reg_index].counterReadRegAddrHi;
+          reg_addr[reg_num] = AiTdCounterRegAddr[reg_index].register_addr_hi;
           reg_val[reg_num] = COPY_DATA_FLAG;
           reg_num++;
         }
@@ -945,11 +945,11 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
           reg_val[reg_num] = grbm_gfx_index.u32All;
           reg_num++;
 
-          reg_addr[reg_num] = AiTcpCounterRegAddr[reg_index].counterReadRegAddrLo;
+          reg_addr[reg_num] = AiTcpCounterRegAddr[reg_index].register_addr_lo;
           reg_val[reg_num] = COPY_DATA_FLAG;
           reg_num++;
 
-          reg_addr[reg_num] = AiTcpCounterRegAddr[reg_index].counterReadRegAddrHi;
+          reg_addr[reg_num] = AiTcpCounterRegAddr[reg_index].register_addr_hi;
           reg_val[reg_num] = COPY_DATA_FLAG;
           reg_num++;
         }
@@ -960,11 +960,11 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         reg_val[reg_num] = grbm_reset_value();
         reg_num++;
 
-        reg_addr[reg_num] = AiGdsCounterRegAddr[reg_index].counterReadRegAddrLo;
+        reg_addr[reg_num] = AiGdsCounterRegAddr[reg_index].register_addr_lo;
         reg_val[reg_num] = COPY_DATA_FLAG;
         reg_num++;
 
-        reg_addr[reg_num] = AiGdsCounterRegAddr[reg_index].counterReadRegAddrHi;
+        reg_addr[reg_num] = AiGdsCounterRegAddr[reg_index].register_addr_hi;
         reg_val[reg_num] = COPY_DATA_FLAG;
         reg_num++;
         break;
@@ -980,11 +980,11 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
           reg_val[reg_num] = grbm_gfx_index.u32All;
           reg_num++;
 
-          reg_addr[reg_num] = AiVgtCounterRegAddr[reg_index].counterReadRegAddrLo;
+          reg_addr[reg_num] = AiVgtCounterRegAddr[reg_index].register_addr_lo;
           reg_val[reg_num] = COPY_DATA_FLAG;
           reg_num++;
 
-          reg_addr[reg_num] = AiVgtCounterRegAddr[reg_index].counterReadRegAddrHi;
+          reg_addr[reg_num] = AiVgtCounterRegAddr[reg_index].register_addr_hi;
           reg_val[reg_num] = COPY_DATA_FLAG;
           reg_num++;
         }
@@ -1001,11 +1001,11 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
           reg_val[reg_num] = grbm_gfx_index.u32All;
           reg_num++;
 
-          reg_addr[reg_num] = AiIaCounterRegAddr[reg_index].counterReadRegAddrLo;
+          reg_addr[reg_num] = AiIaCounterRegAddr[reg_index].register_addr_lo;
           reg_val[reg_num] = COPY_DATA_FLAG;
           reg_num++;
 
-          reg_addr[reg_num] = AiIaCounterRegAddr[reg_index].counterReadRegAddrHi;
+          reg_addr[reg_num] = AiIaCounterRegAddr[reg_index].register_addr_hi;
           reg_val[reg_num] = COPY_DATA_FLAG;
           reg_num++;
         }
@@ -1017,11 +1017,11 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         reg_val[reg_num] = grbm_reset_value();
         reg_num++;
 
-        reg_addr[reg_num] = AiMcCounterRegAddr[reg_index].counterReadRegAddrLo;
+        reg_addr[reg_num] = AiMcCounterRegAddr[reg_index].register_addr_lo;
         reg_val[reg_num] = COPY_DATA_FLAG;
         reg_num++;
 
-        reg_addr[reg_num] = AiMcCounterRegAddr[reg_index].counterReadRegAddrHi;
+        reg_addr[reg_num] = AiMcCounterRegAddr[reg_index].register_addr_hi;
         reg_val[reg_num] = COPY_DATA_FLAG;
         reg_num++;
         break;
@@ -1034,11 +1034,11 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         reg_val[reg_num] = grbm_reset_value();
         reg_num++;
 
-        reg_addr[reg_num] = AiSrbmCounterRegAddr[reg_index].counterReadRegAddrLo;
+        reg_addr[reg_num] = AiSrbmCounterRegAddr[reg_index].register_addr_lo;
         reg_val[reg_num] = COPY_DATA_FLAG;
         reg_num++;
 
-        reg_addr[reg_num] = AiSrbmCounterRegAddr[reg_index].counterReadRegAddrHi;
+        reg_addr[reg_num] = AiSrbmCounterRegAddr[reg_index].register_addr_hi;
         reg_val[reg_num] = COPY_DATA_FLAG;
         reg_num++;
         break;
@@ -1050,11 +1050,11 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         reg_val[reg_num] = grbm_reset_value();
         reg_num++;
 
-        reg_addr[reg_num] = AiTcsCounterRegAddr[reg_index].counterReadRegAddrLo;
+        reg_addr[reg_num] = AiTcsCounterRegAddr[reg_index].register_addr_lo;
         reg_val[reg_num] = COPY_DATA_FLAG;
         reg_num++;
 
-        reg_addr[reg_num] = AiTcsCounterRegAddr[reg_index].counterReadRegAddrHi;
+        reg_addr[reg_num] = AiTcsCounterRegAddr[reg_index].register_addr_hi;
         reg_val[reg_num] = COPY_DATA_FLAG;
         reg_num++;
         break;
@@ -1065,11 +1065,11 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         reg_val[reg_num] = grbm_reset_value();
         reg_num++;
 
-        reg_addr[reg_num] = AiWdCounterRegAddr[reg_index].counterReadRegAddrLo;
+        reg_addr[reg_num] = AiWdCounterRegAddr[reg_index].register_addr_lo;
         reg_val[reg_num] = COPY_DATA_FLAG;
         reg_num++;
 
-        reg_addr[reg_num] = AiWdCounterRegAddr[reg_index].counterReadRegAddrHi;
+        reg_addr[reg_num] = AiWdCounterRegAddr[reg_index].register_addr_hi;
         reg_val[reg_num] = COPY_DATA_FLAG;
         reg_num++;
         break;
@@ -1082,11 +1082,11 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         reg_val[reg_num] = grbm_reset_value();
         reg_num++;
 
-        reg_addr[reg_num] = AiCpgCounterRegAddr[reg_index].counterReadRegAddrLo;
+        reg_addr[reg_num] = AiCpgCounterRegAddr[reg_index].register_addr_lo;
         reg_val[reg_num] = COPY_DATA_FLAG;
         reg_num++;
 
-        reg_addr[reg_num] = AiCpgCounterRegAddr[reg_index].counterReadRegAddrHi;
+        reg_addr[reg_num] = AiCpgCounterRegAddr[reg_index].register_addr_hi;
         reg_val[reg_num] = COPY_DATA_FLAG;
         reg_num++;
         break;
@@ -1097,11 +1097,11 @@ class Gfx9PmcBuilder : public pm4_builder::PmcBuilder, protected Gfx9CmdBuilder 
         reg_val[reg_num] = grbm_reset_value();
         reg_num++;
 
-        reg_addr[reg_num] = AiCpcCounterRegAddr[reg_index].counterReadRegAddrLo;
+        reg_addr[reg_num] = AiCpcCounterRegAddr[reg_index].register_addr_lo;
         reg_val[reg_num] = COPY_DATA_FLAG;
         reg_num++;
 
-        reg_addr[reg_num] = AiCpcCounterRegAddr[reg_index].counterReadRegAddrHi;
+        reg_addr[reg_num] = AiCpcCounterRegAddr[reg_index].register_addr_hi;
         reg_val[reg_num] = COPY_DATA_FLAG;
         reg_num++;
         break;
