@@ -12,6 +12,8 @@
 #include "gfxip/gfx9/gfx9_utils.h"
 #include "gfxip/gpu_block_info.h"
 #include "gfxip/gfx9/gfx9_block_info.h"
+#include "gfxip/gfx9/gfx9_primitives.h"
+#include "gfxip/gfx9/gfx9_block_table.h"
 
 using namespace gfxip;
 using namespace gfxip::gfx9;

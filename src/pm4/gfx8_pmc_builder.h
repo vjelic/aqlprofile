@@ -16,6 +16,9 @@ class Gfx8PmcBuilder : public PmcBuilder, protected Gfx8CmdBuilder, protected gf
   void begin(CmdBuffer* cmdBuff, const counters_vector& countersVec) {
     // Reset Grbm to its default state - broadcast
     BuildWriteUConfigRegPacket(cmdBuff, GRBM_GFX_INDEX_ADDR, grbm_broadcast_value());
+    // Disable RLC Perfmon Clock Gating
+    // On Vega this is needed to collect Perf Cntrs
+    if (GFXIP_LEVEL == 9) BuildWriteUConfigRegPacket(cmdBuff, RLC_PERFMON_CLK_CNTL_ADDR, 1);
     // Reset the counter list
     BuildWriteUConfigRegPacket(cmdBuff, CP_PERFMON_CNTL_ADDR, cp_perfmon_cntl_reset_value());
     // Programming perf counters
@@ -107,6 +110,9 @@ class Gfx8PmcBuilder : public PmcBuilder, protected Gfx8CmdBuilder, protected gf
     }
     // Reset Grbm to its default state - broadcast
     BuildWriteUConfigRegPacket(cmdBuff, GRBM_GFX_INDEX_ADDR, grbm_broadcast_value());
+    // Enable RLC Perfmon Clock Gating. On Vega this is
+    // was disabled during Perf Cntrs collection session
+    if (GFXIP_LEVEL == 9) BuildWriteUConfigRegPacket(cmdBuff, RLC_PERFMON_CLK_CNTL_ADDR, 0);
     // Return amount of data to read
     return read_counter * sizeof(uint32_t);
   }

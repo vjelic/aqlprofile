@@ -26,11 +26,6 @@ class PmcBuilder {
   virtual uint32_t end(CmdBuffer* cmdBuff, const counters_vector& countersVec, void* dataBuff) = 0;
   // Shader Engines number on the GPU
   constexpr static uint32_t se_number_ = 4;
-
-  // A flag to indicate the current packet is for copy register value
-  constexpr static uint32_t COPY_DATA_FLAG = 0xFFFFFFFF;
-  // Maximum number of programmed registers
-  constexpr static uint32_t MAX_REG_NUM = 128;
 };
 }  // namespace pm4_builder
 #endif  // _HSA_PERF_H_
