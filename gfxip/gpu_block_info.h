@@ -4,32 +4,30 @@
 #include <stdint.h>
 
 namespace gfxip {
-typedef enum CntlMethod {
+
+enum CntlMethod {
   CntlMethodNone = 0,
   CntlMethodByInstance = 1,
   CntlMethodBySe = 2,
   CntlMethodBySeAndInstance = 3
-} CntlMethod;
+};
 
 // Register address corresponding to each counter
-typedef struct CounterRegInfo_ {
+struct CounterRegInfo {
   // counter select register address
   uint32_t select_addr;
-
   // counter control register address
   uint32_t control_addr;
-
   // counter register address low
   uint32_t register_addr_lo;
-
   // counter register address high
   uint32_t register_addr_hi;
-} CounterRegInfo;
+};
 
 struct counter_des_t;
 
 // Structure which contains information about a specific hardware block for CI.
-typedef struct GpuBlockInfo_ {
+struct GpuBlockInfo {
   // Unique string identifier of the block.
   const char * name;
   // Block ID
@@ -38,38 +36,28 @@ typedef struct GpuBlockInfo_ {
   uint32_t instance_count;
   // Counter control method
   CntlMethod method;
-
   // Maximum counter event ID
   uint32_t event_id_max;
-
   // Maximum number of counters that can be enabled at once
   uint32_t counter_count;
-
   // Maximum number of streaming counters that can be enabled at once
   uint32_t streaming_count;
-
   // The number of hardware counters that are shared
   // between regular and streaming counters.
   // This is important so that resources are not double-booked
   // between the two types of counters.
   uint32_t shared_count;
-
   // Block counters can be configured with additional filters
   bool has_filters;
-
   // Counter registers addresses
   const CounterRegInfo *counter_reg_info;
-
   // Need to clean counter registers
   bool to_clean_regs;
-
   // Counter select value function
   uint32_t (*select_value)(const counter_des_t &);
-
   // SQ block
   bool sq_block;
-
-} GpuBlockInfo;
+};
 
 struct block_des_t {
   uint32_t id;

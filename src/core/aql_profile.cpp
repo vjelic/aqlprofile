@@ -278,10 +278,10 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(
       pm4_builder::SqttBuilder* sqtt_builder = pm4_factory->getSqttBuilder();
 
       // Generate start commands
-      sqtt_builder->BeginSession(&commands, &sqtt_config);
+      sqtt_builder->begin(&commands, &sqtt_config);
       cmdBufMgr.setPreSize(commands.size());
       // Generate stop commands
-      sqtt_builder->StopSession(&commands, &sqtt_config);
+      sqtt_builder->end(&commands, &sqtt_config);
     } else {
       ERR_LOGGING << "Bad profile type (" << profile->type << ")";
       return HSA_STATUS_ERROR_INVALID_ARGUMENT;

@@ -10,12 +10,33 @@ class gfx9_cntx_prim {
   public:
   const static uint32_t GFXIP_LEVEL = 9;
   const static uint32_t GRBM_GFX_INDEX_ADDR = mmGRBM_GFX_INDEX;
+
   const static uint32_t RLC_PERFMON_CLK_CNTL_ADDR = mmRLC_PERFMON_CLK_CNTL;
   const static uint32_t CP_PERFMON_CNTL_ADDR = mmCP_PERFMON_CNTL;
-  const static uint32_t SQ_PERFCOUNTER_MASK_ADDR = mmSQ_PERFCOUNTER_MASK;
   const static uint32_t COMPUTE_PERFCOUNT_ENABLE_ADDR = mmCOMPUTE_PERFCOUNT_ENABLE;
+
+  const static uint32_t SQ_PERFCOUNTER_MASK_ADDR = mmSQ_PERFCOUNTER_MASK;
+  const static uint32_t SQ_THREAD_TRACE_MASK_ADDR = mmSQ_THREAD_TRACE_MASK;
+  const static uint32_t SQ_THREAD_TRACE_PERF_MASK_ADDR = mmSQ_THREAD_TRACE_PERF_MASK;
+  const static uint32_t SQ_THREAD_TRACE_TOKEN_MASK_ADDR = mmSQ_THREAD_TRACE_TOKEN_MASK;
+  const static uint32_t SQ_THREAD_TRACE_TOKEN_MASK2_ADDR = mmSQ_THREAD_TRACE_TOKEN_MASK2;
+  const static uint32_t SQ_THREAD_TRACE_MODE_ADDR = mmSQ_THREAD_TRACE_MODE;
+  const static uint32_t SQ_THREAD_TRACE_BASE_ADDR = mmSQ_THREAD_TRACE_BASE;
+  const static uint32_t SQ_THREAD_TRACE_SIZE_ADDR = mmSQ_THREAD_TRACE_SIZE;
+  const static uint32_t SQ_THREAD_TRACE_CTRL_ADDR = mmSQ_THREAD_TRACE_CTRL;
+  const static uint32_t SQ_THREAD_TRACE_HIWATER_ADDR = mmSQ_THREAD_TRACE_HIWATER;
+  const static uint32_t SQ_THREAD_TRACE_HIWATER_VAL = 0x6;
+  const static uint32_t SQ_THREAD_TRACE_STATUS_ADDR = mmSQ_THREAD_TRACE_STATUS;
+  const static uint32_t SQ_THREAD_TRACE_CNTR_ADDR = mmSQ_THREAD_TRACE_CNTR;
+  const static uint32_t SQ_THREAD_TRACE_WPTR_ADDR = mmSQ_THREAD_TRACE_WPTR;
+  const static uint32_t SQ_THREAD_TRACE_STATUS_OFFSET = mmSQ_THREAD_TRACE_STATUS - UCONFIG_SPACE_START;
+  const static uint32_t TT_BUFF_ALIGN_SHIFT = 12;
+
   const static uint32_t COPY_DATA_SEL_REG_PRM = COPY_DATA_SEL_REG;
+  const static uint32_t COPY_DATA_SEL_SRC_SYS_PERF_COUNTER_PRM = COPY_DATA_SEL_SRC_SYS_PERF_COUNTER;
   const static uint32_t COPY_DATA_SEL_COUNT_1DW_PRM = COPY_DATA_SEL_COUNT_1DW;
+
+  static uint32_t Low32(const uint64_t & v) { return (v & 0xFFFFFFFFul); }
 
   // GRBM broadcasting mode
   static uint32_t grbm_broadcast_value() {
@@ -27,7 +48,7 @@ class gfx9_cntx_prim {
   }
   
   // GRBM SE indexing
-  static uint32_t grbm_iindex_value(const uint32_t & instance_index) {
+  static uint32_t grbm_inst_index_value(const uint32_t & instance_index) {
     regGRBM_GFX_INDEX grbm_gfx_index = {0};
     grbm_gfx_index.bitfields.INSTANCE_INDEX = instance_index;
     grbm_gfx_index.bitfields.SE_BROADCAST_WRITES = 1;
@@ -36,7 +57,7 @@ class gfx9_cntx_prim {
   }
   
   // GRBM SE indexing
-  static uint32_t grbm_seindex_value(const uint32_t & se_index) {
+  static uint32_t grbm_se_index_value(const uint32_t & se_index) {
     regGRBM_GFX_INDEX grbm_gfx_index = {0};
     grbm_gfx_index.bitfields.INSTANCE_BROADCAST_WRITES = 1;
     grbm_gfx_index.bitfields.SE_INDEX = se_index;
@@ -45,11 +66,20 @@ class gfx9_cntx_prim {
   }
   
   // GRBM SE/BlockInstance indexing
-  static uint32_t grbm_bindex_value(const uint32_t & instance_index, const uint32_t & se_index) {
+  static uint32_t grbm_inst_se_index_value(const uint32_t & instance_index, const uint32_t & se_index) {
     regGRBM_GFX_INDEX grbm_gfx_index = {0};
     grbm_gfx_index.bitfields.INSTANCE_INDEX = instance_index;
     grbm_gfx_index.bitfields.SE_INDEX = se_index;
     grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
+    return grbm_gfx_index.u32All;
+  }
+  
+  // GRBM SE/SH indexing
+  static uint32_t grbm_se_sh_index_value(const uint32_t & se_index, const uint32_t & sh_index) {
+    regGRBM_GFX_INDEX grbm_gfx_index = {0};
+    grbm_gfx_index.bitfields.INSTANCE_BROADCAST_WRITES = 1;
+    grbm_gfx_index.bitfields.SE_INDEX = se_index;
+    grbm_gfx_index.bitfields.SH_INDEX = sh_index;
     return grbm_gfx_index.u32All;
   }
   
@@ -141,6 +171,121 @@ class gfx9_cntx_prim {
     Select select = {0};
     select.bits.CNTR_SEL0 = counter_des.id;
     return select.u32All;
+  }
+
+  // Enable Thread Trace for all VM Id's
+  // Enable all of the SIMD's of the compute unit
+  // Enable Compute Unit (CU) at index Zero to be used for fine-grained data
+  // Enable Shader Array (SH) at index Zero to be used for fine-grained data
+  //
+  // @note: Not enabling REG_STALL_EN, SPI_STALL_EN and SQ_STALL_EN bits. They
+  // are useful if we wish to program buffer throttling.
+  //
+  static uint32_t sqtt_mask_value(const uint32_t & targetCu, const uint32_t & vmIdMask) {
+    regSQ_THREAD_TRACE_MASK mask = {0};
+    mask.bits.SH_SEL = 0x0;
+    mask.bits.SIMD_EN = 0xF;
+    mask.bits.CU_SEL = targetCu;
+    mask.bits.SQ_STALL_EN = 0x1;
+    mask.bits.SPI_STALL_EN = 0x1;
+    mask.bits.REG_STALL_EN = 0x1;
+    mask.bits.VM_ID_MASK = vmIdMask;
+    return mask.u32All;
+  }
+
+  // Mask of compute units to get thread trace data from
+  static uint32_t sqtt_perf_mask_value() {
+    regSQ_THREAD_TRACE_PERF_MASK perf_mask = {0};
+    perf_mask.bits.SH0_MASK = 0xFFFF;
+    perf_mask.bits.SH1_MASK = 0xFFFF;
+    return perf_mask.u32All;
+  }
+
+  // Indicate the different TT messages/tokens that should be enabled/logged
+  // Indicate the different TT tokens that specify register operations to be logged
+  static uint32_t sqtt_token_mask_value() {
+    regSQ_THREAD_TRACE_TOKEN_MASK token_mask = {0};
+    token_mask.bits.REG_MASK = 0xFF;
+    token_mask.bits.TOKEN_MASK = 0xFFFF;
+    token_mask.bits.REG_DROP_ON_STALL = 0x1;
+    return token_mask.u32All;
+  }
+
+  // Indicate the different TT tokens that specify instruction operations to be logged
+  // Disabling specifically instruction operations updating Program Counter (PC).
+  // @note: The field is defined in the spec incorrectly as a 16-bit value
+  static uint32_t sqtt_token_mask2_value() {
+    regSQ_THREAD_TRACE_TOKEN_MASK2 token_mask2 = {0};
+    token_mask2.bits.INST_MASK = 0xFFFFFF7F;
+    return token_mask2.u32All;
+  }
+
+  // Check if stalling is supported
+  static bool sqtt_stalling_enabled(const uint32_t & mask_val, const uint32_t & token_mask_val) {
+    regSQ_THREAD_TRACE_MASK mask = {0};
+    mask.u32All = mask_val;
+    regSQ_THREAD_TRACE_TOKEN_MASK token_mask = {0};
+    token_mask.u32All = token_mask_val;
+    return ((mask.bits.SQ_STALL_EN) ||
+            (mask.bits.SPI_STALL_EN) ||
+            (mask.bits.REG_STALL_EN) ||
+            (token_mask.bits.REG_DROP_ON_STALL));
+  }
+
+  // Indicates various attributes of a thread trace session.
+  //
+  // MASK_CS: Which shader types should be enabled for data collection
+  //      Enable CS Shader types.
+  //
+  // WRAP: How trace buffer should be used as a ring buffer or as a linear
+  //      buffer - Disable WRAP mode i.e use it as a linear buffer
+  //
+  // MODE: Enables a thread trace session
+  //
+  // CAPTURE_MODE: When thread trace data is collected immediately after MODE
+  //      is enabled or wait until a Thread Trace Start event is received
+  //
+  // AUTOFLUSH_EN: Flush thread trace data to buffer often automatically
+  //
+  // Thread trace mode OFF value
+  static uint32_t sqtt_mode_off_value() {
+    regSQ_THREAD_TRACE_MODE mode = {0};
+    mode.bits.WRAP = 0;
+    mode.bits.CAPTURE_MODE = 0;
+    mode.bits.MASK_CS = 1;
+    mode.bits.AUTOFLUSH_EN = 1;
+    mode.bits.MODE = SQ_THREAD_TRACE_MODE_OFF;
+    return mode.u32All;
+  }
+  // Thread trace mode ON value
+  static uint32_t sqtt_mode_on_value() {
+    regSQ_THREAD_TRACE_MODE mode = {0};
+    mode.u32All = sqtt_mode_off_value();
+    mode.bits.MODE = SQ_THREAD_TRACE_MODE_ON;
+    return mode.u32All;
+  }
+
+  // Base address of buffer to use for thread trace
+  static uint32_t sqtt_base_value(const uint64_t & base_addr) {
+    regSQ_THREAD_TRACE_BASE base = {0};
+    base.bits.ADDR = Low32(base_addr >> TT_BUFF_ALIGN_SHIFT);
+    return base.u32All;
+  }
+
+  // Indicates the size of buffer to use per Shader Engine instance.
+  // The size is specified in terms of 4KB blocks
+  static uint32_t sqtt_size_value(const uint32_t & size_val) {
+    regSQ_THREAD_TRACE_SIZE size = {0};
+    size.bits.SIZE = size_val >> TT_BUFF_ALIGN_SHIFT;
+    return size.u32All;
+  }
+  static uint32_t sqtt_zero_size_value() { return 0; }
+
+  // Thread trace ctrl register value
+  static uint32_t sqtt_ctrl_value() {
+    regSQ_THREAD_TRACE_CTRL ctrl = {0};
+    ctrl.bits.RESET_BUFFER = 1;
+    return ctrl.u32All;
   }
 };
 

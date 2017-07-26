@@ -28,7 +28,7 @@ class PmcBuilder {
   constexpr static uint32_t se_number_ = 4;
 };
 
-template <class Builder, class Prim>
+template <typename Builder, typename Prim>
 class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Prim {
  public:
   // Build PMC start PM4 comands
@@ -54,7 +54,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Prim {
       const auto & reg_info = block_info->counter_reg_info[reg_index];
 
       if (block_info->method & CntlMethodByInstance) {
-        Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::GRBM_GFX_INDEX_ADDR, Prim::grbm_iindex_value(block_des.index));
+        Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::GRBM_GFX_INDEX_ADDR, Prim::grbm_inst_index_value(block_des.index));
       }
       if (block_info->to_clean_regs) {
         for (uint32_t i = 0; i < block_info->counter_count; ++i) {
@@ -110,11 +110,11 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Prim {
       for (uint32_t se_index = 0; se_index < se_index_end; ++se_index) {
         uint32_t grbm_value = Prim::grbm_broadcast_value();
         if ((block_info->method & CntlMethodBySeAndInstance) == CntlMethodBySeAndInstance) {
-          grbm_value = Prim::grbm_bindex_value(block_des.index, se_index);
+          grbm_value = Prim::grbm_inst_se_index_value(block_des.index, se_index);
         } else if (block_info->method & CntlMethodBySe) {
-          grbm_value = Prim::grbm_seindex_value(se_index);
+          grbm_value = Prim::grbm_se_index_value(se_index);
         } else if (block_info->method & CntlMethodByInstance) {
-          grbm_value = Prim::grbm_iindex_value(block_des.index);
+          grbm_value = Prim::grbm_inst_index_value(block_des.index);
         }
         Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::GRBM_GFX_INDEX_ADDR, grbm_value);
   

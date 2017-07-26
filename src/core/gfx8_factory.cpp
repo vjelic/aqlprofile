@@ -2,7 +2,7 @@
 #include "def/gfx8_def.h"
 #include "pm4/gfx8_cmd_builder.h"
 #include "pm4/pmc_builder.h"
-#include "pm4/gfx8_sqtt_builder.h"
+#include "pm4/sqtt_builder.h"
 
 namespace aql_profile {
 
@@ -47,13 +47,13 @@ pm4_builder::CmdBuilder* Gfx8Factory::getCmdBuilder() {
 
 pm4_builder::PmcBuilder* Gfx8Factory::getPmcBuilder() {
   auto p = new pm4_builder::GpuPmcBuilder<pm4_builder::Gfx8CmdBuilder, gfx8_cntx_prim>;
-  if (p == NULL) throw aql_profile_exc_msg("PmcBuilder mgr allocation failed");
+  if (p == NULL) throw aql_profile_exc_msg("PmcBuilder allocation failed");
   return p;
 }
 
 pm4_builder::SqttBuilder* Gfx8Factory::getSqttBuilder() {
-  auto p = new pm4_builder::Gfx8SqttBuilder;
-  if (p == NULL) throw aql_profile_exc_msg("SqttBuilder mgr allocation failed");
+  auto p = new pm4_builder::GpuSqttBuilder<pm4_builder::Gfx8CmdBuilder, gfx8_cntx_prim>;
+  if (p == NULL) throw aql_profile_exc_msg("SqttBuilder allocation failed");
   return p;
 }
 
