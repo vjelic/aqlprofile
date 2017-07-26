@@ -18,4 +18,4 @@
 using namespace gfxip;
 using namespace gfxip::gfx9;
 
-#endif // _GFX9_DEF_H_
+#endif  // _GFX9_DEF_H_

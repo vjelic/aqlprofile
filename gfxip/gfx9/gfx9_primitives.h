@@ -7,7 +7,7 @@ namespace gfxip {
 namespace gfx9 {
 
 class gfx9_cntx_prim {
-  public:
+ public:
   const static uint32_t GFXIP_LEVEL = 9;
   const static uint32_t GRBM_GFX_INDEX_ADDR = mmGRBM_GFX_INDEX;
 
@@ -29,14 +29,15 @@ class gfx9_cntx_prim {
   const static uint32_t SQ_THREAD_TRACE_STATUS_ADDR = mmSQ_THREAD_TRACE_STATUS;
   const static uint32_t SQ_THREAD_TRACE_CNTR_ADDR = mmSQ_THREAD_TRACE_CNTR;
   const static uint32_t SQ_THREAD_TRACE_WPTR_ADDR = mmSQ_THREAD_TRACE_WPTR;
-  const static uint32_t SQ_THREAD_TRACE_STATUS_OFFSET = mmSQ_THREAD_TRACE_STATUS - UCONFIG_SPACE_START;
+  const static uint32_t SQ_THREAD_TRACE_STATUS_OFFSET =
+      mmSQ_THREAD_TRACE_STATUS - UCONFIG_SPACE_START;
   const static uint32_t TT_BUFF_ALIGN_SHIFT = 12;
 
   const static uint32_t COPY_DATA_SEL_REG_PRM = COPY_DATA_SEL_REG;
   const static uint32_t COPY_DATA_SEL_SRC_SYS_PERF_COUNTER_PRM = COPY_DATA_SEL_SRC_SYS_PERF_COUNTER;
   const static uint32_t COPY_DATA_SEL_COUNT_1DW_PRM = COPY_DATA_SEL_COUNT_1DW;
 
-  static uint32_t Low32(const uint64_t & v) { return (v & 0xFFFFFFFFul); }
+  static uint32_t Low32(const uint64_t& v) { return (v & 0xFFFFFFFFul); }
 
   // GRBM broadcasting mode
   static uint32_t grbm_broadcast_value() {
@@ -46,57 +47,58 @@ class gfx9_cntx_prim {
     grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
     return grbm_gfx_index.u32All;
   }
-  
+
   // GRBM SE indexing
-  static uint32_t grbm_inst_index_value(const uint32_t & instance_index) {
+  static uint32_t grbm_inst_index_value(const uint32_t& instance_index) {
     regGRBM_GFX_INDEX grbm_gfx_index = {0};
     grbm_gfx_index.bitfields.INSTANCE_INDEX = instance_index;
     grbm_gfx_index.bitfields.SE_BROADCAST_WRITES = 1;
     grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
     return grbm_gfx_index.u32All;
   }
-  
+
   // GRBM SE indexing
-  static uint32_t grbm_se_index_value(const uint32_t & se_index) {
+  static uint32_t grbm_se_index_value(const uint32_t& se_index) {
     regGRBM_GFX_INDEX grbm_gfx_index = {0};
     grbm_gfx_index.bitfields.INSTANCE_BROADCAST_WRITES = 1;
     grbm_gfx_index.bitfields.SE_INDEX = se_index;
     grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
     return grbm_gfx_index.u32All;
   }
-  
+
   // GRBM SE/BlockInstance indexing
-  static uint32_t grbm_inst_se_index_value(const uint32_t & instance_index, const uint32_t & se_index) {
+  static uint32_t grbm_inst_se_index_value(const uint32_t& instance_index,
+                                           const uint32_t& se_index) {
     regGRBM_GFX_INDEX grbm_gfx_index = {0};
     grbm_gfx_index.bitfields.INSTANCE_INDEX = instance_index;
     grbm_gfx_index.bitfields.SE_INDEX = se_index;
     grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
     return grbm_gfx_index.u32All;
   }
-  
+
   // GRBM SE/SH indexing
-  static uint32_t grbm_se_sh_index_value(const uint32_t & se_index, const uint32_t & sh_index) {
+  static uint32_t grbm_se_sh_index_value(const uint32_t& se_index, const uint32_t& sh_index) {
     regGRBM_GFX_INDEX grbm_gfx_index = {0};
     grbm_gfx_index.bitfields.INSTANCE_BROADCAST_WRITES = 1;
     grbm_gfx_index.bitfields.SE_INDEX = se_index;
     grbm_gfx_index.bitfields.SH_INDEX = sh_index;
     return grbm_gfx_index.u32All;
   }
-  
+
   // CP_PERFMON_CNTL value to reset counters
   static uint32_t cp_perfmon_cntl_reset_value() {
     regCP_PERFMON_CNTL cp_perfmon_cntl = {0};
     return cp_perfmon_cntl.u32All;
   }
 
-  // CP_PERFMON_CNTL value to start counters 
+  // CP_PERFMON_CNTL value to start counters
   static uint32_t cp_perfmon_cntl_start_value() {
     regCP_PERFMON_CNTL cp_perfmon_cntl = {0};
     cp_perfmon_cntl.bits.PERFMON_STATE = 1;
     return cp_perfmon_cntl.u32All;
   }
 
-  // CP_PERFMON_CNTL value to stop/freeze counters 
+  // CP_PERFMON_CNTL value to stop/freeze counters
   static uint32_t cp_perfmon_cntl_stop_value() {
     regCP_PERFMON_CNTL cp_perfmon_cntl = {0};
     cp_perfmon_cntl.bits.PERFMON_STATE = 2;
@@ -110,9 +112,9 @@ class gfx9_cntx_prim {
     cp_perfcount_enable.bits.PERFCOUNT_ENABLE = 1;
     return cp_perfcount_enable.u32All;
   }
-  
+
   // SQ Counter Select Register value
-  static uint32_t sq_select_value(const counter_des_t & counter_des) {
+  static uint32_t sq_select_value(const counter_des_t& counter_des) {
     regSQ_PERFCOUNTER0_SELECT sq_cntr_sel = {0};
     sq_cntr_sel.bits.SIMD_MASK = 0xF;
     sq_cntr_sel.bits.SQC_BANK_MASK = 0xF;
@@ -120,7 +122,7 @@ class gfx9_cntx_prim {
     sq_cntr_sel.bits.PERF_SEL = counter_des.id;
     return sq_cntr_sel.u32All;
   }
-  
+
   // SQ Counter Mask Register value
   static uint32_t sq_mask_value(const counter_des_t&) {
     regSQ_PERFCOUNTER_MASK sq_cntr_mask = {0};
@@ -128,9 +130,9 @@ class gfx9_cntx_prim {
     sq_cntr_mask.bits.SH1_MASK = 0xFFFF;
     return sq_cntr_mask.u32All;
   }
-  
+
   // SQ Counter Control Register value
-  static uint32_t sq_control_value(const counter_des_t & counter_des) {
+  static uint32_t sq_control_value(const counter_des_t& counter_des) {
     const uint32_t block_id = counter_des.block_des.id;
     regSQ_PERFCOUNTER_CTRL sq_cntr_ctrl = {0};
     if (block_id == kHsaAiCounterBlockIdSq) {
@@ -152,22 +154,19 @@ class gfx9_cntx_prim {
     }
     return sq_cntr_ctrl.u32All;
   }
-  
+
   // Counter Select Register value template
-  template <typename Select>
-  static uint32_t select_value(const counter_des_t & counter_des) {
+  template <typename Select> static uint32_t select_value(const counter_des_t& counter_des) {
     Select select = {0};
     select.bits.PERF_SEL = counter_des.id;
     return select.u32All;
   }
-  template <typename Select>
-  static uint32_t select_value_t2(const counter_des_t & counter_des) {
+  template <typename Select> static uint32_t select_value_t2(const counter_des_t& counter_des) {
     Select select = {0};
     select.bits.PERFCOUNTER_SELECT = counter_des.id;
     return select.u32All;
   }
-  template <typename Select>
-  static uint32_t select_value_t3(const counter_des_t & counter_des) {
+  template <typename Select> static uint32_t select_value_t3(const counter_des_t& counter_des) {
     Select select = {0};
     select.bits.CNTR_SEL0 = counter_des.id;
     return select.u32All;
@@ -181,7 +180,7 @@ class gfx9_cntx_prim {
   // @note: Not enabling REG_STALL_EN, SPI_STALL_EN and SQ_STALL_EN bits. They
   // are useful if we wish to program buffer throttling.
   //
-  static uint32_t sqtt_mask_value(const uint32_t & targetCu, const uint32_t & vmIdMask) {
+  static uint32_t sqtt_mask_value(const uint32_t& targetCu, const uint32_t& vmIdMask) {
     regSQ_THREAD_TRACE_MASK mask = {0};
     mask.bits.SH_SEL = 0x0;
     mask.bits.SIMD_EN = 0xF;
@@ -221,14 +220,12 @@ class gfx9_cntx_prim {
   }
 
   // Check if stalling is supported
-  static bool sqtt_stalling_enabled(const uint32_t & mask_val, const uint32_t & token_mask_val) {
+  static bool sqtt_stalling_enabled(const uint32_t& mask_val, const uint32_t& token_mask_val) {
     regSQ_THREAD_TRACE_MASK mask = {0};
     mask.u32All = mask_val;
     regSQ_THREAD_TRACE_TOKEN_MASK token_mask = {0};
     token_mask.u32All = token_mask_val;
-    return ((mask.bits.SQ_STALL_EN) ||
-            (mask.bits.SPI_STALL_EN) ||
-            (mask.bits.REG_STALL_EN) ||
+    return ((mask.bits.SQ_STALL_EN) || (mask.bits.SPI_STALL_EN) || (mask.bits.REG_STALL_EN) ||
             (token_mask.bits.REG_DROP_ON_STALL));
   }
 
@@ -266,7 +263,7 @@ class gfx9_cntx_prim {
   }
 
   // Base address of buffer to use for thread trace
-  static uint32_t sqtt_base_value(const uint64_t & base_addr) {
+  static uint32_t sqtt_base_value(const uint64_t& base_addr) {
     regSQ_THREAD_TRACE_BASE base = {0};
     base.bits.ADDR = Low32(base_addr >> TT_BUFF_ALIGN_SHIFT);
     return base.u32All;
@@ -274,7 +271,7 @@ class gfx9_cntx_prim {
 
   // Indicates the size of buffer to use per Shader Engine instance.
   // The size is specified in terms of 4KB blocks
-  static uint32_t sqtt_size_value(const uint32_t & size_val) {
+  static uint32_t sqtt_size_value(const uint32_t& size_val) {
     regSQ_THREAD_TRACE_SIZE size = {0};
     size.bits.SIZE = size_val >> TT_BUFF_ALIGN_SHIFT;
     return size.u32All;
@@ -289,24 +286,28 @@ class gfx9_cntx_prim {
   }
 };
 
-template<>
-inline uint32_t gfx9_cntx_prim::select_value<regSQ_PERFCOUNTER0_SELECT>(const counter_des_t & counter_des) {
+template <>
+inline uint32_t gfx9_cntx_prim::select_value<regSQ_PERFCOUNTER0_SELECT>(
+    const counter_des_t& counter_des) {
   return sq_select_value(counter_des);
 }
-template<>
-inline uint32_t gfx9_cntx_prim::select_value<regSX_PERFCOUNTER0_SELECT>(const counter_des_t & counter_des) {
+template <>
+inline uint32_t gfx9_cntx_prim::select_value<regSX_PERFCOUNTER0_SELECT>(
+    const counter_des_t& counter_des) {
   return select_value_t2<regSX_PERFCOUNTER0_SELECT>(counter_des);
 }
-template<>
-inline uint32_t gfx9_cntx_prim::select_value<regGDS_PERFCOUNTER0_SELECT>(const counter_des_t & counter_des) {
+template <>
+inline uint32_t gfx9_cntx_prim::select_value<regGDS_PERFCOUNTER0_SELECT>(
+    const counter_des_t& counter_des) {
   return select_value_t2<regGDS_PERFCOUNTER0_SELECT>(counter_des);
 }
-template<>
-inline uint32_t gfx9_cntx_prim::select_value<regCPC_PERFCOUNTER0_SELECT>(const counter_des_t & counter_des) {
+template <>
+inline uint32_t gfx9_cntx_prim::select_value<regCPC_PERFCOUNTER0_SELECT>(
+    const counter_des_t& counter_des) {
   return select_value_t3<regCPC_PERFCOUNTER0_SELECT>(counter_des);
 }
 
-} // namespace gfx9
-} // namespace gfxip
+}  // namespace gfx9
+}  // namespace gfxip
 
 #endif  // _GFX9_PRIMITIVES_H_

@@ -1464,4 +1464,4 @@ typedef struct PM4_MEC_WAIT_REG_MEM {
 #include "def/gfx9_utils.h"
 #include "def/gfx9_block_info.h"
 
-#endif // _GFX9_DEF_H_
+#endif  // _GFX9_DEF_H_

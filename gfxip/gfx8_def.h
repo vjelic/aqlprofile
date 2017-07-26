@@ -16,4 +16,4 @@ using namespace gfxip;
 #include "gfxip/gfx8/gfx8_primitives.h"
 #include "gfxip/gfx8/gfx8_block_table.h"
 
-#endif // _GFX8_DEF_H_
+#endif  // _GFX8_DEF_H_

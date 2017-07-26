@@ -29,7 +29,7 @@ struct counter_des_t;
 // Structure which contains information about a specific hardware block for CI.
 struct GpuBlockInfo {
   // Unique string identifier of the block.
-  const char * name;
+  const char* name;
   // Block ID
   uint32_t id;
   // Maximum number of block instances in the group per shader array
@@ -50,11 +50,11 @@ struct GpuBlockInfo {
   // Block counters can be configured with additional filters
   bool has_filters;
   // Counter registers addresses
-  const CounterRegInfo *counter_reg_info;
+  const CounterRegInfo* counter_reg_info;
   // Need to clean counter registers
   bool to_clean_regs;
   // Counter select value function
-  uint32_t (*select_value)(const counter_des_t &);
+  uint32_t (*select_value)(const counter_des_t&);
   // SQ block
   bool sq_block;
 };
@@ -73,7 +73,7 @@ struct lt_block_des {
 struct counter_des_t {
   uint32_t id;
   block_des_t block_des;
-  const GpuBlockInfo * block_info;
+  const GpuBlockInfo* block_info;
 };
 
 }  // namespace gfxip

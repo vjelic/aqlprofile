@@ -43,7 +43,7 @@ set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fms-extensions" )
 set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fmerge-all-constants" )
 set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC" )
 # CLANG options
-if ( $ENV{CXX} STREQUAL "/usr/bin/clang++" )
+if ( "$ENV{CXX}" STREQUAL "/usr/bin/clang++" )
 set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ferror-limit=1000000" )
 endif()
 

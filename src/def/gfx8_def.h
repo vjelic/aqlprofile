@@ -3,4 +3,4 @@
 
 #include "gfxip/gfx8_def.h"
 
-#endif // _DEF_GFX8_DEF_H_
+#endif  // _DEF_GFX8_DEF_H_

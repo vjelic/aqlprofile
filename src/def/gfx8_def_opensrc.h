@@ -1401,7 +1401,7 @@ enum PM4ShaderType {
 };
 
 enum PM4Predicate {
-  PredDisable = 0,     ///< Predicate disabled
+  PredDisable = 0,  ///< Predicate disabled
 };
 
 #define PM4_PREDICATE_SHIFT 0
@@ -1781,4 +1781,4 @@ typedef struct _PM4CMDSETDATA {
 #include "def/gfx8_utils.h"
 #include "def/gfx8_block_info.h"
 
-#endif // _GFX8_DEF_H_
+#endif  // _GFX8_DEF_H_
