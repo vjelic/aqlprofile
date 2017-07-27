@@ -24,34 +24,21 @@ namespace aql_profile {
 
 class BlockMap {
  public:
-  typedef std::map<uint32_t, const GpuBlockInfo*> map_t;
-  typedef map_t::const_iterator iter_t;
-
-  BlockMap(uint32_t* id_table, const GpuBlockInfo* info_table, const uint32_t& info_count) {
-    map_t info_map;
-    for (uint32_t i = 0; i < info_count; ++i) {
-      const GpuBlockInfo& entry = info_table[i];
-      info_map[entry.id] = &entry;
-    }
-    for (uint32_t i = 0; i < HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER; ++i) {
-      iter_t it = info_map.find(id_table[i]);
-      if (it != info_map.end()) block_map[i] = it->second;
-    }
-  }
+  BlockMap(const GpuBlockInfo** table, const uint32_t& count)
+      : block_table(table), block_count(count) {}
+  BlockMap(const BlockMap& map) : block_table(map.block_table), block_count(map.block_count) {}
 
   const GpuBlockInfo* get(const uint32_t& id) const {
-    iter_t it = block_map.find(id);
-    return (it != block_map.end()) ? it->second : NULL;
+    return (id < block_count) ? block_table[id] : NULL;
   }
 
  private:
-  map_t block_map;
+  const GpuBlockInfo** const block_table;
+  const uint32_t block_count;
 };
 
 class Pm4Factory {
  public:
-  enum { kBadBlockId = UINT_MAX };
-
   static Pm4Factory* Create(const hsa_agent_t agent);
   static Pm4Factory* Create(const profile_t* profile) { return Create(profile->agent); }
   static Pm4Factory* Gfx8Create();
@@ -85,7 +72,7 @@ class Pm4Factory {
 
   static std::mutex mutex;
   static instances_t instances;
-  const BlockMap& block_map;
+  const BlockMap block_map;
 };
 
 inline Pm4Factory* Pm4Factory::Create(const hsa_agent_t agent) {

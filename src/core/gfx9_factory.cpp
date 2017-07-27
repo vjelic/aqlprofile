@@ -8,25 +8,35 @@ namespace aql_profile {
 
 class Gfx9Factory : public Pm4Factory {
  public:
-  Gfx9Factory()
-      : block_map(block_id_table, Gfx9HwBlocks, Gfx9HwBlockCount), Pm4Factory(block_map) {}
+  Gfx9Factory() : Pm4Factory(BlockMap(block_table, sizeof(block_table))) {}
   pm4_builder::CmdBuilder* getCmdBuilder();
   pm4_builder::PmcBuilder* getPmcBuilder();
   pm4_builder::SqttBuilder* getSqttBuilder();
 
  private:
-  static uint32_t block_id_table[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER];
-  const BlockMap block_map;
+  static const GpuBlockInfo* block_table[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER];
 };
 
-// GFX9 block ID mapping table
-uint32_t Gfx9Factory::block_id_table[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER] = {
-    kBadBlockId /*CPF*/,     kHsaAiCounterBlockIdGrbm, kHsaAiCounterBlockIdGrbmSe,
-    kHsaAiCounterBlockIdSpi, kHsaAiCounterBlockIdSq,   kHsaAiCounterBlockIdSqCs,
-    kHsaAiCounterBlockIdSx,  kHsaAiCounterBlockIdTa,   kHsaAiCounterBlockIdTca,
-    kHsaAiCounterBlockIdTcc, kHsaAiCounterBlockIdTd,   kHsaAiCounterBlockIdTcp,
-    kHsaAiCounterBlockIdGds, kHsaAiCounterBlockIdIa,   kHsaAiCounterBlockIdMc,
-    kBadBlockId /*SRBM*/,    kHsaAiCounterBlockIdTcs,  kHsaAiCounterBlockIdCpc};
+// GFX9 block table
+const GpuBlockInfo* Gfx9Factory::block_table[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER] = {
+    NULL /*CPF*/,
+    &AiGrbmCounterBlockInfo,
+    &AiGrbmSeCounterBlockInfo,
+    &AiSpiCounterBlockInfo,
+    &AiSqCounterBlockInfo,
+    &AiSqCsCounterBlockInfo,
+    &AiSxCounterBlockInfo,
+    &AiTaCounterBlockInfo,
+    &AiTcaCounterBlockInfo,
+    &AiTccCounterBlockInfo,
+    &AiTdCounterBlockInfo,
+    &AiTcpCounterBlockInfo,
+    &AiGdsCounterBlockInfo,
+    &AiIaCounterBlockInfo,
+    &AiMcCounterBlockInfo,
+    NULL /*SRBM*/,
+    NULL /*TCS*/,
+    &AiCpcCounterBlockInfo};
 
 Pm4Factory* Pm4Factory::Gfx9Create() {
   auto p = new Gfx9Factory;
