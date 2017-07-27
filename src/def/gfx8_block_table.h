@@ -274,7 +274,7 @@ static const CounterRegInfo ViCpcCounterRegAddr[] = {
  * as defined by \ref GpuBlockInfo structure
  */
 // Counter block CPF
-static GpuBlockInfo ViCpfCounterBlockInfo = {
+static const GpuBlockInfo ViCpfCounterBlockInfo = {
     "VI_CPF", kHsaViCounterBlockIdCpf,
     1,        CntlMethodNone,
     19,       VI_COUNTER_NUM_PER_CPF,
@@ -283,7 +283,7 @@ static GpuBlockInfo ViCpfCounterBlockInfo = {
     false,    gfx8_cntx_prim::select_value<regCPF_PERFCOUNTER0_SELECT__CI__VI>,
     false};
 // Counter block GRBM
-static GpuBlockInfo ViGrbmCounterBlockInfo = {
+static const GpuBlockInfo ViGrbmCounterBlockInfo = {
     "VI_GRBM", kHsaViCounterBlockIdGrbm,
     1,         CntlMethodNone,
     33,        VI_COUNTER_NUM_PER_GRBM,
@@ -292,7 +292,7 @@ static GpuBlockInfo ViGrbmCounterBlockInfo = {
     false,     gfx8_cntx_prim::select_value<regGRBM_PERFCOUNTER0_SELECT>,
     false};
 // Counter block GRBMSE
-static GpuBlockInfo ViGrbmSeCounterBlockInfo = {
+static const GpuBlockInfo ViGrbmSeCounterBlockInfo = {
     "VI_GRBMSE", kHsaViCounterBlockIdGrbmSe,
     1,           CntlMethodNone,
     14,          VI_COUNTER_NUM_PER_GRBMSE,
@@ -301,7 +301,7 @@ static GpuBlockInfo ViGrbmSeCounterBlockInfo = {
     false,       gfx8_cntx_prim::select_value<regGRBM_SE0_PERFCOUNTER_SELECT>,
     false};
 // Counter block SPI
-static GpuBlockInfo ViSpiCounterBlockInfo = {
+static const GpuBlockInfo ViSpiCounterBlockInfo = {
     "VI_SPI", kHsaViCounterBlockIdSpi,
     1,        CntlMethodBySe,
     196,      VI_COUNTER_NUM_PER_SPI,
@@ -310,7 +310,7 @@ static GpuBlockInfo ViSpiCounterBlockInfo = {
     false,    gfx8_cntx_prim::select_value<regSPI_PERFCOUNTER0_SELECT>,
     false};
 // Counter block SQ
-static GpuBlockInfo ViSqCounterBlockInfo = {
+static const GpuBlockInfo ViSqCounterBlockInfo = {
     "VI_SQ", kHsaViCounterBlockIdSq,
     1,       CntlMethodBySe,
     298,     VI_COUNTER_NUM_PER_SQ,
@@ -318,7 +318,7 @@ static GpuBlockInfo ViSqCounterBlockInfo = {
     true,    ViSqCounterRegAddr,
     false,   gfx8_cntx_prim::select_value<regSQ_PERFCOUNTER0_SELECT__CI__VI>,
     true};
-static GpuBlockInfo ViSqCsCounterBlockInfo = {
+static const GpuBlockInfo ViSqCsCounterBlockInfo = {
     "VI_SQ_CS", kHsaViCounterBlockIdSqCs,
     1,          CntlMethodBySe,
     298,        VI_COUNTER_NUM_PER_SQ,
@@ -327,13 +327,13 @@ static GpuBlockInfo ViSqCsCounterBlockInfo = {
     false,      gfx8_cntx_prim::select_value<regSQ_PERFCOUNTER0_SELECT__CI__VI>,
     true};
 // Counter block SX
-static GpuBlockInfo ViSxCounterBlockInfo = {
+static const GpuBlockInfo ViSxCounterBlockInfo = {
     "VI_SX", kHsaViCounterBlockIdSx, 1,    CntlMethodBySe,
     33,      VI_COUNTER_NUM_PER_SX,  0,    0,
     true,    ViSxCounterRegAddr,     true, gfx8_cntx_prim::select_value<regSX_PERFCOUNTER0_SELECT>,
     false};
 // Counter block TA
-static GpuBlockInfo ViTaCounterBlockInfo = {
+static const GpuBlockInfo ViTaCounterBlockInfo = {
     "VI_TA",   kHsaViCounterBlockIdTa,
     VI_NUM_TA, CntlMethodBySeAndInstance,
     118,       VI_COUNTER_NUM_PER_TA,
@@ -342,7 +342,7 @@ static GpuBlockInfo ViTaCounterBlockInfo = {
     false,     gfx8_cntx_prim::select_value<regTA_PERFCOUNTER0_SELECT>,
     false};
 // Counter block TCA
-static GpuBlockInfo ViTcaCounterBlockInfo = {
+static const GpuBlockInfo ViTcaCounterBlockInfo = {
     "VI_TCA",   kHsaViCounterBlockIdTca,
     VI_NUM_TCA, CntlMethodByInstance,
     34,         VI_COUNTER_NUM_PER_TCA,
@@ -351,7 +351,7 @@ static GpuBlockInfo ViTcaCounterBlockInfo = {
     false,      gfx8_cntx_prim::select_value<regTCA_PERFCOUNTER0_SELECT__CI__VI>,
     false};
 // Counter block TCC
-static GpuBlockInfo ViTccCounterBlockInfo = {
+static const GpuBlockInfo ViTccCounterBlockInfo = {
     "VI_TCC",   kHsaViCounterBlockIdTcc,
     VI_NUM_TCC, CntlMethodByInstance,
     191,        VI_COUNTER_NUM_PER_TCC,
@@ -360,7 +360,7 @@ static GpuBlockInfo ViTccCounterBlockInfo = {
     false,      gfx8_cntx_prim::select_value<regTCC_PERFCOUNTER0_SELECT__CI__VI>,
     false};
 // Counter block TD
-static GpuBlockInfo ViTdCounterBlockInfo = {
+static const GpuBlockInfo ViTdCounterBlockInfo = {
     "VI_TD",   kHsaViCounterBlockIdTd,
     VI_NUM_TD, CntlMethodBySeAndInstance,
     54,        VI_COUNTER_NUM_PER_TD,
@@ -369,7 +369,7 @@ static GpuBlockInfo ViTdCounterBlockInfo = {
     false,     gfx8_cntx_prim::select_value<regTD_PERFCOUNTER0_SELECT>,
     false};
 // Counter block TCP
-static GpuBlockInfo ViTcpCounterBlockInfo = {
+static const GpuBlockInfo ViTcpCounterBlockInfo = {
     "VI_TCP",   kHsaViCounterBlockIdTcp,
     VI_NUM_TCP, CntlMethodBySeAndInstance,
     182,        VI_COUNTER_NUM_PER_TCP,
@@ -378,7 +378,7 @@ static GpuBlockInfo ViTcpCounterBlockInfo = {
     false,      gfx8_cntx_prim::select_value<regTCP_PERFCOUNTER0_SELECT__CI__VI>,
     false};
 // Counter block GDS
-static GpuBlockInfo ViGdsCounterBlockInfo = {
+static const GpuBlockInfo ViGdsCounterBlockInfo = {
     "VI_GDS", kHsaViCounterBlockIdGds,
     1,        CntlMethodNone,
     120,      VI_COUNTER_NUM_PER_GDS,
@@ -387,7 +387,7 @@ static GpuBlockInfo ViGdsCounterBlockInfo = {
     false,    gfx8_cntx_prim::select_value<regGDS_PERFCOUNTER0_SELECT>,
     false};
 // Counter block IA
-static GpuBlockInfo ViIaCounterBlockInfo = {
+static const GpuBlockInfo ViIaCounterBlockInfo = {
     "VI_IA", kHsaViCounterBlockIdIa,
     1,       CntlMethodBySe,
     23,      VI_COUNTER_NUM_PER_IA,
@@ -396,11 +396,11 @@ static GpuBlockInfo ViIaCounterBlockInfo = {
     false,   gfx8_cntx_prim::select_value<regIA_PERFCOUNTER0_SELECT__CI__VI>,
     false};
 // Counter block MC
-static GpuBlockInfo ViMcCounterBlockInfo = {
+static const GpuBlockInfo ViMcCounterBlockInfo = {
     "VI_MC", kHsaViCounterBlockIdMc, 1,     CntlMethodNone, 22,   VI_COUNTER_NUM_PER_MC, 0, 0,
     true,    ViMcCounterRegAddr,     false, NULL,           false};
 // Counter block SRBM
-static GpuBlockInfo ViSrbmCounterBlockInfo = {
+static const GpuBlockInfo ViSrbmCounterBlockInfo = {
     "VI_SRBM", kHsaViCounterBlockIdSrbm,
     1,         CntlMethodNone,
     19,        VI_COUNTER_NUM_PER_SRBM,
@@ -409,7 +409,7 @@ static GpuBlockInfo ViSrbmCounterBlockInfo = {
     false,     gfx8_cntx_prim::select_value<regSRBM_PERFCOUNTER0_SELECT>,
     false};
 // Counter block CPC
-static GpuBlockInfo ViCpcCounterBlockInfo = {
+static const GpuBlockInfo ViCpcCounterBlockInfo = {
     "VI_CPC", kHsaViCounterBlockIdCpc,
     1,        CntlMethodNone,
     24,       VI_COUNTER_NUM_PER_CPC,
@@ -418,26 +418,27 @@ static GpuBlockInfo ViCpcCounterBlockInfo = {
     false,    gfx8_cntx_prim::select_value<regCPC_PERFCOUNTER0_SELECT__CI__VI>,
     false};
 // Counter block IOMMUV2
-static GpuBlockInfo ViCounterBlockIommuV2Info = {"VI_IOMMUV2",
-                                                 kHsaViCounterBlockIdIommuV2,
-                                                 1,
-                                                 CntlMethodNone,
-                                                 25,
-                                                 8,
-                                                 0,
-                                                 0,
-                                                 true,
-                                                 NULL,
-                                                 false,
-                                                 NULL,
-                                                 false};
+static const GpuBlockInfo ViCounterBlockIommuV2Info = {"VI_IOMMUV2",
+                                                       kHsaViCounterBlockIdIommuV2,
+                                                       1,
+                                                       CntlMethodNone,
+                                                       25,
+                                                       8,
+                                                       0,
+                                                       0,
+                                                       true,
+                                                       NULL,
+                                                       false,
+                                                       NULL,
+                                                       false};
 // Counter block KernelDriver
-static GpuBlockInfo ViKernelDriverCounterBlockInfo = {"VI_KD", kHsaViCounterBlockIdKernelDriver,
-                                                      1,       CntlMethodNone,
-                                                      0,       0,
-                                                      0,       0,
-                                                      true,    NULL,
-                                                      false,   NULL,
-                                                      false};
+static const GpuBlockInfo ViKernelDriverCounterBlockInfo = {
+    "VI_KD", kHsaViCounterBlockIdKernelDriver,
+    1,       CntlMethodNone,
+    0,       0,
+    0,       0,
+    true,    NULL,
+    false,   NULL,
+    false};
 
 #endif  // _GFX8_BLOCKTABLE_H_

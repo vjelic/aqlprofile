@@ -230,7 +230,7 @@ static GpuBlockInfo AiCpfCounterBlockInfo = {"AI_CPF", kHsaAiCounterBlockIdCpf, 
 gfx9_cntx_prim::select_value<regCPF_PERFCOUNTER0_SELECT>, false};
 */
 // Counter block GRBM
-static GpuBlockInfo AiGrbmCounterBlockInfo = {
+static const GpuBlockInfo AiGrbmCounterBlockInfo = {
     "AI_GRBM", kHsaAiCounterBlockIdGrbm,
     1,         CntlMethodNone,
     33,        AI_COUNTER_NUM_PER_GRBM,
@@ -239,7 +239,7 @@ static GpuBlockInfo AiGrbmCounterBlockInfo = {
     false,     gfx9_cntx_prim::select_value<regGRBM_PERFCOUNTER0_SELECT>,
     false};
 // Counter block GRBMSE
-static GpuBlockInfo AiGrbmSeCounterBlockInfo = {
+static const GpuBlockInfo AiGrbmSeCounterBlockInfo = {
     "AI_GRBMSE", kHsaAiCounterBlockIdGrbmSe,
     1,           CntlMethodNone,
     14,          AI_COUNTER_NUM_PER_GRBMSE,
@@ -248,7 +248,7 @@ static GpuBlockInfo AiGrbmSeCounterBlockInfo = {
     false,       gfx9_cntx_prim::select_value<regGRBM_SE0_PERFCOUNTER_SELECT>,
     false};
 // Counter block SPI
-static GpuBlockInfo AiSpiCounterBlockInfo = {
+static const GpuBlockInfo AiSpiCounterBlockInfo = {
     "AI_SPI", kHsaAiCounterBlockIdSpi,
     1,        CntlMethodBySe,
     196,      AI_COUNTER_NUM_PER_SPI,
@@ -257,12 +257,12 @@ static GpuBlockInfo AiSpiCounterBlockInfo = {
     false,    gfx9_cntx_prim::select_value<regSPI_PERFCOUNTER0_SELECT>,
     false};
 // Counter block SQ
-static GpuBlockInfo AiSqCounterBlockInfo = {
+static const GpuBlockInfo AiSqCounterBlockInfo = {
     "AI_SQ", kHsaAiCounterBlockIdSq, 1,     CntlMethodBySe,
     171,     AI_COUNTER_NUM_PER_SQ,  0,     0,
     true,    AiSqCounterRegAddr,     false, gfx9_cntx_prim::select_value<regSQ_PERFCOUNTER0_SELECT>,
     true};
-static GpuBlockInfo AiSqCsCounterBlockInfo = {
+static const GpuBlockInfo AiSqCsCounterBlockInfo = {
     "AI_SQ_CS", kHsaAiCounterBlockIdSqCs,
     1,          CntlMethodBySe,
     298,        AI_COUNTER_NUM_PER_SQ,
@@ -271,13 +271,13 @@ static GpuBlockInfo AiSqCsCounterBlockInfo = {
     false,      gfx9_cntx_prim::select_value<regSQ_PERFCOUNTER0_SELECT>,
     true};
 // Counter block SX
-static GpuBlockInfo AiSxCounterBlockInfo = {
+static const GpuBlockInfo AiSxCounterBlockInfo = {
     "AI_SX", kHsaAiCounterBlockIdSx, 1,    CntlMethodBySe,
     33,      AI_COUNTER_NUM_PER_SX,  0,    0,
     true,    AiSxCounterRegAddr,     true, gfx9_cntx_prim::select_value<regSX_PERFCOUNTER0_SELECT>,
     false};
 // Counter block TA
-static GpuBlockInfo AiTaCounterBlockInfo = {
+static const GpuBlockInfo AiTaCounterBlockInfo = {
     "AI_TA",   kHsaAiCounterBlockIdTa,
     AI_NUM_TA, CntlMethodBySeAndInstance,
     118,       AI_COUNTER_NUM_PER_TA,
@@ -286,7 +286,7 @@ static GpuBlockInfo AiTaCounterBlockInfo = {
     false,     gfx9_cntx_prim::select_value<regTA_PERFCOUNTER0_SELECT>,
     false};
 // Counter block TCA
-static GpuBlockInfo AiTcaCounterBlockInfo = {
+static const GpuBlockInfo AiTcaCounterBlockInfo = {
     "AI_TCA",   kHsaAiCounterBlockIdTca,
     AI_NUM_TCA, CntlMethodByInstance,
     34,         AI_COUNTER_NUM_PER_TCA,
@@ -295,7 +295,7 @@ static GpuBlockInfo AiTcaCounterBlockInfo = {
     false,      gfx9_cntx_prim::select_value<regTCA_PERFCOUNTER0_SELECT>,
     false};
 // Counter block TCC
-static GpuBlockInfo AiTccCounterBlockInfo = {
+static const GpuBlockInfo AiTccCounterBlockInfo = {
     "AI_TCC",   kHsaAiCounterBlockIdTcc,
     AI_NUM_TCC, CntlMethodByInstance,
     191,        AI_COUNTER_NUM_PER_TCC,
@@ -304,7 +304,7 @@ static GpuBlockInfo AiTccCounterBlockInfo = {
     false,      gfx9_cntx_prim::select_value<regTCC_PERFCOUNTER0_SELECT>,
     false};
 // Counter block TD
-static GpuBlockInfo AiTdCounterBlockInfo = {
+static const GpuBlockInfo AiTdCounterBlockInfo = {
     "AI_TD",   kHsaAiCounterBlockIdTd,
     AI_NUM_TD, CntlMethodBySeAndInstance,
     54,        AI_COUNTER_NUM_PER_TD,
@@ -313,7 +313,7 @@ static GpuBlockInfo AiTdCounterBlockInfo = {
     false,     gfx9_cntx_prim::select_value<regTD_PERFCOUNTER0_SELECT>,
     false};
 // Counter block TCP
-static GpuBlockInfo AiTcpCounterBlockInfo = {
+static const GpuBlockInfo AiTcpCounterBlockInfo = {
     "AI_TCP",   kHsaAiCounterBlockIdTcp,
     AI_NUM_TCP, CntlMethodBySeAndInstance,
     182,        AI_COUNTER_NUM_PER_TCP,
@@ -322,7 +322,7 @@ static GpuBlockInfo AiTcpCounterBlockInfo = {
     false,      gfx9_cntx_prim::select_value<regTCP_PERFCOUNTER0_SELECT>,
     false};
 // Counter block GDS
-static GpuBlockInfo AiGdsCounterBlockInfo = {
+static const GpuBlockInfo AiGdsCounterBlockInfo = {
     "AI_GDS", kHsaAiCounterBlockIdGds,
     1,        CntlMethodNone,
     120,      AI_COUNTER_NUM_PER_GDS,
@@ -331,24 +331,24 @@ static GpuBlockInfo AiGdsCounterBlockInfo = {
     false,    gfx9_cntx_prim::select_value<regGDS_PERFCOUNTER0_SELECT>,
     false};
 // Counter block IA
-static GpuBlockInfo AiIaCounterBlockInfo = {
+static const GpuBlockInfo AiIaCounterBlockInfo = {
     "AI_IA", kHsaAiCounterBlockIdIa, 1,     CntlMethodBySe,
     23,      AI_COUNTER_NUM_PER_IA,  0,     0,
     true,    AiIaCounterRegAddr,     false, gfx9_cntx_prim::select_value<regIA_PERFCOUNTER0_SELECT>,
     false};
 // Counter block MC
-static GpuBlockInfo AiMcCounterBlockInfo = {
+static const GpuBlockInfo AiMcCounterBlockInfo = {
     "AI_MC", kHsaAiCounterBlockIdMc, 1,     CntlMethodNone, 22,   AI_COUNTER_NUM_PER_MC, 0, 0,
     true,    AiMcCounterRegAddr,     false, NULL,           false};
 // Temp commented out for Vega10
 // Counter block SRBM
 /*
-static GpuBlockInfo AiSrbmCounterBlockInfo = {"AI_SRBM", kHsaAiCounterBlockIdSrbm, 1,
+static const GpuBlockInfo AiSrbmCounterBlockInfo = {"AI_SRBM", kHsaAiCounterBlockIdSrbm, 1,
 CntlMethodNone, 19, AI_COUNTER_NUM_PER_SRBM, 0, 0, true, AiSrbmCounterRegAddr, false,
 gfx9_cntx_prim::select_value<regSRBM_PERFCOUNTER0_SELECT>, false};
 */
 // Counter block CPC
-static GpuBlockInfo AiCpcCounterBlockInfo = {
+static const GpuBlockInfo AiCpcCounterBlockInfo = {
     "AI_CPC", kHsaAiCounterBlockIdCpc,
     1,        CntlMethodNone,
     34,       AI_COUNTER_NUM_PER_CPC,
@@ -357,26 +357,27 @@ static GpuBlockInfo AiCpcCounterBlockInfo = {
     false,    gfx9_cntx_prim::select_value<regCPC_PERFCOUNTER0_SELECT>,
     false};
 // Counter block IOMMUV2
-static GpuBlockInfo AiIommuV2CounterBlockInfo = {"AI_IOMMUV2",
-                                                 kHsaAiCounterBlockIdIommuV2,
-                                                 1,
-                                                 CntlMethodNone,
-                                                 25,
-                                                 8,
-                                                 0,
-                                                 0,
-                                                 true,
-                                                 NULL,
-                                                 false,
-                                                 NULL,
-                                                 false};
+static const GpuBlockInfo AiIommuV2CounterBlockInfo = {"AI_IOMMUV2",
+                                                       kHsaAiCounterBlockIdIommuV2,
+                                                       1,
+                                                       CntlMethodNone,
+                                                       25,
+                                                       8,
+                                                       0,
+                                                       0,
+                                                       true,
+                                                       NULL,
+                                                       false,
+                                                       NULL,
+                                                       false};
 // Counter block KernelDriver
-static GpuBlockInfo AiKernelDriverCounterBlockInfo = {"AI_KD", kHsaAiCounterBlockIdKernelDriver,
-                                                      1,       CntlMethodNone,
-                                                      0,       0,
-                                                      0,       0,
-                                                      true,    NULL,
-                                                      false,   NULL,
-                                                      false};
+static const GpuBlockInfo AiKernelDriverCounterBlockInfo = {
+    "AI_KD", kHsaAiCounterBlockIdKernelDriver,
+    1,       CntlMethodNone,
+    0,       0,
+    0,       0,
+    true,    NULL,
+    false,   NULL,
+    false};
 
 #endif  //  _GFX9_BLOCKTABLE_H_

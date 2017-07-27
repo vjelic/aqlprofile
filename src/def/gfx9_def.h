@@ -953,12 +953,20 @@ enum MEC_COPY_DATA_count_sel_enum {
   count_sel__mec_copy_data__32_bits_of_data = 0,
   count_sel__mec_copy_data__64_bits_of_data = 1,
 };
-typedef uint32_t MEC_COPY_DATA_wr_confirm_enum;
+
+enum MEC_COPY_DATA_wr_confirm_enum {
+  wr_confirm__mec_copy_data__do_not_wait_for_confirmation = 0,
+  wr_confirm__mec_copy_data__wait_for_confirmation = 1
+};
 
 enum MEC_COPY_DATA_dst_cache_policy_enum {
   dst_cache_policy__mec_copy_data__stream = 1,
 };
-typedef uint32_t MEC_COPY_DATA_pq_exe_status_enum;
+
+enum MEC_COPY_DATA_pq_exe_status_enum {
+  pq_exe_status__mec_copy_data__default = 0,
+  pq_exe_status__mec_copy_data__phase_update = 1
+};
 
 typedef struct PM4_MEC_COPY_DATA {
   union {
@@ -1099,7 +1107,11 @@ typedef struct PM4_MEC_INDIRECT_BUFFER {
   };
 
 } PM4MEC_INDIRECT_BUFFER, *PPM4MEC_INDIRECT_BUFFER;
-typedef uint32_t MEC_SET_CONFIG_REG_index_enum;
+
+enum MEC_SET_CONFIG_REG_index_enum {
+  index__mec_set_config_reg__default = 0,
+  index__mec_set_config_reg__insert_vmid = 1
+};
 
 typedef struct PM4_MEC_SET_CONFIG_REG {
   union {
