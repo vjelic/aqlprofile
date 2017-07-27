@@ -7,10 +7,9 @@
 #include <map>
 #include <string>
 
-#include "gfxip/gpu_block_info.h"
+#include "def/gpu_block_info.h"
 
 namespace pm4_builder {
-using namespace gfxip;
 class CmdBuffer;
 class CmdBuilder;
 

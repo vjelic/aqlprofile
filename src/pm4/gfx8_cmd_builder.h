@@ -27,8 +27,9 @@ class Gfx8CmdBuilder : public CmdBuilder {
     memset(&event_write, 0, sizeof(event_write));
 
     GenerateCmdHeader(&event_write, IT_EVENT_WRITE);
+
     event_write.eventType = CS_PARTIAL_FLUSH;
-    event_write.eventIndex = EventTypeToIndexTable[CS_PARTIAL_FLUSH];
+    event_write.eventIndex = EVENT_WRITE_INDEX_VS_PS_PARTIAL_FLUSH;
 
     APPEND_COMMAND_WRAPPER(cmdBuf, event_write);
   }

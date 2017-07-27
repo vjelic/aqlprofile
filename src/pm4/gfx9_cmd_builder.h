@@ -27,10 +27,8 @@ class Gfx9CmdBuilder : public CmdBuilder {
     memset(&event_write, 0, sizeof(event_write));
     GenerateCmdHeader(&event_write, IT_EVENT_WRITE);
 
-    MEC_EVENT_WRITE_event_index_enum index;
-    index = event_index__mec_event_write__cs_partial_flush;
-    event_write.bitfields2.event_index = index;
     event_write.bitfields2.event_type = CS_PARTIAL_FLUSH;
+    event_write.bitfields2.event_index = event_index__mec_event_write__cs_partial_flush;
 
     APPEND_COMMAND_WRAPPER(cmdBuf, event_write);
   }

@@ -1,0 +1,287 @@
+++ tbin=./test/ctrl
+++ export LD_LIBRARY_PATH=/home/evgeny/src/aqlprofile/b
+++ LD_LIBRARY_PATH=/home/evgeny/src/aqlprofile/b
+++ echo
+
+++ echo 'Run simple convolution kernel'
+Run simple convolution kernel
+++ unset ROCR_ENABLE_PMC
+++ unset ROCR_ENABLE_SQTT
+++ eval ./test/ctrl
++++ ./test/ctrl
+TestHSA::initialize :
+> GPU agents :
+> agent[0] :
+>> Name : gfx900
+>> Max Wave Size : 64
+>> Max Queue Size : 131072
+>> Kernarg Region Id : 14651264
+> Using agent[0] : gfx900
+TestHSA::setup :
+SimpleConvolution::init :
+> Input[0] :
+> 15 201 51 89 92 34 96 66 11 225 161 96 81 211 108 124 202 244 182 90 215 92 98 20 44 225 55 247 202 0 45 218 202 97 51 39 131 147 105 143 116 11 239 198 222 92 67 169 81 250 3 40 86 101 60 131 70 116 123 17 117 168 236 64 
+> Mask :
+> 0 0.2 0 
+> 0.2 0.2 0.2 
+> 0 0.2 0 
+Code object filename: gfx9_SimpleConvolution.hsaco
+TestHSA::run :
+> Executing kernel: "SimpleConvolution"
+> Waiting on kernel dispatch signal, que_idx=0
+> Output[0] :
+> 45 60 89 75 79 86 45 43 104 82 144 105 99 90 109 124 123 146 149 124 120 87 43 36 88 91 113 103 98 53 68 104 113 106 76 90 90 122 82 92 102 124 95 149 112 102 69 82 146 116 103 62 50 96 99 87 84 110 88 81 61 105 134 71 
+Test : Passed
+Time taken for Setup by SimpleConvolution : 0.000828857
+Time taken for Dispatch by SimpleConvolution : 2.19727e-05
+Time taken in Total by SimpleConvolution : 0.00085083
+++ echo
+
+++ echo 'Run with PMC'
+Run with PMC
+++ export ROCR_ENABLE_PMC=1
+++ ROCR_ENABLE_PMC=1
+++ unset ROCR_ENABLE_SQTT
+++ eval ./test/ctrl
++++ ./test/ctrl
+Test: PGen PMC
+TestHSA::initialize :
+> GPU agents :
+> agent[0] :
+>> Name : gfx900
+>> Max Wave Size : 64
+>> Max Queue Size : 131072
+>> Kernarg Region Id : 22212800
+> Using agent[0] : gfx900
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 e0000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00001cbf 00000001
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00001808 00000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 000019c0 0f0ff004
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 000019e1 ffffffff
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 000019e0 00000057
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 000019c1 0f0ff00e
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 000019e1 ffffffff
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 000019e0 00000057
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 000019c2 0f0ff02f
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 000019e1 ffffffff
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 000019e0 00000057
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 a0000002
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00001b80 00000001
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 a0000002
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00001b82 00000003
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 a0000002
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00001b84 00000016
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00001809 00000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00001803 00000008
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 e0000000
+'BuildWriteShRegPacket' size(3)         : c0017600 0000020b 00000001
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00001808 00000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00001808 00000001
+'BuildBarrierCommand' size(2)           : c0004600 00000407
+'BuildCacheFlushPacket' size(7)         : c0055800 28c40000 ffffffff 00ffffff 00000000 00000000 00000004
+'BuildBarrierCommand' size(2)           : c0004600 00000407
+'BuildCacheFlushPacket' size(7)         : c0055800 28c40000 ffffffff 00ffffff 00000000 00000000 00000004
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00001808 00000402
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 e0000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 60000000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c0 00000000 04132000 00000000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c1 00000000 04132004 00000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 60010000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c0 00000000 04132008 00000000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c1 00000000 0413200c 00000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 60020000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c0 00000000 04132010 00000000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c1 00000000 04132014 00000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 60030000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c0 00000000 04132018 00000000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c1 00000000 0413201c 00000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 60000000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c2 00000000 04132020 00000000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c3 00000000 04132024 00000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 60010000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c2 00000000 04132028 00000000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c3 00000000 0413202c 00000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 60020000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c2 00000000 04132030 00000000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c3 00000000 04132034 00000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 60030000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c2 00000000 04132038 00000000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c3 00000000 0413203c 00000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 60000000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c4 00000000 04132040 00000000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c5 00000000 04132044 00000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 60010000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c4 00000000 04132048 00000000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c5 00000000 0413204c 00000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 60020000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c4 00000000 04132050 00000000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c5 00000000 04132054 00000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 60030000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c4 00000000 04132058 00000000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c5 00000000 0413205c 00000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 a0000002
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d380 00000000 04132060 00000000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d381 00000000 04132064 00000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 a0000002
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d382 00000000 04132068 00000000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d383 00000000 0413206c 00000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 a0000002
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d384 00000000 04132070 00000000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d385 00000000 04132074 00000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 e0000000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d006 00000000 04132078 00000000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d007 00000000 0413207c 00000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 e0000000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d004 00000000 04132080 00000000
+'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d005 00000000 04132084 00000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 e0000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00001cbf 00000000
+'BuildIndirectBufferCmd' size(4)        : c0023f00 04130000 00000000 10800051
+AQL 'IB' size(16)                       : 10000000 c0023f00 41300000 00000000 10800051 a0000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+'BuildIndirectBufferCmd' size(4)        : c0023f00 04130200 00000000 10800114
+AQL 'IB' size(16)                       : 10000000 c0023f00 41302000 00000000 10800114 a0000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+TestHSA::setup :
+SimpleConvolution::init :
+> Input[0] :
+> 15 201 51 89 92 34 96 66 11 225 161 96 81 211 108 124 202 244 182 90 215 92 98 20 44 225 55 247 202 0 45 218 202 97 51 39 131 147 105 143 116 11 239 198 222 92 67 169 81 250 3 40 86 101 60 131 70 116 123 17 117 168 236 64 
+> Mask :
+> 0 0.2 0 
+> 0.2 0.2 0.2 
+> 0 0.2 0 
+Code object filename: gfx9_SimpleConvolution.hsaco
+TestHSA::run :
+> Executing kernel: "SimpleConvolution"
+> Waiting on kernel dispatch signal, que_idx=1
+> Output[0] :
+> 45 60 89 75 79 86 45 43 104 82 144 105 99 90 109 124 123 146 149 124 120 87 43 36 88 91 113 103 98 53 68 104 113 106 76 90 90 122 82 92 102 124 95 149 112 102 69 82 146 116 103 62 50 96 99 87 84 110 88 81 61 105 134 71 
+TestPGenPMC::dumpData :
+event( block(4_0), id(4)), sample(0), result(16)
+event( block(4_0), id(4)), sample(1), result(16)
+event( block(4_0), id(4)), sample(2), result(16)
+event( block(4_0), id(4)), sample(3), result(16)
+event( block(4_0), id(14)), sample(0), result(1024)
+event( block(4_0), id(14)), sample(1), result(1024)
+event( block(4_0), id(14)), sample(2), result(1024)
+event( block(4_0), id(14)), sample(3), result(1024)
+event( block(4_0), id(47)), sample(0), result(9842)
+event( block(4_0), id(47)), sample(1), result(9842)
+event( block(4_0), id(47)), sample(2), result(9984)
+event( block(4_0), id(47)), sample(3), result(9984)
+event( block(9_2), id(1)), sample(0), result(87280)
+event( block(9_2), id(3)), sample(0), result(64)
+event( block(9_2), id(22)), sample(0), result(64)
+event( block(17_0), id(0)), sample(0), result(87280)
+event( block(17_0), id(8)), sample(0), result(4069)
+Test : Passed
+Time taken for Setup by SimpleConvolution : 0.000831055
+Time taken for Dispatch by SimpleConvolution : 2.09961e-05
+Time taken in Total by SimpleConvolution : 0.000852051
+++ echo
+
+++ echo 'Run with SQTT'
+Run with SQTT
+++ unset ROCR_ENABLE_PMC
+++ export ROCR_ENABLE_SQTT=1
+++ ROCR_ENABLE_SQTT=1
+++ eval ./test/ctrl
++++ ./test/ctrl
+Test: PGen SQTT
+TestHSA::initialize :
+> GPU agents :
+> agent[0] :
+>> Name : gfx900
+>> Max Wave Size : 64
+>> Max Queue Size : 131072
+>> Kernarg Region Id : 11284672
+> Using agent[0] : gfx900
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 e0000000
+'BuildBarrierCommand' size(2)           : c0004600 00000407
+'BuildCacheFlushPacket' size(7)         : c0055800 28c40000 ffffffff 00ffffff 00000000 00000000 00000004
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000332 0000cf80
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000334 ffffffff
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000333 01ffffff
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000338 ffffff7f
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000336 02040000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 0000033b 00000006
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 40000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000330 00900c01
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000331 00002000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000335 80000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 40010000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000330 00901401
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000331 00002000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000335 80000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 40020000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000330 00901c01
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000331 00002000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000335 80000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 40030000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000330 00902401
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000331 00002000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000335 80000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 e0000000
+'BuildBarrierCommand' size(2)           : c0004600 00000407
+'BuildCacheFlushPacket' size(7)         : c0055800 28c40000 ffffffff 00ffffff 00000000 00000000 00000004
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000336 02240000
+'BuildBarrierCommand' size(2)           : c0004600 00000407
+'BuildCacheFlushPacket' size(7)         : c0055800 28c40000 ffffffff 00ffffff 00000000 00000000 00000004
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 e0000000
+'BuildBarrierCommand' size(2)           : c0004600 00000407
+'BuildCacheFlushPacket' size(7)         : c0055800 28c40000 ffffffff 00ffffff 00000000 00000000 00000004
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000336 02040000
+'BuildBarrierCommand' size(2)           : c0004600 00000407
+'BuildCacheFlushPacket' size(7)         : c0055800 28c40000 ffffffff 00ffffff 00000000 00000000 00000004
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 40000000
+'BuildWaitRegMemCommand' size(7)        : c0053c00 00000004 00000338 00000000 00000001 40000000 00000004
+'BuildCopyDataPacket' size(6)           : c0044000 02102504 0000c33a 00000000 03b30fd0 00000000
+'BuildCopyDataPacket' size(6)           : c0044000 02102504 0000c33c 00000000 03b30fd4 00000000
+'BuildCopyDataPacket' size(6)           : c0044000 02102504 0000c339 00000000 03b30fd8 00000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 40010000
+'BuildWaitRegMemCommand' size(7)        : c0053c00 00000004 00000338 00000000 00000001 40000000 00000004
+'BuildCopyDataPacket' size(6)           : c0044000 02102504 0000c33a 00000000 03b30fdc 00000000
+'BuildCopyDataPacket' size(6)           : c0044000 02102504 0000c33c 00000000 03b30fe0 00000000
+'BuildCopyDataPacket' size(6)           : c0044000 02102504 0000c339 00000000 03b30fe4 00000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 40020000
+'BuildWaitRegMemCommand' size(7)        : c0053c00 00000004 00000338 00000000 00000001 40000000 00000004
+'BuildCopyDataPacket' size(6)           : c0044000 02102504 0000c33a 00000000 03b30fe8 00000000
+'BuildCopyDataPacket' size(6)           : c0044000 02102504 0000c33c 00000000 03b30fec 00000000
+'BuildCopyDataPacket' size(6)           : c0044000 02102504 0000c339 00000000 03b30ff0 00000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 40030000
+'BuildWaitRegMemCommand' size(7)        : c0053c00 00000004 00000338 00000000 00000001 40000000 00000004
+'BuildCopyDataPacket' size(6)           : c0044000 02102504 0000c33a 00000000 03b30ff4 00000000
+'BuildCopyDataPacket' size(6)           : c0044000 02102504 0000c33c 00000000 03b30ff8 00000000
+'BuildCopyDataPacket' size(6)           : c0044000 02102504 0000c339 00000000 03b30ffc 00000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 e0000000
+'BuildCacheFlushPacket' size(7)         : c0055800 28c40000 ffffffff 00ffffff 00000000 00000000 00000004
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000331 00000000
+'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000335 80000000
+'BuildBarrierCommand' size(2)           : c0004600 00000407
+'BuildCacheFlushPacket' size(7)         : c0055800 28c40000 ffffffff 00ffffff 00000000 00000000 00000004
+'BuildIndirectBufferCmd' size(4)        : c0023f00 03b30000 00000000 10800066
+AQL 'IB' size(16)                       : 10000000 c0023f00 3b300000 00000000 10800066 a0000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+'BuildIndirectBufferCmd' size(4)        : c0023f00 03b30200 00000000 108000a1
+AQL 'IB' size(16)                       : 10000000 c0023f00 3b302000 00000000 108000a1 a0000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+TestHSA::setup :
+SimpleConvolution::init :
+> Input[0] :
+> 15 201 51 89 92 34 96 66 11 225 161 96 81 211 108 124 202 244 182 90 215 92 98 20 44 225 55 247 202 0 45 218 202 97 51 39 131 147 105 143 116 11 239 198 222 92 67 169 81 250 3 40 86 101 60 131 70 116 123 17 117 168 236 64 
+> Mask :
+> 0 0.2 0 
+> 0.2 0.2 0.2 
+> 0 0.2 0 
+Code object filename: gfx9_SimpleConvolution.hsaco
+TestHSA::run :
+> Executing kernel: "SimpleConvolution"
+> Waiting on kernel dispatch signal, que_idx=1
+> Output[0] :
+> 45 60 89 75 79 86 45 43 104 82 144 105 99 90 109 124 123 146 149 124 120 87 43 36 88 91 113 103 98 53 68 104 113 106 76 90 90 122 82 92 102 124 95 149 112 102 69 82 146 116 103 62 50 96 99 87 84 110 88 81 61 105 134 71 
+TestPGenSQTT::dumpData :
+> sample(0) ptr(0x900c01000) size(15008)
+> sample(1) ptr(0x901401000) size(13312)
+> sample(2) ptr(0x901c01000) size(15040)
+> sample(3) ptr(0x902401000) size(15104)
+Test : Passed
+Time taken for Setup by SimpleConvolution : 0.000800049
+Time taken for Dispatch by SimpleConvolution : 6.78711e-05
+Time taken in Total by SimpleConvolution : 0.00086792
+++ exit 0

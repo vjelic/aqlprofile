@@ -20,8 +20,6 @@
     }                                                                                              \
   }
 
-using namespace gfxip;
-
 namespace aql_profile {
 
 // Command buffer partitioning manager
@@ -104,7 +102,7 @@ static inline pm4_builder::counters_vector CountersVec(const profile_t* profile,
   pm4_builder::counters_vector vec;
   for (const hsa_ven_amd_aqlprofile_event_t* p = profile->events;
        p < profile->events + profile->event_count; ++p) {
-    const pm4_builder::block_des_t block_des = {pm4_factory->getBlockId(p), p->block_index};
+    const block_des_t block_des = {pm4_factory->getBlockId(p), p->block_index};
     const GpuBlockInfo* block_info = pm4_factory->getBlockInfo(p);
     vec.push_back({p->counter_id, block_des, block_info});
   }

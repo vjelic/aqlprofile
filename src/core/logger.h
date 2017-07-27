@@ -35,14 +35,14 @@ class Logger {
     return *this;
   }
 
-  typedef void (Logger::*manip_t)();
+  typedef void (*manip_t)();
   Logger& operator<<(manip_t f) {
-    (this->*f)();
+    f();
     return *this;
   }
 
-  void begm() { messaging = true; }
-  void endl() { resetStreaming(); }
+  static void begm() { Instance().messaging = true; }
+  static void endl() { Instance().resetStreaming(); }
 
   static const std::string& LastMessage() {
     Logger& logger = Instance();
