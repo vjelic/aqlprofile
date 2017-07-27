@@ -83,24 +83,6 @@ static const CounterRegInfo AiGrbmSeCounterRegAddr[] = {
     {mmGRBM_SE3_PERFCOUNTER_SELECT, 0, mmGRBM_SE3_PERFCOUNTER_LO, mmGRBM_SE3_PERFCOUNTER_HI}};
 
 /*
- * PA_SU
- */
-static const CounterRegInfo AiPaSuCounterRegAddr[] = {
-    {mmPA_SU_PERFCOUNTER0_SELECT, 0, mmPA_SU_PERFCOUNTER0_LO, mmPA_SU_PERFCOUNTER0_HI},
-    {mmPA_SU_PERFCOUNTER1_SELECT, 0, mmPA_SU_PERFCOUNTER1_LO, mmPA_SU_PERFCOUNTER1_HI},
-    {mmPA_SU_PERFCOUNTER2_SELECT, 0, mmPA_SU_PERFCOUNTER2_LO, mmPA_SU_PERFCOUNTER2_HI},
-    {mmPA_SU_PERFCOUNTER3_SELECT, 0, mmPA_SU_PERFCOUNTER3_LO, mmPA_SU_PERFCOUNTER3_HI}};
-
-/*
- * PA_SC
- */
-static const CounterRegInfo AiPaScCounterRegAddr[] = {
-    {mmPA_SC_PERFCOUNTER0_SELECT, 0, mmPA_SC_PERFCOUNTER0_LO, mmPA_SC_PERFCOUNTER0_HI},
-    {mmPA_SC_PERFCOUNTER1_SELECT, 0, mmPA_SC_PERFCOUNTER1_LO, mmPA_SC_PERFCOUNTER1_HI},
-    {mmPA_SC_PERFCOUNTER2_SELECT, 0, mmPA_SC_PERFCOUNTER2_LO, mmPA_SC_PERFCOUNTER2_HI},
-    {mmPA_SC_PERFCOUNTER3_SELECT, 0, mmPA_SC_PERFCOUNTER3_LO, mmPA_SC_PERFCOUNTER3_HI}};
-
-/*
  * SPI
  */
 static const CounterRegInfo AiSpiCounterRegAddr[] = {
@@ -137,24 +119,6 @@ static const CounterRegInfo AiTcpCounterRegAddr[] = {
     {mmTCP_PERFCOUNTER1_SELECT, 0, mmTCP_PERFCOUNTER1_LO, mmTCP_PERFCOUNTER1_HI},
     {mmTCP_PERFCOUNTER2_SELECT, 0, mmTCP_PERFCOUNTER2_LO, mmTCP_PERFCOUNTER2_HI},
     {mmTCP_PERFCOUNTER3_SELECT, 0, mmTCP_PERFCOUNTER3_LO, mmTCP_PERFCOUNTER3_HI}};
-
-/*
- * CB
- */
-static const CounterRegInfo AiCbCounterRegAddr[] = {
-    {mmCB_PERFCOUNTER0_SELECT, 0, mmCB_PERFCOUNTER0_LO, mmCB_PERFCOUNTER0_HI},
-    {mmCB_PERFCOUNTER1_SELECT, 0, mmCB_PERFCOUNTER1_LO, mmCB_PERFCOUNTER1_HI},
-    {mmCB_PERFCOUNTER2_SELECT, 0, mmCB_PERFCOUNTER2_LO, mmCB_PERFCOUNTER2_HI},
-    {mmCB_PERFCOUNTER3_SELECT, 0, mmCB_PERFCOUNTER3_LO, mmCB_PERFCOUNTER3_HI}};
-
-/*
- * DB
- */
-static const CounterRegInfo AiDbCounterRegAddr[] = {
-    {mmDB_PERFCOUNTER0_SELECT, 0, mmDB_PERFCOUNTER0_LO, mmDB_PERFCOUNTER0_HI},
-    {mmDB_PERFCOUNTER1_SELECT, 0, mmDB_PERFCOUNTER1_LO, mmDB_PERFCOUNTER1_HI},
-    {mmDB_PERFCOUNTER2_SELECT, 0, mmDB_PERFCOUNTER2_LO, mmDB_PERFCOUNTER2_HI},
-    {mmDB_PERFCOUNTER3_SELECT, 0, mmDB_PERFCOUNTER3_LO, mmDB_PERFCOUNTER3_HI}};
 
 /*
  * RLC
@@ -209,15 +173,6 @@ static const CounterRegInfo AiGdsCounterRegAddr[] = {
     {mmGDS_PERFCOUNTER3_SELECT, 0, mmGDS_PERFCOUNTER3_LO, mmGDS_PERFCOUNTER3_HI}};
 
 /*
- * VGT
- */
-static const CounterRegInfo AiVgtCounterRegAddr[] = {
-    {mmVGT_PERFCOUNTER0_SELECT, 0, mmVGT_PERFCOUNTER0_LO, mmVGT_PERFCOUNTER0_HI},
-    {mmVGT_PERFCOUNTER1_SELECT, 0, mmVGT_PERFCOUNTER1_LO, mmVGT_PERFCOUNTER1_HI},
-    {mmVGT_PERFCOUNTER2_SELECT, 0, mmVGT_PERFCOUNTER2_LO, mmVGT_PERFCOUNTER2_HI},
-    {mmVGT_PERFCOUNTER3_SELECT, 0, mmVGT_PERFCOUNTER3_LO, mmVGT_PERFCOUNTER3_HI}};
-
-/*
  * IA
  */
 static const CounterRegInfo AiIaCounterRegAddr[] = {
@@ -257,22 +212,6 @@ static const CounterRegInfo AiSrbmCounterRegAddr[] = {
 };
 
 /*
- * WD
- */
-static const CounterRegInfo AiWdCounterRegAddr[] = {
-    {mmWD_PERFCOUNTER0_SELECT, 0, mmWD_PERFCOUNTER0_LO, mmWD_PERFCOUNTER0_HI},
-    {mmWD_PERFCOUNTER1_SELECT, 0, mmWD_PERFCOUNTER1_LO, mmWD_PERFCOUNTER1_HI},
-    {mmWD_PERFCOUNTER2_SELECT, 0, mmWD_PERFCOUNTER2_LO, mmWD_PERFCOUNTER2_HI},
-    {mmWD_PERFCOUNTER3_SELECT, 0, mmWD_PERFCOUNTER3_LO, mmWD_PERFCOUNTER3_HI}};
-
-/*
- * CPG
- */
-static const CounterRegInfo AiCpgCounterRegAddr[] = {
-    {mmCPG_PERFCOUNTER0_SELECT, 0, mmCPG_PERFCOUNTER0_LO, mmCPG_PERFCOUNTER0_HI},
-    {mmCPG_PERFCOUNTER1_SELECT, 0, mmCPG_PERFCOUNTER1_LO, mmCPG_PERFCOUNTER1_HI}};
-
-/*
  * CPC
  */
 static const CounterRegInfo AiCpcCounterRegAddr[] = {
@@ -283,15 +222,6 @@ static const CounterRegInfo AiCpcCounterRegAddr[] = {
  * Table containing CounterGroups which represent AI hardware blocks
  * as defined by \ref GpuBlockInfo structure
  */
-// Counter block CB
-static GpuBlockInfo AiCbCounterBlockInfo = {
-    "AI_CB",   kHsaAiCounterBlockIdCb,
-    AI_NUM_CB, CntlMethodBySeAndInstance,
-    395,       AI_COUNTER_NUM_PER_CB,
-    0,         0,
-    true,      AiCbCounterRegAddr,
-    true,      gfx9_cntx_prim::select_value<regCB_PERFCOUNTER0_SELECT>,
-    false};
 // Temp commented for Vega10
 // Counter block CPF
 /*
@@ -299,15 +229,6 @@ static GpuBlockInfo AiCpfCounterBlockInfo = {"AI_CPF", kHsaAiCounterBlockIdCpf, 
 19, AI_COUNTER_NUM_PER_CPF, 0, 0, true, AiCpfCounterRegAddr, false,
 gfx9_cntx_prim::select_value<regCPF_PERFCOUNTER0_SELECT>, false};
 */
-// Counter block DB
-static GpuBlockInfo AiDbCounterBlockInfo = {
-    "AI_DB",   kHsaAiCounterBlockIdDb,
-    AI_NUM_DB, CntlMethodBySeAndInstance,
-    256,       AI_COUNTER_NUM_PER_DB,
-    0,         0,
-    true,      AiDbCounterRegAddr,
-    true,      gfx9_cntx_prim::select_value<regDB_PERFCOUNTER0_SELECT>,
-    false};
 // Counter block GRBM
 static GpuBlockInfo AiGrbmCounterBlockInfo = {
     "AI_GRBM", kHsaAiCounterBlockIdGrbm,
@@ -326,24 +247,6 @@ static GpuBlockInfo AiGrbmSeCounterBlockInfo = {
     true,        AiGrbmSeCounterRegAddr,
     false,       gfx9_cntx_prim::select_value<regGRBM_SE0_PERFCOUNTER_SELECT>,
     false};
-// Counter block PA_SU
-static GpuBlockInfo AiPaSuCounterBlockInfo = {
-    "AI_PA_SU", kHsaAiCounterBlockIdPaSu,
-    1,          CntlMethodBySe,
-    152,        AI_COUNTER_NUM_PER_PA_SU,
-    0,          0,
-    true,       AiPaSuCounterRegAddr,
-    false,      gfx9_cntx_prim::select_value<regPA_SU_PERFCOUNTER0_SELECT>,
-    false};
-// Counter block PA_SC
-static GpuBlockInfo AiPaScCounterBlockInfo = {
-    "AI_PA_SC", kHsaAiCounterBlockIdPaSc,
-    1,          CntlMethodBySe,
-    396,        AI_COUNTER_NUM_PER_PA_SC,
-    0,          0,
-    true,       AiPaScCounterRegAddr,
-    false,      gfx9_cntx_prim::select_value<regPA_SC_PERFCOUNTER0_SELECT>,
-    false};
 // Counter block SPI
 static GpuBlockInfo AiSpiCounterBlockInfo = {
     "AI_SPI", kHsaAiCounterBlockIdSpi,
@@ -358,38 +261,6 @@ static GpuBlockInfo AiSqCounterBlockInfo = {
     "AI_SQ", kHsaAiCounterBlockIdSq, 1,     CntlMethodBySe,
     171,     AI_COUNTER_NUM_PER_SQ,  0,     0,
     true,    AiSqCounterRegAddr,     false, gfx9_cntx_prim::select_value<regSQ_PERFCOUNTER0_SELECT>,
-    true};
-static GpuBlockInfo AiSqGsCounterBlockInfo = {
-    "AI_SQ_GS", kHsaAiCounterBlockIdSqGs,
-    1,          CntlMethodBySe,
-    298,        AI_COUNTER_NUM_PER_SQ,
-    0,          0,
-    true,       AiSqCounterRegAddr,
-    false,      gfx9_cntx_prim::select_value<regSQ_PERFCOUNTER0_SELECT>,
-    true};
-static GpuBlockInfo AiSqVsCounterBlockInfo = {
-    "AI_SQ_VS", kHsaAiCounterBlockIdSqVs,
-    1,          CntlMethodBySe,
-    298,        AI_COUNTER_NUM_PER_SQ,
-    0,          0,
-    true,       AiSqCounterRegAddr,
-    false,      gfx9_cntx_prim::select_value<regSQ_PERFCOUNTER0_SELECT>,
-    true};
-static GpuBlockInfo AiSqPsCounterBlockInfo = {
-    "AI_SQ_PS", kHsaAiCounterBlockIdSqPs,
-    1,          CntlMethodBySe,
-    298,        AI_COUNTER_NUM_PER_SQ,
-    0,          0,
-    true,       AiSqCounterRegAddr,
-    false,      gfx9_cntx_prim::select_value<regSQ_PERFCOUNTER0_SELECT>,
-    true};
-static GpuBlockInfo AiSqHsCounterBlockInfo = {
-    "AI_SQ_HS", kHsaAiCounterBlockIdSqHs,
-    1,          CntlMethodBySe,
-    298,        AI_COUNTER_NUM_PER_SQ,
-    0,          0,
-    true,       AiSqCounterRegAddr,
-    false,      gfx9_cntx_prim::select_value<regSQ_PERFCOUNTER0_SELECT>,
     true};
 static GpuBlockInfo AiSqCsCounterBlockInfo = {
     "AI_SQ_CS", kHsaAiCounterBlockIdSqCs,
@@ -459,15 +330,6 @@ static GpuBlockInfo AiGdsCounterBlockInfo = {
     true,     AiGdsCounterRegAddr,
     false,    gfx9_cntx_prim::select_value<regGDS_PERFCOUNTER0_SELECT>,
     false};
-// Counter block VGT
-static GpuBlockInfo AiVgtCounterBlockInfo = {
-    "AI_VGT", kHsaAiCounterBlockIdVgt,
-    1,        CntlMethodBySe,
-    145,      AI_COUNTER_NUM_PER_VGT,
-    0,        0,
-    true,     AiVgtCounterRegAddr,
-    false,    gfx9_cntx_prim::select_value<regVGT_PERFCOUNTER0_SELECT>,
-    false};
 // Counter block IA
 static GpuBlockInfo AiIaCounterBlockInfo = {
     "AI_IA", kHsaAiCounterBlockIdIa, 1,     CntlMethodBySe,
@@ -484,19 +346,6 @@ static GpuBlockInfo AiMcCounterBlockInfo = {
 static GpuBlockInfo AiSrbmCounterBlockInfo = {"AI_SRBM", kHsaAiCounterBlockIdSrbm, 1,
 CntlMethodNone, 19, AI_COUNTER_NUM_PER_SRBM, 0, 0, true, AiSrbmCounterRegAddr, false,
 gfx9_cntx_prim::select_value<regSRBM_PERFCOUNTER0_SELECT>, false};
-*/
-// Counter block WD
-static GpuBlockInfo AiWdCounterBlockInfo = {
-    "AI_WD", kHsaAiCounterBlockIdWd, 1,     CntlMethodNone,
-    36,      AI_COUNTER_NUM_PER_WD,  0,     0,
-    true,    AiWdCounterRegAddr,     false, gfx9_cntx_prim::select_value<regWD_PERFCOUNTER0_SELECT>,
-    false};
-// Counter block CPG
-// Temp commented for Vega10
-/*
-static GpuBlockInfo AiCpgCounterBlockInfo = {"AI_CPG", kHsaAiCounterBlockIdCpg, 1, CntlMethodNone,
-48, AI_COUNTER_NUM_PER_CPG, 0, 0, true, AiCpgCounterRegAddr, false,
-gfx9_cntx_prim::select_value<regCPG_PERFCOUNTER0_SELECT>, false};
 */
 // Counter block CPC
 static GpuBlockInfo AiCpcCounterBlockInfo = {

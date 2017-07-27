@@ -98,32 +98,6 @@ static const CounterRegInfo ViGrbmSeCounterRegAddr[] = {
      mmGRBM_SE3_PERFCOUNTER_HI__CI__VI}};
 
 /*
- * PA_SU
- */
-static const CounterRegInfo ViPaSuCounterRegAddr[] = {
-    {mmPA_SU_PERFCOUNTER0_SELECT__CI__VI, 0, mmPA_SU_PERFCOUNTER0_LO__CI__VI,
-     mmPA_SU_PERFCOUNTER0_HI__CI__VI},
-    {mmPA_SU_PERFCOUNTER1_SELECT__CI__VI, 0, mmPA_SU_PERFCOUNTER1_LO__CI__VI,
-     mmPA_SU_PERFCOUNTER1_HI__CI__VI},
-    {mmPA_SU_PERFCOUNTER2_SELECT__CI__VI, 0, mmPA_SU_PERFCOUNTER2_LO__CI__VI,
-     mmPA_SU_PERFCOUNTER2_HI__CI__VI},
-    {mmPA_SU_PERFCOUNTER3_SELECT__CI__VI, 0, mmPA_SU_PERFCOUNTER3_LO__CI__VI,
-     mmPA_SU_PERFCOUNTER3_HI__CI__VI}};
-
-/*
- * PA_SC
- */
-static const CounterRegInfo ViPaScCounterRegAddr[] = {
-    {mmPA_SC_PERFCOUNTER0_SELECT__CI__VI, 0, mmPA_SC_PERFCOUNTER0_LO__CI__VI,
-     mmPA_SC_PERFCOUNTER0_HI__CI__VI},
-    {mmPA_SC_PERFCOUNTER1_SELECT__CI__VI, 0, mmPA_SC_PERFCOUNTER1_LO__CI__VI,
-     mmPA_SC_PERFCOUNTER1_HI__CI__VI},
-    {mmPA_SC_PERFCOUNTER2_SELECT__CI__VI, 0, mmPA_SC_PERFCOUNTER2_LO__CI__VI,
-     mmPA_SC_PERFCOUNTER2_HI__CI__VI},
-    {mmPA_SC_PERFCOUNTER3_SELECT__CI__VI, 0, mmPA_SC_PERFCOUNTER3_LO__CI__VI,
-     mmPA_SC_PERFCOUNTER3_HI__CI__VI}};
-
-/*
  * SPI
  */
 static const CounterRegInfo ViSpiCounterRegAddr[] = {
@@ -178,32 +152,6 @@ static const CounterRegInfo ViTcpCounterRegAddr[] = {
      mmTCP_PERFCOUNTER2_HI__CI__VI},
     {mmTCP_PERFCOUNTER3_SELECT__CI__VI, 0, mmTCP_PERFCOUNTER3_LO__CI__VI,
      mmTCP_PERFCOUNTER3_HI__CI__VI}};
-
-/*
- * CB
- */
-static const CounterRegInfo ViCbCounterRegAddr[] = {
-    {mmCB_PERFCOUNTER0_SELECT__CI__VI, 0, mmCB_PERFCOUNTER0_LO__CI__VI,
-     mmCB_PERFCOUNTER0_HI__CI__VI},
-    {mmCB_PERFCOUNTER1_SELECT__CI__VI, 0, mmCB_PERFCOUNTER1_LO__CI__VI,
-     mmCB_PERFCOUNTER1_HI__CI__VI},
-    {mmCB_PERFCOUNTER2_SELECT__CI__VI, 0, mmCB_PERFCOUNTER2_LO__CI__VI,
-     mmCB_PERFCOUNTER2_HI__CI__VI},
-    {mmCB_PERFCOUNTER3_SELECT__CI__VI, 0, mmCB_PERFCOUNTER3_LO__CI__VI,
-     mmCB_PERFCOUNTER3_HI__CI__VI}};
-
-/*
- * DB
- */
-static const CounterRegInfo ViDbCounterRegAddr[] = {
-    {mmDB_PERFCOUNTER0_SELECT__CI__VI, 0, mmDB_PERFCOUNTER0_LO__CI__VI,
-     mmDB_PERFCOUNTER0_HI__CI__VI},
-    {mmDB_PERFCOUNTER1_SELECT__CI__VI, 0, mmDB_PERFCOUNTER1_LO__CI__VI,
-     mmDB_PERFCOUNTER1_HI__CI__VI},
-    {mmDB_PERFCOUNTER2_SELECT__CI__VI, 0, mmDB_PERFCOUNTER2_LO__CI__VI,
-     mmDB_PERFCOUNTER2_HI__CI__VI},
-    {mmDB_PERFCOUNTER3_SELECT__CI__VI, 0, mmDB_PERFCOUNTER3_LO__CI__VI,
-     mmDB_PERFCOUNTER3_HI__CI__VI}};
 
 /*
  * RLC
@@ -280,19 +228,6 @@ static const CounterRegInfo ViGdsCounterRegAddr[] = {
      mmGDS_PERFCOUNTER3_HI__CI__VI}};
 
 /*
- * VGT
- */
-static const CounterRegInfo ViVgtCounterRegAddr[] = {
-    {mmVGT_PERFCOUNTER0_SELECT__CI__VI, 0, mmVGT_PERFCOUNTER0_LO__CI__VI,
-     mmVGT_PERFCOUNTER0_HI__CI__VI},
-    {mmVGT_PERFCOUNTER1_SELECT__CI__VI, 0, mmVGT_PERFCOUNTER1_LO__CI__VI,
-     mmVGT_PERFCOUNTER1_HI__CI__VI},
-    {mmVGT_PERFCOUNTER2_SELECT__CI__VI, 0, mmVGT_PERFCOUNTER2_LO__CI__VI,
-     mmVGT_PERFCOUNTER2_HI__CI__VI},
-    {mmVGT_PERFCOUNTER3_SELECT__CI__VI, 0, mmVGT_PERFCOUNTER3_LO__CI__VI,
-     mmVGT_PERFCOUNTER3_HI__CI__VI}};
-
-/*
  * IA
  */
 static const CounterRegInfo ViIaCounterRegAddr[] = {
@@ -326,28 +261,6 @@ static const CounterRegInfo ViSrbmCounterRegAddr[] = {
     {mmSRBM_PERFCOUNTER1_SELECT__VI, 0, mmSRBM_PERFCOUNTER1_LO__VI, mmSRBM_PERFCOUNTER1_HI__VI}};
 
 /*
- * WD
- */
-static const CounterRegInfo ViWdCounterRegAddr[] = {
-    {mmWD_PERFCOUNTER0_SELECT__CI__VI, 0, mmWD_PERFCOUNTER0_LO__CI__VI,
-     mmWD_PERFCOUNTER0_HI__CI__VI},
-    {mmWD_PERFCOUNTER1_SELECT__CI__VI, 0, mmWD_PERFCOUNTER1_LO__CI__VI,
-     mmWD_PERFCOUNTER1_HI__CI__VI},
-    {mmWD_PERFCOUNTER2_SELECT__CI__VI, 0, mmWD_PERFCOUNTER2_LO__CI__VI,
-     mmWD_PERFCOUNTER2_HI__CI__VI},
-    {mmWD_PERFCOUNTER3_SELECT__CI__VI, 0, mmWD_PERFCOUNTER3_LO__CI__VI,
-     mmWD_PERFCOUNTER3_HI__CI__VI}};
-
-/*
- * CPG
- */
-static const CounterRegInfo ViCpgCounterRegAddr[] = {
-    {mmCPG_PERFCOUNTER0_SELECT__CI__VI, 0, mmCPG_PERFCOUNTER0_LO__CI__VI,
-     mmCPG_PERFCOUNTER0_HI__CI__VI},
-    {mmCPG_PERFCOUNTER1_SELECT__CI__VI, 0, mmCPG_PERFCOUNTER1_LO__CI__VI,
-     mmCPG_PERFCOUNTER1_HI__CI__VI}};
-
-/*
  * CPC
  */
 static const CounterRegInfo ViCpcCounterRegAddr[] = {
@@ -360,15 +273,6 @@ static const CounterRegInfo ViCpcCounterRegAddr[] = {
  * Table containing CounterGroups which represent VI hardware blocks
  * as defined by \ref GpuBlockInfo structure
  */
-// Counter block CB
-static GpuBlockInfo ViCbCounterBlockInfo = {
-    "VI_CB",   kHsaViCounterBlockIdCb,
-    VI_NUM_CB, CntlMethodBySeAndInstance,
-    395,       VI_COUNTER_NUM_PER_CB,
-    0,         0,
-    true,      ViCbCounterRegAddr,
-    true,      gfx8_cntx_prim::select_value<regCB_PERFCOUNTER0_SELECT__CI__VI>,
-    false};
 // Counter block CPF
 static GpuBlockInfo ViCpfCounterBlockInfo = {
     "VI_CPF", kHsaViCounterBlockIdCpf,
@@ -377,15 +281,6 @@ static GpuBlockInfo ViCpfCounterBlockInfo = {
     0,        0,
     true,     ViCpfCounterRegAddr,
     false,    gfx8_cntx_prim::select_value<regCPF_PERFCOUNTER0_SELECT__CI__VI>,
-    false};
-// Counter block DB
-static GpuBlockInfo ViDbCounterBlockInfo = {
-    "VI_DB",   kHsaViCounterBlockIdDb,
-    VI_NUM_DB, CntlMethodBySeAndInstance,
-    256,       VI_COUNTER_NUM_PER_DB,
-    0,         0,
-    true,      ViDbCounterRegAddr,
-    true,      gfx8_cntx_prim::select_value<regDB_PERFCOUNTER0_SELECT>,
     false};
 // Counter block GRBM
 static GpuBlockInfo ViGrbmCounterBlockInfo = {
@@ -405,24 +300,6 @@ static GpuBlockInfo ViGrbmSeCounterBlockInfo = {
     true,        ViGrbmSeCounterRegAddr,
     false,       gfx8_cntx_prim::select_value<regGRBM_SE0_PERFCOUNTER_SELECT>,
     false};
-// Counter block PA_SU
-static GpuBlockInfo ViPaSuCounterBlockInfo = {
-    "VI_PA_SU", kHsaViCounterBlockIdPaSu,
-    1,          CntlMethodBySe,
-    152,        VI_COUNTER_NUM_PER_PA_SU,
-    0,          0,
-    true,       ViPaSuCounterRegAddr,
-    false,      gfx8_cntx_prim::select_value<regPA_SU_PERFCOUNTER0_SELECT>,
-    false};
-// Counter block PA_SC
-static GpuBlockInfo ViPaScCounterBlockInfo = {
-    "VI_PA_SC", kHsaViCounterBlockIdPaSc,
-    1,          CntlMethodBySe,
-    396,        VI_COUNTER_NUM_PER_PA_SC,
-    0,          0,
-    true,       ViPaScCounterRegAddr,
-    false,      gfx8_cntx_prim::select_value<regPA_SC_PERFCOUNTER0_SELECT>,
-    false};
 // Counter block SPI
 static GpuBlockInfo ViSpiCounterBlockInfo = {
     "VI_SPI", kHsaViCounterBlockIdSpi,
@@ -440,54 +317,6 @@ static GpuBlockInfo ViSqCounterBlockInfo = {
     0,       0,
     true,    ViSqCounterRegAddr,
     false,   gfx8_cntx_prim::select_value<regSQ_PERFCOUNTER0_SELECT__CI__VI>,
-    true};
-static GpuBlockInfo ViSqEsCounterBlockInfo = {
-    "VI_SQ_ES", kHsaViCounterBlockIdSqEs,
-    1,          CntlMethodBySe,
-    298,        VI_COUNTER_NUM_PER_SQ,
-    0,          0,
-    true,       ViSqCounterRegAddr,
-    false,      gfx8_cntx_prim::select_value<regSQ_PERFCOUNTER0_SELECT__CI__VI>,
-    true};
-static GpuBlockInfo ViSqGsCounterBlockInfo = {
-    "VI_SQ_GS", kHsaViCounterBlockIdSqGs,
-    1,          CntlMethodBySe,
-    298,        VI_COUNTER_NUM_PER_SQ,
-    0,          0,
-    true,       ViSqCounterRegAddr,
-    false,      gfx8_cntx_prim::select_value<regSQ_PERFCOUNTER0_SELECT__CI__VI>,
-    true};
-static GpuBlockInfo ViSqVsCounterBlockInfo = {
-    "VI_SQ_VS", kHsaViCounterBlockIdSqVs,
-    1,          CntlMethodBySe,
-    298,        VI_COUNTER_NUM_PER_SQ,
-    0,          0,
-    true,       ViSqCounterRegAddr,
-    false,      gfx8_cntx_prim::select_value<regSQ_PERFCOUNTER0_SELECT__CI__VI>,
-    true};
-static GpuBlockInfo ViSqPsCounterBlockInfo = {
-    "VI_SQ_PS", kHsaViCounterBlockIdSqPs,
-    1,          CntlMethodBySe,
-    298,        VI_COUNTER_NUM_PER_SQ,
-    0,          0,
-    true,       ViSqCounterRegAddr,
-    false,      gfx8_cntx_prim::select_value<regSQ_PERFCOUNTER0_SELECT__CI__VI>,
-    true};
-static GpuBlockInfo ViSqLsCounterBlockInfo = {
-    "VI_SQ_LS", kHsaViCounterBlockIdSqLs,
-    1,          CntlMethodBySe,
-    298,        VI_COUNTER_NUM_PER_SQ,
-    0,          0,
-    true,       ViSqCounterRegAddr,
-    false,      gfx8_cntx_prim::select_value<regSQ_PERFCOUNTER0_SELECT__CI__VI>,
-    true};
-static GpuBlockInfo ViSqHsCounterBlockInfo = {
-    "VI_SQ_HS", kHsaViCounterBlockIdSqHs,
-    1,          CntlMethodBySe,
-    298,        VI_COUNTER_NUM_PER_SQ,
-    0,          0,
-    true,       ViSqCounterRegAddr,
-    false,      gfx8_cntx_prim::select_value<regSQ_PERFCOUNTER0_SELECT__CI__VI>,
     true};
 static GpuBlockInfo ViSqCsCounterBlockInfo = {
     "VI_SQ_CS", kHsaViCounterBlockIdSqCs,
@@ -557,15 +386,6 @@ static GpuBlockInfo ViGdsCounterBlockInfo = {
     true,     ViGdsCounterRegAddr,
     false,    gfx8_cntx_prim::select_value<regGDS_PERFCOUNTER0_SELECT>,
     false};
-// Counter block VGT
-static GpuBlockInfo ViVgtCounterBlockInfo = {
-    "VI_VGT", kHsaViCounterBlockIdVgt,
-    1,        CntlMethodBySe,
-    145,      VI_COUNTER_NUM_PER_VGT,
-    0,        0,
-    true,     ViVgtCounterRegAddr,
-    false,    gfx8_cntx_prim::select_value<regVGT_PERFCOUNTER0_SELECT__CI__VI>,
-    false};
 // Counter block IA
 static GpuBlockInfo ViIaCounterBlockInfo = {
     "VI_IA", kHsaViCounterBlockIdIa,
@@ -587,24 +407,6 @@ static GpuBlockInfo ViSrbmCounterBlockInfo = {
     0,         0,
     true,      ViSrbmCounterRegAddr,
     false,     gfx8_cntx_prim::select_value<regSRBM_PERFCOUNTER0_SELECT>,
-    false};
-// Counter block WD
-static GpuBlockInfo ViWdCounterBlockInfo = {
-    "VI_WD", kHsaViCounterBlockIdWd,
-    1,       CntlMethodNone,
-    36,      VI_COUNTER_NUM_PER_WD,
-    0,       0,
-    true,    ViWdCounterRegAddr,
-    false,   gfx8_cntx_prim::select_value<regWD_PERFCOUNTER0_SELECT__CI__VI>,
-    false};
-// Counter block CPG
-static GpuBlockInfo ViCpgCounterBlockInfo = {
-    "VI_CPG", kHsaViCounterBlockIdCpg,
-    1,        CntlMethodNone,
-    48,       VI_COUNTER_NUM_PER_CPG,
-    0,        0,
-    true,     ViCpgCounterRegAddr,
-    false,    gfx8_cntx_prim::select_value<regCPG_PERFCOUNTER0_SELECT__CI__VI>,
     false};
 // Counter block CPC
 static GpuBlockInfo ViCpcCounterBlockInfo = {

@@ -1,6 +1,6 @@
 #ifndef _DEF_GFX8_DEF_H_
 #define _DEF_GFX8_DEF_H_
-
+#include "def/gpu_block_info.h"
 // include gfxip/gfx8/si_ci_vi_merged_pm4cmds.h
 #define PM4_CMD(op, count) PM4_TYPE_3_HDR(op, count, ShaderGraphics, PredDisable)
 // include gfxip/gfx8/si_ci_vi_merged_pm4_it_opcodes.h
@@ -18,24 +18,19 @@ enum IT_OpCodeType {
 };
 #define PM4_TYPE_3 3
 // include gfxip/gfx8/si_ci_vi_merged_typedef.h
-typedef union CB_PERFCOUNTER0_SELECT__CI__VI regCB_PERFCOUNTER0_SELECT__CI__VI;
 typedef union COMPUTE_PERFCOUNT_ENABLE__CI__VI regCOMPUTE_PERFCOUNT_ENABLE__CI__VI;
 typedef union CPC_PERFCOUNTER0_SELECT__CI__VI regCPC_PERFCOUNTER0_SELECT__CI__VI;
 typedef union CPF_PERFCOUNTER0_SELECT__CI__VI regCPF_PERFCOUNTER0_SELECT__CI__VI;
-typedef union CPG_PERFCOUNTER0_SELECT__CI__VI regCPG_PERFCOUNTER0_SELECT__CI__VI;
 typedef union CP_COHER_BASE regCP_COHER_BASE;
 typedef union CP_COHER_BASE_HI__CI__VI regCP_COHER_BASE_HI__CI__VI;
 typedef union CP_COHER_SIZE regCP_COHER_SIZE;
 typedef union CP_COHER_SIZE_HI__CI__VI regCP_COHER_SIZE_HI__CI__VI;
 typedef union CP_PERFMON_CNTL regCP_PERFMON_CNTL;
-typedef union DB_PERFCOUNTER0_SELECT regDB_PERFCOUNTER0_SELECT;
 typedef union GDS_PERFCOUNTER0_SELECT regGDS_PERFCOUNTER0_SELECT;
 typedef union GRBM_GFX_INDEX regGRBM_GFX_INDEX;
 typedef union GRBM_PERFCOUNTER0_SELECT regGRBM_PERFCOUNTER0_SELECT;
 typedef union GRBM_SE0_PERFCOUNTER_SELECT regGRBM_SE0_PERFCOUNTER_SELECT;
 typedef union IA_PERFCOUNTER0_SELECT__CI__VI regIA_PERFCOUNTER0_SELECT__CI__VI;
-typedef union PA_SC_PERFCOUNTER0_SELECT regPA_SC_PERFCOUNTER0_SELECT;
-typedef union PA_SU_PERFCOUNTER0_SELECT regPA_SU_PERFCOUNTER0_SELECT;
 typedef union SPI_PERFCOUNTER0_SELECT regSPI_PERFCOUNTER0_SELECT;
 typedef union SQ_PERFCOUNTER0_SELECT__CI__VI regSQ_PERFCOUNTER0_SELECT__CI__VI;
 typedef union SQ_PERFCOUNTER_CTRL regSQ_PERFCOUNTER_CTRL;
@@ -55,34 +50,7 @@ typedef union TCA_PERFCOUNTER0_SELECT__CI__VI regTCA_PERFCOUNTER0_SELECT__CI__VI
 typedef union TCC_PERFCOUNTER0_SELECT__CI__VI regTCC_PERFCOUNTER0_SELECT__CI__VI;
 typedef union TCP_PERFCOUNTER0_SELECT__CI__VI regTCP_PERFCOUNTER0_SELECT__CI__VI;
 typedef union TD_PERFCOUNTER0_SELECT regTD_PERFCOUNTER0_SELECT;
-typedef union VGT_PERFCOUNTER0_SELECT__CI__VI regVGT_PERFCOUNTER0_SELECT__CI__VI;
-typedef union WD_PERFCOUNTER0_SELECT__CI__VI regWD_PERFCOUNTER0_SELECT__CI__VI;
 // include gfxip/gfx8/si_ci_vi_merged_registers.h
-
-union CB_PERFCOUNTER0_SELECT__CI__VI {
-  struct {
-#if defined(LITTLEENDIAN_CPU)
-    unsigned int PERF_SEL : 9;
-    unsigned int : 1;
-    unsigned int PERF_SEL1 : 9;
-    unsigned int : 1;
-    unsigned int CNTR_MODE : 4;
-    unsigned int PERF_MODE1 : 4;
-    unsigned int PERF_MODE : 4;
-#elif defined(BIGENDIAN_CPU)
-    unsigned int PERF_MODE : 4;
-    unsigned int PERF_MODE1 : 4;
-    unsigned int CNTR_MODE : 4;
-    unsigned int : 1;
-    unsigned int PERF_SEL1 : 9;
-    unsigned int : 1;
-    unsigned int PERF_SEL : 9;
-#endif
-  } bitfields, bits;
-  unsigned int u32All;
-  signed int i32All;
-  float f32All;
-};
 
 union COMPUTE_PERFCOUNT_ENABLE__CI__VI {
   struct {
@@ -123,29 +91,6 @@ union CPC_PERFCOUNTER0_SELECT__CI__VI {
 };
 
 union CPF_PERFCOUNTER0_SELECT__CI__VI {
-  struct {
-#if defined(LITTLEENDIAN_CPU)
-    unsigned int PERF_SEL : 6;
-    unsigned int : 4;
-    unsigned int PERF_SEL1 : 6;
-    unsigned int : 4;
-    unsigned int CNTR_MODE : 4;
-    unsigned int : 8;
-#elif defined(BIGENDIAN_CPU)
-    unsigned int : 8;
-    unsigned int CNTR_MODE : 4;
-    unsigned int : 4;
-    unsigned int PERF_SEL1 : 6;
-    unsigned int : 4;
-    unsigned int PERF_SEL : 6;
-#endif
-  } bitfields, bits;
-  unsigned int u32All;
-  signed int i32All;
-  float f32All;
-};
-
-union CPG_PERFCOUNTER0_SELECT__CI__VI {
   struct {
 #if defined(LITTLEENDIAN_CPU)
     unsigned int PERF_SEL : 6;
@@ -238,27 +183,6 @@ union CP_PERFMON_CNTL {
     unsigned int PERFMON_ENABLE_MODE : 2;
     unsigned int SPM_PERFMON_STATE__CI__VI : 4;
     unsigned int PERFMON_STATE : 4;
-#endif
-  } bitfields, bits;
-  unsigned int u32All;
-  signed int i32All;
-  float f32All;
-};
-
-union DB_PERFCOUNTER0_SELECT {
-  struct {
-#if defined(LITTLEENDIAN_CPU)
-    unsigned int PERF_SEL : 10;
-    unsigned int PERF_SEL1__CI__VI : 10;
-    unsigned int CNTR_MODE__CI__VI : 4;
-    unsigned int PERF_MODE1__CI__VI : 4;
-    unsigned int PERF_MODE : 4;
-#elif defined(BIGENDIAN_CPU)
-    unsigned int PERF_MODE : 4;
-    unsigned int PERF_MODE1__CI__VI : 4;
-    unsigned int CNTR_MODE__CI__VI : 4;
-    unsigned int PERF_SEL1__CI__VI : 10;
-    unsigned int PERF_SEL : 10;
 #endif
   } bitfields, bits;
   unsigned int u32All;
@@ -419,44 +343,6 @@ union IA_PERFCOUNTER0_SELECT__CI__VI {
     unsigned int PERF_MODE1 : 4;
     unsigned int CNTR_MODE : 4;
     unsigned int PERF_SEL1 : 10;
-    unsigned int PERF_SEL : 10;
-#endif
-  } bitfields, bits;
-  unsigned int u32All;
-  signed int i32All;
-  float f32All;
-};
-
-union PA_SC_PERFCOUNTER0_SELECT {
-  struct {
-#if defined(LITTLEENDIAN_CPU)
-    unsigned int PERF_SEL : 10;
-    unsigned int PERF_SEL1__CI__VI : 10;
-    unsigned int CNTR_MODE__CI__VI : 4;
-    unsigned int : 8;
-#elif defined(BIGENDIAN_CPU)
-    unsigned int : 8;
-    unsigned int CNTR_MODE__CI__VI : 4;
-    unsigned int PERF_SEL1__CI__VI : 10;
-    unsigned int PERF_SEL : 10;
-#endif
-  } bitfields, bits;
-  unsigned int u32All;
-  signed int i32All;
-  float f32All;
-};
-
-union PA_SU_PERFCOUNTER0_SELECT {
-  struct {
-#if defined(LITTLEENDIAN_CPU)
-    unsigned int PERF_SEL : 10;
-    unsigned int PERF_SEL1__CI__VI : 10;
-    unsigned int CNTR_MODE__CI__VI : 4;
-    unsigned int : 8;
-#elif defined(BIGENDIAN_CPU)
-    unsigned int : 8;
-    unsigned int CNTR_MODE__CI__VI : 4;
-    unsigned int PERF_SEL1__CI__VI : 10;
     unsigned int PERF_SEL : 10;
 #endif
   } bitfields, bits;
@@ -863,44 +749,6 @@ union TD_PERFCOUNTER0_SELECT {
   signed int i32All;
   float f32All;
 };
-
-union VGT_PERFCOUNTER0_SELECT__CI__VI {
-  struct {
-#if defined(LITTLEENDIAN_CPU)
-    unsigned int PERF_SEL : 10;
-    unsigned int PERF_SEL1 : 10;
-    unsigned int CNTR_MODE : 4;
-    unsigned int PERF_MODE1 : 4;
-    unsigned int PERF_MODE : 4;
-#elif defined(BIGENDIAN_CPU)
-    unsigned int PERF_MODE : 4;
-    unsigned int PERF_MODE1 : 4;
-    unsigned int CNTR_MODE : 4;
-    unsigned int PERF_SEL1 : 10;
-    unsigned int PERF_SEL : 10;
-#endif
-  } bitfields, bits;
-  unsigned int u32All;
-  signed int i32All;
-  float f32All;
-};
-
-union WD_PERFCOUNTER0_SELECT__CI__VI {
-  struct {
-#if defined(LITTLEENDIAN_CPU)
-    unsigned int PERF_SEL : 8;
-    unsigned int : 20;
-    unsigned int PERF_MODE : 4;
-#elif defined(BIGENDIAN_CPU)
-    unsigned int PERF_MODE : 4;
-    unsigned int : 20;
-    unsigned int PERF_SEL : 8;
-#endif
-  } bitfields, bits;
-  unsigned int u32All;
-  signed int i32All;
-  float f32All;
-};
 // include gfxip/gfx8/si_ci_vi_merged_enum.h
 
 enum SQ_THREAD_TRACE_MODE_SEL {
@@ -1238,6 +1086,56 @@ typedef struct _PM4CMDCOPYDATA  // only supported on NI and later asics
 } PM4CMDCOPYDATA, *PPM4CMDCOPYDATA;
 #define PM4_CMD_SET_CONFIG_REG_DWORDS (sizeof(PM4CMDSETDATA) / sizeof(unsigned int))
 #define PM4_CMD_SET_SH_REG_DWORDS (sizeof(PM4CMDSETDATA) / sizeof(unsigned int))
+// include gfxip/gfx8/gfx8_block_info.h
+#define VI_NUM_TA 16   // TA has 11 instances
+#define VI_NUM_TD 16   // TD has 11 instances
+#define VI_NUM_TCP 16  // TCP has 11 instances
+#define VI_NUM_TCA 2   // TCA has 2 instances per chip
+#define VI_NUM_TCC 16  // TCC has 16 instances per chip
+#define VI_COUNTER_NUM_PER_SRBM 2
+#define VI_COUNTER_NUM_PER_CPF 2
+#define VI_COUNTER_NUM_PER_GRBM 2
+#define VI_COUNTER_NUM_PER_GRBMSE 4
+#define VI_COUNTER_NUM_PER_SPI 6  // [Shucai: To do: double check the value]
+#define VI_COUNTER_NUM_PER_SQ 16
+#define VI_COUNTER_NUM_PER_SX 4
+#define VI_COUNTER_NUM_PER_TA 2
+#define VI_COUNTER_NUM_PER_TCA 4
+#define VI_COUNTER_NUM_PER_TCC 4
+#define VI_COUNTER_NUM_PER_TD 2  // [Shucai: To do: double check the value]
+#define VI_COUNTER_NUM_PER_TCP 4
+#define VI_COUNTER_NUM_PER_GDS 4
+#define VI_COUNTER_NUM_PER_IA 4
+#define VI_COUNTER_NUM_PER_MC 4
+#define VI_COUNTER_NUM_PER_CPC 2
+
+enum HsaViCounterBlockId {
+  kHsaViCounterBlockIdCpf,
+  kHsaViCounterBlockIdGrbm,
+  kHsaViCounterBlockIdGrbmSe,
+  kHsaViCounterBlockIdSpi,
+  kHsaViCounterBlockIdSq,
+  kHsaViCounterBlockIdSqEs,
+  kHsaViCounterBlockIdSqGs,
+  kHsaViCounterBlockIdSqVs,
+  kHsaViCounterBlockIdSqPs,
+  kHsaViCounterBlockIdSqLs,
+  kHsaViCounterBlockIdSqHs,
+  kHsaViCounterBlockIdSqCs,
+  kHsaViCounterBlockIdSx,
+  kHsaViCounterBlockIdTa,
+  kHsaViCounterBlockIdTca,
+  kHsaViCounterBlockIdTcc,
+  kHsaViCounterBlockIdTd,
+  kHsaViCounterBlockIdTcp,
+  kHsaViCounterBlockIdGds,
+  kHsaViCounterBlockIdIa,
+  kHsaViCounterBlockIdMc,
+  kHsaViCounterBlockIdSrbm,
+  kHsaViCounterBlockIdCpc,
+  kHsaViCounterBlockIdIommuV2,
+  kHsaViCounterBlockIdKernelDriver,
+};
 // include gfxip/gfx8/si_ci_vi_merged_mask.h
 #define CP_COHER_CNTL__SH_ICACHE_ACTION_ENA_MASK 0x20000000L
 #define CP_COHER_CNTL__SH_KCACHE_ACTION_ENA_MASK 0x08000000L
@@ -1247,18 +1145,6 @@ typedef struct _PM4CMDCOPYDATA  // only supported on NI and later asics
 #define CP_COHER_SIZE_HI__COHER_SIZE_HI_256B_MASK__CI__VI 0x000000ffL
 #define CP_COHER_SIZE__COHER_SIZE_256B_MASK 0xffffffffL
 // include gfxip/gfx8/si_ci_vi_merged_offset.h
-#define mmCB_PERFCOUNTER0_HI__CI__VI 0xD407
-#define mmCB_PERFCOUNTER0_LO__CI__VI 0xD406
-#define mmCB_PERFCOUNTER0_SELECT__CI__VI 0xDC01
-#define mmCB_PERFCOUNTER1_HI__CI__VI 0xD409
-#define mmCB_PERFCOUNTER1_LO__CI__VI 0xD408
-#define mmCB_PERFCOUNTER1_SELECT__CI__VI 0xDC03
-#define mmCB_PERFCOUNTER2_HI__CI__VI 0xD40B
-#define mmCB_PERFCOUNTER2_LO__CI__VI 0xD40A
-#define mmCB_PERFCOUNTER2_SELECT__CI__VI 0xDC04
-#define mmCB_PERFCOUNTER3_HI__CI__VI 0xD40D
-#define mmCB_PERFCOUNTER3_LO__CI__VI 0xD40C
-#define mmCB_PERFCOUNTER3_SELECT__CI__VI 0xDC05
 #define mmCOMPUTE_PERFCOUNT_ENABLE__CI__VI 0x2E0B
 #define mmCPC_PERFCOUNTER0_HI__CI__VI 0xD007
 #define mmCPC_PERFCOUNTER0_LO__CI__VI 0xD006
@@ -1272,25 +1158,7 @@ typedef struct _PM4CMDCOPYDATA  // only supported on NI and later asics
 #define mmCPF_PERFCOUNTER1_HI__CI__VI 0xD009
 #define mmCPF_PERFCOUNTER1_LO__CI__VI 0xD008
 #define mmCPF_PERFCOUNTER1_SELECT__CI__VI 0xD805
-#define mmCPG_PERFCOUNTER0_HI__CI__VI 0xD003
-#define mmCPG_PERFCOUNTER0_LO__CI__VI 0xD002
-#define mmCPG_PERFCOUNTER0_SELECT__CI__VI 0xD802
-#define mmCPG_PERFCOUNTER1_HI__CI__VI 0xD001
-#define mmCPG_PERFCOUNTER1_LO__CI__VI 0xD000
-#define mmCPG_PERFCOUNTER1_SELECT__CI__VI 0xD800
 #define mmCP_PERFMON_CNTL__CI__VI 0xD808
-#define mmDB_PERFCOUNTER0_HI__CI__VI 0xD441
-#define mmDB_PERFCOUNTER0_LO__CI__VI 0xD440
-#define mmDB_PERFCOUNTER0_SELECT__CI__VI 0xDC40
-#define mmDB_PERFCOUNTER1_HI__CI__VI 0xD443
-#define mmDB_PERFCOUNTER1_LO__CI__VI 0xD442
-#define mmDB_PERFCOUNTER1_SELECT__CI__VI 0xDC42
-#define mmDB_PERFCOUNTER2_HI__CI__VI 0xD445
-#define mmDB_PERFCOUNTER2_LO__CI__VI 0xD444
-#define mmDB_PERFCOUNTER2_SELECT__CI__VI 0xDC44
-#define mmDB_PERFCOUNTER3_HI__CI__VI 0xD447
-#define mmDB_PERFCOUNTER3_LO__CI__VI 0xD446
-#define mmDB_PERFCOUNTER3_SELECT__CI__VI 0xDC46
 #define mmDRM_PERFCOUNTER1_HI 0x156E
 #define mmDRM_PERFCOUNTER1_LO 0x156D
 #define mmDRM_PERFCOUNTER1_SELECT 0x156B
@@ -1373,18 +1241,6 @@ typedef struct _PM4CMDCOPYDATA  // only supported on NI and later asics
 #define mmPA_SC_PERFCOUNTER7_HI__CI__VI 0xD14F
 #define mmPA_SC_PERFCOUNTER7_LO__CI__VI 0xD14E
 #define mmPA_SC_PERFCOUNTER7_SELECT__CI__VI 0xD948
-#define mmPA_SU_PERFCOUNTER0_HI__CI__VI 0xD101
-#define mmPA_SU_PERFCOUNTER0_LO__CI__VI 0xD100
-#define mmPA_SU_PERFCOUNTER0_SELECT__CI__VI 0xD900
-#define mmPA_SU_PERFCOUNTER1_HI__CI__VI 0xD103
-#define mmPA_SU_PERFCOUNTER1_LO__CI__VI 0xD102
-#define mmPA_SU_PERFCOUNTER1_SELECT__CI__VI 0xD902
-#define mmPA_SU_PERFCOUNTER2_HI__CI__VI 0xD105
-#define mmPA_SU_PERFCOUNTER2_LO__CI__VI 0xD104
-#define mmPA_SU_PERFCOUNTER2_SELECT__CI__VI 0xD904
-#define mmPA_SU_PERFCOUNTER3_HI__CI__VI 0xD107
-#define mmPA_SU_PERFCOUNTER3_LO__CI__VI 0xD106
-#define mmPA_SU_PERFCOUNTER3_SELECT__CI__VI 0xD905
 #define mmRLC_PERFCOUNTER0_HI__CI__VI 0xD481
 #define mmRLC_PERFCOUNTER0_LO__CI__VI 0xD480
 #define mmRLC_PERFCOUNTER0_SELECT__CI__VI 0xDCC1
@@ -1520,30 +1376,6 @@ typedef struct _PM4CMDCOPYDATA  // only supported on NI and later asics
 #define mmTD_PERFCOUNTER1_HI__CI__VI 0xD303
 #define mmTD_PERFCOUNTER1_LO__CI__VI 0xD302
 #define mmTD_PERFCOUNTER1_SELECT__CI__VI 0xDB02
-#define mmVGT_PERFCOUNTER0_HI__CI__VI 0xD091
-#define mmVGT_PERFCOUNTER0_LO__CI__VI 0xD090
-#define mmVGT_PERFCOUNTER0_SELECT__CI__VI 0xD88C
-#define mmVGT_PERFCOUNTER1_HI__CI__VI 0xD093
-#define mmVGT_PERFCOUNTER1_LO__CI__VI 0xD092
-#define mmVGT_PERFCOUNTER1_SELECT__CI__VI 0xD88D
-#define mmVGT_PERFCOUNTER2_HI__CI__VI 0xD095
-#define mmVGT_PERFCOUNTER2_LO__CI__VI 0xD094
-#define mmVGT_PERFCOUNTER2_SELECT__CI__VI 0xD88E
-#define mmVGT_PERFCOUNTER3_HI__CI__VI 0xD097
-#define mmVGT_PERFCOUNTER3_LO__CI__VI 0xD096
-#define mmVGT_PERFCOUNTER3_SELECT__CI__VI 0xD88F
-#define mmWD_PERFCOUNTER0_HI__CI__VI 0xD081
-#define mmWD_PERFCOUNTER0_LO__CI__VI 0xD080
-#define mmWD_PERFCOUNTER0_SELECT__CI__VI 0xD880
-#define mmWD_PERFCOUNTER1_HI__CI__VI 0xD083
-#define mmWD_PERFCOUNTER1_LO__CI__VI 0xD082
-#define mmWD_PERFCOUNTER1_SELECT__CI__VI 0xD881
-#define mmWD_PERFCOUNTER2_HI__CI__VI 0xD085
-#define mmWD_PERFCOUNTER2_LO__CI__VI 0xD084
-#define mmWD_PERFCOUNTER2_SELECT__CI__VI 0xD882
-#define mmWD_PERFCOUNTER3_HI__CI__VI 0xD087
-#define mmWD_PERFCOUNTER3_LO__CI__VI 0xD086
-#define mmWD_PERFCOUNTER3_SELECT__CI__VI 0xD883
 #define mmIH_PERFCOUNTER0_RESULT__VI 0x0E3A
 #define mmIH_PERFCOUNTER1_RESULT__VI 0x0E3B
 #define mmIH_PERFMON_CNTL__VI 0x0E39
@@ -1571,9 +1403,6 @@ typedef struct _PM4CMDCOPYDATA  // only supported on NI and later asics
 #define mmSRBM_PERFCOUNTER1_HI__VI 0x7C06
 #define mmSRBM_PERFCOUNTER1_LO__VI 0x7C05
 #define mmSRBM_PERFCOUNTER1_SELECT__VI 0x7C02
-
-#include "def/gpu_block_info.h"
-#include "def/gfx8_block_info.h"
 #include "def/gfx8_primitives.h"
 #include "def/gfx8_block_table.h"
 #endif  // _DEF_GFX8_DEF_H_

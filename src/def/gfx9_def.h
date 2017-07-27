@@ -1,6 +1,6 @@
 #ifndef _DEF_GFX9_DEF_H_
 #define _DEF_GFX9_DEF_H_
-
+#include "def/gpu_block_info.h"
 // include gfxip/gfx9/gfx9_pm4_it_opcodes.h
 
 enum IT_OpCodeType {
@@ -52,18 +52,6 @@ enum VGT_EVENT_TYPE {
 #define mmGDS_PERFCOUNTER1_SELECT 0xDA81
 #define mmGDS_PERFCOUNTER2_SELECT 0xDA82
 #define mmGDS_PERFCOUNTER3_SELECT 0xDA83
-#define mmCB_PERFCOUNTER0_LO 0xD406
-#define mmCB_PERFCOUNTER1_LO 0xD408
-#define mmCB_PERFCOUNTER2_LO 0xD40A
-#define mmCB_PERFCOUNTER3_LO 0xD40C
-#define mmCB_PERFCOUNTER0_HI 0xD407
-#define mmCB_PERFCOUNTER1_HI 0xD409
-#define mmCB_PERFCOUNTER2_HI 0xD40B
-#define mmCB_PERFCOUNTER3_HI 0xD40D
-#define mmCB_PERFCOUNTER0_SELECT 0xDC01
-#define mmCB_PERFCOUNTER1_SELECT 0xDC03
-#define mmCB_PERFCOUNTER2_SELECT 0xDC04
-#define mmCB_PERFCOUNTER3_SELECT 0xDC05
 #define mmRLC_PERFCOUNTER0_LO 0xD480
 #define mmRLC_PERFCOUNTER1_LO 0xD482
 #define mmRLC_PERFCOUNTER0_HI 0xD481
@@ -152,14 +140,6 @@ enum VGT_EVENT_TYPE {
 #define mmSQ_PERFCOUNTER14_SELECT 0xD9CE
 #define mmSQ_PERFCOUNTER15_SELECT 0xD9CF
 #define mmCOMPUTE_PERFCOUNT_ENABLE 0x2E0B
-#define mmVGT_PERFCOUNTER0_LO 0xD090
-#define mmVGT_PERFCOUNTER1_LO 0xD092
-#define mmVGT_PERFCOUNTER2_LO 0xD094
-#define mmVGT_PERFCOUNTER3_LO 0xD096
-#define mmVGT_PERFCOUNTER0_HI 0xD091
-#define mmVGT_PERFCOUNTER1_HI 0xD093
-#define mmVGT_PERFCOUNTER2_HI 0xD095
-#define mmVGT_PERFCOUNTER3_HI 0xD097
 #define mmIA_PERFCOUNTER0_LO 0xD088
 #define mmIA_PERFCOUNTER1_LO 0xD08A
 #define mmIA_PERFCOUNTER2_LO 0xD08C
@@ -168,26 +148,10 @@ enum VGT_EVENT_TYPE {
 #define mmIA_PERFCOUNTER1_HI 0xD08B
 #define mmIA_PERFCOUNTER2_HI 0xD08D
 #define mmIA_PERFCOUNTER3_HI 0xD08F
-#define mmWD_PERFCOUNTER0_LO 0xD080
-#define mmWD_PERFCOUNTER1_LO 0xD082
-#define mmWD_PERFCOUNTER2_LO 0xD084
-#define mmWD_PERFCOUNTER3_LO 0xD086
-#define mmWD_PERFCOUNTER0_HI 0xD081
-#define mmWD_PERFCOUNTER1_HI 0xD083
-#define mmWD_PERFCOUNTER2_HI 0xD085
-#define mmWD_PERFCOUNTER3_HI 0xD087
-#define mmVGT_PERFCOUNTER0_SELECT 0xD88C
-#define mmVGT_PERFCOUNTER1_SELECT 0xD88D
-#define mmVGT_PERFCOUNTER2_SELECT 0xD88E
-#define mmVGT_PERFCOUNTER3_SELECT 0xD88F
 #define mmIA_PERFCOUNTER0_SELECT 0xD884
 #define mmIA_PERFCOUNTER1_SELECT 0xD885
 #define mmIA_PERFCOUNTER2_SELECT 0xD886
 #define mmIA_PERFCOUNTER3_SELECT 0xD887
-#define mmWD_PERFCOUNTER0_SELECT 0xD880
-#define mmWD_PERFCOUNTER1_SELECT 0xD881
-#define mmWD_PERFCOUNTER2_SELECT 0xD882
-#define mmWD_PERFCOUNTER3_SELECT 0xD883
 #define mmTD_PERFCOUNTER0_LO 0xD300
 #define mmTD_PERFCOUNTER1_LO 0xD302
 #define mmTD_PERFCOUNTER0_HI 0xD301
@@ -255,10 +219,6 @@ enum VGT_EVENT_TYPE {
 #define mmGRBM_SE1_PERFCOUNTER_SELECT 0xD843
 #define mmGRBM_SE2_PERFCOUNTER_SELECT 0xD844
 #define mmGRBM_SE3_PERFCOUNTER_SELECT 0xD845
-#define mmCPG_PERFCOUNTER1_LO 0xD000
-#define mmCPG_PERFCOUNTER1_HI 0xD001
-#define mmCPG_PERFCOUNTER0_LO 0xD002
-#define mmCPG_PERFCOUNTER0_HI 0xD003
 #define mmCPC_PERFCOUNTER1_LO 0xD004
 #define mmCPC_PERFCOUNTER1_HI 0xD005
 #define mmCPC_PERFCOUNTER0_LO 0xD006
@@ -267,8 +227,6 @@ enum VGT_EVENT_TYPE {
 #define mmCPF_PERFCOUNTER1_HI 0xD009
 #define mmCPF_PERFCOUNTER0_LO 0xD00A
 #define mmCPF_PERFCOUNTER0_HI 0xD00B
-#define mmCPG_PERFCOUNTER1_SELECT 0xD800
-#define mmCPG_PERFCOUNTER0_SELECT 0xD802
 #define mmCPC_PERFCOUNTER1_SELECT 0xD803
 #define mmCPC_PERFCOUNTER0_SELECT 0xD809
 #define mmCPF_PERFCOUNTER1_SELECT 0xD805
@@ -286,26 +244,6 @@ enum VGT_EVENT_TYPE {
 #define mmSX_PERFCOUNTER1_SELECT 0xDA41
 #define mmSX_PERFCOUNTER2_SELECT 0xDA42
 #define mmSX_PERFCOUNTER3_SELECT 0xDA43
-#define mmDB_PERFCOUNTER0_LO 0xD440
-#define mmDB_PERFCOUNTER1_LO 0xD442
-#define mmDB_PERFCOUNTER2_LO 0xD444
-#define mmDB_PERFCOUNTER3_LO 0xD446
-#define mmDB_PERFCOUNTER0_HI 0xD441
-#define mmDB_PERFCOUNTER1_HI 0xD443
-#define mmDB_PERFCOUNTER2_HI 0xD445
-#define mmDB_PERFCOUNTER3_HI 0xD447
-#define mmDB_PERFCOUNTER0_SELECT 0xDC40
-#define mmDB_PERFCOUNTER1_SELECT 0xDC42
-#define mmDB_PERFCOUNTER2_SELECT 0xDC44
-#define mmDB_PERFCOUNTER3_SELECT 0xDC46
-#define mmPA_SU_PERFCOUNTER0_LO 0xD100
-#define mmPA_SU_PERFCOUNTER0_HI 0xD101
-#define mmPA_SU_PERFCOUNTER1_LO 0xD102
-#define mmPA_SU_PERFCOUNTER1_HI 0xD103
-#define mmPA_SU_PERFCOUNTER2_LO 0xD104
-#define mmPA_SU_PERFCOUNTER2_HI 0xD105
-#define mmPA_SU_PERFCOUNTER3_LO 0xD106
-#define mmPA_SU_PERFCOUNTER3_HI 0xD107
 #define mmPA_SC_PERFCOUNTER0_LO 0xD140
 #define mmPA_SC_PERFCOUNTER0_HI 0xD141
 #define mmPA_SC_PERFCOUNTER1_LO 0xD142
@@ -322,10 +260,6 @@ enum VGT_EVENT_TYPE {
 #define mmPA_SC_PERFCOUNTER6_HI 0xD14D
 #define mmPA_SC_PERFCOUNTER7_LO 0xD14E
 #define mmPA_SC_PERFCOUNTER7_HI 0xD14F
-#define mmPA_SU_PERFCOUNTER0_SELECT 0xD900
-#define mmPA_SU_PERFCOUNTER1_SELECT 0xD902
-#define mmPA_SU_PERFCOUNTER2_SELECT 0xD904
-#define mmPA_SU_PERFCOUNTER3_SELECT 0xD905
 #define mmPA_SC_PERFCOUNTER0_SELECT 0xD940
 #define mmPA_SC_PERFCOUNTER1_SELECT 0xD942
 #define mmPA_SC_PERFCOUNTER2_SELECT 0xD943
@@ -348,31 +282,6 @@ union GDS_PERFCOUNTER0_SELECT {
     unsigned int CNTR_MODE : 4;
     unsigned int PERFCOUNTER_SELECT1 : 10;
     unsigned int PERFCOUNTER_SELECT : 10;
-#endif
-  } bitfields, bits;
-  unsigned int u32All;
-  signed int i32All;
-  float f32All;
-};
-
-union CB_PERFCOUNTER0_SELECT {
-  struct {
-#if defined(LITTLEENDIAN_CPU)
-    unsigned int PERF_SEL : 9;
-    unsigned int : 1;
-    unsigned int PERF_SEL1 : 9;
-    unsigned int : 1;
-    unsigned int CNTR_MODE : 4;
-    unsigned int PERF_MODE1 : 4;
-    unsigned int PERF_MODE : 4;
-#elif defined(BIGENDIAN_CPU)
-    unsigned int PERF_MODE : 4;
-    unsigned int PERF_MODE1 : 4;
-    unsigned int CNTR_MODE : 4;
-    unsigned int : 1;
-    unsigned int PERF_SEL1 : 9;
-    unsigned int : 1;
-    unsigned int PERF_SEL : 9;
 #endif
   } bitfields, bits;
   unsigned int u32All;
@@ -649,27 +558,6 @@ union COMPUTE_PERFCOUNT_ENABLE {
   float f32All;
 };
 
-union VGT_PERFCOUNTER0_SELECT {
-  struct {
-#if defined(LITTLEENDIAN_CPU)
-    unsigned int PERF_SEL : 10;
-    unsigned int PERF_SEL1 : 10;
-    unsigned int CNTR_MODE : 4;
-    unsigned int PERF_MODE1 : 4;
-    unsigned int PERF_MODE : 4;
-#elif defined(BIGENDIAN_CPU)
-    unsigned int PERF_MODE : 4;
-    unsigned int PERF_MODE1 : 4;
-    unsigned int CNTR_MODE : 4;
-    unsigned int PERF_SEL1 : 10;
-    unsigned int PERF_SEL : 10;
-#endif
-  } bitfields, bits;
-  unsigned int u32All;
-  signed int i32All;
-  float f32All;
-};
-
 union IA_PERFCOUNTER0_SELECT {
   struct {
 #if defined(LITTLEENDIAN_CPU)
@@ -684,23 +572,6 @@ union IA_PERFCOUNTER0_SELECT {
     unsigned int CNTR_MODE : 4;
     unsigned int PERF_SEL1 : 10;
     unsigned int PERF_SEL : 10;
-#endif
-  } bitfields, bits;
-  unsigned int u32All;
-  signed int i32All;
-  float f32All;
-};
-
-union WD_PERFCOUNTER0_SELECT {
-  struct {
-#if defined(LITTLEENDIAN_CPU)
-    unsigned int PERF_SEL : 8;
-    unsigned int : 20;
-    unsigned int PERF_MODE : 4;
-#elif defined(BIGENDIAN_CPU)
-    unsigned int PERF_MODE : 4;
-    unsigned int : 20;
-    unsigned int PERF_SEL : 8;
 #endif
   } bitfields, bits;
   unsigned int u32All;
@@ -1002,65 +873,6 @@ union SX_PERFCOUNTER0_SELECT {
     unsigned int CNTR_MODE : 4;
     unsigned int PERFCOUNTER_SELECT1 : 10;
     unsigned int PERFCOUNTER_SELECT : 10;
-#endif
-  } bitfields, bits;
-  unsigned int u32All;
-  signed int i32All;
-  float f32All;
-};
-
-union DB_PERFCOUNTER0_SELECT {
-  struct {
-#if defined(LITTLEENDIAN_CPU)
-    unsigned int PERF_SEL : 10;
-    unsigned int PERF_SEL1 : 10;
-    unsigned int CNTR_MODE : 4;
-    unsigned int PERF_MODE1 : 4;
-    unsigned int PERF_MODE : 4;
-#elif defined(BIGENDIAN_CPU)
-    unsigned int PERF_MODE : 4;
-    unsigned int PERF_MODE1 : 4;
-    unsigned int CNTR_MODE : 4;
-    unsigned int PERF_SEL1 : 10;
-    unsigned int PERF_SEL : 10;
-#endif
-  } bitfields, bits;
-  unsigned int u32All;
-  signed int i32All;
-  float f32All;
-};
-
-union PA_SU_PERFCOUNTER0_SELECT {
-  struct {
-#if defined(LITTLEENDIAN_CPU)
-    unsigned int PERF_SEL : 10;
-    unsigned int PERF_SEL1 : 10;
-    unsigned int CNTR_MODE : 4;
-    unsigned int : 8;
-#elif defined(BIGENDIAN_CPU)
-    unsigned int : 8;
-    unsigned int CNTR_MODE : 4;
-    unsigned int PERF_SEL1 : 10;
-    unsigned int PERF_SEL : 10;
-#endif
-  } bitfields, bits;
-  unsigned int u32All;
-  signed int i32All;
-  float f32All;
-};
-
-union PA_SC_PERFCOUNTER0_SELECT {
-  struct {
-#if defined(LITTLEENDIAN_CPU)
-    unsigned int PERF_SEL : 10;
-    unsigned int PERF_SEL1 : 10;
-    unsigned int CNTR_MODE : 4;
-    unsigned int : 8;
-#elif defined(BIGENDIAN_CPU)
-    unsigned int : 8;
-    unsigned int CNTR_MODE : 4;
-    unsigned int PERF_SEL1 : 10;
-    unsigned int PERF_SEL : 10;
 #endif
   } bitfields, bits;
   unsigned int u32All;
@@ -1379,13 +1191,56 @@ typedef struct PM4_MEC_WAIT_REG_MEM {
   };
 
 } PM4MEC_WAIT_REG_MEM, *PPM4MEC_WAIT_REG_MEM;
+// include gfxip/gfx9/gfx9_block_info.h
+#define AI_NUM_TA 16
+#define AI_COUNTER_NUM_PER_TA 2
+#define AI_NUM_TD 16
+#define AI_COUNTER_NUM_PER_TD 2
+#define AI_NUM_TCP 16
+#define AI_COUNTER_NUM_PER_TCP 4
+#define AI_NUM_TCA 2
+#define AI_COUNTER_NUM_PER_TCA 4
+#define AI_NUM_TCC 16
+#define AI_COUNTER_NUM_PER_TCC 4
+#define AI_COUNTER_NUM_PER_GRBM 2
+#define AI_COUNTER_NUM_PER_GRBMSE 4
+#define AI_COUNTER_NUM_PER_SPI 6  // [Shucai: To do: double check the value]
+#define AI_COUNTER_NUM_PER_SQ 16
+#define AI_COUNTER_NUM_PER_SX 4
+#define AI_COUNTER_NUM_PER_GDS 4
+#define AI_COUNTER_NUM_PER_IA 4
+#define AI_COUNTER_NUM_PER_MC 4
+#define AI_COUNTER_NUM_PER_CPC 2
+
+enum HsaAiCounterBlockId {
+  kHsaAiCounterBlockIdGrbm,
+  kHsaAiCounterBlockIdGrbmSe,
+  kHsaAiCounterBlockIdSpi,
+  kHsaAiCounterBlockIdSq,
+  kHsaAiCounterBlockIdSqGs,
+  kHsaAiCounterBlockIdSqVs,
+  kHsaAiCounterBlockIdSqPs,
+  kHsaAiCounterBlockIdSqHs,
+  kHsaAiCounterBlockIdSqCs,
+  kHsaAiCounterBlockIdSx,
+  kHsaAiCounterBlockIdTa,
+  kHsaAiCounterBlockIdTca,
+  kHsaAiCounterBlockIdTcc,
+  kHsaAiCounterBlockIdTd,
+  kHsaAiCounterBlockIdTcp,
+  kHsaAiCounterBlockIdGds,
+  kHsaAiCounterBlockIdIa,
+  kHsaAiCounterBlockIdMc,
+  kHsaAiCounterBlockIdCpc,
+  kHsaAiCounterBlockIdIommuV2,
+  kHsaAiCounterBlockIdKernelDriver,
+};
 // include gfxip/gfx9/gfx9_pm4defs.h
 #define COPY_DATA_SEL_REG 0                   ///< Mem-mapped register
 #define COPY_DATA_SEL_SRC_SYS_PERF_COUNTER 4  ///< Privileged memory performance counter
 #define COPY_DATA_SEL_COUNT_1DW 0             ///< Copy 1 word (32 bits)
 // include gfxip/gfx9/gfx9_typedef.h
 typedef union GDS_PERFCOUNTER0_SELECT regGDS_PERFCOUNTER0_SELECT;
-typedef union CB_PERFCOUNTER0_SELECT regCB_PERFCOUNTER0_SELECT;
 typedef union SPI_PERFCOUNTER0_SELECT regSPI_PERFCOUNTER0_SELECT;
 typedef union SQ_THREAD_TRACE_BASE regSQ_THREAD_TRACE_BASE;
 typedef union SQ_THREAD_TRACE_SIZE regSQ_THREAD_TRACE_SIZE;
@@ -1399,9 +1254,7 @@ typedef union SQ_PERFCOUNTER_CTRL regSQ_PERFCOUNTER_CTRL;
 typedef union SQ_PERFCOUNTER_MASK regSQ_PERFCOUNTER_MASK;
 typedef union SQ_PERFCOUNTER0_SELECT regSQ_PERFCOUNTER0_SELECT;
 typedef union COMPUTE_PERFCOUNT_ENABLE regCOMPUTE_PERFCOUNT_ENABLE;
-typedef union VGT_PERFCOUNTER0_SELECT regVGT_PERFCOUNTER0_SELECT;
 typedef union IA_PERFCOUNTER0_SELECT regIA_PERFCOUNTER0_SELECT;
-typedef union WD_PERFCOUNTER0_SELECT regWD_PERFCOUNTER0_SELECT;
 typedef union TD_PERFCOUNTER0_SELECT regTD_PERFCOUNTER0_SELECT;
 typedef union TA_PERFCOUNTER0_SELECT regTA_PERFCOUNTER0_SELECT;
 typedef union TCP_PERFCOUNTER0_SELECT regTCP_PERFCOUNTER0_SELECT;
@@ -1413,18 +1266,12 @@ typedef union GRBM_SE0_PERFCOUNTER_SELECT regGRBM_SE0_PERFCOUNTER_SELECT;
 typedef union CPC_PERFCOUNTER0_SELECT regCPC_PERFCOUNTER0_SELECT;
 typedef union CP_PERFMON_CNTL regCP_PERFMON_CNTL;
 typedef union SX_PERFCOUNTER0_SELECT regSX_PERFCOUNTER0_SELECT;
-typedef union DB_PERFCOUNTER0_SELECT regDB_PERFCOUNTER0_SELECT;
-typedef union PA_SU_PERFCOUNTER0_SELECT regPA_SU_PERFCOUNTER0_SELECT;
-typedef union PA_SC_PERFCOUNTER0_SELECT regPA_SC_PERFCOUNTER0_SELECT;
 // include gfxip/gfx9/gfx9_mask.h
 #define CP_COHER_CNTL__TC_WB_ACTION_ENA_MASK 0x00040000L
 #define CP_COHER_CNTL__TCL1_ACTION_ENA_MASK 0x00400000L
 #define CP_COHER_CNTL__TC_ACTION_ENA_MASK 0x00800000L
 #define CP_COHER_CNTL__SH_KCACHE_ACTION_ENA_MASK 0x08000000L
 #define CP_COHER_CNTL__SH_ICACHE_ACTION_ENA_MASK 0x20000000L
-
-#include "def/gpu_block_info.h"
-#include "def/gfx9_block_info.h"
 #include "def/gfx9_primitives.h"
 #include "def/gfx9_block_table.h"
 #endif  // _DEF_GFX9_DEF_H_
