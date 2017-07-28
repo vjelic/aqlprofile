@@ -25,31 +25,35 @@ class Gfx9CmdBuilder : public CmdBuilder {
   void BuildBarrierCommand(CmdBuffer* cmdBuf) {
     PM4MEC_EVENT_WRITE event_write;
     memset(&event_write, 0, sizeof(event_write));
-    GenerateCmdHeader(&event_write, IT_EVENT_WRITE);
 
+    // Initialize the command header
+    GenerateCmdHeader(&event_write, IT_EVENT_WRITE);
     event_write.bitfields2.event_type = CS_PARTIAL_FLUSH;
     event_write.bitfields2.event_index = event_index__mec_event_write__cs_partial_flush;
 
+    // Append the built command into output Command Buffer
     APPEND_COMMAND_WRAPPER(cmdBuf, event_write);
   }
 
   void BuildCacheFlushPacket(CmdBuffer* cmdbuf) {
     PM4MEC_ACQUIRE_MEM cache_flush;
     memset(&cache_flush, 0, sizeof(cache_flush));
+
+    // Initialize the command header
     GenerateCmdHeader(&cache_flush, IT_ACQUIRE_MEM);
 
-    // Specify the size of memory to invalidate. Size is
-    // specified in terms of 256 byte chunks. A coher_size
+    // Specify the base address of memory to invalidate.
+    // The address must be 256 byte aligned.
+    cache_flush.coher_base_lo = 0x00;
+    cache_flush.bitfields6.coher_base_hi = 0x00;
+
+    // Specify the size of memory to invalidate.
+    // Size is specified in terms of 256 byte chunks. A coher_size
     // of 0xFFFFFFFF actually specified 0xFFFFFFFF00 (40 bits)
     // of memory. The field coher_size_hi specifies memory from
     // bits 40-64 for a total of 256 TB.
     cache_flush.coher_size = 0xFFFFFFFF;
     cache_flush.bitfields4.coher_size_hi = 0xFFFFFF;
-
-    // Specify the address of memory to invalidate. The
-    // address must be 256 byte aligned.
-    cache_flush.coher_base_lo = 0x00;
-    cache_flush.bitfields6.coher_base_hi = 0x00;
 
     // Specify the poll interval for determing if operation is complete
     cache_flush.bitfields7.poll_interval = 0x04;
@@ -64,7 +68,7 @@ class Gfx9CmdBuilder : public CmdBuilder {
     coher_cntl |= CP_COHER_CNTL__SH_KCACHE_ACTION_ENA_MASK;
     cache_flush.bitfields2.coher_cntl = coher_cntl;
 
-    // Copy AcquireMem command buffer stream
+    // Append the built command into output Command Buffer
     APPEND_COMMAND_WRAPPER(cmdbuf, cache_flush);
   }
 
@@ -77,6 +81,8 @@ class Gfx9CmdBuilder : public CmdBuilder {
                               uint32_t mask_val, uint32_t wait_val) {
     PM4MEC_WAIT_REG_MEM wait_reg_mem;
     memset(&wait_reg_mem, 0, sizeof(wait_reg_mem));
+
+    // Initialize the command header
     GenerateCmdHeader(&wait_reg_mem, IT_WAIT_REG_MEM);
 
     wait_reg_mem.bitfields7.poll_interval = 0x04;
@@ -96,11 +102,11 @@ class Gfx9CmdBuilder : public CmdBuilder {
       wait_reg_mem.bitfields2.function = function__mec_wait_reg_mem__not_equal_reference_value;
     }
 
-    // Value to use in applying equal / not equal function
-    wait_reg_mem.reference = wait_val;
-
     // Apply the mask on value at address/register
     wait_reg_mem.mask = mask_val;
+
+    // Value to use in applying equal / not equal function
+    wait_reg_mem.reference = wait_val;
 
     // The address to poll should be DWord (4 byte) aligned
     // Update upper 32 bit address if addr is not a register
@@ -112,31 +118,39 @@ class Gfx9CmdBuilder : public CmdBuilder {
       wait_reg_mem.mem_poll_addr_hi = High32(wait_addr);
     }
 
-    // Append the command to cmd stream
+    // Append the built command into output Command Buffer
     APPEND_COMMAND_WRAPPER(cmdbuf, wait_reg_mem);
   }
-
-  typedef struct WriteRegPacket_ { uint32_t item[3]; } WriteRegPacket;
 
   void BuildWriteUConfigRegPacket(CmdBuffer* cmdbuf, uint32_t addr, uint32_t value) {
     struct {
       uint32_t item[3];
     } packet;
+
+    // Initialize the command header
     packet.item[0] =
         PM4_TYPE3_HDR(IT_SET_UCONFIG_REG, (1 + sizeof(PM4MEC_SET_CONFIG_REG) / sizeof(uint32_t)));
+
     packet.item[1] = (addr - UCONFIG_SPACE_START);
     packet.item[2] = value;
 
+    // Append the built command into output Command Buffer
     APPEND_COMMAND_WRAPPER(cmdbuf, packet);
   }
 
   void BuildWriteShRegPacket(CmdBuffer* cmdbuf, uint32_t addr, uint32_t value) {
-    WriteRegPacket packet;
+    struct {
+      uint32_t item[3];
+    } packet;
+
+    // Initialize the command header
     packet.item[0] =
         PM4_TYPE3_HDR(IT_SET_SH_REG, (1 + sizeof(PM4MEC_SET_CONFIG_REG) / sizeof(uint32_t)));
+
     packet.item[1] = (addr - PERSISTENT_SPACE_START);
     packet.item[2] = value;
 
+    // Append the built command into output Command Buffer
     APPEND_COMMAND_WRAPPER(cmdbuf, packet);
   }
 
@@ -144,6 +158,8 @@ class Gfx9CmdBuilder : public CmdBuilder {
                            uint32_t src_addr_hi, uint32_t* dst_addr, uint32_t size, bool wait) {
     PM4MEC_COPY_DATA cmd_data;
     memset(&cmd_data, 0, sizeof(PM4MEC_COPY_DATA));
+
+    // Initialize the command header
     cmd_data.ordinal1 = PM4_TYPE3_HDR(IT_COPY_DATA, (sizeof(PM4MEC_COPY_DATA) / sizeof(uint32_t)));
 
     MEC_COPY_DATA_src_sel_enum data_src = src_sel__mec_copy_data__memory;
@@ -188,11 +204,13 @@ class Gfx9CmdBuilder : public CmdBuilder {
     uint64_t addr = uintptr_t(cmd_addr);
     assert(!(addr & 0x3) && "IndirectBuffer address must be 4 byte aligned");
 
-    // Specify the address of indirect buffer encoding cmd stream
     PM4MEC_INDIRECT_BUFFER indirect_buffer;
     memset(&indirect_buffer, 0, sizeof(indirect_buffer));
+
+    // Initialize the command header
     GenerateCmdHeader(&indirect_buffer, IT_INDIRECT_BUFFER);
 
+    // Specify the address of indirect buffer encoding cmd stream
     indirect_buffer.bitfields2.ib_base_lo = (PtrLow32(cmd_addr) >> 2);
     indirect_buffer.ib_base_hi = PtrHigh32(cmd_addr);
 

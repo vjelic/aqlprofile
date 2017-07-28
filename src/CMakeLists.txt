@@ -10,7 +10,6 @@ set ( LIB_SRC
   ${LIB_DIR}/core/legacy_pm4.cpp
 )
 include_directories ( ${LIB_DIR} )
-include_directories ( ${ROOT_DIR} )
 include_directories ( ${API_PATH} )
 add_library ( ${TARGET_LIB} SHARED ${LIB_SRC} )
 target_link_libraries( ${TARGET_LIB} c stdc++)
