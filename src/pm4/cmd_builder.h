@@ -99,20 +99,16 @@ class CmdBuilder {
   virtual void BuildWriteShRegPacket(CmdBuffer* cmdbuf, uint32_t addr, uint32_t value) = 0;
 
   /// @brief Build a Gpu command that copies data from a specified
-  /// source to destination
+  /// source register to destination
   /// @param cmdbuf Pointer to command buffer to be appended
-  /// @param src_sel flag to indicate if values are being read from a
-  /// Register or a memory location
-  /// @param src_addr_lo Low 32-bit Source address of the data to read from
-  /// @param src_addr_hi High 32-bit Source address of the data to read from
+  /// @param src_sel Source register selector
+  /// @param src_reg_add 32-bit Source register address of the data to read from
   /// @param dst_addr Destination address for the data to be written to
   /// @param size Size of the data to be written
   /// @param  wait True if Gpu command should confirm the write operation
   /// operation has completed successfully
-  /// @NOTE Change interface to use void* for Src and void* for Dest
-  virtual void BuildCopyDataPacket(CmdBuffer* cmdbuf, uint32_t src_sel, uint32_t src_addr_lo,
-                                   uint32_t src_addr_hi, uint32_t* dst_addr, uint32_t size,
-                                   bool wait) = 0;
+  virtual void BuildCopyRegDataPacket(CmdBuffer* cmdbuf, uint32_t src_sel, uint32_t src_reg_addr,
+                                      void* dst_addr, uint32_t size, bool wait) = 0;
 
   /// @brief Builds the Gpu command to reference indirectly a stream
   /// of other Gpu commands. The launch command is then copied into

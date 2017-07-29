@@ -132,11 +132,11 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Prim {
         }
         Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::GRBM_GFX_INDEX_ADDR, grbm_value);
 
-        Builder::BuildCopyDataPacket(
-            cmdBuff, Prim::COPY_DATA_SEL_REG_PRM, reg_info.register_addr_lo, 0,
+        Builder::BuildCopyRegDataPacket(
+            cmdBuff, Prim::COPY_DATA_SEL_REG_PRM, reg_info.register_addr_lo,
             (uint32_t*)dataBuff + read_counter, Prim::COPY_DATA_SEL_COUNT_1DW_PRM, false);
-        Builder::BuildCopyDataPacket(
-            cmdBuff, Prim::COPY_DATA_SEL_REG_PRM, reg_info.register_addr_hi, 0,
+        Builder::BuildCopyRegDataPacket(
+            cmdBuff, Prim::COPY_DATA_SEL_REG_PRM, reg_info.register_addr_hi,
             (uint32_t*)dataBuff + read_counter + 1, Prim::COPY_DATA_SEL_COUNT_1DW_PRM, false);
         read_counter += 2;
       }

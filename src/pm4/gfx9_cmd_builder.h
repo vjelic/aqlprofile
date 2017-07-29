@@ -154,8 +154,8 @@ class Gfx9CmdBuilder : public CmdBuilder {
     APPEND_COMMAND_WRAPPER(cmdbuf, packet);
   }
 
-  void BuildCopyDataPacket(CmdBuffer* cmdbuf, uint32_t src_sel, uint32_t src_addr_lo,
-                           uint32_t src_addr_hi, uint32_t* dst_addr, uint32_t size, bool wait) {
+  void BuildCopyRegDataPacket(CmdBuffer* cmdbuf, uint32_t src_sel, uint32_t src_reg_addr,
+                              void* dst_addr, uint32_t size, bool wait) {
     PM4MEC_COPY_DATA cmd_data;
     memset(&cmd_data, 0, sizeof(PM4MEC_COPY_DATA));
 
@@ -164,10 +164,10 @@ class Gfx9CmdBuilder : public CmdBuilder {
 
     MEC_COPY_DATA_src_sel_enum data_src = src_sel__mec_copy_data__memory;
     switch (src_sel) {
-      case 0:
+      case COPY_DATA_SEL_REG:
         data_src = src_sel__mec_copy_data__mem_mapped_register;
         break;
-      case 4:
+      case COPY_DATA_SEL_SRC_SYS_PERF_COUNTER:
         data_src = src_sel__mec_copy_data__perfcounters;
         break;
       default:
@@ -185,7 +185,7 @@ class Gfx9CmdBuilder : public CmdBuilder {
                                                 : count_sel__mec_copy_data__64_bits_of_data;
 
     // Specify the source register offset
-    cmd_data.bitfields3a.src_reg_offset = src_addr_lo;
+    cmd_data.bitfields3a.src_reg_offset = src_reg_addr;
 
     // Specify the destination memory address
     cmd_data.dst_addr_hi = PtrHigh32(dst_addr);

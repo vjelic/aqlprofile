@@ -135,21 +135,21 @@ class gfx9_cntx_prim {
   static uint32_t sq_control_value(const counter_des_t& counter_des) {
     const uint32_t block_id = counter_des.block_des.id;
     regSQ_PERFCOUNTER_CTRL sq_cntr_ctrl = {0};
-    if (block_id == kHsaAiCounterBlockIdSq) {
+    if (block_id == SqCounterBlockId) {
       sq_cntr_ctrl.bits.GS_EN = 0x1;
       sq_cntr_ctrl.bits.VS_EN = 0x1;
       sq_cntr_ctrl.bits.PS_EN = 0x1;
       sq_cntr_ctrl.bits.HS_EN = 0x1;
       sq_cntr_ctrl.bits.CS_EN = 0x1;
-    } else if (block_id == kHsaAiCounterBlockIdSqGs) {
+    } else if (block_id == SqGsCounterBlockId) {
       sq_cntr_ctrl.bits.GS_EN = 0x1;
-    } else if (block_id == kHsaAiCounterBlockIdSqVs) {
+    } else if (block_id == SqVsCounterBlockId) {
       sq_cntr_ctrl.bits.VS_EN = 0x1;
-    } else if (block_id == kHsaAiCounterBlockIdSqPs) {
+    } else if (block_id == SqPsCounterBlockId) {
       sq_cntr_ctrl.bits.PS_EN = 0x1;
-    } else if (block_id == kHsaAiCounterBlockIdSqHs) {
+    } else if (block_id == SqHsCounterBlockId) {
       sq_cntr_ctrl.bits.HS_EN = 0x1;
-    } else if (block_id == kHsaAiCounterBlockIdSqCs) {
+    } else if (block_id == SqCsCounterBlockId) {
       sq_cntr_ctrl.bits.CS_EN = 0x1;
     }
     return sq_cntr_ctrl.u32All;

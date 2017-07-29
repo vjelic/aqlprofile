@@ -3,16 +3,68 @@
 #include "def/gpu_block_info.h"
 // include gfxip/gfx9/gfx9_enum.h
 
+enum GDS_PERFCOUNT_SELECT {
+  GDS_PERF_SEL_GWS_BYPASS = 120,
+};
+
+enum SPI_PERFCNT_SEL {
+  SPI_PERF_VWC_CSC_WR = 0x000000c3,
+};
+
 enum SQ_THREAD_TRACE_MODE_SEL {
   SQ_THREAD_TRACE_MODE_OFF = 0x00000000,
   SQ_THREAD_TRACE_MODE_ON = 0x00000001,
 };
 
+enum SQ_PERF_SEL {
+  SQC_PERF_SEL_DUMMY_LAST = 0x00000175,
+};
+
 enum VGT_EVENT_TYPE {
   CS_PARTIAL_FLUSH = 0x00000007,
 };
+
+enum IA_PERFCOUNT_SELECT {
+  ia_perf_utcl1_stall_utcl2_event = 0x0000001f,
+};
+
+enum TA_PERFCOUNT_SEL {
+  TA_PERF_SEL_first_xnack_on_phase3 = 0x00000076,
+};
+
+enum TD_PERFCOUNT_SEL {
+  TD_PERF_SEL_texels_zeroed_out_by_blend_zero_prt = 0x00000038,
+};
+
+enum TCP_PERFCOUNT_SELECT {
+  TCP_PERF_SEL_TCC_DCC_REQ = 0x00000054,
+};
+
+enum TCC_PERF_SEL {
+  TCC_PERF_SEL_CLIENT127_REQ = 0x000000ff,
+};
+
+enum TCA_PERF_SEL {
+  TCA_PERF_SEL_CROSSBAR_STALL_TCC7 = 0x00000022,
+};
+
+enum GRBM_PERF_SEL {
+  GRBM_PERF_SEL_CPAXI_BUSY = 0x00000025,
+};
+
+enum CPC_PERFCOUNT_SEL {
+  CPC_PERF_SEL_ME2_DC1_SPI_BUSY = 0x00000022,
+};
 #define UCONFIG_SPACE_START 0x0000c000
 #define PERSISTENT_SPACE_START 0x00002c00
+
+enum SX_PERFCOUNTER_VALS {
+  SX_PERF_SEL_DB3_SIZE = 0x000000cf,
+};
+
+enum RMIPerfSel {
+  RMI_PERF_SEL_RMI_RB_EARLY_WRACK_NACK3 = 0x00000100,
+};
 // include gfxip/gfx9/gfx9_mask.h
 #define CP_COHER_CNTL__TC_WB_ACTION_ENA_MASK 0x00040000L
 #define CP_COHER_CNTL__TCL1_ACTION_ENA_MASK 0x00400000L
@@ -20,6 +72,20 @@ enum VGT_EVENT_TYPE {
 #define CP_COHER_CNTL__SH_KCACHE_ACTION_ENA_MASK 0x08000000L
 #define CP_COHER_CNTL__SH_ICACHE_ACTION_ENA_MASK 0x20000000L
 // include gfxip/gfx9/gfx9_offset.h
+#define mmATC_PERFCOUNTER0_CFG 0x0C3E
+#define mmATC_PERFCOUNTER1_CFG 0x0C3F
+#define mmATC_PERFCOUNTER2_CFG 0x0C40
+#define mmATC_PERFCOUNTER3_CFG 0x0C41
+#define mmATC_PERFCOUNTER_RSLT_CNTL 0x0C42
+#define mmATC_PERFCOUNTER_LO 0x0C43
+#define mmATC_PERFCOUNTER_HI 0x0C44
+#define mmRPB_PERFCOUNTER_LO 0x0D01
+#define mmRPB_PERFCOUNTER_HI 0x0D02
+#define mmRPB_PERFCOUNTER0_CFG 0x0D03
+#define mmRPB_PERFCOUNTER1_CFG 0x0D04
+#define mmRPB_PERFCOUNTER2_CFG 0x0D05
+#define mmRPB_PERFCOUNTER3_CFG 0x0D06
+#define mmRPB_PERFCOUNTER_RSLT_CNTL 0x0D07
 #define mmGDS_PERFCOUNTER0_LO 0xD280
 #define mmGDS_PERFCOUNTER1_LO 0xD282
 #define mmGDS_PERFCOUNTER2_LO 0xD284
@@ -212,7 +278,42 @@ enum VGT_EVENT_TYPE {
 #define mmSX_PERFCOUNTER1_SELECT 0xDA41
 #define mmSX_PERFCOUNTER2_SELECT 0xDA42
 #define mmSX_PERFCOUNTER3_SELECT 0xDA43
+#define mmRMI_PERFCOUNTER0_LO 0xD4C0
+#define mmRMI_PERFCOUNTER1_LO 0xD4C2
+#define mmRMI_PERFCOUNTER2_LO 0xD4C4
+#define mmRMI_PERFCOUNTER3_LO 0xD4C6
+#define mmRMI_PERFCOUNTER0_HI 0xD4C1
+#define mmRMI_PERFCOUNTER1_HI 0xD4C3
+#define mmRMI_PERFCOUNTER2_HI 0xD4C5
+#define mmRMI_PERFCOUNTER3_HI 0xD4C7
+#define mmRMI_PERFCOUNTER0_SELECT 0xDD00
+#define mmRMI_PERFCOUNTER1_SELECT 0xDD02
+#define mmRMI_PERFCOUNTER2_SELECT 0xDD03
+#define mmRMI_PERFCOUNTER3_SELECT 0xDD05
+#define mmATC_L2_PERFCOUNTER_LO 0xD500
+#define mmATC_L2_PERFCOUNTER_HI 0xD501
+#define mmATC_L2_PERFCOUNTER0_CFG 0xDD40
+#define mmATC_L2_PERFCOUNTER1_CFG 0xDD41
+#define mmATC_L2_PERFCOUNTER_RSLT_CNTL 0xDD42
+#define mmMC_VM_L2_PERFCOUNTER0_CFG 0xDD4C
+#define mmMC_VM_L2_PERFCOUNTER1_CFG 0xDD4D
+#define mmMC_VM_L2_PERFCOUNTER2_CFG 0xDD4E
+#define mmMC_VM_L2_PERFCOUNTER3_CFG 0xDD4F
+#define mmMC_VM_L2_PERFCOUNTER4_CFG 0xDD50
+#define mmMC_VM_L2_PERFCOUNTER5_CFG 0xDD51
+#define mmMC_VM_L2_PERFCOUNTER6_CFG 0xDD52
+#define mmMC_VM_L2_PERFCOUNTER7_CFG 0xDD53
+#define mmMC_VM_L2_PERFCOUNTER_RSLT_CNTL 0xDD54
+#define mmMC_VM_L2_PERFCOUNTER_LO 0xD508
+#define mmMC_VM_L2_PERFCOUNTER_HI 0xD509
+#define mmGCEA_PERFCOUNTER_LO 0x2AF7
+#define mmGCEA_PERFCOUNTER_HI 0x2AF8
+#define mmGCEA_PERFCOUNTER0_CFG 0x2AF9
+#define mmGCEA_PERFCOUNTER1_CFG 0x2AFA
+#define mmGCEA_PERFCOUNTER_RSLT_CNTL 0x2AFB
 // include gfxip/gfx9/gfx9_typedef.h
+typedef union ATC_PERFCOUNTER0_CFG regATC_PERFCOUNTER0_CFG;
+typedef union RPB_PERFCOUNTER0_CFG regRPB_PERFCOUNTER0_CFG;
 typedef union GDS_PERFCOUNTER0_SELECT regGDS_PERFCOUNTER0_SELECT;
 typedef union SPI_PERFCOUNTER0_SELECT regSPI_PERFCOUNTER0_SELECT;
 typedef union SQ_THREAD_TRACE_BASE regSQ_THREAD_TRACE_BASE;
@@ -239,7 +340,61 @@ typedef union GRBM_SE0_PERFCOUNTER_SELECT regGRBM_SE0_PERFCOUNTER_SELECT;
 typedef union CPC_PERFCOUNTER0_SELECT regCPC_PERFCOUNTER0_SELECT;
 typedef union CP_PERFMON_CNTL regCP_PERFMON_CNTL;
 typedef union SX_PERFCOUNTER0_SELECT regSX_PERFCOUNTER0_SELECT;
+typedef union RMI_PERFCOUNTER0_SELECT regRMI_PERFCOUNTER0_SELECT;
+typedef union ATC_L2_PERFCOUNTER0_CFG regATC_L2_PERFCOUNTER0_CFG;
+typedef union MC_VM_L2_PERFCOUNTER0_CFG regMC_VM_L2_PERFCOUNTER0_CFG;
+typedef union GCEA_PERFCOUNTER0_CFG regGCEA_PERFCOUNTER0_CFG;
 // include gfxip/gfx9/gfx9_registers.h
+
+union ATC_PERFCOUNTER0_CFG {
+  struct {
+#if defined(LITTLEENDIAN_CPU)
+    unsigned int PERF_SEL : 8;
+    unsigned int PERF_SEL_END : 8;
+    unsigned int : 8;
+    unsigned int PERF_MODE : 4;
+    unsigned int ENABLE : 1;
+    unsigned int CLEAR : 1;
+    unsigned int : 2;
+#elif defined(BIGENDIAN_CPU)
+    unsigned int : 2;
+    unsigned int CLEAR : 1;
+    unsigned int ENABLE : 1;
+    unsigned int PERF_MODE : 4;
+    unsigned int : 8;
+    unsigned int PERF_SEL_END : 8;
+    unsigned int PERF_SEL : 8;
+#endif
+  } bitfields, bits;
+  unsigned int u32All;
+  signed int i32All;
+  float f32All;
+};
+
+union RPB_PERFCOUNTER0_CFG {
+  struct {
+#if defined(LITTLEENDIAN_CPU)
+    unsigned int PERF_SEL : 8;
+    unsigned int PERF_SEL_END : 8;
+    unsigned int : 8;
+    unsigned int PERF_MODE : 4;
+    unsigned int ENABLE : 1;
+    unsigned int CLEAR : 1;
+    unsigned int : 2;
+#elif defined(BIGENDIAN_CPU)
+    unsigned int : 2;
+    unsigned int CLEAR : 1;
+    unsigned int ENABLE : 1;
+    unsigned int PERF_MODE : 4;
+    unsigned int : 8;
+    unsigned int PERF_SEL_END : 8;
+    unsigned int PERF_SEL : 8;
+#endif
+  } bitfields, bits;
+  unsigned int u32All;
+  signed int i32All;
+  float f32All;
+};
 
 union GDS_PERFCOUNTER0_SELECT {
   struct {
@@ -850,6 +1005,106 @@ union SX_PERFCOUNTER0_SELECT {
   signed int i32All;
   float f32All;
 };
+
+union RMI_PERFCOUNTER0_SELECT {
+  struct {
+#if defined(LITTLEENDIAN_CPU)
+    unsigned int PERF_SEL : 9;
+    unsigned int : 1;
+    unsigned int PERF_SEL1 : 9;
+    unsigned int : 1;
+    unsigned int CNTR_MODE : 4;
+    unsigned int PERF_MODE1 : 4;
+    unsigned int PERF_MODE : 4;
+#elif defined(BIGENDIAN_CPU)
+    unsigned int PERF_MODE : 4;
+    unsigned int PERF_MODE1 : 4;
+    unsigned int CNTR_MODE : 4;
+    unsigned int : 1;
+    unsigned int PERF_SEL1 : 9;
+    unsigned int : 1;
+    unsigned int PERF_SEL : 9;
+#endif
+  } bitfields, bits;
+  unsigned int u32All;
+  signed int i32All;
+  float f32All;
+};
+
+union ATC_L2_PERFCOUNTER0_CFG {
+  struct {
+#if defined(LITTLEENDIAN_CPU)
+    unsigned int PERF_SEL : 8;
+    unsigned int PERF_SEL_END : 8;
+    unsigned int : 8;
+    unsigned int PERF_MODE : 4;
+    unsigned int ENABLE : 1;
+    unsigned int CLEAR : 1;
+    unsigned int : 2;
+#elif defined(BIGENDIAN_CPU)
+    unsigned int : 2;
+    unsigned int CLEAR : 1;
+    unsigned int ENABLE : 1;
+    unsigned int PERF_MODE : 4;
+    unsigned int : 8;
+    unsigned int PERF_SEL_END : 8;
+    unsigned int PERF_SEL : 8;
+#endif
+  } bitfields, bits;
+  unsigned int u32All;
+  signed int i32All;
+  float f32All;
+};
+
+union MC_VM_L2_PERFCOUNTER0_CFG {
+  struct {
+#if defined(LITTLEENDIAN_CPU)
+    unsigned int PERF_SEL : 8;
+    unsigned int PERF_SEL_END : 8;
+    unsigned int : 8;
+    unsigned int PERF_MODE : 4;
+    unsigned int ENABLE : 1;
+    unsigned int CLEAR : 1;
+    unsigned int : 2;
+#elif defined(BIGENDIAN_CPU)
+    unsigned int : 2;
+    unsigned int CLEAR : 1;
+    unsigned int ENABLE : 1;
+    unsigned int PERF_MODE : 4;
+    unsigned int : 8;
+    unsigned int PERF_SEL_END : 8;
+    unsigned int PERF_SEL : 8;
+#endif
+  } bitfields, bits;
+  unsigned int u32All;
+  signed int i32All;
+  float f32All;
+};
+
+union GCEA_PERFCOUNTER0_CFG {
+  struct {
+#if defined(LITTLEENDIAN_CPU)
+    unsigned int PERF_SEL : 8;
+    unsigned int PERF_SEL_END : 8;
+    unsigned int : 8;
+    unsigned int PERF_MODE : 4;
+    unsigned int ENABLE : 1;
+    unsigned int CLEAR : 1;
+    unsigned int : 2;
+#elif defined(BIGENDIAN_CPU)
+    unsigned int : 2;
+    unsigned int CLEAR : 1;
+    unsigned int ENABLE : 1;
+    unsigned int PERF_MODE : 4;
+    unsigned int : 8;
+    unsigned int PERF_SEL_END : 8;
+    unsigned int PERF_SEL : 8;
+#endif
+  } bitfields, bits;
+  unsigned int u32All;
+  signed int i32All;
+  float f32All;
+};
 // include gfxip/gfx9/gfx9_pm4defs.h
 #define COPY_DATA_SEL_REG 0                   ///< Mem-mapped register
 #define COPY_DATA_SEL_SRC_SYS_PERF_COUNTER 4  ///< Privileged memory performance counter
@@ -1196,47 +1451,76 @@ typedef struct PM4_MEC_WAIT_REG_MEM {
 #define PM4_TYPE3_HDR(_opc_, _count_)                                                              \
   (uint32_t)((3) << PM4_TYPE_SHIFT | ((_count_)-2) << PM4_COUNT_SHIFT | (_opc_) << PM4_OPCODE_SHIFT)
 // include gfxip/gfx9/gfx9_block_info.h
-#define AI_NUM_TA 16
-#define AI_COUNTER_NUM_PER_TA 2
-#define AI_NUM_TD 16
-#define AI_COUNTER_NUM_PER_TD 2
-#define AI_NUM_TCP 16
-#define AI_COUNTER_NUM_PER_TCP 4
-#define AI_NUM_TCA 2
-#define AI_COUNTER_NUM_PER_TCA 4
-#define AI_NUM_TCC 16
-#define AI_COUNTER_NUM_PER_TCC 4
-#define AI_COUNTER_NUM_PER_GRBM 2
-#define AI_COUNTER_NUM_PER_GRBMSE 4
-#define AI_COUNTER_NUM_PER_SPI 6  // [Shucai: To do: double check the value]
-#define AI_COUNTER_NUM_PER_SQ 16
-#define AI_COUNTER_NUM_PER_SX 4
-#define AI_COUNTER_NUM_PER_GDS 4
-#define AI_COUNTER_NUM_PER_IA 4
-#define AI_COUNTER_NUM_PER_MC 4
-#define AI_COUNTER_NUM_PER_CPC 2
 
-enum HsaAiCounterBlockId {
-  kHsaAiCounterBlockIdGrbm,
-  kHsaAiCounterBlockIdGrbmSe,
-  kHsaAiCounterBlockIdSpi,
-  kHsaAiCounterBlockIdSq,
-  kHsaAiCounterBlockIdSqGs,
-  kHsaAiCounterBlockIdSqVs,
-  kHsaAiCounterBlockIdSqPs,
-  kHsaAiCounterBlockIdSqHs,
-  kHsaAiCounterBlockIdSqCs,
-  kHsaAiCounterBlockIdSx,
-  kHsaAiCounterBlockIdTa,
-  kHsaAiCounterBlockIdTca,
-  kHsaAiCounterBlockIdTcc,
-  kHsaAiCounterBlockIdTd,
-  kHsaAiCounterBlockIdTcp,
-  kHsaAiCounterBlockIdGds,
-  kHsaAiCounterBlockIdIa,
-  kHsaAiCounterBlockIdMc,
-  kHsaAiCounterBlockIdCpc,
+enum CounterBlockId {
+  GrbmCounterBlockId,
+  GrbmSeCounterBlockId,
+  SpiCounterBlockId,
+  SqCounterBlockId,
+  SqGsCounterBlockId,
+  SqVsCounterBlockId,
+  SqPsCounterBlockId,
+  SqHsCounterBlockId,
+  SqCsCounterBlockId,
+  SxCounterBlockId,
+  TaCounterBlockId,
+  TcaCounterBlockId,
+  TccCounterBlockId,
+  TdCounterBlockId,
+  TcpCounterBlockId,
+  GdsCounterBlockId,
+  IaCounterBlockId,
+  CpcCounterBlockId,
+  GceaCounterBlockId,
+  AtcCounterBlockId,
+  AtcL2CounterBlockId,
+  McVmL2CounterBlockId,
+  RpbCounterBlockId,
+  RmiCounterBlockId,
 };
+static const uint32_t TaCounterBlockNumInstances = 16;
+static const uint32_t TdCounterBlockNumInstances = 16;
+static const uint32_t TcpCounterBlockNumInstances = 16;
+static const uint32_t TcaCounterBlockNumInstances = 2;
+static const uint32_t TccCounterBlockNumInstances = 16;
+static const uint32_t CpcCounterBlockNumCounters = 2;
+static const uint32_t GdsCounterBlockNumCounters = 4;
+static const uint32_t GrbmCounterBlockNumCounters = 2;
+static const uint32_t GrbmSeCounterBlockNumCounters = 4;
+static const uint32_t IaCounterBlockNumCounters = 4;
+static const uint32_t SpiCounterBlockNumCounters = 6;
+static const uint32_t SqCounterBlockNumCounters = 16;
+static const uint32_t SxCounterBlockNumCounters = 4;
+static const uint32_t TaCounterBlockNumCounters = 2;
+static const uint32_t TcaCounterBlockNumCounters = 4;
+static const uint32_t TccCounterBlockNumCounters = 4;
+static const uint32_t TcpCounterBlockNumCounters = 4;
+static const uint32_t TdCounterBlockNumCounters = 2;
+static const uint32_t GceaCounterBlockNumCounters = 2;
+static const uint32_t AtcCounterBlockNumCounters = 4;
+static const uint32_t AtcL2CounterBlockNumCounters = 2;
+static const uint32_t McVmL2CounterBlockNumCounters = 8;
+static const uint32_t RpbCounterBlockNumCounters = 4;
+static const uint32_t RmiCounterBlockNumCounters = 4;
+static const uint32_t CpcCounterBlockMaxEvent = CPC_PERF_SEL_ME2_DC1_SPI_BUSY;
+static const uint32_t GdsCounterBlockMaxEvent = GDS_PERF_SEL_GWS_BYPASS;
+static const uint32_t GrbmCounterBlockMaxEvent = GRBM_PERF_SEL_CPAXI_BUSY;
+static const uint32_t GrbmSeCounterBlockMaxEvent = GRBM_PERF_SEL_CPAXI_BUSY;
+static const uint32_t IaCounterBlockMaxEvent = ia_perf_utcl1_stall_utcl2_event;
+static const uint32_t SpiCounterBlockMaxEvent = SPI_PERF_VWC_CSC_WR;
+static const uint32_t SqCounterBlockMaxEvent = SQC_PERF_SEL_DUMMY_LAST;
+static const uint32_t SxCounterBlockMaxEvent = SX_PERF_SEL_DB3_SIZE;
+static const uint32_t TaCounterBlockMaxEvent = TA_PERF_SEL_first_xnack_on_phase3;
+static const uint32_t TcaCounterBlockMaxEvent = TCA_PERF_SEL_CROSSBAR_STALL_TCC7;
+static const uint32_t TccCounterBlockMaxEvent = TCC_PERF_SEL_CLIENT127_REQ;
+static const uint32_t TcpCounterBlockMaxEvent = TCP_PERF_SEL_TCC_DCC_REQ;
+static const uint32_t TdCounterBlockMaxEvent = TD_PERF_SEL_texels_zeroed_out_by_blend_zero_prt;
+static const uint32_t GceaCounterBlockMaxEvent = 76;
+static const uint32_t AtcCounterBlockMaxEvent = 23;
+static const uint32_t AtcL2CounterBlockMaxEvent = 7;
+static const uint32_t RpbCounterBlockMaxEvent = 62;
+static const uint32_t McVmL2CounterBlockMaxEvent = 20;
+static const uint32_t RmiCounterBlockMaxEvent = RMI_PERF_SEL_RMI_RB_EARLY_WRACK_NACK3;
 // include gfxip/gfx9/gfx9_primitives.h
 
 class gfx9_cntx_prim {
@@ -1368,21 +1652,21 @@ class gfx9_cntx_prim {
   static uint32_t sq_control_value(const counter_des_t& counter_des) {
     const uint32_t block_id = counter_des.block_des.id;
     regSQ_PERFCOUNTER_CTRL sq_cntr_ctrl = {0};
-    if (block_id == kHsaAiCounterBlockIdSq) {
+    if (block_id == SqCounterBlockId) {
       sq_cntr_ctrl.bits.GS_EN = 0x1;
       sq_cntr_ctrl.bits.VS_EN = 0x1;
       sq_cntr_ctrl.bits.PS_EN = 0x1;
       sq_cntr_ctrl.bits.HS_EN = 0x1;
       sq_cntr_ctrl.bits.CS_EN = 0x1;
-    } else if (block_id == kHsaAiCounterBlockIdSqGs) {
+    } else if (block_id == SqGsCounterBlockId) {
       sq_cntr_ctrl.bits.GS_EN = 0x1;
-    } else if (block_id == kHsaAiCounterBlockIdSqVs) {
+    } else if (block_id == SqVsCounterBlockId) {
       sq_cntr_ctrl.bits.VS_EN = 0x1;
-    } else if (block_id == kHsaAiCounterBlockIdSqPs) {
+    } else if (block_id == SqPsCounterBlockId) {
       sq_cntr_ctrl.bits.PS_EN = 0x1;
-    } else if (block_id == kHsaAiCounterBlockIdSqHs) {
+    } else if (block_id == SqHsCounterBlockId) {
       sq_cntr_ctrl.bits.HS_EN = 0x1;
-    } else if (block_id == kHsaAiCounterBlockIdSqCs) {
+    } else if (block_id == SqCsCounterBlockId) {
       sq_cntr_ctrl.bits.CS_EN = 0x1;
     }
     return sq_cntr_ctrl.u32All;
@@ -1544,7 +1828,7 @@ inline uint32_t gfx9_cntx_prim::select_value<regCPC_PERFCOUNTER0_SELECT>(
 }
 // include gfxip/gfx9/gfx9_block_table.h
 
-static const CounterRegInfo AiSqCounterRegAddr[] = {
+static const CounterRegInfo SqCounterRegAddr[] = {
     {mmSQ_PERFCOUNTER0_SELECT, mmSQ_PERFCOUNTER_CTRL, mmSQ_PERFCOUNTER0_LO, mmSQ_PERFCOUNTER0_HI},
     {mmSQ_PERFCOUNTER1_SELECT, mmSQ_PERFCOUNTER_CTRL, mmSQ_PERFCOUNTER1_LO, mmSQ_PERFCOUNTER1_HI},
     {mmSQ_PERFCOUNTER2_SELECT, mmSQ_PERFCOUNTER_CTRL, mmSQ_PERFCOUNTER2_LO, mmSQ_PERFCOUNTER2_HI},
@@ -1568,17 +1852,17 @@ static const CounterRegInfo AiSqCounterRegAddr[] = {
     {mmSQ_PERFCOUNTER15_SELECT, mmSQ_PERFCOUNTER_CTRL, mmSQ_PERFCOUNTER15_LO,
      mmSQ_PERFCOUNTER15_HI}};
 
-static const CounterRegInfo AiGrbmCounterRegAddr[] = {
+static const CounterRegInfo GrbmCounterRegAddr[] = {
     {mmGRBM_PERFCOUNTER0_SELECT, 0, mmGRBM_PERFCOUNTER0_LO, mmGRBM_PERFCOUNTER0_HI},
     {mmGRBM_PERFCOUNTER1_SELECT, 0, mmGRBM_PERFCOUNTER1_LO, mmGRBM_PERFCOUNTER1_HI}};
 
-static const CounterRegInfo AiGrbmSeCounterRegAddr[] = {
+static const CounterRegInfo GrbmSeCounterRegAddr[] = {
     {mmGRBM_SE0_PERFCOUNTER_SELECT, 0, mmGRBM_SE0_PERFCOUNTER_LO, mmGRBM_SE0_PERFCOUNTER_HI},
     {mmGRBM_SE1_PERFCOUNTER_SELECT, 0, mmGRBM_SE1_PERFCOUNTER_LO, mmGRBM_SE1_PERFCOUNTER_HI},
     {mmGRBM_SE2_PERFCOUNTER_SELECT, 0, mmGRBM_SE2_PERFCOUNTER_LO, mmGRBM_SE2_PERFCOUNTER_HI},
     {mmGRBM_SE3_PERFCOUNTER_SELECT, 0, mmGRBM_SE3_PERFCOUNTER_LO, mmGRBM_SE3_PERFCOUNTER_HI}};
 
-static const CounterRegInfo AiSpiCounterRegAddr[] = {
+static const CounterRegInfo SpiCounterRegAddr[] = {
     {mmSPI_PERFCOUNTER0_SELECT, 0, mmSPI_PERFCOUNTER0_LO, mmSPI_PERFCOUNTER0_HI},
     {mmSPI_PERFCOUNTER1_SELECT, 0, mmSPI_PERFCOUNTER1_LO, mmSPI_PERFCOUNTER1_HI},
     {mmSPI_PERFCOUNTER2_SELECT, 0, mmSPI_PERFCOUNTER2_LO, mmSPI_PERFCOUNTER2_HI},
@@ -1586,187 +1870,387 @@ static const CounterRegInfo AiSpiCounterRegAddr[] = {
     {mmSPI_PERFCOUNTER4_SELECT, 0, mmSPI_PERFCOUNTER4_LO, mmSPI_PERFCOUNTER4_HI},
     {mmSPI_PERFCOUNTER5_SELECT, 0, mmSPI_PERFCOUNTER5_LO, mmSPI_PERFCOUNTER5_HI}};
 
-static const CounterRegInfo AiTcaCounterRegAddr[] = {
+static const CounterRegInfo TcaCounterRegAddr[] = {
     {mmTCA_PERFCOUNTER0_SELECT, 0, mmTCA_PERFCOUNTER0_LO, mmTCA_PERFCOUNTER0_HI},
     {mmTCA_PERFCOUNTER1_SELECT, 0, mmTCA_PERFCOUNTER1_LO, mmTCA_PERFCOUNTER1_HI},
     {mmTCA_PERFCOUNTER2_SELECT, 0, mmTCA_PERFCOUNTER2_LO, mmTCA_PERFCOUNTER2_HI},
     {mmTCA_PERFCOUNTER3_SELECT, 0, mmTCA_PERFCOUNTER3_LO, mmTCA_PERFCOUNTER3_HI}};
 
-static const CounterRegInfo AiTccCounterRegAddr[] = {
+static const CounterRegInfo TccCounterRegAddr[] = {
     {mmTCC_PERFCOUNTER0_SELECT, 0, mmTCC_PERFCOUNTER0_LO, mmTCC_PERFCOUNTER0_HI},
     {mmTCC_PERFCOUNTER1_SELECT, 0, mmTCC_PERFCOUNTER1_LO, mmTCC_PERFCOUNTER1_HI},
     {mmTCC_PERFCOUNTER2_SELECT, 0, mmTCC_PERFCOUNTER2_LO, mmTCC_PERFCOUNTER2_HI},
     {mmTCC_PERFCOUNTER3_SELECT, 0, mmTCC_PERFCOUNTER3_LO, mmTCC_PERFCOUNTER3_HI}};
 
-static const CounterRegInfo AiTcpCounterRegAddr[] = {
+static const CounterRegInfo TcpCounterRegAddr[] = {
     {mmTCP_PERFCOUNTER0_SELECT, 0, mmTCP_PERFCOUNTER0_LO, mmTCP_PERFCOUNTER0_HI},
     {mmTCP_PERFCOUNTER1_SELECT, 0, mmTCP_PERFCOUNTER1_LO, mmTCP_PERFCOUNTER1_HI},
     {mmTCP_PERFCOUNTER2_SELECT, 0, mmTCP_PERFCOUNTER2_LO, mmTCP_PERFCOUNTER2_HI},
     {mmTCP_PERFCOUNTER3_SELECT, 0, mmTCP_PERFCOUNTER3_LO, mmTCP_PERFCOUNTER3_HI}};
 
-static const CounterRegInfo AiSxCounterRegAddr[] = {
+static const CounterRegInfo SxCounterRegAddr[] = {
     {mmSX_PERFCOUNTER0_SELECT, 0, mmSX_PERFCOUNTER0_LO, mmSX_PERFCOUNTER0_HI},
     {mmSX_PERFCOUNTER1_SELECT, 0, mmSX_PERFCOUNTER1_LO, mmSX_PERFCOUNTER1_HI},
     {mmSX_PERFCOUNTER2_SELECT, 0, mmSX_PERFCOUNTER2_LO, mmSX_PERFCOUNTER2_HI},
     {mmSX_PERFCOUNTER3_SELECT, 0, mmSX_PERFCOUNTER3_LO, mmSX_PERFCOUNTER3_HI}};
 
-static const CounterRegInfo AiTaCounterRegAddr[] = {
+static const CounterRegInfo TaCounterRegAddr[] = {
     {mmTA_PERFCOUNTER0_SELECT, 0, mmTA_PERFCOUNTER0_LO, mmTA_PERFCOUNTER0_HI},
     {mmTA_PERFCOUNTER1_SELECT, 0, mmTA_PERFCOUNTER1_LO, mmTA_PERFCOUNTER1_HI}};
 
-static const CounterRegInfo AiTdCounterRegAddr[] = {
+static const CounterRegInfo TdCounterRegAddr[] = {
     {mmTD_PERFCOUNTER0_SELECT, 0, mmTD_PERFCOUNTER0_LO, mmTD_PERFCOUNTER0_HI},
     {mmTD_PERFCOUNTER1_SELECT, 0, mmTD_PERFCOUNTER1_LO, mmTD_PERFCOUNTER1_HI}};
 
-static const CounterRegInfo AiGdsCounterRegAddr[] = {
+static const CounterRegInfo GdsCounterRegAddr[] = {
     {mmGDS_PERFCOUNTER0_SELECT, 0, mmGDS_PERFCOUNTER0_LO, mmGDS_PERFCOUNTER0_HI},
     {mmGDS_PERFCOUNTER1_SELECT, 0, mmGDS_PERFCOUNTER1_LO, mmGDS_PERFCOUNTER1_HI},
     {mmGDS_PERFCOUNTER2_SELECT, 0, mmGDS_PERFCOUNTER2_LO, mmGDS_PERFCOUNTER2_HI},
     {mmGDS_PERFCOUNTER3_SELECT, 0, mmGDS_PERFCOUNTER3_LO, mmGDS_PERFCOUNTER3_HI}};
 
-static const CounterRegInfo AiIaCounterRegAddr[] = {
+static const CounterRegInfo IaCounterRegAddr[] = {
     {mmIA_PERFCOUNTER0_SELECT, 0, mmIA_PERFCOUNTER0_LO, mmIA_PERFCOUNTER0_HI},
     {mmIA_PERFCOUNTER1_SELECT, 0, mmIA_PERFCOUNTER1_LO, mmIA_PERFCOUNTER1_HI},
     {mmIA_PERFCOUNTER2_SELECT, 0, mmIA_PERFCOUNTER2_LO, mmIA_PERFCOUNTER2_HI},
     {mmIA_PERFCOUNTER3_SELECT, 0, mmIA_PERFCOUNTER3_LO, mmIA_PERFCOUNTER3_HI}};
 
-static const CounterRegInfo AiMcCounterRegAddr[] = {
-    /*
-
-    {mmMC_SEQ_PERF_SEQ_CTL__SI__VI, 0, mmMC_SEQ_PERF_SEQ_CNT_A_I0__VI,
-     mmMC_SEQ_PERF_SEQ_CNT_A_I1__VI},
-    {mmMC_SEQ_PERF_SEQ_CTL__SI__VI, 0, mmMC_SEQ_PERF_SEQ_CNT_B_I0__VI,
-     mmMC_SEQ_PERF_SEQ_CNT_B_I1__VI},
-    {mmMC_SEQ_PERF_SEQ_CTL__SI__VI, 0, mmMC_SEQ_PERF_SEQ_CNT_C_I0__VI,
-     mmMC_SEQ_PERF_SEQ_CNT_C_I1__VI},
-    {mmMC_SEQ_PERF_SEQ_CTL__SI__VI, 0, mmMC_SEQ_PERF_SEQ_CNT_D_I0__VI,
-     mmMC_SEQ_PERF_SEQ_CNT_D_I1__VI}
-
-     */
-};
-
-static const CounterRegInfo AiCpcCounterRegAddr[] = {
+static const CounterRegInfo CpcCounterRegAddr[] = {
     {mmCPC_PERFCOUNTER0_SELECT, 0, mmCPC_PERFCOUNTER0_LO, mmCPC_PERFCOUNTER0_HI},
     {mmCPC_PERFCOUNTER1_SELECT, 0, mmCPC_PERFCOUNTER1_LO, mmCPC_PERFCOUNTER1_HI}};
 
-static const GpuBlockInfo AiGrbmCounterBlockInfo = {
-    "AI_GRBM", kHsaAiCounterBlockIdGrbm,
-    1,         CntlMethodNone,
-    33,        AI_COUNTER_NUM_PER_GRBM,
-    0,         0,
-    true,      AiGrbmCounterRegAddr,
-    false,     gfx9_cntx_prim::select_value<regGRBM_PERFCOUNTER0_SELECT>,
-    false};
+static const CounterRegInfo GceaCounterRegAddr[] = {
+    {mmGCEA_PERFCOUNTER0_CFG, mmGCEA_PERFCOUNTER_RSLT_CNTL, mmGCEA_PERFCOUNTER_LO,
+     mmGCEA_PERFCOUNTER_HI},
+    {mmGCEA_PERFCOUNTER1_CFG, mmGCEA_PERFCOUNTER_RSLT_CNTL, mmGCEA_PERFCOUNTER_LO,
+     mmGCEA_PERFCOUNTER_HI}};
 
-static const GpuBlockInfo AiGrbmSeCounterBlockInfo = {
-    "AI_GRBMSE", kHsaAiCounterBlockIdGrbmSe,
-    1,           CntlMethodNone,
-    14,          AI_COUNTER_NUM_PER_GRBMSE,
-    0,           0,
-    true,        AiGrbmSeCounterRegAddr,
-    false,       gfx9_cntx_prim::select_value<regGRBM_SE0_PERFCOUNTER_SELECT>,
-    false};
+static const CounterRegInfo AtcCounterRegAddr[] = {
+    {mmATC_PERFCOUNTER0_CFG, mmATC_PERFCOUNTER_RSLT_CNTL, mmATC_PERFCOUNTER_LO,
+     mmATC_PERFCOUNTER_HI},
+    {mmATC_PERFCOUNTER1_CFG, mmATC_PERFCOUNTER_RSLT_CNTL, mmATC_PERFCOUNTER_LO,
+     mmATC_PERFCOUNTER_HI},
+    {mmATC_PERFCOUNTER2_CFG, mmATC_PERFCOUNTER_RSLT_CNTL, mmATC_PERFCOUNTER_LO,
+     mmATC_PERFCOUNTER_HI},
+    {mmATC_PERFCOUNTER3_CFG, mmATC_PERFCOUNTER_RSLT_CNTL, mmATC_PERFCOUNTER_LO,
+     mmATC_PERFCOUNTER_HI}};
 
-static const GpuBlockInfo AiSpiCounterBlockInfo = {
-    "AI_SPI", kHsaAiCounterBlockIdSpi,
-    1,        CntlMethodBySe,
-    196,      AI_COUNTER_NUM_PER_SPI,
-    0,        0,
-    true,     AiSpiCounterRegAddr,
-    false,    gfx9_cntx_prim::select_value<regSPI_PERFCOUNTER0_SELECT>,
-    false};
+static const CounterRegInfo AtcL2CounterRegAddr[] = {
+    {mmATC_L2_PERFCOUNTER0_CFG, mmATC_L2_PERFCOUNTER_RSLT_CNTL, mmATC_L2_PERFCOUNTER_LO,
+     mmATC_L2_PERFCOUNTER_HI},
+    {mmATC_L2_PERFCOUNTER1_CFG, mmATC_L2_PERFCOUNTER_RSLT_CNTL, mmATC_L2_PERFCOUNTER_LO,
+     mmATC_L2_PERFCOUNTER_HI}};
 
-static const GpuBlockInfo AiSqCounterBlockInfo = {
-    "AI_SQ", kHsaAiCounterBlockIdSq, 1,     CntlMethodBySe,
-    171,     AI_COUNTER_NUM_PER_SQ,  0,     0,
-    true,    AiSqCounterRegAddr,     false, gfx9_cntx_prim::select_value<regSQ_PERFCOUNTER0_SELECT>,
+static const CounterRegInfo RpbCounterRegAddr[] = {
+    {mmRPB_PERFCOUNTER0_CFG, mmRPB_PERFCOUNTER_RSLT_CNTL, mmRPB_PERFCOUNTER_LO,
+     mmRPB_PERFCOUNTER_HI},
+    {mmRPB_PERFCOUNTER1_CFG, mmRPB_PERFCOUNTER_RSLT_CNTL, mmRPB_PERFCOUNTER_LO,
+     mmRPB_PERFCOUNTER_HI},
+    {mmRPB_PERFCOUNTER2_CFG, mmRPB_PERFCOUNTER_RSLT_CNTL, mmRPB_PERFCOUNTER_LO,
+     mmRPB_PERFCOUNTER_HI},
+    {mmRPB_PERFCOUNTER3_CFG, mmRPB_PERFCOUNTER_RSLT_CNTL, mmRPB_PERFCOUNTER_LO,
+     mmRPB_PERFCOUNTER_HI}};
+
+static const CounterRegInfo RmiCounterRegAddr[] = {
+    {mmRMI_PERFCOUNTER0_SELECT, 0, mmRMI_PERFCOUNTER0_LO, mmRMI_PERFCOUNTER0_HI},
+    {mmRMI_PERFCOUNTER1_SELECT, 0, mmRMI_PERFCOUNTER1_LO, mmRMI_PERFCOUNTER1_HI},
+    {mmRMI_PERFCOUNTER2_SELECT, 0, mmRMI_PERFCOUNTER2_LO, mmRMI_PERFCOUNTER2_HI},
+    {mmRMI_PERFCOUNTER3_SELECT, 0, mmRMI_PERFCOUNTER3_LO, mmRMI_PERFCOUNTER3_HI}};
+
+static const CounterRegInfo McVmL2CounterRegAddr[] = {
+    {mmMC_VM_L2_PERFCOUNTER0_CFG, mmMC_VM_L2_PERFCOUNTER_RSLT_CNTL, mmMC_VM_L2_PERFCOUNTER_LO,
+     mmMC_VM_L2_PERFCOUNTER_HI},
+    {mmMC_VM_L2_PERFCOUNTER1_CFG, mmMC_VM_L2_PERFCOUNTER_RSLT_CNTL, mmMC_VM_L2_PERFCOUNTER_LO,
+     mmMC_VM_L2_PERFCOUNTER_HI},
+    {mmMC_VM_L2_PERFCOUNTER2_CFG, mmMC_VM_L2_PERFCOUNTER_RSLT_CNTL, mmMC_VM_L2_PERFCOUNTER_LO,
+     mmMC_VM_L2_PERFCOUNTER_HI},
+    {mmMC_VM_L2_PERFCOUNTER3_CFG, mmMC_VM_L2_PERFCOUNTER_RSLT_CNTL, mmMC_VM_L2_PERFCOUNTER_LO,
+     mmMC_VM_L2_PERFCOUNTER_HI},
+    {mmMC_VM_L2_PERFCOUNTER4_CFG, mmMC_VM_L2_PERFCOUNTER_RSLT_CNTL, mmMC_VM_L2_PERFCOUNTER_LO,
+     mmMC_VM_L2_PERFCOUNTER_HI},
+    {mmMC_VM_L2_PERFCOUNTER5_CFG, mmMC_VM_L2_PERFCOUNTER_RSLT_CNTL, mmMC_VM_L2_PERFCOUNTER_LO,
+     mmMC_VM_L2_PERFCOUNTER_HI},
+    {mmMC_VM_L2_PERFCOUNTER6_CFG, mmMC_VM_L2_PERFCOUNTER_RSLT_CNTL, mmMC_VM_L2_PERFCOUNTER_LO,
+     mmMC_VM_L2_PERFCOUNTER_HI},
+    {mmMC_VM_L2_PERFCOUNTER7_CFG, mmMC_VM_L2_PERFCOUNTER_RSLT_CNTL, mmMC_VM_L2_PERFCOUNTER_LO,
+     mmMC_VM_L2_PERFCOUNTER_HI}};
+static const GpuBlockInfo GrbmCounterBlockInfo = {
+    "GRBM",
+    GrbmCounterBlockId,
+    1,
+    CntlMethodNone,
+    GrbmCounterBlockMaxEvent,
+    GrbmCounterBlockNumCounters,
+    0,
+    0,
+    true,
+    GrbmCounterRegAddr,
+    false,
+    gfx9_cntx_prim::select_value<regGRBM_PERFCOUNTER0_SELECT>,
+    false};
+static const GpuBlockInfo GrbmSeCounterBlockInfo = {
+    "GRBMSE",
+    GrbmSeCounterBlockId,
+    1,
+    CntlMethodNone,
+    GrbmSeCounterBlockMaxEvent,
+    GrbmSeCounterBlockNumCounters,
+    0,
+    0,
+    true,
+    GrbmSeCounterRegAddr,
+    false,
+    gfx9_cntx_prim::select_value<regGRBM_SE0_PERFCOUNTER_SELECT>,
+    false};
+static const GpuBlockInfo SpiCounterBlockInfo = {
+    "SPI",
+    SpiCounterBlockId,
+    1,
+    CntlMethodBySe,
+    SpiCounterBlockMaxEvent,
+    SpiCounterBlockNumCounters,
+    0,
+    0,
+    true,
+    SpiCounterRegAddr,
+    false,
+    gfx9_cntx_prim::select_value<regSPI_PERFCOUNTER0_SELECT>,
+    false};
+static const GpuBlockInfo SqCounterBlockInfo = {
+    "SQ",
+    SqCounterBlockId,
+    1,
+    CntlMethodBySe,
+    SqCounterBlockMaxEvent,
+    SqCounterBlockNumCounters,
+    0,
+    0,
+    true,
+    SqCounterRegAddr,
+    false,
+    gfx9_cntx_prim::select_value<regSQ_PERFCOUNTER0_SELECT>,
     true};
-
-static const GpuBlockInfo AiSqCsCounterBlockInfo = {
-    "AI_SQ_CS", kHsaAiCounterBlockIdSqCs,
-    1,          CntlMethodBySe,
-    298,        AI_COUNTER_NUM_PER_SQ,
-    0,          0,
-    true,       AiSqCounterRegAddr,
-    false,      gfx9_cntx_prim::select_value<regSQ_PERFCOUNTER0_SELECT>,
+static const GpuBlockInfo SqCsCounterBlockInfo = {
+    "SQ_CS",
+    SqCounterBlockId,
+    1,
+    CntlMethodBySe,
+    SqCounterBlockMaxEvent,
+    SqCounterBlockNumCounters,
+    0,
+    0,
+    true,
+    SqCounterRegAddr,
+    false,
+    gfx9_cntx_prim::select_value<regSQ_PERFCOUNTER0_SELECT>,
     true};
-
-static const GpuBlockInfo AiSxCounterBlockInfo = {
-    "AI_SX", kHsaAiCounterBlockIdSx, 1,    CntlMethodBySe,
-    33,      AI_COUNTER_NUM_PER_SX,  0,    0,
-    true,    AiSxCounterRegAddr,     true, gfx9_cntx_prim::select_value<regSX_PERFCOUNTER0_SELECT>,
+static const GpuBlockInfo SxCounterBlockInfo = {
+    "SX",
+    SxCounterBlockId,
+    1,
+    CntlMethodBySe,
+    SxCounterBlockMaxEvent,
+    SxCounterBlockNumCounters,
+    0,
+    0,
+    true,
+    SxCounterRegAddr,
+    true,
+    gfx9_cntx_prim::select_value<regSX_PERFCOUNTER0_SELECT>,
     false};
-
-static const GpuBlockInfo AiTaCounterBlockInfo = {
-    "AI_TA",   kHsaAiCounterBlockIdTa,
-    AI_NUM_TA, CntlMethodBySeAndInstance,
-    118,       AI_COUNTER_NUM_PER_TA,
-    0,         0,
-    true,      AiTaCounterRegAddr,
-    false,     gfx9_cntx_prim::select_value<regTA_PERFCOUNTER0_SELECT>,
+static const GpuBlockInfo TaCounterBlockInfo = {
+    "TA",
+    TaCounterBlockId,
+    TaCounterBlockNumInstances,
+    CntlMethodBySeAndInstance,
+    TaCounterBlockMaxEvent,
+    TaCounterBlockNumCounters,
+    0,
+    0,
+    true,
+    TaCounterRegAddr,
+    false,
+    gfx9_cntx_prim::select_value<regTA_PERFCOUNTER0_SELECT>,
     false};
-
-static const GpuBlockInfo AiTcaCounterBlockInfo = {
-    "AI_TCA",   kHsaAiCounterBlockIdTca,
-    AI_NUM_TCA, CntlMethodByInstance,
-    34,         AI_COUNTER_NUM_PER_TCA,
-    0,          0,
-    true,       AiTcaCounterRegAddr,
-    false,      gfx9_cntx_prim::select_value<regTCA_PERFCOUNTER0_SELECT>,
+static const GpuBlockInfo TcaCounterBlockInfo = {
+    "TCA",
+    TcaCounterBlockId,
+    TcaCounterBlockNumInstances,
+    CntlMethodByInstance,
+    TcaCounterBlockMaxEvent,
+    TcaCounterBlockNumCounters,
+    0,
+    0,
+    true,
+    TcaCounterRegAddr,
+    false,
+    gfx9_cntx_prim::select_value<regTCA_PERFCOUNTER0_SELECT>,
     false};
-
-static const GpuBlockInfo AiTccCounterBlockInfo = {
-    "AI_TCC",   kHsaAiCounterBlockIdTcc,
-    AI_NUM_TCC, CntlMethodByInstance,
-    191,        AI_COUNTER_NUM_PER_TCC,
-    0,          0,
-    true,       AiTccCounterRegAddr,
-    false,      gfx9_cntx_prim::select_value<regTCC_PERFCOUNTER0_SELECT>,
+static const GpuBlockInfo TccCounterBlockInfo = {
+    "TCC",
+    TccCounterBlockId,
+    TccCounterBlockNumInstances,
+    CntlMethodByInstance,
+    TccCounterBlockMaxEvent,
+    TccCounterBlockNumCounters,
+    0,
+    0,
+    true,
+    TccCounterRegAddr,
+    false,
+    gfx9_cntx_prim::select_value<regTCC_PERFCOUNTER0_SELECT>,
     false};
-
-static const GpuBlockInfo AiTdCounterBlockInfo = {
-    "AI_TD",   kHsaAiCounterBlockIdTd,
-    AI_NUM_TD, CntlMethodBySeAndInstance,
-    54,        AI_COUNTER_NUM_PER_TD,
-    0,         0,
-    true,      AiTdCounterRegAddr,
-    false,     gfx9_cntx_prim::select_value<regTD_PERFCOUNTER0_SELECT>,
+static const GpuBlockInfo TdCounterBlockInfo = {
+    "TD",
+    TdCounterBlockId,
+    TdCounterBlockNumInstances,
+    CntlMethodBySeAndInstance,
+    TdCounterBlockMaxEvent,
+    TdCounterBlockNumCounters,
+    0,
+    0,
+    true,
+    TdCounterRegAddr,
+    false,
+    gfx9_cntx_prim::select_value<regTD_PERFCOUNTER0_SELECT>,
     false};
-
-static const GpuBlockInfo AiTcpCounterBlockInfo = {
-    "AI_TCP",   kHsaAiCounterBlockIdTcp,
-    AI_NUM_TCP, CntlMethodBySeAndInstance,
-    182,        AI_COUNTER_NUM_PER_TCP,
-    0,          0,
-    true,       AiTcpCounterRegAddr,
-    false,      gfx9_cntx_prim::select_value<regTCP_PERFCOUNTER0_SELECT>,
+static const GpuBlockInfo TcpCounterBlockInfo = {
+    "TCP",
+    TcpCounterBlockId,
+    TcpCounterBlockNumInstances,
+    CntlMethodBySeAndInstance,
+    TcpCounterBlockMaxEvent,
+    TcpCounterBlockNumCounters,
+    0,
+    0,
+    true,
+    TcpCounterRegAddr,
+    false,
+    gfx9_cntx_prim::select_value<regTCP_PERFCOUNTER0_SELECT>,
     false};
-
-static const GpuBlockInfo AiGdsCounterBlockInfo = {
-    "AI_GDS", kHsaAiCounterBlockIdGds,
-    1,        CntlMethodNone,
-    120,      AI_COUNTER_NUM_PER_GDS,
-    0,        0,
-    true,     AiGdsCounterRegAddr,
-    false,    gfx9_cntx_prim::select_value<regGDS_PERFCOUNTER0_SELECT>,
+static const GpuBlockInfo GdsCounterBlockInfo = {
+    "GDS",
+    GdsCounterBlockId,
+    1,
+    CntlMethodNone,
+    GdsCounterBlockMaxEvent,
+    GdsCounterBlockNumCounters,
+    0,
+    0,
+    true,
+    GdsCounterRegAddr,
+    false,
+    gfx9_cntx_prim::select_value<regGDS_PERFCOUNTER0_SELECT>,
     false};
-
-static const GpuBlockInfo AiIaCounterBlockInfo = {
-    "AI_IA", kHsaAiCounterBlockIdIa, 1,     CntlMethodBySe,
-    23,      AI_COUNTER_NUM_PER_IA,  0,     0,
-    true,    AiIaCounterRegAddr,     false, gfx9_cntx_prim::select_value<regIA_PERFCOUNTER0_SELECT>,
+static const GpuBlockInfo IaCounterBlockInfo = {
+    "IA",
+    IaCounterBlockId,
+    1,
+    CntlMethodBySe,
+    IaCounterBlockMaxEvent,
+    IaCounterBlockNumCounters,
+    0,
+    0,
+    true,
+    IaCounterRegAddr,
+    false,
+    gfx9_cntx_prim::select_value<regIA_PERFCOUNTER0_SELECT>,
     false};
-
-static const GpuBlockInfo AiMcCounterBlockInfo = {
-    "AI_MC", kHsaAiCounterBlockIdMc, 1,     CntlMethodNone, 22,   AI_COUNTER_NUM_PER_MC, 0, 0,
-    true,    AiMcCounterRegAddr,     false, NULL,           false};
-
-static const GpuBlockInfo AiCpcCounterBlockInfo = {
-    "AI_CPC", kHsaAiCounterBlockIdCpc,
-    1,        CntlMethodNone,
-    34,       AI_COUNTER_NUM_PER_CPC,
-    0,        0,
-    true,     AiCpcCounterRegAddr,
-    false,    gfx9_cntx_prim::select_value<regCPC_PERFCOUNTER0_SELECT>,
+static const GpuBlockInfo CpcCounterBlockInfo = {
+    "CPC",
+    CpcCounterBlockId,
+    1,
+    CntlMethodNone,
+    CpcCounterBlockMaxEvent,
+    CpcCounterBlockNumCounters,
+    0,
+    0,
+    true,
+    CpcCounterRegAddr,
+    false,
+    gfx9_cntx_prim::select_value<regCPC_PERFCOUNTER0_SELECT>,
+    false};
+static const GpuBlockInfo GceaCounterBlockInfo = {
+    "GCEA",
+    GceaCounterBlockId,
+    1,
+    CntlMethodNone,
+    GceaCounterBlockMaxEvent,
+    GceaCounterBlockNumCounters,
+    0,
+    0,
+    true,
+    GceaCounterRegAddr,
+    false,
+    gfx9_cntx_prim::select_value<regGCEA_PERFCOUNTER0_CFG>,
+    false};
+static const GpuBlockInfo AtcCounterBlockInfo = {
+    "ATC",
+    AtcCounterBlockId,
+    1,
+    CntlMethodNone,
+    AtcCounterBlockMaxEvent,
+    AtcCounterBlockNumCounters,
+    0,
+    0,
+    true,
+    AtcCounterRegAddr,
+    false,
+    gfx9_cntx_prim::select_value<regATC_PERFCOUNTER0_CFG>,
+    false};
+static const GpuBlockInfo AtcL2CounterBlockInfo = {
+    "ATC_L2",
+    AtcL2CounterBlockId,
+    1,
+    CntlMethodNone,
+    AtcL2CounterBlockMaxEvent,
+    AtcL2CounterBlockNumCounters,
+    0,
+    0,
+    true,
+    AtcL2CounterRegAddr,
+    false,
+    gfx9_cntx_prim::select_value<regATC_L2_PERFCOUNTER0_CFG>,
+    false};
+static const GpuBlockInfo RpbCounterBlockInfo = {
+    "RPB",
+    RpbCounterBlockId,
+    1,
+    CntlMethodNone,
+    RpbCounterBlockMaxEvent,
+    RpbCounterBlockNumCounters,
+    0,
+    0,
+    true,
+    RpbCounterRegAddr,
+    false,
+    gfx9_cntx_prim::select_value<regRPB_PERFCOUNTER0_CFG>,
+    false};
+static const GpuBlockInfo RmiCounterBlockInfo = {
+    "RMI",
+    RmiCounterBlockId,
+    1,
+    CntlMethodNone,
+    RmiCounterBlockMaxEvent,
+    RmiCounterBlockNumCounters,
+    0,
+    0,
+    true,
+    RmiCounterRegAddr,
+    false,
+    gfx9_cntx_prim::select_value<regRMI_PERFCOUNTER0_SELECT>,
+    false};
+static const GpuBlockInfo McVmL2CounterBlockInfo = {
+    "MC_VM_L2",
+    McVmL2CounterBlockId,
+    1,
+    CntlMethodNone,
+    McVmL2CounterBlockMaxEvent,
+    McVmL2CounterBlockNumCounters,
+    0,
+    0,
+    true,
+    McVmL2CounterRegAddr,
+    false,
+    gfx9_cntx_prim::select_value<regMC_VM_L2_PERFCOUNTER0_CFG>,
     false};
 #endif  // _DEF_GFX9_DEF_H_

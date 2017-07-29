@@ -150,8 +150,8 @@ class Gfx8CmdBuilder : public CmdBuilder {
     APPEND_COMMAND_WRAPPER(cmdbuf, packet);
   }
 
-  void BuildCopyDataPacket(CmdBuffer* cmdbuf, uint32_t src_sel, uint32_t src_addr_lo,
-                           uint32_t src_addr_hi, uint32_t* dst_addr, uint32_t size, bool wait) {
+  void BuildCopyRegDataPacket(CmdBuffer* cmdbuf, uint32_t src_sel, uint32_t src_reg_addr,
+                              void* dst_addr, uint32_t size, bool wait) {
     PM4CMDCOPYDATA cmd_data;
     memset(&cmd_data, 0, sizeof(PM4CMDCOPYDATA));
 
@@ -166,13 +166,10 @@ class Gfx8CmdBuilder : public CmdBuilder {
     cmd_data.dstSel = COPY_DATA_SEL_DST_ASYNC_MEMORY;
     cmd_data.dstCachePolicy__CI = COPY_DATA_DST_CACHE_POLICY_BYPASS;
 
-    uint32_t dst_addr_lo = PtrLow32(dst_addr);
-    uint32_t dst_addr_hi = PtrHigh32(dst_addr);
-
-    cmd_data.srcAddressLo = src_addr_lo;
-    cmd_data.srcAddressHi = src_addr_hi;
-    cmd_data.dstAddressLo = dst_addr_lo;
-    cmd_data.dstAddressHi = dst_addr_hi;
+    cmd_data.srcAddressLo = src_reg_addr;
+    cmd_data.srcAddressHi = 0;
+    cmd_data.dstAddressLo = PtrLow32(dst_addr);
+    cmd_data.dstAddressHi = PtrHigh32(dst_addr);
 
     cmd_data.countSel = size;
     cmd_data.wrConfirm = wait;

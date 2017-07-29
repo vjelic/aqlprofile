@@ -84,56 +84,56 @@ TestHSA::initialize :
 'BuildWriteUConfigRegPacket' size(3)    : c0017900 00001808 00000402
 'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 e0000000
 'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 60000000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c0 00000000 04132000 00000000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c1 00000000 04132004 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d1c0 00000000 04132000 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d1c1 00000000 04132004 00000000
 'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 60010000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c0 00000000 04132008 00000000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c1 00000000 0413200c 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d1c0 00000000 04132008 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d1c1 00000000 0413200c 00000000
 'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 60020000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c0 00000000 04132010 00000000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c1 00000000 04132014 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d1c0 00000000 04132010 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d1c1 00000000 04132014 00000000
 'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 60030000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c0 00000000 04132018 00000000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c1 00000000 0413201c 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d1c0 00000000 04132018 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d1c1 00000000 0413201c 00000000
 'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 60000000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c2 00000000 04132020 00000000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c3 00000000 04132024 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d1c2 00000000 04132020 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d1c3 00000000 04132024 00000000
 'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 60010000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c2 00000000 04132028 00000000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c3 00000000 0413202c 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d1c2 00000000 04132028 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d1c3 00000000 0413202c 00000000
 'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 60020000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c2 00000000 04132030 00000000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c3 00000000 04132034 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d1c2 00000000 04132030 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d1c3 00000000 04132034 00000000
 'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 60030000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c2 00000000 04132038 00000000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c3 00000000 0413203c 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d1c2 00000000 04132038 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d1c3 00000000 0413203c 00000000
 'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 60000000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c4 00000000 04132040 00000000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c5 00000000 04132044 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d1c4 00000000 04132040 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d1c5 00000000 04132044 00000000
 'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 60010000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c4 00000000 04132048 00000000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c5 00000000 0413204c 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d1c4 00000000 04132048 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d1c5 00000000 0413204c 00000000
 'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 60020000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c4 00000000 04132050 00000000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c5 00000000 04132054 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d1c4 00000000 04132050 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d1c5 00000000 04132054 00000000
 'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 60030000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c4 00000000 04132058 00000000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d1c5 00000000 0413205c 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d1c4 00000000 04132058 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d1c5 00000000 0413205c 00000000
 'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 a0000002
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d380 00000000 04132060 00000000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d381 00000000 04132064 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d380 00000000 04132060 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d381 00000000 04132064 00000000
 'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 a0000002
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d382 00000000 04132068 00000000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d383 00000000 0413206c 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d382 00000000 04132068 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d383 00000000 0413206c 00000000
 'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 a0000002
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d384 00000000 04132070 00000000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d385 00000000 04132074 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d384 00000000 04132070 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d385 00000000 04132074 00000000
 'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 e0000000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d006 00000000 04132078 00000000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d007 00000000 0413207c 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d006 00000000 04132078 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d007 00000000 0413207c 00000000
 'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 e0000000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d004 00000000 04132080 00000000
-'BuildCopyDataPacket' size(6)           : c0044000 02002500 0000d005 00000000 04132084 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d004 00000000 04132080 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02002500 0000d005 00000000 04132084 00000000
 'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 e0000000
 'BuildWriteUConfigRegPacket' size(3)    : c0017900 00001cbf 00000000
 'BuildIndirectBufferCmd' size(4)        : c0023f00 04130000 00000000 10800051
@@ -233,24 +233,24 @@ TestHSA::initialize :
 'BuildCacheFlushPacket' size(7)         : c0055800 28c40000 ffffffff 00ffffff 00000000 00000000 00000004
 'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 40000000
 'BuildWaitRegMemCommand' size(7)        : c0053c00 00000004 00000338 00000000 00000001 40000000 00000004
-'BuildCopyDataPacket' size(6)           : c0044000 02102504 0000c33a 00000000 03b30fd0 00000000
-'BuildCopyDataPacket' size(6)           : c0044000 02102504 0000c33c 00000000 03b30fd4 00000000
-'BuildCopyDataPacket' size(6)           : c0044000 02102504 0000c339 00000000 03b30fd8 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02102504 0000c33a 00000000 03b30fd0 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02102504 0000c33c 00000000 03b30fd4 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02102504 0000c339 00000000 03b30fd8 00000000
 'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 40010000
 'BuildWaitRegMemCommand' size(7)        : c0053c00 00000004 00000338 00000000 00000001 40000000 00000004
-'BuildCopyDataPacket' size(6)           : c0044000 02102504 0000c33a 00000000 03b30fdc 00000000
-'BuildCopyDataPacket' size(6)           : c0044000 02102504 0000c33c 00000000 03b30fe0 00000000
-'BuildCopyDataPacket' size(6)           : c0044000 02102504 0000c339 00000000 03b30fe4 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02102504 0000c33a 00000000 03b30fdc 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02102504 0000c33c 00000000 03b30fe0 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02102504 0000c339 00000000 03b30fe4 00000000
 'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 40020000
 'BuildWaitRegMemCommand' size(7)        : c0053c00 00000004 00000338 00000000 00000001 40000000 00000004
-'BuildCopyDataPacket' size(6)           : c0044000 02102504 0000c33a 00000000 03b30fe8 00000000
-'BuildCopyDataPacket' size(6)           : c0044000 02102504 0000c33c 00000000 03b30fec 00000000
-'BuildCopyDataPacket' size(6)           : c0044000 02102504 0000c339 00000000 03b30ff0 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02102504 0000c33a 00000000 03b30fe8 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02102504 0000c33c 00000000 03b30fec 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02102504 0000c339 00000000 03b30ff0 00000000
 'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 40030000
 'BuildWaitRegMemCommand' size(7)        : c0053c00 00000004 00000338 00000000 00000001 40000000 00000004
-'BuildCopyDataPacket' size(6)           : c0044000 02102504 0000c33a 00000000 03b30ff4 00000000
-'BuildCopyDataPacket' size(6)           : c0044000 02102504 0000c33c 00000000 03b30ff8 00000000
-'BuildCopyDataPacket' size(6)           : c0044000 02102504 0000c339 00000000 03b30ffc 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02102504 0000c33a 00000000 03b30ff4 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02102504 0000c33c 00000000 03b30ff8 00000000
+'BuildCopyRegDataPacket' size(6)        : c0044000 02102504 0000c339 00000000 03b30ffc 00000000
 'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000200 e0000000
 'BuildCacheFlushPacket' size(7)         : c0055800 28c40000 ffffffff 00ffffff 00000000 00000000 00000004
 'BuildWriteUConfigRegPacket' size(3)    : c0017900 00000331 00000000

@@ -36,7 +36,14 @@ const GpuBlockInfo* Gfx8Factory::block_table[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBE
     &ViMcCounterBlockInfo,
     &ViSrbmCounterBlockInfo,
     NULL /*TCS*/,
-    &ViCpcCounterBlockInfo};
+    &ViCpcCounterBlockInfo,
+    NULL /*GCEA*/,
+    NULL /*ATC*/,
+    NULL /*ATCL2*/,
+    NULL /*RPB*/,
+    NULL /*RMI*/,
+    NULL /*MCVML2*/,
+};
 
 Pm4Factory* Pm4Factory::Gfx8Create() {
   auto p = new Gfx8Factory;
