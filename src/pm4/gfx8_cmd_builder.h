@@ -150,6 +150,8 @@ class Gfx8CmdBuilder : public CmdBuilder {
     APPEND_COMMAND_WRAPPER(cmdbuf, packet);
   }
 
+  void BuildWritePConfigRegPacket(CmdBuffer* /*cmdbuf*/, uint32_t /*addr*/, uint32_t /*value*/) {}
+
   void BuildCopyRegDataPacket(CmdBuffer* cmdbuf, uint32_t src_sel, uint32_t src_reg_addr,
                               void* dst_addr, uint32_t size, bool wait) {
     PM4CMDCOPYDATA cmd_data;

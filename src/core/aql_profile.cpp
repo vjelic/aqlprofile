@@ -394,10 +394,9 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
 
       for (const hsa_ven_amd_aqlprofile_event_t* p = profile->events;
            p < profile->events + profile->event_count; ++p) {
-        const CntlMethod method = pm4_factory->getBlockInfo(p)->method;
         // A perfcounter data sample per ShaderEngine
         const uint32_t block_samples_count =
-            (method == CntlMethodBySe || method == CntlMethodBySeAndInstance) ? se_number : 1;
+            (pm4_factory->getBlockInfo(p)->attr & CounterBlockSeAttr) ? se_number : 1;
         for (uint32_t i = 0; i < block_samples_count; ++i) {
           assert(sample_index < sample_count);
           if (sample_index >= sample_count) {

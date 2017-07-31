@@ -5,11 +5,17 @@
 
 namespace gfxip {
 
-enum CntlMethod {
-  CntlMethodNone = 0,
-  CntlMethodByInstance = 1,
-  CntlMethodBySe = 2,
-  CntlMethodBySeAndInstance = 3
+enum CounterBlockAttr {
+  // Default block attribute
+  CounterBlockDfltAttr = 0,
+  // Per ShaderEngine blocks
+  CounterBlockSeAttr = 1,
+  // SQ blocks
+  CounterBlockSqAttr = 2,
+  // Need to clean counter registers
+  CounterBlockCleanAttr = 4,
+  // Counters read is controlled with *RSLT_CNTL
+  CounterBlockRsltAttr = 8,
 };
 
 // Register address corresponding to each counter
@@ -34,29 +40,16 @@ struct GpuBlockInfo {
   uint32_t id;
   // Maximum number of block instances in the group per shader array
   uint32_t instance_count;
-  // Counter control method
-  CntlMethod method;
   // Maximum counter event ID
   uint32_t event_id_max;
   // Maximum number of counters that can be enabled at once
   uint32_t counter_count;
-  // Maximum number of streaming counters that can be enabled at once
-  uint32_t streaming_count;
-  // The number of hardware counters that are shared
-  // between regular and streaming counters.
-  // This is important so that resources are not double-booked
-  // between the two types of counters.
-  uint32_t shared_count;
-  // Block counters can be configured with additional filters
-  bool has_filters;
   // Counter registers addresses
   const CounterRegInfo* counter_reg_info;
-  // Need to clean counter registers
-  bool to_clean_regs;
   // Counter select value function
   uint32_t (*select_value)(const counter_des_t&);
-  // SQ block
-  bool sq_block;
+  // Block attributes mask
+  uint32_t attr;
 };
 
 struct block_des_t {

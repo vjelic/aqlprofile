@@ -1,104 +1,122 @@
 #ifndef _GFX8_BLOCKINFO_H_
 #define _GFX8_BLOCKINFO_H_
 
+// Enumeration of Gfx8 hardware counter blocks
+enum CounterBlockId {
+  CbCounterBlockId,
+  CpfCounterBlockId,
+  DbCounterBlockId,
+  GrbmCounterBlockId,
+  GrbmSeCounterBlockId,
+  PaSuCounterBlockId,
+  PaScCounterBlockId,
+  SpiCounterBlockId,
+  SqCounterBlockId,
+  SqEsCounterBlockId,
+  SqGsCounterBlockId,
+  SqVsCounterBlockId,
+  SqPsCounterBlockId,
+  SqLsCounterBlockId,
+  SqHsCounterBlockId,
+  SqCsCounterBlockId,
+  SxCounterBlockId,
+  TaCounterBlockId,
+  TcaCounterBlockId,
+  TccCounterBlockId,
+  TdCounterBlockId,
+  TcpCounterBlockId,
+  GdsCounterBlockId,
+  VgtCounterBlockId,
+  IaCounterBlockId,
+  McCounterBlockId,
+  SrbmCounterBlockId,
+  TcsCounterBlockId,
+  WdCounterBlockId,
+  CpgCounterBlockId,
+  CpcCounterBlockId,
+
+  // Counters retrieved by KFD
+  IommuV2CounterBlockId,
+  KernelDriverCounterBlockId,
+
+  CpPipeStatsCounterBlockId,
+  HwInfoCounterBlockId,
+  FirstCounterBlockId = CbCounterBlockId,
+  LastCounterBlockId = HwInfoCounterBlockId,
+};
+
 // MAX Number of block instances for VOLCANIC ISLANDS (From Fiji)
 // Values are found here //gfxip/gfx8/main/src/meta/features/variant/Fiji/album.dj
 
 // @brief Number of block instances.
+// Number of block instances per SE
+// Counters are indexed per SE and instance
+static const uint32_t CbCounterBlockNumInstances    = 4;
+static const uint32_t DbCounterBlockNumInstances    = 4;
+// The values below are the same as the number of CUs per SH.
+// Counters are indexed per SE and instance
+static const uint32_t TaCounterBlockNumInstances    = 16;
+static const uint32_t TdCounterBlockNumInstances    = 16;
+static const uint32_t TcpCounterBlockNumInstances   = 16;
+// These values are per chip
+// Counters are indexed per instance
+static const uint32_t TcaCounterBlockNumInstances   = 2;
+static const uint32_t TccCounterBlockNumInstances   = 16;
+static const uint32_t SdmaCounterBlockNumInstances  = 2;
 
-// We index per SE and instance
-#define VI_NUM_CB 4  // CB has 4 instances per SE
-#define VI_NUM_DB 4  // DB has 4 instances per SE
+// Number of block counter registers
+static const uint32_t CbCounterBlockNumCounters     = 4;
+static const uint32_t CpcCounterBlockNumCounters    = 2;
+static const uint32_t CpfCounterBlockNumCounters    = 2;
+static const uint32_t CpgCounterBlockNumCounters    = 2;
+static const uint32_t DbCounterBlockNumCounters     = 4;
+static const uint32_t GdsCounterBlockNumCounters    = 4;
+static const uint32_t GrbmCounterBlockNumCounters   = 2;
+static const uint32_t GrbmSeCounterBlockNumCounters = 1;
+static const uint32_t IaCounterBlockNumCounters     = 4;
+static const uint32_t McCounterBlockNumCounters     = 4;
+static const uint32_t RlcCounterBlockNumCounters    = 2;
+static const uint32_t PaSuCounterBlockNumCounters   = 4;
+static const uint32_t PaScCounterBlockNumCounters   = 8;
+static const uint32_t SdmaCounterBlockNumCounters   = 2;
+static const uint32_t SpiCounterBlockNumCounters    = 6;
+static const uint32_t SqCounterBlockNumCounters     = 16;
+static const uint32_t SrbmCounterBlockNumCounters   = 2;
+static const uint32_t SxCounterBlockNumCounters     = 4;
+static const uint32_t TaCounterBlockNumCounters     = 2;
+static const uint32_t TcaCounterBlockNumCounters    = 4;
+static const uint32_t TccCounterBlockNumCounters    = 4;
+static const uint32_t TcpCounterBlockNumCounters    = 4;
+static const uint32_t TdCounterBlockNumCounters     = 2;
+static const uint32_t VgtCounterBlockNumCounters    = 4;
+static const uint32_t WdCounterBlockNumCounters     = 4;
 
-// For TA, TD and TCP, the values below are the same as the number of CUs
-// per SH. We index per SE and instance
-#define VI_NUM_TA 16   // TA has 11 instances
-#define VI_NUM_TD 16   // TD has 11 instances
-#define VI_NUM_TCP 16  // TCP has 11 instances
-
-// These values are per chip, we index directly per instance
-#define VI_NUM_TCA 2   // TCA has 2 instances per chip
-#define VI_NUM_TCC 16  // TCC has 16 instances per chip
-#define VI_NUM_SDMA 2  // There are two SDMA blocks on VI, exposed as 2
-                       // instances here
-
-// Number of counter registers per block for volcanic islands
-#define VI_COUNTER_NUM_PER_DRM 2
-#define VI_COUNTER_NUM_PER_DRMDMA 2
-#define VI_COUNTER_NUM_PER_IH 2
-#define VI_COUNTER_NUM_PER_SRBM 2
-#define VI_COUNTER_NUM_PER_CB 4
-#define VI_COUNTER_NUM_PER_CPF 2
-#define VI_COUNTER_NUM_PER_DB 4
-#define VI_COUNTER_NUM_PER_GRBM 2
-#define VI_COUNTER_NUM_PER_GRBMSE 4
-#define VI_COUNTER_NUM_PER_PA_SU 4
-#define VI_COUNTER_NUM_PER_RLC 2
-#define VI_COUNTER_NUM_PER_PA_SC 8
-#define VI_COUNTER_NUM_PER_SPI 6  // [Shucai: To do: double check the value]
-#define VI_COUNTER_NUM_PER_SQ 16
-#define VI_COUNTER_NUM_PER_SX 4
-#define VI_COUNTER_NUM_PER_TA 2
-#define VI_COUNTER_NUM_PER_TCA 4
-#define VI_COUNTER_NUM_PER_TCC 4
-#define VI_COUNTER_NUM_PER_TD 2  // [Shucai: To do: double check the value]
-#define VI_COUNTER_NUM_PER_TCP 4
-#define VI_COUNTER_NUM_PER_GDS 4
-#define VI_COUNTER_NUM_PER_VGT 4
-#define VI_COUNTER_NUM_PER_IA 4
-#define VI_COUNTER_NUM_PER_MC 4
-#define VI_COUNTER_NUM_PER_TCS 4
-#define VI_COUNTER_NUM_PER_WD 4
-#define VI_COUNTER_NUM_PER_CPG 2
-#define VI_COUNTER_NUM_PER_CPC 2
-#define VI_COUNTER_NUM_PER_VM 1
-#define VI_COUNTER_NUM_PER_VM_MD 1
-#define VI_COUNTER_NUM_PER_PIPESTATS 12
-
-#define VI_MAX_NUM_SHADER_ENGINES 1
-
-// Enumeration of VI hardware counter blocks
-typedef enum HsaViCounterBlockId {
-  kHsaViCounterBlockIdCb = 0,
-  kHsaViCounterBlockIdCpf,
-  kHsaViCounterBlockIdDb,
-  kHsaViCounterBlockIdGrbm,
-  kHsaViCounterBlockIdGrbmSe,
-  kHsaViCounterBlockIdPaSu,
-  kHsaViCounterBlockIdPaSc,
-  kHsaViCounterBlockIdSpi,
-  kHsaViCounterBlockIdSq,
-  kHsaViCounterBlockIdSqEs,
-  kHsaViCounterBlockIdSqGs,
-  kHsaViCounterBlockIdSqVs,
-  kHsaViCounterBlockIdSqPs,
-  kHsaViCounterBlockIdSqLs,
-  kHsaViCounterBlockIdSqHs,
-  kHsaViCounterBlockIdSqCs,
-  kHsaViCounterBlockIdSx,
-  kHsaViCounterBlockIdTa,
-  kHsaViCounterBlockIdTca,
-  kHsaViCounterBlockIdTcc,
-  kHsaViCounterBlockIdTd,
-  kHsaViCounterBlockIdTcp,
-  kHsaViCounterBlockIdGds,
-  kHsaViCounterBlockIdVgt,
-  kHsaViCounterBlockIdIa,
-  kHsaViCounterBlockIdMc,
-  kHsaViCounterBlockIdSrbm,
-  kHsaViCounterBlockIdTcs,
-  kHsaViCounterBlockIdWd,
-  kHsaViCounterBlockIdCpg,
-  kHsaViCounterBlockIdCpc,
-
-  // Counters retrieved by KFD
-  kHsaViCounterBlockIdIommuV2,
-  kHsaViCounterBlockIdKernelDriver,
-
-  kHsaViCounterBlockIdCpPipeStats,
-  kHsaViCounterBlockIdHwInfo,
-  kHsaViCounterBlockIdBlocksFirst = kHsaViCounterBlockIdCb,
-  kHsaViCounterBlockIdBlocksLast = kHsaViCounterBlockIdHwInfo
-} HsaViCounterBlockId;
+// Block counters max event value
+static const uint32_t CpfCounterBlockMaxEvent       = 18;
+static const uint32_t CpgCounterBlockMaxEvent       = 47;
+static const uint32_t CpcCounterBlockMaxEvent       = 23;
+static const uint32_t CbCounterBlockMaxEvent        = 395;
+static const uint32_t DbCounterBlockMaxEvent        = 256;
+static const uint32_t GrbmCounterBlockMaxEvent      = 33;
+static const uint32_t GrbmSeCounterBlockMaxEvent    = 14;
+static const uint32_t SrbmCounterBlockMaxEvent      = 27;
+static const uint32_t RlcCounterBlockMaxEvent       = 6;
+static const uint32_t PaSuCounterBlockMaxEvent      = 152;
+static const uint32_t PaScCounterBlockMaxEvent      = 396;
+static const uint32_t SpiCounterBlockMaxEvent       = 196;
+// static const uint32_t SqCounterBlockMaxEvent     = 271;
+static const uint32_t SqCounterBlockMaxEvent        = 297; // Fiji
+static const uint32_t TaCounterBlockMaxEvent        = 118;
+static const uint32_t TdCounterBlockMaxEvent        = 54;
+static const uint32_t TcpCounterBlockMaxEvent       = 179;
+static const uint32_t TccCounterBlockMaxEvent       = 191;
+static const uint32_t TcaCounterBlockMaxEvent       = 34;
+static const uint32_t GdsCounterBlockMaxEvent       = 120;
+static const uint32_t SdmaCounterBlockMaxEvent      = 61;
+static const uint32_t SxCounterBlockMaxEvent        = 32;
+static const uint32_t VgtCounterBlockMaxEvent       = 145;
+static const uint32_t IaCounterBlockMaxEvent        = 21;
+static const uint32_t McSeqCounterBlockMaxEvent     = 21;
+static const uint32_t WdCounterBlockMaxEvent        = 36;
 
 #endif  // _GFX8_BLOCKINFO_H_

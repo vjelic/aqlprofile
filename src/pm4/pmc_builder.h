@@ -55,11 +55,11 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Prim {
 
       const auto& reg_info = block_info->counter_reg_info[reg_index];
 
-      if (block_info->method & CntlMethodByInstance) {
+      if (block_info->instance_count > 1) {
         Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::GRBM_GFX_INDEX_ADDR,
                                             Prim::grbm_inst_index_value(block_des.index));
       }
-      if (block_info->to_clean_regs) {
+      if (block_info->attr & CounterBlockCleanAttr) {
         for (uint32_t i = 0; i < block_info->counter_count; ++i) {
           Builder::BuildWriteUConfigRegPacket(cmdBuff,
                                               block_info->counter_reg_info[i].register_addr_lo, 0);
@@ -71,7 +71,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Prim {
         Builder::BuildWriteUConfigRegPacket(cmdBuff, reg_info.select_addr,
                                             block_info->select_value(counter_des));
       }
-      if (block_info->sq_block) {
+      if (block_info->attr & CounterBlockSqAttr) {
         Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::SQ_PERFCOUNTER_MASK_ADDR,
                                             Prim::sq_mask_value(counter_des));
         Builder::BuildWriteUConfigRegPacket(cmdBuff, reg_info.control_addr,
@@ -120,18 +120,20 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Prim {
 
       const auto& reg_info = block_info->counter_reg_info[reg_index];
 
-      const uint32_t se_index_end = (block_info->method & CntlMethodBySe) ? se_number_ : 1;
+      const uint32_t se_index_end = (block_info->attr & CounterBlockSeAttr) ? se_number_ : 1;
       for (uint32_t se_index = 0; se_index < se_index_end; ++se_index) {
         uint32_t grbm_value = Prim::grbm_broadcast_value();
-        if ((block_info->method & CntlMethodBySeAndInstance) == CntlMethodBySeAndInstance) {
+        if ((block_info->instance_count > 1) && (block_info->attr & CounterBlockSeAttr)) {
           grbm_value = Prim::grbm_inst_se_index_value(block_des.index, se_index);
-        } else if (block_info->method & CntlMethodBySe) {
-          grbm_value = Prim::grbm_se_index_value(se_index);
-        } else if (block_info->method & CntlMethodByInstance) {
+        } else if (block_info->instance_count > 1) {
           grbm_value = Prim::grbm_inst_index_value(block_des.index);
+        } else if (block_info->attr & CounterBlockSeAttr) {
+          grbm_value = Prim::grbm_se_index_value(se_index);
         }
         Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::GRBM_GFX_INDEX_ADDR, grbm_value);
-
+        if (block_info->attr & CounterBlockRsltAttr) {
+          Builder::BuildWritePConfigRegPacket(cmdBuff, reg_info.control_addr, reg_index);
+        }
         Builder::BuildCopyRegDataPacket(
             cmdBuff, Prim::COPY_DATA_SEL_REG_PRM, reg_info.register_addr_lo,
             (uint32_t*)dataBuff + read_counter, Prim::COPY_DATA_SEL_COUNT_1DW_PRM, false);

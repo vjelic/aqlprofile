@@ -79,15 +79,6 @@ enum VGT_EVENT_TYPE {
 #define mmIA_PERFCOUNTER3_HI__CI__VI 0xD08F
 #define mmIA_PERFCOUNTER3_LO__CI__VI 0xD08E
 #define mmIA_PERFCOUNTER3_SELECT__CI__VI 0xD887
-#define mmMC_SEQ_PERF_SEQ_CNT_A_I0__VI 0x0A79
-#define mmMC_SEQ_PERF_SEQ_CNT_A_I1__VI 0x0A7A
-#define mmMC_SEQ_PERF_SEQ_CNT_B_I0__VI 0x0A7B
-#define mmMC_SEQ_PERF_SEQ_CNT_B_I1__VI 0x0A7C
-#define mmMC_SEQ_PERF_SEQ_CNT_C_I0__VI 0x0AD9
-#define mmMC_SEQ_PERF_SEQ_CNT_C_I1__VI 0x0ADA
-#define mmMC_SEQ_PERF_SEQ_CNT_D_I0__VI 0x0ADB
-#define mmMC_SEQ_PERF_SEQ_CNT_D_I1__VI 0x0ADC
-#define mmMC_SEQ_PERF_SEQ_CTL__SI__VI 0x0A78
 #define mmSPI_PERFCOUNTER0_HI__CI__VI 0xD180
 #define mmSPI_PERFCOUNTER0_LO__CI__VI 0xD181
 #define mmSPI_PERFCOUNTER0_SELECT__CI__VI 0xD980
@@ -1309,53 +1300,66 @@ typedef struct _PM4CMDCOPYDATA  // only supported on NI and later asics
 #define PM4_CMD_SET_CONFIG_REG_DWORDS (sizeof(PM4CMDSETDATA) / sizeof(unsigned int))
 #define PM4_CMD_SET_SH_REG_DWORDS (sizeof(PM4CMDSETDATA) / sizeof(unsigned int))
 // include gfxip/gfx8/gfx8_block_info.h
-#define VI_NUM_TA 16   // TA has 11 instances
-#define VI_NUM_TD 16   // TD has 11 instances
-#define VI_NUM_TCP 16  // TCP has 11 instances
-#define VI_NUM_TCA 2   // TCA has 2 instances per chip
-#define VI_NUM_TCC 16  // TCC has 16 instances per chip
-#define VI_COUNTER_NUM_PER_SRBM 2
-#define VI_COUNTER_NUM_PER_CPF 2
-#define VI_COUNTER_NUM_PER_GRBM 2
-#define VI_COUNTER_NUM_PER_GRBMSE 4
-#define VI_COUNTER_NUM_PER_SPI 6  // [Shucai: To do: double check the value]
-#define VI_COUNTER_NUM_PER_SQ 16
-#define VI_COUNTER_NUM_PER_SX 4
-#define VI_COUNTER_NUM_PER_TA 2
-#define VI_COUNTER_NUM_PER_TCA 4
-#define VI_COUNTER_NUM_PER_TCC 4
-#define VI_COUNTER_NUM_PER_TD 2  // [Shucai: To do: double check the value]
-#define VI_COUNTER_NUM_PER_TCP 4
-#define VI_COUNTER_NUM_PER_GDS 4
-#define VI_COUNTER_NUM_PER_IA 4
-#define VI_COUNTER_NUM_PER_MC 4
-#define VI_COUNTER_NUM_PER_CPC 2
 
-enum HsaViCounterBlockId {
-  kHsaViCounterBlockIdCpf,
-  kHsaViCounterBlockIdGrbm,
-  kHsaViCounterBlockIdGrbmSe,
-  kHsaViCounterBlockIdSpi,
-  kHsaViCounterBlockIdSq,
-  kHsaViCounterBlockIdSqEs,
-  kHsaViCounterBlockIdSqGs,
-  kHsaViCounterBlockIdSqVs,
-  kHsaViCounterBlockIdSqPs,
-  kHsaViCounterBlockIdSqLs,
-  kHsaViCounterBlockIdSqHs,
-  kHsaViCounterBlockIdSqCs,
-  kHsaViCounterBlockIdSx,
-  kHsaViCounterBlockIdTa,
-  kHsaViCounterBlockIdTca,
-  kHsaViCounterBlockIdTcc,
-  kHsaViCounterBlockIdTd,
-  kHsaViCounterBlockIdTcp,
-  kHsaViCounterBlockIdGds,
-  kHsaViCounterBlockIdIa,
-  kHsaViCounterBlockIdMc,
-  kHsaViCounterBlockIdSrbm,
-  kHsaViCounterBlockIdCpc,
+enum CounterBlockId {
+  CpfCounterBlockId,
+  GrbmCounterBlockId,
+  GrbmSeCounterBlockId,
+  SpiCounterBlockId,
+  SqCounterBlockId,
+  SqEsCounterBlockId,
+  SqGsCounterBlockId,
+  SqVsCounterBlockId,
+  SqPsCounterBlockId,
+  SqLsCounterBlockId,
+  SqHsCounterBlockId,
+  SqCsCounterBlockId,
+  SxCounterBlockId,
+  TaCounterBlockId,
+  TcaCounterBlockId,
+  TccCounterBlockId,
+  TdCounterBlockId,
+  TcpCounterBlockId,
+  GdsCounterBlockId,
+  IaCounterBlockId,
+  SrbmCounterBlockId,
+  CpcCounterBlockId,
 };
+static const uint32_t TaCounterBlockNumInstances = 16;
+static const uint32_t TdCounterBlockNumInstances = 16;
+static const uint32_t TcpCounterBlockNumInstances = 16;
+static const uint32_t TcaCounterBlockNumInstances = 2;
+static const uint32_t TccCounterBlockNumInstances = 16;
+static const uint32_t CpcCounterBlockNumCounters = 2;
+static const uint32_t CpfCounterBlockNumCounters = 2;
+static const uint32_t GdsCounterBlockNumCounters = 4;
+static const uint32_t GrbmCounterBlockNumCounters = 2;
+static const uint32_t GrbmSeCounterBlockNumCounters = 1;
+static const uint32_t IaCounterBlockNumCounters = 4;
+static const uint32_t SpiCounterBlockNumCounters = 6;
+static const uint32_t SqCounterBlockNumCounters = 16;
+static const uint32_t SrbmCounterBlockNumCounters = 2;
+static const uint32_t SxCounterBlockNumCounters = 4;
+static const uint32_t TaCounterBlockNumCounters = 2;
+static const uint32_t TcaCounterBlockNumCounters = 4;
+static const uint32_t TccCounterBlockNumCounters = 4;
+static const uint32_t TcpCounterBlockNumCounters = 4;
+static const uint32_t TdCounterBlockNumCounters = 2;
+static const uint32_t CpfCounterBlockMaxEvent = 18;
+static const uint32_t CpcCounterBlockMaxEvent = 23;
+static const uint32_t GrbmCounterBlockMaxEvent = 33;
+static const uint32_t GrbmSeCounterBlockMaxEvent = 14;
+static const uint32_t SrbmCounterBlockMaxEvent = 27;
+static const uint32_t SpiCounterBlockMaxEvent = 196;
+static const uint32_t SqCounterBlockMaxEvent = 297;  // Fiji
+static const uint32_t TaCounterBlockMaxEvent = 118;
+static const uint32_t TdCounterBlockMaxEvent = 54;
+static const uint32_t TcpCounterBlockMaxEvent = 179;
+static const uint32_t TccCounterBlockMaxEvent = 191;
+static const uint32_t TcaCounterBlockMaxEvent = 34;
+static const uint32_t GdsCounterBlockMaxEvent = 120;
+static const uint32_t SxCounterBlockMaxEvent = 32;
+static const uint32_t IaCounterBlockMaxEvent = 21;
 // include gfxip/gfx8/gfx8_primitives.h
 
 class gfx8_cntx_prim {
@@ -1487,7 +1491,7 @@ class gfx8_cntx_prim {
   static uint32_t sq_control_value(const counter_des_t& counter_des) {
     const uint32_t block_id = counter_des.block_des.id;
     regSQ_PERFCOUNTER_CTRL sq_cntr_ctrl = {0};
-    if (block_id == kHsaViCounterBlockIdSq) {
+    if (block_id == SqCounterBlockId) {
       sq_cntr_ctrl.bits.ES_EN = 0x1;
       sq_cntr_ctrl.bits.GS_EN = 0x1;
       sq_cntr_ctrl.bits.VS_EN = 0x1;
@@ -1495,19 +1499,19 @@ class gfx8_cntx_prim {
       sq_cntr_ctrl.bits.LS_EN = 0x1;
       sq_cntr_ctrl.bits.HS_EN = 0x1;
       sq_cntr_ctrl.bits.CS_EN = 0x1;
-    } else if (block_id == kHsaViCounterBlockIdSqEs) {
+    } else if (block_id == SqEsCounterBlockId) {
       sq_cntr_ctrl.bits.ES_EN = 0x1;
-    } else if (block_id == kHsaViCounterBlockIdSqGs) {
+    } else if (block_id == SqGsCounterBlockId) {
       sq_cntr_ctrl.bits.GS_EN = 0x1;
-    } else if (block_id == kHsaViCounterBlockIdSqVs) {
+    } else if (block_id == SqVsCounterBlockId) {
       sq_cntr_ctrl.bits.VS_EN = 0x1;
-    } else if (block_id == kHsaViCounterBlockIdSqPs) {
+    } else if (block_id == SqPsCounterBlockId) {
       sq_cntr_ctrl.bits.PS_EN = 0x1;
-    } else if (block_id == kHsaViCounterBlockIdSqLs) {
+    } else if (block_id == SqLsCounterBlockId) {
       sq_cntr_ctrl.bits.LS_EN = 0x1;
-    } else if (block_id == kHsaViCounterBlockIdSqHs) {
+    } else if (block_id == SqHsCounterBlockId) {
       sq_cntr_ctrl.bits.HS_EN = 0x1;
-    } else if (block_id == kHsaViCounterBlockIdSqCs) {
+    } else if (block_id == SqCsCounterBlockId) {
       sq_cntr_ctrl.bits.CS_EN = 0x1;
     }
     return sq_cntr_ctrl.u32All;
@@ -1658,7 +1662,7 @@ inline uint32_t gfx8_cntx_prim::select_value<regGDS_PERFCOUNTER0_SELECT>(
 }
 // include gfxip/gfx8/gfx8_block_table.h
 
-static const CounterRegInfo ViSqCounterRegAddr[] = {
+static const CounterRegInfo SqCounterRegAddr[] = {
     {mmSQ_PERFCOUNTER0_SELECT__CI__VI, mmSQ_PERFCOUNTER_CTRL__CI__VI, mmSQ_PERFCOUNTER0_LO__CI__VI,
      mmSQ_PERFCOUNTER0_HI__CI__VI},
     {mmSQ_PERFCOUNTER1_SELECT__CI__VI, mmSQ_PERFCOUNTER_CTRL__CI__VI, mmSQ_PERFCOUNTER1_LO__CI__VI,
@@ -1692,19 +1696,19 @@ static const CounterRegInfo ViSqCounterRegAddr[] = {
     {mmSQ_PERFCOUNTER15_SELECT__CI__VI, mmSQ_PERFCOUNTER_CTRL__CI__VI,
      mmSQ_PERFCOUNTER15_LO__CI__VI, mmSQ_PERFCOUNTER15_HI__CI__VI}};
 
-static const CounterRegInfo ViCpfCounterRegAddr[] = {
+static const CounterRegInfo CpfCounterRegAddr[] = {
     {mmCPF_PERFCOUNTER0_SELECT__CI__VI, 0, mmCPF_PERFCOUNTER0_LO__CI__VI,
      mmCPF_PERFCOUNTER0_HI__CI__VI},
     {mmCPF_PERFCOUNTER1_SELECT__CI__VI, 0, mmCPF_PERFCOUNTER1_LO__CI__VI,
      mmCPF_PERFCOUNTER1_HI__CI__VI}};
 
-static const CounterRegInfo ViGrbmCounterRegAddr[] = {
+static const CounterRegInfo GrbmCounterRegAddr[] = {
     {mmGRBM_PERFCOUNTER0_SELECT__CI__VI, 0, mmGRBM_PERFCOUNTER0_LO__CI__VI,
      mmGRBM_PERFCOUNTER0_HI__CI__VI},
     {mmGRBM_PERFCOUNTER1_SELECT__CI__VI, 0, mmGRBM_PERFCOUNTER1_LO__CI__VI,
      mmGRBM_PERFCOUNTER1_HI__CI__VI}};
 
-static const CounterRegInfo ViGrbmSeCounterRegAddr[] = {
+static const CounterRegInfo GrbmSeCounterRegAddr[] = {
     {mmGRBM_SE0_PERFCOUNTER_SELECT__CI__VI, 0, mmGRBM_SE0_PERFCOUNTER_LO__CI__VI,
      mmGRBM_SE0_PERFCOUNTER_HI__CI__VI},
     {mmGRBM_SE1_PERFCOUNTER_SELECT__CI__VI, 0, mmGRBM_SE1_PERFCOUNTER_LO__CI__VI,
@@ -1714,7 +1718,7 @@ static const CounterRegInfo ViGrbmSeCounterRegAddr[] = {
     {mmGRBM_SE3_PERFCOUNTER_SELECT__CI__VI, 0, mmGRBM_SE3_PERFCOUNTER_LO__CI__VI,
      mmGRBM_SE3_PERFCOUNTER_HI__CI__VI}};
 
-static const CounterRegInfo ViSpiCounterRegAddr[] = {
+static const CounterRegInfo SpiCounterRegAddr[] = {
     {mmSPI_PERFCOUNTER0_SELECT__CI__VI, 0, mmSPI_PERFCOUNTER0_LO__CI__VI,
      mmSPI_PERFCOUNTER0_HI__CI__VI},
     {mmSPI_PERFCOUNTER1_SELECT__CI__VI, 0, mmSPI_PERFCOUNTER1_LO__CI__VI,
@@ -1728,7 +1732,7 @@ static const CounterRegInfo ViSpiCounterRegAddr[] = {
     {mmSPI_PERFCOUNTER5_SELECT__CI__VI, 0, mmSPI_PERFCOUNTER5_LO__CI__VI,
      mmSPI_PERFCOUNTER5_HI__CI__VI}};
 
-static const CounterRegInfo ViTcaCounterRegAddr[] = {
+static const CounterRegInfo TcaCounterRegAddr[] = {
     {mmTCA_PERFCOUNTER0_SELECT__CI__VI, 0, mmTCA_PERFCOUNTER0_LO__CI__VI,
      mmTCA_PERFCOUNTER0_HI__CI__VI},
     {mmTCA_PERFCOUNTER1_SELECT__CI__VI, 0, mmTCA_PERFCOUNTER1_LO__CI__VI,
@@ -1738,7 +1742,7 @@ static const CounterRegInfo ViTcaCounterRegAddr[] = {
     {mmTCA_PERFCOUNTER3_SELECT__CI__VI, 0, mmTCA_PERFCOUNTER3_LO__CI__VI,
      mmTCA_PERFCOUNTER3_HI__CI__VI}};
 
-static const CounterRegInfo ViTccCounterRegAddr[] = {
+static const CounterRegInfo TccCounterRegAddr[] = {
     {mmTCC_PERFCOUNTER0_SELECT__CI__VI, 0, mmTCC_PERFCOUNTER0_LO__CI__VI,
      mmTCC_PERFCOUNTER0_HI__CI__VI},
     {mmTCC_PERFCOUNTER1_SELECT__CI__VI, 0, mmTCC_PERFCOUNTER1_LO__CI__VI,
@@ -1748,7 +1752,7 @@ static const CounterRegInfo ViTccCounterRegAddr[] = {
     {mmTCC_PERFCOUNTER3_SELECT__CI__VI, 0, mmTCC_PERFCOUNTER3_LO__CI__VI,
      mmTCC_PERFCOUNTER3_HI__CI__VI}};
 
-static const CounterRegInfo ViTcpCounterRegAddr[] = {
+static const CounterRegInfo TcpCounterRegAddr[] = {
     {mmTCP_PERFCOUNTER0_SELECT__CI__VI, 0, mmTCP_PERFCOUNTER0_LO__CI__VI,
      mmTCP_PERFCOUNTER0_HI__CI__VI},
     {mmTCP_PERFCOUNTER1_SELECT__CI__VI, 0, mmTCP_PERFCOUNTER1_LO__CI__VI,
@@ -1758,7 +1762,7 @@ static const CounterRegInfo ViTcpCounterRegAddr[] = {
     {mmTCP_PERFCOUNTER3_SELECT__CI__VI, 0, mmTCP_PERFCOUNTER3_LO__CI__VI,
      mmTCP_PERFCOUNTER3_HI__CI__VI}};
 
-static const CounterRegInfo ViSxCounterRegAddr[] = {
+static const CounterRegInfo SxCounterRegAddr[] = {
     {mmSX_PERFCOUNTER0_SELECT__CI__VI, 0, mmSX_PERFCOUNTER0_LO__CI__VI,
      mmSX_PERFCOUNTER0_HI__CI__VI},
     {mmSX_PERFCOUNTER1_SELECT__CI__VI, 0, mmSX_PERFCOUNTER1_LO__CI__VI,
@@ -1768,19 +1772,19 @@ static const CounterRegInfo ViSxCounterRegAddr[] = {
     {mmSX_PERFCOUNTER3_SELECT__CI__VI, 0, mmSX_PERFCOUNTER3_LO__CI__VI,
      mmSX_PERFCOUNTER3_HI__CI__VI}};
 
-static const CounterRegInfo ViTaCounterRegAddr[] = {
+static const CounterRegInfo TaCounterRegAddr[] = {
     {mmTA_PERFCOUNTER0_SELECT__CI__VI, 0, mmTA_PERFCOUNTER0_LO__CI__VI,
      mmTA_PERFCOUNTER0_HI__CI__VI},
     {mmTA_PERFCOUNTER1_SELECT__CI__VI, 0, mmTA_PERFCOUNTER1_LO__CI__VI,
      mmTA_PERFCOUNTER1_HI__CI__VI}};
 
-static const CounterRegInfo ViTdCounterRegAddr[] = {
+static const CounterRegInfo TdCounterRegAddr[] = {
     {mmTD_PERFCOUNTER0_SELECT__CI__VI, 0, mmTD_PERFCOUNTER0_LO__CI__VI,
      mmTD_PERFCOUNTER0_HI__CI__VI},
     {mmTD_PERFCOUNTER1_SELECT__CI__VI, 0, mmTD_PERFCOUNTER1_LO__CI__VI,
      mmTD_PERFCOUNTER1_HI__CI__VI}};
 
-static const CounterRegInfo ViGdsCounterRegAddr[] = {
+static const CounterRegInfo GdsCounterRegAddr[] = {
     {mmGDS_PERFCOUNTER0_SELECT__CI__VI, 0, mmGDS_PERFCOUNTER0_LO__CI__VI,
      mmGDS_PERFCOUNTER0_HI__CI__VI},
     {mmGDS_PERFCOUNTER1_SELECT__CI__VI, 0, mmGDS_PERFCOUNTER1_LO__CI__VI,
@@ -1790,7 +1794,7 @@ static const CounterRegInfo ViGdsCounterRegAddr[] = {
     {mmGDS_PERFCOUNTER3_SELECT__CI__VI, 0, mmGDS_PERFCOUNTER3_LO__CI__VI,
      mmGDS_PERFCOUNTER3_HI__CI__VI}};
 
-static const CounterRegInfo ViIaCounterRegAddr[] = {
+static const CounterRegInfo IaCounterRegAddr[] = {
     {mmIA_PERFCOUNTER0_SELECT__CI__VI, 0, mmIA_PERFCOUNTER0_LO__CI__VI,
      mmIA_PERFCOUNTER0_HI__CI__VI},
     {mmIA_PERFCOUNTER1_SELECT__CI__VI, 0, mmIA_PERFCOUNTER1_LO__CI__VI,
@@ -1800,168 +1804,157 @@ static const CounterRegInfo ViIaCounterRegAddr[] = {
     {mmIA_PERFCOUNTER3_SELECT__CI__VI, 0, mmIA_PERFCOUNTER3_LO__CI__VI,
      mmIA_PERFCOUNTER3_HI__CI__VI}};
 
-static const CounterRegInfo ViMcCounterRegAddr[] = {
-    {mmMC_SEQ_PERF_SEQ_CTL__SI__VI, 0, mmMC_SEQ_PERF_SEQ_CNT_A_I0__VI,
-     mmMC_SEQ_PERF_SEQ_CNT_A_I1__VI},
-    {mmMC_SEQ_PERF_SEQ_CTL__SI__VI, 0, mmMC_SEQ_PERF_SEQ_CNT_B_I0__VI,
-     mmMC_SEQ_PERF_SEQ_CNT_B_I1__VI},
-    {mmMC_SEQ_PERF_SEQ_CTL__SI__VI, 0, mmMC_SEQ_PERF_SEQ_CNT_C_I0__VI,
-     mmMC_SEQ_PERF_SEQ_CNT_C_I1__VI},
-    {mmMC_SEQ_PERF_SEQ_CTL__SI__VI, 0, mmMC_SEQ_PERF_SEQ_CNT_D_I0__VI,
-     mmMC_SEQ_PERF_SEQ_CNT_D_I1__VI}};
-
-static const CounterRegInfo ViSrbmCounterRegAddr[] = {
+static const CounterRegInfo SrbmCounterRegAddr[] = {
     {mmSRBM_PERFCOUNTER0_SELECT__VI, 0, mmSRBM_PERFCOUNTER0_LO__VI, mmSRBM_PERFCOUNTER0_HI__VI},
     {mmSRBM_PERFCOUNTER1_SELECT__VI, 0, mmSRBM_PERFCOUNTER1_LO__VI, mmSRBM_PERFCOUNTER1_HI__VI}};
 
-static const CounterRegInfo ViCpcCounterRegAddr[] = {
+static const CounterRegInfo CpcCounterRegAddr[] = {
     {mmCPC_PERFCOUNTER0_SELECT__CI__VI, 0, mmCPC_PERFCOUNTER0_LO__CI__VI,
      mmCPC_PERFCOUNTER0_HI__CI__VI},
     {mmCPC_PERFCOUNTER1_SELECT__CI__VI, 0, mmCPC_PERFCOUNTER1_LO__CI__VI,
      mmCPC_PERFCOUNTER1_HI__CI__VI}};
-
-static const GpuBlockInfo ViCpfCounterBlockInfo = {
-    "VI_CPF", kHsaViCounterBlockIdCpf,
-    1,        CntlMethodNone,
-    19,       VI_COUNTER_NUM_PER_CPF,
-    0,        0,
-    true,     ViCpfCounterRegAddr,
-    false,    gfx8_cntx_prim::select_value<regCPF_PERFCOUNTER0_SELECT__CI__VI>,
-    false};
-
-static const GpuBlockInfo ViGrbmCounterBlockInfo = {
-    "VI_GRBM", kHsaViCounterBlockIdGrbm,
-    1,         CntlMethodNone,
-    33,        VI_COUNTER_NUM_PER_GRBM,
-    0,         0,
-    true,      ViGrbmCounterRegAddr,
-    false,     gfx8_cntx_prim::select_value<regGRBM_PERFCOUNTER0_SELECT>,
-    false};
-
-static const GpuBlockInfo ViGrbmSeCounterBlockInfo = {
-    "VI_GRBMSE", kHsaViCounterBlockIdGrbmSe,
-    1,           CntlMethodNone,
-    14,          VI_COUNTER_NUM_PER_GRBMSE,
-    0,           0,
-    true,        ViGrbmSeCounterRegAddr,
-    false,       gfx8_cntx_prim::select_value<regGRBM_SE0_PERFCOUNTER_SELECT>,
-    false};
-
-static const GpuBlockInfo ViSpiCounterBlockInfo = {
-    "VI_SPI", kHsaViCounterBlockIdSpi,
-    1,        CntlMethodBySe,
-    196,      VI_COUNTER_NUM_PER_SPI,
-    0,        0,
-    true,     ViSpiCounterRegAddr,
-    false,    gfx8_cntx_prim::select_value<regSPI_PERFCOUNTER0_SELECT>,
-    false};
-
-static const GpuBlockInfo ViSqCounterBlockInfo = {
-    "VI_SQ", kHsaViCounterBlockIdSq,
-    1,       CntlMethodBySe,
-    298,     VI_COUNTER_NUM_PER_SQ,
-    0,       0,
-    true,    ViSqCounterRegAddr,
-    false,   gfx8_cntx_prim::select_value<regSQ_PERFCOUNTER0_SELECT__CI__VI>,
-    true};
-
-static const GpuBlockInfo ViSqCsCounterBlockInfo = {
-    "VI_SQ_CS", kHsaViCounterBlockIdSqCs,
-    1,          CntlMethodBySe,
-    298,        VI_COUNTER_NUM_PER_SQ,
-    0,          0,
-    true,       ViSqCounterRegAddr,
-    false,      gfx8_cntx_prim::select_value<regSQ_PERFCOUNTER0_SELECT__CI__VI>,
-    true};
-
-static const GpuBlockInfo ViSxCounterBlockInfo = {
-    "VI_SX", kHsaViCounterBlockIdSx, 1,    CntlMethodBySe,
-    33,      VI_COUNTER_NUM_PER_SX,  0,    0,
-    true,    ViSxCounterRegAddr,     true, gfx8_cntx_prim::select_value<regSX_PERFCOUNTER0_SELECT>,
-    false};
-
-static const GpuBlockInfo ViTaCounterBlockInfo = {
-    "VI_TA",   kHsaViCounterBlockIdTa,
-    VI_NUM_TA, CntlMethodBySeAndInstance,
-    118,       VI_COUNTER_NUM_PER_TA,
-    0,         0,
-    true,      ViTaCounterRegAddr,
-    false,     gfx8_cntx_prim::select_value<regTA_PERFCOUNTER0_SELECT>,
-    false};
-
-static const GpuBlockInfo ViTcaCounterBlockInfo = {
-    "VI_TCA",   kHsaViCounterBlockIdTca,
-    VI_NUM_TCA, CntlMethodByInstance,
-    34,         VI_COUNTER_NUM_PER_TCA,
-    0,          0,
-    true,       ViTcaCounterRegAddr,
-    false,      gfx8_cntx_prim::select_value<regTCA_PERFCOUNTER0_SELECT__CI__VI>,
-    false};
-
-static const GpuBlockInfo ViTccCounterBlockInfo = {
-    "VI_TCC",   kHsaViCounterBlockIdTcc,
-    VI_NUM_TCC, CntlMethodByInstance,
-    191,        VI_COUNTER_NUM_PER_TCC,
-    0,          0,
-    true,       ViTccCounterRegAddr,
-    false,      gfx8_cntx_prim::select_value<regTCC_PERFCOUNTER0_SELECT__CI__VI>,
-    false};
-
-static const GpuBlockInfo ViTdCounterBlockInfo = {
-    "VI_TD",   kHsaViCounterBlockIdTd,
-    VI_NUM_TD, CntlMethodBySeAndInstance,
-    54,        VI_COUNTER_NUM_PER_TD,
-    0,         0,
-    true,      ViTdCounterRegAddr,
-    false,     gfx8_cntx_prim::select_value<regTD_PERFCOUNTER0_SELECT>,
-    false};
-
-static const GpuBlockInfo ViTcpCounterBlockInfo = {
-    "VI_TCP",   kHsaViCounterBlockIdTcp,
-    VI_NUM_TCP, CntlMethodBySeAndInstance,
-    182,        VI_COUNTER_NUM_PER_TCP,
-    0,          0,
-    true,       ViTcpCounterRegAddr,
-    false,      gfx8_cntx_prim::select_value<regTCP_PERFCOUNTER0_SELECT__CI__VI>,
-    false};
-
-static const GpuBlockInfo ViGdsCounterBlockInfo = {
-    "VI_GDS", kHsaViCounterBlockIdGds,
-    1,        CntlMethodNone,
-    120,      VI_COUNTER_NUM_PER_GDS,
-    0,        0,
-    true,     ViGdsCounterRegAddr,
-    false,    gfx8_cntx_prim::select_value<regGDS_PERFCOUNTER0_SELECT>,
-    false};
-
-static const GpuBlockInfo ViIaCounterBlockInfo = {
-    "VI_IA", kHsaViCounterBlockIdIa,
-    1,       CntlMethodBySe,
-    23,      VI_COUNTER_NUM_PER_IA,
-    0,       0,
-    true,    ViIaCounterRegAddr,
-    false,   gfx8_cntx_prim::select_value<regIA_PERFCOUNTER0_SELECT__CI__VI>,
-    false};
-
-static const GpuBlockInfo ViMcCounterBlockInfo = {
-    "VI_MC", kHsaViCounterBlockIdMc, 1,     CntlMethodNone, 22,   VI_COUNTER_NUM_PER_MC, 0, 0,
-    true,    ViMcCounterRegAddr,     false, NULL,           false};
-
-static const GpuBlockInfo ViSrbmCounterBlockInfo = {
-    "VI_SRBM", kHsaViCounterBlockIdSrbm,
-    1,         CntlMethodNone,
-    19,        VI_COUNTER_NUM_PER_SRBM,
-    0,         0,
-    true,      ViSrbmCounterRegAddr,
-    false,     gfx8_cntx_prim::select_value<regSRBM_PERFCOUNTER0_SELECT>,
-    false};
-
-static const GpuBlockInfo ViCpcCounterBlockInfo = {
-    "VI_CPC", kHsaViCounterBlockIdCpc,
-    1,        CntlMethodNone,
-    24,       VI_COUNTER_NUM_PER_CPC,
-    0,        0,
-    true,     ViCpcCounterRegAddr,
-    false,    gfx8_cntx_prim::select_value<regCPC_PERFCOUNTER0_SELECT__CI__VI>,
-    false};
+static const GpuBlockInfo CpfCounterBlockInfo = {
+    "CPF",
+    CpfCounterBlockId,
+    1,
+    CpfCounterBlockMaxEvent,
+    CpfCounterBlockNumCounters,
+    CpfCounterRegAddr,
+    gfx8_cntx_prim::select_value<regCPF_PERFCOUNTER0_SELECT__CI__VI>,
+    CounterBlockDfltAttr};
+static const GpuBlockInfo GrbmCounterBlockInfo = {
+    "GRBM",
+    GrbmCounterBlockId,
+    1,
+    GrbmCounterBlockMaxEvent,
+    GrbmCounterBlockNumCounters,
+    GrbmCounterRegAddr,
+    gfx8_cntx_prim::select_value<regGRBM_PERFCOUNTER0_SELECT>,
+    CounterBlockDfltAttr};
+static const GpuBlockInfo GrbmSeCounterBlockInfo = {
+    "GRBMSE",
+    GrbmSeCounterBlockId,
+    1,
+    GrbmSeCounterBlockMaxEvent,
+    GrbmSeCounterBlockNumCounters,
+    GrbmSeCounterRegAddr,
+    gfx8_cntx_prim::select_value<regGRBM_SE0_PERFCOUNTER_SELECT>,
+    CounterBlockDfltAttr};
+static const GpuBlockInfo SpiCounterBlockInfo = {
+    "SPI",
+    SpiCounterBlockId,
+    1,
+    SpiCounterBlockMaxEvent,
+    SpiCounterBlockNumCounters,
+    SpiCounterRegAddr,
+    gfx8_cntx_prim::select_value<regSPI_PERFCOUNTER0_SELECT>,
+    CounterBlockSeAttr};
+static const GpuBlockInfo SqCounterBlockInfo = {
+    "SQ",
+    SqCounterBlockId,
+    1,
+    SqCounterBlockMaxEvent,
+    SqCounterBlockNumCounters,
+    SqCounterRegAddr,
+    gfx8_cntx_prim::select_value<regSQ_PERFCOUNTER0_SELECT__CI__VI>,
+    CounterBlockSeAttr | CounterBlockSqAttr};
+static const GpuBlockInfo SqCsCounterBlockInfo = {
+    "SQ_CS",
+    SqCounterBlockId,
+    1,
+    SqCounterBlockMaxEvent,
+    SqCounterBlockNumCounters,
+    SqCounterRegAddr,
+    gfx8_cntx_prim::select_value<regSQ_PERFCOUNTER0_SELECT__CI__VI>,
+    CounterBlockSeAttr | CounterBlockSqAttr};
+static const GpuBlockInfo SxCounterBlockInfo = {
+    "SX",
+    SxCounterBlockId,
+    1,
+    SxCounterBlockMaxEvent,
+    SxCounterBlockNumCounters,
+    SxCounterRegAddr,
+    gfx8_cntx_prim::select_value<regSX_PERFCOUNTER0_SELECT>,
+    CounterBlockSeAttr};
+static const GpuBlockInfo TaCounterBlockInfo = {
+    "TA",
+    TaCounterBlockId,
+    TaCounterBlockNumInstances,
+    TaCounterBlockMaxEvent,
+    TaCounterBlockNumCounters,
+    TaCounterRegAddr,
+    gfx8_cntx_prim::select_value<regTA_PERFCOUNTER0_SELECT>,
+    CounterBlockSeAttr};
+static const GpuBlockInfo TcaCounterBlockInfo = {
+    "TCA",
+    TcaCounterBlockId,
+    TcaCounterBlockNumInstances,
+    TcaCounterBlockMaxEvent,
+    TcaCounterBlockNumCounters,
+    TcaCounterRegAddr,
+    gfx8_cntx_prim::select_value<regTCA_PERFCOUNTER0_SELECT__CI__VI>,
+    CounterBlockDfltAttr};
+static const GpuBlockInfo TccCounterBlockInfo = {
+    "TCC",
+    TccCounterBlockId,
+    TccCounterBlockNumInstances,
+    TccCounterBlockMaxEvent,
+    TccCounterBlockNumCounters,
+    TccCounterRegAddr,
+    gfx8_cntx_prim::select_value<regTCC_PERFCOUNTER0_SELECT__CI__VI>,
+    CounterBlockDfltAttr};
+static const GpuBlockInfo TdCounterBlockInfo = {
+    "TD",
+    TdCounterBlockId,
+    TdCounterBlockNumInstances,
+    TdCounterBlockMaxEvent,
+    TdCounterBlockNumCounters,
+    TdCounterRegAddr,
+    gfx8_cntx_prim::select_value<regTD_PERFCOUNTER0_SELECT>,
+    CounterBlockSeAttr};
+static const GpuBlockInfo TcpCounterBlockInfo = {
+    "TCP",
+    TcpCounterBlockId,
+    TcpCounterBlockNumInstances,
+    TcpCounterBlockMaxEvent,
+    TcpCounterBlockNumCounters,
+    TcpCounterRegAddr,
+    gfx8_cntx_prim::select_value<regTCP_PERFCOUNTER0_SELECT__CI__VI>,
+    CounterBlockSeAttr};
+static const GpuBlockInfo GdsCounterBlockInfo = {
+    "GDS",
+    GdsCounterBlockId,
+    1,
+    GdsCounterBlockMaxEvent,
+    GdsCounterBlockNumCounters,
+    GdsCounterRegAddr,
+    gfx8_cntx_prim::select_value<regGDS_PERFCOUNTER0_SELECT>,
+    CounterBlockDfltAttr};
+static const GpuBlockInfo IaCounterBlockInfo = {
+    "IA",
+    IaCounterBlockId,
+    1,
+    IaCounterBlockMaxEvent,
+    IaCounterBlockNumCounters,
+    IaCounterRegAddr,
+    gfx8_cntx_prim::select_value<regIA_PERFCOUNTER0_SELECT__CI__VI>,
+    CounterBlockSeAttr};
+static const GpuBlockInfo SrbmCounterBlockInfo = {
+    "SRBM",
+    SrbmCounterBlockId,
+    1,
+    SrbmCounterBlockMaxEvent,
+    SrbmCounterBlockNumCounters,
+    SrbmCounterRegAddr,
+    gfx8_cntx_prim::select_value<regSRBM_PERFCOUNTER0_SELECT>,
+    CounterBlockDfltAttr};
+static const GpuBlockInfo CpcCounterBlockInfo = {
+    "CPC",
+    CpcCounterBlockId,
+    1,
+    CpcCounterBlockMaxEvent,
+    CpcCounterBlockNumCounters,
+    CpcCounterRegAddr,
+    gfx8_cntx_prim::select_value<regCPC_PERFCOUNTER0_SELECT__CI__VI>,
+    CounterBlockDfltAttr};
 #endif  // _DEF_GFX8_DEF_H_

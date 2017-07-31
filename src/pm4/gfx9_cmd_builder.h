@@ -154,6 +154,31 @@ class Gfx9CmdBuilder : public CmdBuilder {
     APPEND_COMMAND_WRAPPER(cmdbuf, packet);
   }
 
+  void BuildWritePConfigRegPacket(CmdBuffer* cmdbuf, uint32_t addr, uint32_t value) {
+    PM4MEC_COPY_DATA cmd_data;
+    memset(&cmd_data, 0, sizeof(PM4MEC_COPY_DATA));
+
+    // Initialize the command header
+    cmd_data.ordinal1 = PM4_TYPE3_HDR(IT_COPY_DATA, (sizeof(PM4MEC_COPY_DATA) / sizeof(uint32_t)));
+
+    cmd_data.bitfields2.src_sel = src_sel__mec_copy_data__immediate_data;
+    cmd_data.bitfields2.src_cache_policy = src_cache_policy__mec_copy_data__lru;
+
+    cmd_data.bitfields2.dst_sel = dst_sel__mec_copy_data__perfcounters;
+    cmd_data.bitfields2.dst_cache_policy = dst_cache_policy__mec_copy_data__lru;
+
+    cmd_data.bitfields2.wr_confirm = wr_confirm__mec_copy_data__do_not_wait_for_confirmation;
+    cmd_data.bitfields2.count_sel = count_sel__mec_copy_data__32_bits_of_data;
+
+    cmd_data.imm_data = value;
+
+    cmd_data.bitfields5a.dst_reg_offset = addr;
+    //    cmd_data.ordinal5 = addr;
+
+    // Append the built command into output Command Buffer
+    APPEND_COMMAND_WRAPPER(cmdbuf, cmd_data);
+  }
+
   void BuildCopyRegDataPacket(CmdBuffer* cmdbuf, uint32_t src_sel, uint32_t src_reg_addr,
                               void* dst_addr, uint32_t size, bool wait) {
     PM4MEC_COPY_DATA cmd_data;

@@ -19,30 +19,14 @@ class Gfx8Factory : public Pm4Factory {
 
 // GFX8 block table
 const GpuBlockInfo* Gfx8Factory::block_table[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER] = {
-    &ViCpfCounterBlockInfo,
-    &ViGrbmCounterBlockInfo,
-    &ViGrbmSeCounterBlockInfo,
-    &ViSpiCounterBlockInfo,
-    &ViSqCounterBlockInfo,
-    &ViSqCsCounterBlockInfo,
-    &ViSxCounterBlockInfo,
-    &ViTaCounterBlockInfo,
-    &ViTcaCounterBlockInfo,
-    &ViTccCounterBlockInfo,
-    &ViTdCounterBlockInfo,
-    &ViTcpCounterBlockInfo,
-    &ViGdsCounterBlockInfo,
-    &ViIaCounterBlockInfo,
-    &ViMcCounterBlockInfo,
-    &ViSrbmCounterBlockInfo,
-    NULL /*TCS*/,
-    &ViCpcCounterBlockInfo,
-    NULL /*GCEA*/,
-    NULL /*ATC*/,
-    NULL /*ATCL2*/,
-    NULL /*RPB*/,
-    NULL /*RMI*/,
-    NULL /*MCVML2*/,
+    &CpfCounterBlockInfo,  &GrbmCounterBlockInfo, &GrbmSeCounterBlockInfo,
+    &SpiCounterBlockInfo,  &SqCounterBlockInfo,   &SqCsCounterBlockInfo,
+    &SxCounterBlockInfo,   &TaCounterBlockInfo,   &TcaCounterBlockInfo,
+    &TccCounterBlockInfo,  &TdCounterBlockInfo,   &TcpCounterBlockInfo,
+    &GdsCounterBlockInfo,  &IaCounterBlockInfo,   NULL /*MC*/,
+    &SrbmCounterBlockInfo, NULL /*TCS*/,          &CpcCounterBlockInfo,
+    NULL /*GCEA*/,         NULL /*ATC*/,          NULL /*ATCL2*/,
+    NULL /*RPB*/,          NULL /*RMI*/,          NULL /*MCVML2*/,
 };
 
 Pm4Factory* Pm4Factory::Gfx8Create() {
