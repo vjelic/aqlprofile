@@ -63,6 +63,8 @@ static const uint32_t TcpCounterBlockNumInstances   = 16;
 static const uint32_t TcaCounterBlockNumInstances   = 2;
 static const uint32_t TccCounterBlockNumInstances   = 16;
 static const uint32_t SdmaCounterBlockNumInstances  = 2;
+// MC instances
+static const uint32_t McCounterBlockNumInstances    = 8; // Fiji, 2 channels
 
 // Number of block counter registers
 static const uint32_t CbCounterBlockNumCounters     = 4;
@@ -104,7 +106,6 @@ static const uint32_t RlcCounterBlockMaxEvent       = 6;
 static const uint32_t PaSuCounterBlockMaxEvent      = 152;
 static const uint32_t PaScCounterBlockMaxEvent      = 396;
 static const uint32_t SpiCounterBlockMaxEvent       = 196;
-// static const uint32_t SqCounterBlockMaxEvent     = 271;
 static const uint32_t SqCounterBlockMaxEvent        = 297; // Fiji
 static const uint32_t TaCounterBlockMaxEvent        = 118;
 static const uint32_t TdCounterBlockMaxEvent        = 54;

@@ -3,6 +3,7 @@
 
 #include "gfxip/gfx8/si_ci_vi_merged_enum.h"
 #include "gfxip/gfx8/si_ci_vi_merged_mask.h"
+#include "gfxip/gfx8/si_ci_vi_merged_shift.h"
 #include "gfxip/gfx8/si_ci_vi_merged_offset.h"
 #include "gfxip/gfx8/si_ci_vi_merged_registers.h"
 #include "gfxip/gfx8/si_ci_vi_merged_typedef.h"

@@ -63,8 +63,8 @@ class TestPGenSQTT : public TestPGen {
     callback_data_t data;
     api.hsa_ven_amd_aqlprofile_iterate_data(&profile, TestPGenSQTT_Callback, &data);
     for (callback_data_t::iterator it = data.begin(); it != data.end(); ++it) {
-      std::cout << "> sample(" << dec << it->sample_id << ") ptr(" << hex << it->sqtt_data.ptr
-                << ") size(" << dec << it->sqtt_data.size << ")" << std::endl;
+      std::cout << "> sample(" << dec << it->sample_id << ") size(" << dec << it->sqtt_data.size
+                << ") ptr(" << hex << it->sqtt_data.ptr << ")" << std::endl;
 
       void* sys_buf = getRsrcFactory()->AllocateSysMemory(getAgentInfo(), it->sqtt_data.size);
       test_assert(sys_buf != NULL);

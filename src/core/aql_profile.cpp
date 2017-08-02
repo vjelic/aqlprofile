@@ -100,11 +100,22 @@ class CommandBufferMgr {
 static inline pm4_builder::counters_vector CountersVec(const profile_t* profile,
                                                        const Pm4Factory* pm4_factory) {
   pm4_builder::counters_vector vec;
+  std::map<block_des_t, uint32_t, lt_block_des> index_map;
   for (const hsa_ven_amd_aqlprofile_event_t* p = profile->events;
        p < profile->events + profile->event_count; ++p) {
-    const block_des_t block_des = {pm4_factory->getBlockId(p), p->block_index};
     const GpuBlockInfo* block_info = pm4_factory->getBlockInfo(p);
-    vec.push_back({p->counter_id, block_des, block_info});
+    const block_des_t block_des = {pm4_factory->getBlockId(p), p->block_index};
+    // Counting counter register index per block
+    const auto ret = index_map.insert({block_des, 0});
+    uint32_t& reg_index = ret.first->second;
+
+    if (reg_index >= block_info->counter_count) {
+      throw event_exception("Event is out of block counter registers limit, ", *p);
+    }
+
+    vec.push_back({p->counter_id, reg_index, block_des, block_info});
+
+    ++reg_index;
   }
   return vec;
 }

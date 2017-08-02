@@ -22,6 +22,10 @@ template <class T> static void GenerateCmdHeader(T* pm4, IT_OpCodeType op_code) 
 /// for GFX9 chipsets
 class Gfx9CmdBuilder : public CmdBuilder {
  public:
+  static bool IsUserConfigReg(const uint32_t& addr) {
+    return ((addr >= UCONFIG_SPACE_START) && (addr <= UCONFIG_SPACE_END));
+  }
+
   void BuildBarrierCommand(CmdBuffer* cmdBuf) {
     PM4MEC_EVENT_WRITE event_write;
     memset(&event_write, 0, sizeof(event_write));
@@ -122,22 +126,6 @@ class Gfx9CmdBuilder : public CmdBuilder {
     APPEND_COMMAND_WRAPPER(cmdbuf, wait_reg_mem);
   }
 
-  void BuildWriteUConfigRegPacket(CmdBuffer* cmdbuf, uint32_t addr, uint32_t value) {
-    struct {
-      uint32_t item[3];
-    } packet;
-
-    // Initialize the command header
-    packet.item[0] =
-        PM4_TYPE3_HDR(IT_SET_UCONFIG_REG, (1 + sizeof(PM4MEC_SET_CONFIG_REG) / sizeof(uint32_t)));
-
-    packet.item[1] = (addr - UCONFIG_SPACE_START);
-    packet.item[2] = value;
-
-    // Append the built command into output Command Buffer
-    APPEND_COMMAND_WRAPPER(cmdbuf, packet);
-  }
-
   void BuildWriteShRegPacket(CmdBuffer* cmdbuf, uint32_t addr, uint32_t value) {
     struct {
       uint32_t item[3];
@@ -148,6 +136,22 @@ class Gfx9CmdBuilder : public CmdBuilder {
         PM4_TYPE3_HDR(IT_SET_SH_REG, (1 + sizeof(PM4MEC_SET_CONFIG_REG) / sizeof(uint32_t)));
 
     packet.item[1] = (addr - PERSISTENT_SPACE_START);
+    packet.item[2] = value;
+
+    // Append the built command into output Command Buffer
+    APPEND_COMMAND_WRAPPER(cmdbuf, packet);
+  }
+
+  void BuildWriteUConfigRegPacket(CmdBuffer* cmdbuf, uint32_t addr, uint32_t value) {
+    struct {
+      uint32_t item[3];
+    } packet;
+
+    // Initialize the command header
+    packet.item[0] =
+        PM4_TYPE3_HDR(IT_SET_UCONFIG_REG, (1 + sizeof(PM4MEC_SET_CONFIG_REG) / sizeof(uint32_t)));
+
+    packet.item[1] = (addr - UCONFIG_SPACE_START);
     packet.item[2] = value;
 
     // Append the built command into output Command Buffer
@@ -173,10 +177,14 @@ class Gfx9CmdBuilder : public CmdBuilder {
     cmd_data.imm_data = value;
 
     cmd_data.bitfields5a.dst_reg_offset = addr;
-    //    cmd_data.ordinal5 = addr;
 
     // Append the built command into output Command Buffer
     APPEND_COMMAND_WRAPPER(cmdbuf, cmd_data);
+  }
+
+  void BuildWriteConfigRegPacket(CmdBuffer* cmdbuf, uint32_t addr, uint32_t value) {
+    return (IsUserConfigReg(addr)) ? BuildWriteUConfigRegPacket(cmdbuf, addr, value)
+                                   : BuildWritePConfigRegPacket(cmdbuf, addr, value);
   }
 
   void BuildCopyRegDataPacket(CmdBuffer* cmdbuf, uint32_t src_sel, uint32_t src_reg_addr,
@@ -222,6 +230,22 @@ class Gfx9CmdBuilder : public CmdBuilder {
 
     // Append the built command into output Command Buffer
     APPEND_COMMAND_WRAPPER(cmdbuf, cmd_data);
+  }
+
+  uint32_t BuildCopyCounterDataPacket(CmdBuffer* cmdbuf, uint32_t src_sel, uint32_t src_reg_addr_lo,
+                                      uint32_t src_reg_addr_hi, void* dst_addr, uint32_t dw_mask) {
+    uint32_t read_counter = 0;
+    if (dw_mask & 0x1) {
+      BuildCopyRegDataPacket(cmdbuf, src_sel, src_reg_addr_lo, (uint32_t*)dst_addr + read_counter,
+                             COPY_DATA_SEL_COUNT_1DW, false);
+      ++read_counter;
+    }
+    if (dw_mask & 0x2) {
+      BuildCopyRegDataPacket(cmdbuf, src_sel, src_reg_addr_hi, (uint32_t*)dst_addr + read_counter,
+                             COPY_DATA_SEL_COUNT_1DW, false);
+      ++read_counter;
+    }
+    return read_counter;
   }
 
   void BuildIndirectBufferCmd(CmdBuffer* cmdbuf, const void* cmd_addr, std::size_t cmd_size) {

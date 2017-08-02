@@ -22,6 +22,10 @@ template <class T> static void GenerateCmdHeader(T* pm4, IT_OpCodeType op_code) 
 /// for GFX8 chipsets
 class Gfx8CmdBuilder : public CmdBuilder {
  public:
+  static bool IsUserConfigReg(const uint32_t& addr) {
+    return ((addr >= UCONFIG_SPACE_START__CI__VI) && (addr <= UCONFIG_SPACE_END__CI__VI));
+  }
+
   void BuildBarrierCommand(CmdBuffer* cmdBuf) {
     PM4CMDEVENTWRITE event_write;
     memset(&event_write, 0, sizeof(event_write));
@@ -119,6 +123,21 @@ class Gfx8CmdBuilder : public CmdBuilder {
     APPEND_COMMAND_WRAPPER(cmdbuf, wait_reg_mem);
   }
 
+  void BuildWriteShRegPacket(CmdBuffer* cmdbuf, uint32_t addr, uint32_t value) {
+    struct {
+      uint32_t item[3];
+    } packet;
+
+    // Initialize the command header
+    packet.item[0] = PM4_TYPE_3_HDR(IT_SET_SH_REG, 1 + PM4_CMD_SET_SH_REG_DWORDS, ShaderCompute, 0);
+
+    packet.item[1] = (addr - PERSISTENT_SPACE_START);
+    packet.item[2] = value;
+
+    // Append the built command into output Command Buffer
+    APPEND_COMMAND_WRAPPER(cmdbuf, packet);
+  }
+
   void BuildWriteUConfigRegPacket(CmdBuffer* cmdbuf, uint32_t addr, uint32_t value) {
     struct {
       uint32_t item[3];
@@ -135,22 +154,38 @@ class Gfx8CmdBuilder : public CmdBuilder {
     APPEND_COMMAND_WRAPPER(cmdbuf, packet);
   }
 
-  void BuildWriteShRegPacket(CmdBuffer* cmdbuf, uint32_t addr, uint32_t value) {
-    struct {
-      uint32_t item[3];
-    } packet;
+  void BuildWritePConfigRegPacket(CmdBuffer* cmdbuf, uint32_t addr, uint32_t value) {
+    PM4CMDCOPYDATA cmd_data;
+    memset(&cmd_data, 0, sizeof(PM4CMDCOPYDATA));
 
     // Initialize the command header
-    packet.item[0] = PM4_TYPE_3_HDR(IT_SET_SH_REG, 1 + PM4_CMD_SET_SH_REG_DWORDS, ShaderCompute, 0);
+    GenerateCmdHeader(&cmd_data, IT_COPY_DATA);
 
-    packet.item[1] = (addr - PERSISTENT_SPACE_START);
-    packet.item[2] = value;
+    cmd_data.srcAtc__CI = atc_support_;
+    cmd_data.srcSel = COPY_DATA_SEL_SRC_IMME_DATA;
+    cmd_data.srcCachePolicy__CI = COPY_DATA_SRC_CACHE_POLICY_LRU;
+
+    cmd_data.dstAtc__CI = atc_support_;
+    cmd_data.dstSel = COPY_DATA_SEL_DST_SYS_PERF_COUNTER;
+    cmd_data.dstCachePolicy__CI = COPY_DATA_DST_CACHE_POLICY_LRU;
+
+    cmd_data.srcAddressLo = value;
+    cmd_data.srcAddressHi = 0;
+    cmd_data.dstAddressLo = addr;
+    cmd_data.dstAddressHi = 0;
+
+    cmd_data.countSel = COPY_DATA_SEL_COUNT_1DW;
+    cmd_data.wrConfirm = COPY_DATA_WR_CONFIRM_NO_WAIT;
+    cmd_data.engineSel = COPY_DATA_ENGINE_ME;
 
     // Append the built command into output Command Buffer
-    APPEND_COMMAND_WRAPPER(cmdbuf, packet);
+    APPEND_COMMAND_WRAPPER(cmdbuf, cmd_data);
   }
 
-  void BuildWritePConfigRegPacket(CmdBuffer* /*cmdbuf*/, uint32_t /*addr*/, uint32_t /*value*/) {}
+  void BuildWriteConfigRegPacket(CmdBuffer* cmdbuf, uint32_t addr, uint32_t value) {
+    return (IsUserConfigReg(addr)) ? BuildWriteUConfigRegPacket(cmdbuf, addr, value)
+                                   : BuildWritePConfigRegPacket(cmdbuf, addr, value);
+  }
 
   void BuildCopyRegDataPacket(CmdBuffer* cmdbuf, uint32_t src_sel, uint32_t src_reg_addr,
                               void* dst_addr, uint32_t size, bool wait) {
@@ -161,8 +196,8 @@ class Gfx8CmdBuilder : public CmdBuilder {
     GenerateCmdHeader(&cmd_data, IT_COPY_DATA);
 
     cmd_data.srcAtc__CI = atc_support_;
-    cmd_data.srcCachePolicy__CI = COPY_DATA_SRC_CACHE_POLICY_BYPASS;
     cmd_data.srcSel = src_sel;
+    cmd_data.srcCachePolicy__CI = COPY_DATA_SRC_CACHE_POLICY_BYPASS;
 
     cmd_data.dstAtc__CI = atc_support_;
     cmd_data.dstSel = COPY_DATA_SEL_DST_ASYNC_MEMORY;
@@ -179,6 +214,22 @@ class Gfx8CmdBuilder : public CmdBuilder {
 
     // Append the built command into output Command Buffer
     APPEND_COMMAND_WRAPPER(cmdbuf, cmd_data);
+  }
+
+  uint32_t BuildCopyCounterDataPacket(CmdBuffer* cmdbuf, uint32_t src_sel, uint32_t src_reg_addr_lo,
+                                      uint32_t src_reg_addr_hi, void* dst_addr, uint32_t dw_mask) {
+    uint32_t read_counter = 0;
+    if (dw_mask & 0x1) {
+      BuildCopyRegDataPacket(cmdbuf, src_sel, src_reg_addr_lo, (uint32_t*)dst_addr + read_counter,
+                             COPY_DATA_SEL_COUNT_1DW, false);
+      ++read_counter;
+    }
+    if (dw_mask & 0x2) {
+      BuildCopyRegDataPacket(cmdbuf, src_sel, src_reg_addr_hi, (uint32_t*)dst_addr + read_counter,
+                             COPY_DATA_SEL_COUNT_1DW, false);
+      ++read_counter;
+    }
+    return read_counter;
   }
 
   void BuildIndirectBufferCmd(CmdBuffer* cmdbuf, const void* cmd_addr, std::size_t cmd_size) {

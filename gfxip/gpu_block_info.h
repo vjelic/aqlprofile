@@ -5,6 +5,7 @@
 
 namespace gfxip {
 
+// Counter Block attributes
 enum CounterBlockAttr {
   // Default block attribute
   CounterBlockDfltAttr = 0,
@@ -14,8 +15,8 @@ enum CounterBlockAttr {
   CounterBlockSqAttr = 2,
   // Need to clean counter registers
   CounterBlockCleanAttr = 4,
-  // Counters read is controlled with *RSLT_CNTL
-  CounterBlockRsltAttr = 8,
+  // MC Block
+  CounterBlockMcAttr = 0x8,
 };
 
 // Register address corresponding to each counter
@@ -32,7 +33,7 @@ struct CounterRegInfo {
 
 struct counter_des_t;
 
-// Structure which contains information about a specific hardware block for CI.
+// GPU Block info definition
 struct GpuBlockInfo {
   // Unique string identifier of the block.
   const char* name;
@@ -52,19 +53,23 @@ struct GpuBlockInfo {
   uint32_t attr;
 };
 
+// Block descriptor
 struct block_des_t {
   uint32_t id;
   uint32_t index;
 };
 
+// block_des_t less then functor
 struct lt_block_des {
   bool operator()(const block_des_t& a1, const block_des_t& a2) const {
     return (a1.id < a2.id) || ((a1.id == a2.id) && (a1.index < a2.index));
   }
 };
 
+// Counter descriptor
 struct counter_des_t {
   uint32_t id;
+  uint32_t index;
   block_des_t block_des;
   const GpuBlockInfo* block_info;
 };

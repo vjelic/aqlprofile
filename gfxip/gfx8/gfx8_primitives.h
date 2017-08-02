@@ -7,10 +7,10 @@ class gfx8_cntx_prim {
  public:
   const static uint32_t GFXIP_LEVEL = 8;
   const static uint32_t GRBM_GFX_INDEX_ADDR = mmGRBM_GFX_INDEX__CI__VI;
-
+  const static uint32_t COMPUTE_PERFCOUNT_ENABLE_ADDR = mmCOMPUTE_PERFCOUNT_ENABLE__CI__VI;
   const static uint32_t RLC_PERFMON_CLK_CNTL_ADDR = mmRLC_PERFMON_CLK_CNTL__VI;
   const static uint32_t CP_PERFMON_CNTL_ADDR = mmCP_PERFMON_CNTL__CI__VI;
-  const static uint32_t COMPUTE_PERFCOUNT_ENABLE_ADDR = mmCOMPUTE_PERFCOUNT_ENABLE__CI__VI;
+  const static uint32_t MC_SELECT1_ADDR = mmMC_SEQ_PERF_CNTL_1__SI__CI;
 
   const static uint32_t SQ_PERFCOUNTER_MASK_ADDR = mmSQ_PERFCOUNTER_MASK__CI__VI;
   const static uint32_t SQ_THREAD_TRACE_MASK_ADDR = mmSQ_THREAD_TRACE_MASK__VI;
@@ -110,6 +110,8 @@ class gfx8_cntx_prim {
     return cp_perfcount_enable.u32All;
   }
 
+  // SQ Block primitives
+
   // SQ Counter Select Register value
   static uint32_t sq_select_value(const counter_des_t& counter_des) {
     regSQ_PERFCOUNTER0_SELECT__CI__VI sq_cntr_sel = {0};
@@ -158,7 +160,85 @@ class gfx8_cntx_prim {
     return sq_cntr_ctrl.u32All;
   }
 
-  // Counter Select Register value template
+  // MC Block primitives
+
+  // MC Channel value
+  static uint32_t mc_channel_value(const counter_des_t& counter_des) {
+    return counter_des.block_des.index & 1;
+  }
+  static uint32_t mc_channel_mask(const counter_des_t& counter_des) {
+    return 1u << mc_channel_value(counter_des);
+  }
+
+  // MC Counter Select Register value
+  static uint32_t mc_select_value(const counter_des_t& counter_des) {
+    MC_SEQ_PERF_SEQ_CTL__SI__CI select = {0};
+    const uint32_t channel = mc_channel_value(counter_des);
+    const uint32_t event_id = counter_des.id;
+    if (channel == 0) {
+      switch (counter_des.index) {
+        case 0:
+          select.bits.SEL_A = event_id;
+        case 1:
+          select.bits.SEL_B = event_id;
+        case 2:
+          select.bits.SEL_CH0_C = event_id;
+        case 3:
+          select.bits.SEL_CH0_D = event_id;
+      }
+    } else {
+      switch (counter_des.index) {
+        case 0:
+          select.bits.SEL_CH1_A = event_id;
+        case 1:
+          select.bits.SEL_CH1_B = event_id;
+        case 2:
+          select.bits.SEL_CH1_C = event_id;
+        case 3:
+          select.bits.SEL_CH1_D = event_id;
+      }
+    }
+    return select.u32All;
+  }
+
+  static uint32_t mc_select1_value(const counter_des_t& counter_des) {
+    regMC_SEQ_PERF_CNTL_1__SI__CI select = {0};
+    const uint32_t channel = mc_channel_value(counter_des);
+    const uint32_t event_id_msb = counter_des.id >> MC_SEQ_PERF_SEQ_CTL__SEL_B__SHIFT__SI__CI;
+    if (channel == 0) {
+      switch (counter_des.index) {
+        case 0:
+          select.bits.SEL_A_MSB = event_id_msb;
+        case 1:
+          select.bits.SEL_B_MSB = event_id_msb;
+        case 2:
+          select.bits.SEL_CH0_C_MSB = event_id_msb;
+        case 3:
+          select.bits.SEL_CH0_D_MSB = event_id_msb;
+      }
+    } else {
+      switch (counter_des.index) {
+        case 0:
+          select.bits.SEL_CH1_A_MSB = event_id_msb;
+        case 1:
+          select.bits.SEL_CH1_B_MSB = event_id_msb;
+        case 2:
+          select.bits.SEL_CH1_C_MSB = event_id_msb;
+        case 3:
+          select.bits.SEL_CH1_D_MSB = event_id_msb;
+      }
+    }
+    return select.u32All;
+  }
+
+  // MC Counter Config Register value
+  static uint32_t mc_config_value(const counter_des_t& counter_des) {
+    const uint32_t read_enable_mask = counter_des.block_des.index << MC_CONFIG_MCD__MC_RD_ENABLE__SHIFT;
+    const uint32_t write_enable_mask = (1 << McCounterBlockNumInstances) - 1;
+    return read_enable_mask | write_enable_mask;
+  }
+
+  // Counter Select Register value templates
   template <typename Select> static uint32_t select_value(const counter_des_t& counter_des) {
     Select select = {0};
     select.bits.PERF_SEL = counter_des.id;
@@ -284,11 +364,6 @@ class gfx8_cntx_prim {
   }
 };
 
-template <>
-inline uint32_t gfx8_cntx_prim::select_value<regSQ_PERFCOUNTER0_SELECT__CI__VI>(
-    const counter_des_t& counter_des) {
-  return sq_select_value(counter_des);
-}
 template <>
 inline uint32_t gfx8_cntx_prim::select_value<regSX_PERFCOUNTER0_SELECT>(
     const counter_des_t& counter_des) {

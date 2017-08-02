@@ -10,10 +10,10 @@ class gfx9_cntx_prim {
  public:
   const static uint32_t GFXIP_LEVEL = 9;
   const static uint32_t GRBM_GFX_INDEX_ADDR = mmGRBM_GFX_INDEX;
-
+  const static uint32_t COMPUTE_PERFCOUNT_ENABLE_ADDR = mmCOMPUTE_PERFCOUNT_ENABLE;
   const static uint32_t RLC_PERFMON_CLK_CNTL_ADDR = mmRLC_PERFMON_CLK_CNTL;
   const static uint32_t CP_PERFMON_CNTL_ADDR = mmCP_PERFMON_CNTL;
-  const static uint32_t COMPUTE_PERFCOUNT_ENABLE_ADDR = mmCOMPUTE_PERFCOUNT_ENABLE;
+  const static uint32_t MC_SELECT1_ADDR = 0;
 
   const static uint32_t SQ_PERFCOUNTER_MASK_ADDR = mmSQ_PERFCOUNTER_MASK;
   const static uint32_t SQ_THREAD_TRACE_MASK_ADDR = mmSQ_THREAD_TRACE_MASK;
@@ -113,6 +113,8 @@ class gfx9_cntx_prim {
     return cp_perfcount_enable.u32All;
   }
 
+  // SQ Block primitives
+
   // SQ Counter Select Register value
   static uint32_t sq_select_value(const counter_des_t& counter_des) {
     regSQ_PERFCOUNTER0_SELECT sq_cntr_sel = {0};
@@ -155,7 +157,32 @@ class gfx9_cntx_prim {
     return sq_cntr_ctrl.u32All;
   }
 
-  // Counter Select Register value template
+  // MC Block primitives
+
+  // MC Channel value
+  static uint32_t mc_channel_mask(const counter_des_t& counter_des) {
+    return 3;
+  }
+
+  // MC Counter Select Register value
+  template <typename Select> static uint32_t mc_select_value(const counter_des_t& counter_des) {
+    Select select = {0};
+    select.bits.PERF_SEL = counter_des.id;
+    select.bits.PERF_MODE = PERFMON_COUNTER_MODE_ACCUM;
+    select.bits.ENABLE = 1;
+    return select.u32All;
+  }
+
+  static uint32_t mc_select1_value(const counter_des_t& counter_des) {
+    return 0;
+  }
+
+  // MC Counter Config Register value
+  static uint32_t mc_config_value(const counter_des_t& counter_des) {
+    return counter_des.block_des.index;
+  }
+
+  // Counter Select Register value templates
   template <typename Select> static uint32_t select_value(const counter_des_t& counter_des) {
     Select select = {0};
     select.bits.PERF_SEL = counter_des.id;
@@ -286,11 +313,6 @@ class gfx9_cntx_prim {
   }
 };
 
-template <>
-inline uint32_t gfx9_cntx_prim::select_value<regSQ_PERFCOUNTER0_SELECT>(
-    const counter_des_t& counter_des) {
-  return sq_select_value(counter_des);
-}
 template <>
 inline uint32_t gfx9_cntx_prim::select_value<regSX_PERFCOUNTER0_SELECT>(
     const counter_des_t& counter_des) {
