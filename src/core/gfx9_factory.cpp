@@ -22,7 +22,7 @@ const GpuBlockInfo* Gfx9Factory::block_table[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBE
     NULL /*CPF*/,         &GrbmCounterBlockInfo, &GrbmSeCounterBlockInfo, &SpiCounterBlockInfo,
     &SqCounterBlockInfo,  &SqCsCounterBlockInfo, &SxCounterBlockInfo,     &TaCounterBlockInfo,
     &TcaCounterBlockInfo, &TccCounterBlockInfo,  &TdCounterBlockInfo,     &TcpCounterBlockInfo,
-    &GdsCounterBlockInfo, NULL /*MC*/,           NULL /*SRBM*/,           NULL /*TCS*/,
+    &GdsCounterBlockInfo, NULL /*GFX8 MC*/,      NULL /*SRBM*/,           NULL /*TCS*/,
     &CpcCounterBlockInfo, &GceaCounterBlockInfo, &AtcCounterBlockInfo,    &AtcL2CounterBlockInfo,
     &RpbCounterBlockInfo, &RmiCounterBlockInfo,  &McVmL2CounterBlockInfo,
 };

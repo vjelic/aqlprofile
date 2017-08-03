@@ -187,27 +187,19 @@ class Gfx9CmdBuilder : public CmdBuilder {
                                    : BuildWritePConfigRegPacket(cmdbuf, addr, value);
   }
 
-  void BuildCopyRegDataPacket(CmdBuffer* cmdbuf, uint32_t src_sel, uint32_t src_reg_addr,
-                              void* dst_addr, uint32_t size, bool wait) {
+  void BuildCopyRegDataPacket(CmdBuffer* cmdbuf, uint32_t src_reg_addr, void* dst_addr,
+                              uint32_t size, bool wait) {
+    MEC_COPY_DATA_src_sel_enum src_sel = IsUserConfigReg(src_reg_addr)
+        ? src_sel__mec_copy_data__mem_mapped_register
+        : src_sel__mec_copy_data__perfcounters;
+
     PM4MEC_COPY_DATA cmd_data;
     memset(&cmd_data, 0, sizeof(PM4MEC_COPY_DATA));
 
     // Initialize the command header
     cmd_data.ordinal1 = PM4_TYPE3_HDR(IT_COPY_DATA, (sizeof(PM4MEC_COPY_DATA) / sizeof(uint32_t)));
 
-    MEC_COPY_DATA_src_sel_enum data_src = src_sel__mec_copy_data__memory;
-    switch (src_sel) {
-      case COPY_DATA_SEL_REG:
-        data_src = src_sel__mec_copy_data__mem_mapped_register;
-        break;
-      case COPY_DATA_SEL_SRC_SYS_PERF_COUNTER:
-        data_src = src_sel__mec_copy_data__perfcounters;
-        break;
-      default:
-        assert(false && "CopyData Illegal value for source of data");
-        break;
-    }
-    cmd_data.bitfields2.src_sel = data_src;
+    cmd_data.bitfields2.src_sel = src_sel;
     cmd_data.bitfields2.src_cache_policy = src_cache_policy__mec_copy_data__stream;
 
     cmd_data.bitfields2.dst_sel = dst_sel__mec_copy_data__memory;
@@ -232,16 +224,16 @@ class Gfx9CmdBuilder : public CmdBuilder {
     APPEND_COMMAND_WRAPPER(cmdbuf, cmd_data);
   }
 
-  uint32_t BuildCopyCounterDataPacket(CmdBuffer* cmdbuf, uint32_t src_sel, uint32_t src_reg_addr_lo,
+  uint32_t BuildCopyCounterDataPacket(CmdBuffer* cmdbuf, uint32_t src_reg_addr_lo,
                                       uint32_t src_reg_addr_hi, void* dst_addr, uint32_t dw_mask) {
     uint32_t read_counter = 0;
     if (dw_mask & 0x1) {
-      BuildCopyRegDataPacket(cmdbuf, src_sel, src_reg_addr_lo, (uint32_t*)dst_addr + read_counter,
+      BuildCopyRegDataPacket(cmdbuf, src_reg_addr_lo, (uint32_t*)dst_addr + read_counter,
                              COPY_DATA_SEL_COUNT_1DW, false);
       ++read_counter;
     }
     if (dw_mask & 0x2) {
-      BuildCopyRegDataPacket(cmdbuf, src_sel, src_reg_addr_hi, (uint32_t*)dst_addr + read_counter,
+      BuildCopyRegDataPacket(cmdbuf, src_reg_addr_hi, (uint32_t*)dst_addr + read_counter,
                              COPY_DATA_SEL_COUNT_1DW, false);
       ++read_counter;
     }

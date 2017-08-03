@@ -71,7 +71,17 @@ enum VGT_EVENT_TYPE {
 #define mmGRBM_SE3_PERFCOUNTER_HI__CI__VI 0xD04C
 #define mmGRBM_SE3_PERFCOUNTER_LO__CI__VI 0xD04B
 #define mmGRBM_SE3_PERFCOUNTER_SELECT__CI__VI 0xD845
+#define mmMC_CONFIG_MCD 0x0828
 #define mmMC_SEQ_PERF_CNTL_1__SI__CI 0x0AFD
+#define mmMC_SEQ_PERF_SEQ_CNT_A_I0__VI 0x0A79
+#define mmMC_SEQ_PERF_SEQ_CNT_A_I1__VI 0x0A7A
+#define mmMC_SEQ_PERF_SEQ_CNT_B_I0__VI 0x0A7B
+#define mmMC_SEQ_PERF_SEQ_CNT_B_I1__VI 0x0A7C
+#define mmMC_SEQ_PERF_SEQ_CNT_C_I0__VI 0x0AD9
+#define mmMC_SEQ_PERF_SEQ_CNT_C_I1__VI 0x0ADA
+#define mmMC_SEQ_PERF_SEQ_CNT_D_I0__VI 0x0ADB
+#define mmMC_SEQ_PERF_SEQ_CNT_D_I1__VI 0x0ADC
+#define mmMC_SEQ_PERF_SEQ_CTL__SI__VI 0x0A78
 #define mmSPI_PERFCOUNTER0_HI__CI__VI 0xD180
 #define mmSPI_PERFCOUNTER0_LO__CI__VI 0xD181
 #define mmSPI_PERFCOUNTER0_SELECT__CI__VI 0xD980
@@ -1358,6 +1368,7 @@ enum CounterBlockId {
   TdCounterBlockId,
   TcpCounterBlockId,
   GdsCounterBlockId,
+  McCounterBlockId,
   SrbmCounterBlockId,
   CpcCounterBlockId,
 };
@@ -1372,6 +1383,7 @@ static const uint32_t CpfCounterBlockNumCounters = 2;
 static const uint32_t GdsCounterBlockNumCounters = 4;
 static const uint32_t GrbmCounterBlockNumCounters = 2;
 static const uint32_t GrbmSeCounterBlockNumCounters = 1;
+static const uint32_t McCounterBlockNumCounters = 4;
 static const uint32_t SpiCounterBlockNumCounters = 6;
 static const uint32_t SqCounterBlockNumCounters = 16;
 static const uint32_t SrbmCounterBlockNumCounters = 2;
@@ -1395,6 +1407,7 @@ static const uint32_t TccCounterBlockMaxEvent = 191;
 static const uint32_t TcaCounterBlockMaxEvent = 34;
 static const uint32_t GdsCounterBlockMaxEvent = 120;
 static const uint32_t SxCounterBlockMaxEvent = 32;
+static const uint32_t McSeqCounterBlockMaxEvent = 21;
 // include gfxip/gfx8/gfx8_primitives.h
 
 class gfx8_cntx_prim {
@@ -1904,6 +1917,16 @@ static const CounterRegInfo GdsCounterRegAddr[] = {
     {mmGDS_PERFCOUNTER3_SELECT__CI__VI, 0, mmGDS_PERFCOUNTER3_LO__CI__VI,
      mmGDS_PERFCOUNTER3_HI__CI__VI}};
 
+static const CounterRegInfo McSeqCounterRegAddr[] = {
+    {mmMC_SEQ_PERF_SEQ_CTL__SI__VI, mmMC_CONFIG_MCD, mmMC_SEQ_PERF_SEQ_CNT_A_I0__VI,
+     mmMC_SEQ_PERF_SEQ_CNT_A_I1__VI},
+    {mmMC_SEQ_PERF_SEQ_CTL__SI__VI, mmMC_CONFIG_MCD, mmMC_SEQ_PERF_SEQ_CNT_B_I0__VI,
+     mmMC_SEQ_PERF_SEQ_CNT_B_I1__VI},
+    {mmMC_SEQ_PERF_SEQ_CTL__SI__VI, mmMC_CONFIG_MCD, mmMC_SEQ_PERF_SEQ_CNT_C_I0__VI,
+     mmMC_SEQ_PERF_SEQ_CNT_C_I1__VI},
+    {mmMC_SEQ_PERF_SEQ_CTL__SI__VI, mmMC_CONFIG_MCD, mmMC_SEQ_PERF_SEQ_CNT_D_I0__VI,
+     mmMC_SEQ_PERF_SEQ_CNT_D_I1__VI}};
+
 static const CounterRegInfo SrbmCounterRegAddr[] = {
     {mmSRBM_PERFCOUNTER0_SELECT__VI, 0, mmSRBM_PERFCOUNTER0_LO__VI, mmSRBM_PERFCOUNTER0_HI__VI},
     {mmSRBM_PERFCOUNTER1_SELECT__VI, 0, mmSRBM_PERFCOUNTER1_LO__VI, mmSRBM_PERFCOUNTER1_HI__VI}};
@@ -2046,4 +2069,12 @@ static const GpuBlockInfo CpcCounterBlockInfo = {
     CpcCounterRegAddr,
     gfx8_cntx_prim::select_value<regCPC_PERFCOUNTER0_SELECT__CI__VI>,
     CounterBlockDfltAttr};
+static const GpuBlockInfo McSeqCounterBlockInfo = {"MC_SEQ",
+                                                   McCounterBlockId,
+                                                   McCounterBlockNumInstances,
+                                                   McSeqCounterBlockMaxEvent,
+                                                   McCounterBlockNumCounters,
+                                                   McSeqCounterRegAddr,
+                                                   gfx8_cntx_prim::mc_select_value,
+                                                   CounterBlockMcAttr};
 #endif  // _DEF_GFX8_DEF_H_

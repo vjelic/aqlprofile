@@ -34,7 +34,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 template <class Kernel> bool run_kernel(int argc, char* argv[]) {
   bool ret_val = false;
 
-  // Create SimpleConvolution test object
+  // Create test kernel object
   Kernel test_kernel;
   TestAql* test_aql = new TestHSA(&test_kernel);
 
@@ -63,7 +63,7 @@ template <class Kernel> bool run_kernel(int argc, char* argv[]) {
     return 1;
   }
 
-  // Run SimpleConvolution kernel
+  // Run test kernel
   ret_val = test_aql->run();
   if (ret_val == false) {
     std::cout << "Error in running the test kernel" << std::endl;
@@ -95,6 +95,7 @@ int main(int argc, char* argv[]) {
 
   bool ret_val = false;
 
+  // Run simple convolution test
   ret_val = run_kernel<SimpleConvolution>(argc, argv);
 
   return (ret_val) ? 0 : 1;

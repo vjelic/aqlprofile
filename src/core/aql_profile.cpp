@@ -110,7 +110,7 @@ static inline pm4_builder::counters_vector CountersVec(const profile_t* profile,
     uint32_t& reg_index = ret.first->second;
 
     if (reg_index >= block_info->counter_count) {
-      throw event_exception("Event is out of block counter registers limit, ", *p);
+      throw event_exception("Event is out of block counter registers number limit, ", *p);
     }
 
     vec.push_back({p->counter_id, reg_index, block_des, block_info});
@@ -177,6 +177,7 @@ DESTRUCTOR_API void destructor() {
 
 extern "C" {
 
+// Returns the last error message
 PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_error_string(const char** str) {
   *str = aql_profile::Logger::LastMessage().c_str();
   return HSA_STATUS_SUCCESS;

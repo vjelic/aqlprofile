@@ -107,8 +107,8 @@ class CmdBuilder {
   /// @param size Size of the data to be written
   /// @param  wait True if Gpu command should confirm the write operation
   /// operation has completed successfully
-  virtual void BuildCopyRegDataPacket(CmdBuffer* cmdbuf, uint32_t src_sel, uint32_t src_reg_addr,
-                                      void* dst_addr, uint32_t size, bool wait) = 0;
+  virtual void BuildCopyRegDataPacket(CmdBuffer* cmdbuf, uint32_t src_reg_addr, void* dst_addr,
+                                      uint32_t size, bool wait) = 0;
 
   /// @brief Builds the Gpu command to reference indirectly a stream
   /// of other Gpu commands. The launch command is then copied into

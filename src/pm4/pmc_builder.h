@@ -57,15 +57,15 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Prim {
       }
       if (block_info->attr & CounterBlockCleanAttr) {
         for (uint32_t i = 0; i < block_info->counter_count; ++i) {
-          Builder::BuildWriteUConfigRegPacket(cmdBuff,
-                                              block_info->counter_reg_info[i].register_addr_lo, 0);
-          Builder::BuildWriteUConfigRegPacket(cmdBuff,
-                                              block_info->counter_reg_info[i].register_addr_hi, 0);
+          Builder::BuildWriteConfigRegPacket(cmdBuff,
+                                             block_info->counter_reg_info[i].register_addr_lo, 0);
+          Builder::BuildWriteConfigRegPacket(cmdBuff,
+                                             block_info->counter_reg_info[i].register_addr_hi, 0);
         }
       }
       if (block_info->select_value != NULL) {
-        Builder::BuildWriteUConfigRegPacket(cmdBuff, reg_info.select_addr,
-                                            block_info->select_value(counter_des));
+        Builder::BuildWriteConfigRegPacket(cmdBuff, reg_info.select_addr,
+                                           block_info->select_value(counter_des));
       }
       if ((Prim::GFXIP_LEVEL == 8) && (block_info->attr & CounterBlockMcAttr)) {
         Builder::BuildWriteConfigRegPacket(cmdBuff, Prim::MC_SELECT1_ADDR,
@@ -116,10 +116,12 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Prim {
       if (block_info->attr & CounterBlockMcAttr) {
         Builder::BuildWriteConfigRegPacket(cmdBuff, reg_info.control_addr,
                                            Prim::mc_config_value(counter_des));
-        read_counter += Builder::BuildCopyCounterDataPacket(
-            cmdBuff, Prim::COPY_DATA_SEL_SRC_SYS_PERF_COUNTER_PRM, reg_info.register_addr_lo,
-            reg_info.register_addr_hi, (uint32_t*)dataBuff + read_counter,
-            Prim::mc_channel_mask(counter_des));
+        uint32_t* data = (uint32_t*)dataBuff + read_counter;
+        *(uint64_t*)data = 0;
+        Builder::BuildCopyCounterDataPacket(cmdBuff, reg_info.register_addr_lo,
+                                            reg_info.register_addr_hi, data,
+                                            Prim::mc_channel_mask(counter_des));
+        read_counter += 2;
       } else {
         const uint32_t se_end_index = (block_info->attr & CounterBlockSeAttr) ? se_number_ : 1;
         for (uint32_t se_index = 0; se_index < se_end_index; ++se_index) {
@@ -132,9 +134,10 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Prim {
             grbm_value = Prim::grbm_se_index_value(se_index);
           }
           Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::GRBM_GFX_INDEX_ADDR, grbm_value);
-          read_counter += Builder::BuildCopyCounterDataPacket(
-              cmdBuff, Prim::COPY_DATA_SEL_REG_PRM, reg_info.register_addr_lo,
-              reg_info.register_addr_hi, (uint32_t*)dataBuff + read_counter, 3);
+          Builder::BuildCopyCounterDataPacket(cmdBuff, reg_info.register_addr_lo,
+                                              reg_info.register_addr_hi,
+                                              (uint32_t*)dataBuff + read_counter, 3);
+          read_counter += 2;
         }
       }
     }

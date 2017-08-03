@@ -157,17 +157,17 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Prim {
       // Retrieve the values from various status registers
       ControlType* control_buffer = reinterpret_cast<ControlType*>(config->control_buffer_ptr);
       const uint32_t statusIdx = ((TT_STATUS_IDX_MAX * se_index) + TT_STATUS_IDX_STATUS);
-      Builder::BuildCopyRegDataPacket(cmdBuff, Prim::COPY_DATA_SEL_SRC_SYS_PERF_COUNTER_PRM,
-                                      Prim::SQ_THREAD_TRACE_STATUS_ADDR, control_buffer + statusIdx,
-                                      Prim::COPY_DATA_SEL_COUNT_1DW_PRM, true);
+      Builder::BuildCopyRegDataPacket(cmdBuff, Prim::SQ_THREAD_TRACE_STATUS_ADDR,
+                                      control_buffer + statusIdx, Prim::COPY_DATA_SEL_COUNT_1DW_PRM,
+                                      true);
       const uint32_t cntrIdx = ((TT_STATUS_IDX_MAX * se_index) + TT_STATUS_IDX_CNTR);
-      Builder::BuildCopyRegDataPacket(cmdBuff, Prim::COPY_DATA_SEL_SRC_SYS_PERF_COUNTER_PRM,
-                                      Prim::SQ_THREAD_TRACE_CNTR_ADDR, control_buffer + cntrIdx,
-                                      Prim::COPY_DATA_SEL_COUNT_1DW_PRM, true);
+      Builder::BuildCopyRegDataPacket(cmdBuff, Prim::SQ_THREAD_TRACE_CNTR_ADDR,
+                                      control_buffer + cntrIdx, Prim::COPY_DATA_SEL_COUNT_1DW_PRM,
+                                      true);
       const uint32_t wptrIdx = ((TT_STATUS_IDX_MAX * se_index) + TT_STATUS_IDX_WPTR);
-      Builder::BuildCopyRegDataPacket(cmdBuff, Prim::COPY_DATA_SEL_SRC_SYS_PERF_COUNTER_PRM,
-                                      Prim::SQ_THREAD_TRACE_WPTR_ADDR, control_buffer + wptrIdx,
-                                      Prim::COPY_DATA_SEL_COUNT_1DW_PRM, true);
+      Builder::BuildCopyRegDataPacket(cmdBuff, Prim::SQ_THREAD_TRACE_WPTR_ADDR,
+                                      control_buffer + wptrIdx, Prim::COPY_DATA_SEL_COUNT_1DW_PRM,
+                                      true);
     }
     // Reset the GRBM to broadcast mode
     Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::GRBM_GFX_INDEX_ADDR,

@@ -187,8 +187,11 @@ class Gfx8CmdBuilder : public CmdBuilder {
                                    : BuildWritePConfigRegPacket(cmdbuf, addr, value);
   }
 
-  void BuildCopyRegDataPacket(CmdBuffer* cmdbuf, uint32_t src_sel, uint32_t src_reg_addr,
-                              void* dst_addr, uint32_t size, bool wait) {
+  void BuildCopyRegDataPacket(CmdBuffer* cmdbuf, uint32_t src_reg_addr, void* dst_addr,
+                              uint32_t size, bool wait) {
+    const uint32_t src_sel =
+        IsUserConfigReg(src_reg_addr) ? COPY_DATA_SEL_REG : COPY_DATA_SEL_SRC_SYS_PERF_COUNTER;
+
     PM4CMDCOPYDATA cmd_data;
     memset(&cmd_data, 0, sizeof(PM4CMDCOPYDATA));
 
@@ -216,16 +219,16 @@ class Gfx8CmdBuilder : public CmdBuilder {
     APPEND_COMMAND_WRAPPER(cmdbuf, cmd_data);
   }
 
-  uint32_t BuildCopyCounterDataPacket(CmdBuffer* cmdbuf, uint32_t src_sel, uint32_t src_reg_addr_lo,
+  uint32_t BuildCopyCounterDataPacket(CmdBuffer* cmdbuf, uint32_t src_reg_addr_lo,
                                       uint32_t src_reg_addr_hi, void* dst_addr, uint32_t dw_mask) {
     uint32_t read_counter = 0;
     if (dw_mask & 0x1) {
-      BuildCopyRegDataPacket(cmdbuf, src_sel, src_reg_addr_lo, (uint32_t*)dst_addr + read_counter,
+      BuildCopyRegDataPacket(cmdbuf, src_reg_addr_lo, (uint32_t*)dst_addr + read_counter,
                              COPY_DATA_SEL_COUNT_1DW, false);
       ++read_counter;
     }
     if (dw_mask & 0x2) {
-      BuildCopyRegDataPacket(cmdbuf, src_sel, src_reg_addr_hi, (uint32_t*)dst_addr + read_counter,
+      BuildCopyRegDataPacket(cmdbuf, src_reg_addr_hi, (uint32_t*)dst_addr + read_counter,
                              COPY_DATA_SEL_COUNT_1DW, false);
       ++read_counter;
     }
