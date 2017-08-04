@@ -19,14 +19,14 @@ class Gfx8Factory : public Pm4Factory {
 
 // GFX8 block table
 const GpuBlockInfo* Gfx8Factory::block_table[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER] = {
-    &CpfCounterBlockInfo, &GrbmCounterBlockInfo,  &GrbmSeCounterBlockInfo,
-    &SpiCounterBlockInfo, &SqCounterBlockInfo,    &SqCsCounterBlockInfo,
-    &SxCounterBlockInfo,  &TaCounterBlockInfo,    &TcaCounterBlockInfo,
-    &TccCounterBlockInfo, &TdCounterBlockInfo,    &TcpCounterBlockInfo,
-    &GdsCounterBlockInfo, &McSeqCounterBlockInfo, &SrbmCounterBlockInfo,
-    NULL /*TCS*/,         &CpcCounterBlockInfo,   NULL /*GCEA*/,
-    NULL /*ATC*/,         NULL /*ATCL2*/,         NULL /*RPB*/,
-    NULL /*RMI*/,         NULL /*MCVML2*/,
+    &CpcCounterBlockInfo, &CpfCounterBlockInfo, &GdsCounterBlockInfo, &GrbmCounterBlockInfo,
+    &GrbmSeCounterBlockInfo, NULL /*GFX9 RMI*/, &SpiCounterBlockInfo, &SqCounterBlockInfo,
+    &SqCsCounterBlockInfo, &SrbmCounterBlockInfo, &SxCounterBlockInfo, &TaCounterBlockInfo,
+    &TcaCounterBlockInfo, &TccCounterBlockInfo, &TcpCounterBlockInfo, &TdCounterBlockInfo,
+
+    // MC blocks
+    &McSeqCounterBlockInfo, NULL /*GFX9 ATC*/, NULL /*GFX9 ATCL2*/, NULL /*GFX9 GCEA*/,
+    NULL /*GFX9 MCVML2*/, NULL /*GFX9 RPB*/,
 };
 
 Pm4Factory* Pm4Factory::Gfx8Create() {

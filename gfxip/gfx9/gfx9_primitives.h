@@ -328,6 +328,11 @@ inline uint32_t gfx9_cntx_prim::select_value<regCPC_PERFCOUNTER0_SELECT>(
     const counter_des_t& counter_des) {
   return select_value_t3<regCPC_PERFCOUNTER0_SELECT>(counter_des);
 }
+template <>
+inline uint32_t gfx9_cntx_prim::select_value<regCPF_PERFCOUNTER0_SELECT>(
+    const counter_des_t& counter_des) {
+  return select_value_t3<regCPC_PERFCOUNTER0_SELECT>(counter_des);
+}
 
 }  // namespace gfx9
 }  // namespace gfxip

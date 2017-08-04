@@ -1936,6 +1936,15 @@ static const CounterRegInfo CpcCounterRegAddr[] = {
      mmCPC_PERFCOUNTER0_HI__CI__VI},
     {mmCPC_PERFCOUNTER1_SELECT__CI__VI, 0, mmCPC_PERFCOUNTER1_LO__CI__VI,
      mmCPC_PERFCOUNTER1_HI__CI__VI}};
+static const GpuBlockInfo CpcCounterBlockInfo = {
+    "CPC",
+    CpcCounterBlockId,
+    1,
+    CpcCounterBlockMaxEvent,
+    CpcCounterBlockNumCounters,
+    CpcCounterRegAddr,
+    gfx8_cntx_prim::select_value<regCPC_PERFCOUNTER0_SELECT__CI__VI>,
+    CounterBlockDfltAttr};
 static const GpuBlockInfo CpfCounterBlockInfo = {
     "CPF",
     CpfCounterBlockId,
@@ -2059,15 +2068,6 @@ static const GpuBlockInfo SrbmCounterBlockInfo = {
     SrbmCounterBlockNumCounters,
     SrbmCounterRegAddr,
     gfx8_cntx_prim::select_value<regSRBM_PERFCOUNTER0_SELECT>,
-    CounterBlockDfltAttr};
-static const GpuBlockInfo CpcCounterBlockInfo = {
-    "CPC",
-    CpcCounterBlockId,
-    1,
-    CpcCounterBlockMaxEvent,
-    CpcCounterBlockNumCounters,
-    CpcCounterRegAddr,
-    gfx8_cntx_prim::select_value<regCPC_PERFCOUNTER0_SELECT__CI__VI>,
     CounterBlockDfltAttr};
 static const GpuBlockInfo McSeqCounterBlockInfo = {"MC_SEQ",
                                                    McCounterBlockId,

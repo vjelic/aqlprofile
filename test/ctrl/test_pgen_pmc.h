@@ -88,6 +88,7 @@ class TestPGenPMC : public TestPGen {
     // Instantiation of the profile object
     // //////////////////////////////////////////////////////////////
     // Set the event fields
+    std::vector<hsa_ven_amd_aqlprofile_event_t> event_vec;
     const hsa_ven_amd_aqlprofile_event_t events_arr[] = {
         {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SQ, 0, 4 /*WAVES*/},
         {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SQ, 0, 14 /*ITEMS*/},
@@ -97,10 +98,42 @@ class TestPGenPMC : public TestPGen {
         {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_TCC, 2, 22 /*WRITEBACK*/},
         {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_CPC, 0, 0 /*ALWAYS_COUNT*/},
         {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_CPC, 0, 8 /*ME1_STALL_WAIT_ON_RCIU_READ*/},
+        //        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_RMI, 0, 0 /**/},
+        //        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_RMI, 0, 1 /**/},
+        //        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_RMI, 0, 2 /**/},
+        //        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_ATC, 0, 0 /**/},
+        //        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_ATCL2, 0, 0 /**/},
+        //        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_ATCL2, 0, 1 /**/},
+        //        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MCVML2, 0, 0 /**/},
+        //        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MCVML2, 0, 1 /**/},
     };
-    const size_t event_count = sizeof(events_arr) / sizeof(hsa_ven_amd_aqlprofile_event_t);
+    event_vec.insert(event_vec.end(), events_arr,
+                     events_arr + (sizeof(events_arr) / sizeof(hsa_ven_amd_aqlprofile_event_t)));
+#if 0
+    const uint32_t blocks_max = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_TD;
+    const uint32_t event_id = 0;
+    const uint32_t block_id_num = (blocks_max < HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER)
+        ? blocks_max + 1
+        : HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER;
+    const uint32_t event_id_num = 1;
+    for (uint32_t block_id = 0; block_id < block_id_num; ++block_id) {
+      const hsa_ven_amd_aqlprofile_event_t event = {
+          static_cast<hsa_ven_amd_aqlprofile_block_name_t>(block_id), 0, event_id};
+      bool result = false;
+      api.hsa_ven_amd_aqlprofile_validate_event(agent, &event, &result);
+      printf("> Event: block %u id %u\n", block_id, event_id);
+      if (result)
+        event_vec.push_back(event);
+      else
+        printf("Bad event: block %u id %u\n", block_id, event_id);
+    }
+#endif
+
+    const size_t event_count = event_vec.size();
     events = new hsa_ven_amd_aqlprofile_event_t[event_count];
-    memcpy(events, events_arr, sizeof(events_arr));
+    for (uint32_t i = 0; i < event_count; ++i) {
+      events[i] = event_vec.at(i);
+    }
 
     // Initialization the profile
     memset(&profile, 0, sizeof(profile));

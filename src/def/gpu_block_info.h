@@ -1,5 +1,5 @@
-#ifndef _DEF_GPU_BLOCKINFO_H_
-#define _DEF_GPU_BLOCKINFO_H_
+#ifndef _GPU_BLOCKINFO_H_
+#define _GPU_BLOCKINFO_H_
 
 #include <stdint.h>
 
@@ -14,7 +14,7 @@ enum CounterBlockAttr {
   // Need to clean counter registers
   CounterBlockCleanAttr = 4,
   // MC Block
-  CounterBlockMcAttr = 0x8,
+  CounterBlockMcAttr = 8,
 };
 
 // Register address corresponding to each counter
@@ -72,4 +72,4 @@ struct counter_des_t {
   const GpuBlockInfo* block_info;
 };
 
-#endif  // _DEF_GPU_BLOCKINFO_H_
+#endif  // _GPU_BLOCKINFO_H_

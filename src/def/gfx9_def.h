@@ -52,9 +52,15 @@ enum GRBM_PERF_SEL {
   GRBM_PERF_SEL_CPAXI_BUSY = 0x00000025,
 };
 
+enum CPF_PERFCOUNT_SEL {
+  CPF_PERF_SEL_CPF_UTCL2IU_STALL = 0x0000001f,
+};
+
 enum CPC_PERFCOUNT_SEL {
   CPC_PERF_SEL_ME2_DC1_SPI_BUSY = 0x00000022,
 };
+#define CONFIG_SPACE_START 0x00002000
+#define CONFIG_SPACE_END 0x00009fff
 #define UCONFIG_SPACE_START 0x0000c000
 #define UCONFIG_SPACE_END 0x0000ffff
 #define PERSISTENT_SPACE_START 0x00002c00
@@ -252,8 +258,14 @@ enum RMIPerfSel {
 #define mmCPC_PERFCOUNTER1_HI 0xD005
 #define mmCPC_PERFCOUNTER0_LO 0xD006
 #define mmCPC_PERFCOUNTER0_HI 0xD007
+#define mmCPF_PERFCOUNTER1_LO 0xD008
+#define mmCPF_PERFCOUNTER1_HI 0xD009
+#define mmCPF_PERFCOUNTER0_LO 0xD00A
+#define mmCPF_PERFCOUNTER0_HI 0xD00B
 #define mmCPC_PERFCOUNTER1_SELECT 0xD803
 #define mmCPC_PERFCOUNTER0_SELECT 0xD809
+#define mmCPF_PERFCOUNTER1_SELECT 0xD805
+#define mmCPF_PERFCOUNTER0_SELECT 0xD807
 #define mmCP_PERFMON_CNTL 0xD808
 #define mmSX_PERFCOUNTER0_LO 0xD240
 #define mmSX_PERFCOUNTER0_HI 0xD241
@@ -326,6 +338,7 @@ typedef union GRBM_GFX_INDEX regGRBM_GFX_INDEX;
 typedef union GRBM_PERFCOUNTER0_SELECT regGRBM_PERFCOUNTER0_SELECT;
 typedef union GRBM_SE0_PERFCOUNTER_SELECT regGRBM_SE0_PERFCOUNTER_SELECT;
 typedef union CPC_PERFCOUNTER0_SELECT regCPC_PERFCOUNTER0_SELECT;
+typedef union CPF_PERFCOUNTER0_SELECT regCPF_PERFCOUNTER0_SELECT;
 typedef union CP_PERFMON_CNTL regCP_PERFMON_CNTL;
 typedef union SX_PERFCOUNTER0_SELECT regSX_PERFCOUNTER0_SELECT;
 typedef union RMI_PERFCOUNTER0_SELECT regRMI_PERFCOUNTER0_SELECT;
@@ -1145,12 +1158,12 @@ typedef struct PM4_MEC_ACQUIRE_MEM {
 
 enum MEC_COPY_DATA_src_sel_enum {
   src_sel__mec_copy_data__mem_mapped_register = 0,
-  src_sel__mec_copy_data__memory = 1,
   src_sel__mec_copy_data__perfcounters = 4,
   src_sel__mec_copy_data__immediate_data = 5,
 };
 
 enum MEC_COPY_DATA_dst_sel_enum {
+  dst_sel__mec_copy_data__mem_mapped_register = 0,
   dst_sel__mec_copy_data__perfcounters = 4,
   dst_sel__mec_copy_data__memory = 5,
 };
@@ -1423,6 +1436,9 @@ typedef struct PM4_MEC_WAIT_REG_MEM {
 // include gfxip/gfx9/gfx9_block_info.h
 
 enum CounterBlockId {
+  CpcCounterBlockId,
+  CpfCounterBlockId,
+  GdsCounterBlockId,
   GrbmCounterBlockId,
   GrbmSeCounterBlockId,
   SpiCounterBlockId,
@@ -1436,10 +1452,8 @@ enum CounterBlockId {
   TaCounterBlockId,
   TcaCounterBlockId,
   TccCounterBlockId,
-  TdCounterBlockId,
   TcpCounterBlockId,
-  GdsCounterBlockId,
-  CpcCounterBlockId,
+  TdCounterBlockId,
   GceaCounterBlockId,
   AtcCounterBlockId,
   AtcL2CounterBlockId,
@@ -1453,6 +1467,7 @@ static const uint32_t TcpCounterBlockNumInstances = 16;
 static const uint32_t TcaCounterBlockNumInstances = 2;
 static const uint32_t TccCounterBlockNumInstances = 16;
 static const uint32_t CpcCounterBlockNumCounters = 2;
+static const uint32_t CpfCounterBlockNumCounters = 2;
 static const uint32_t GdsCounterBlockNumCounters = 4;
 static const uint32_t GrbmCounterBlockNumCounters = 2;
 static const uint32_t GrbmSeCounterBlockNumCounters = 4;
@@ -1471,6 +1486,7 @@ static const uint32_t McVmL2CounterBlockNumCounters = 8;
 static const uint32_t RpbCounterBlockNumCounters = 4;
 static const uint32_t RmiCounterBlockNumCounters = 4;
 static const uint32_t CpcCounterBlockMaxEvent = CPC_PERF_SEL_ME2_DC1_SPI_BUSY;
+static const uint32_t CpfCounterBlockMaxEvent = CPF_PERF_SEL_CPF_UTCL2IU_STALL;
 static const uint32_t GdsCounterBlockMaxEvent = GDS_PERF_SEL_GWS_BYPASS;
 static const uint32_t GrbmCounterBlockMaxEvent = GRBM_PERF_SEL_CPAXI_BUSY;
 static const uint32_t GrbmSeCounterBlockMaxEvent = GRBM_PERF_SEL_CPAXI_BUSY;
@@ -1810,6 +1826,12 @@ inline uint32_t gfx9_cntx_prim::select_value<regCPC_PERFCOUNTER0_SELECT>(
     const counter_des_t& counter_des) {
   return select_value_t3<regCPC_PERFCOUNTER0_SELECT>(counter_des);
 }
+
+template <>
+inline uint32_t gfx9_cntx_prim::select_value<regCPF_PERFCOUNTER0_SELECT>(
+    const counter_des_t& counter_des) {
+  return select_value_t3<regCPC_PERFCOUNTER0_SELECT>(counter_des);
+}
 // include gfxip/gfx9/gfx9_block_table.h
 
 static const CounterRegInfo SqCounterRegAddr[] = {
@@ -1895,6 +1917,10 @@ static const CounterRegInfo GdsCounterRegAddr[] = {
 static const CounterRegInfo CpcCounterRegAddr[] = {
     {mmCPC_PERFCOUNTER0_SELECT, 0, mmCPC_PERFCOUNTER0_LO, mmCPC_PERFCOUNTER0_HI},
     {mmCPC_PERFCOUNTER1_SELECT, 0, mmCPC_PERFCOUNTER1_LO, mmCPC_PERFCOUNTER1_HI}};
+
+static const CounterRegInfo CpfCounterRegAddr[] = {
+    {mmCPF_PERFCOUNTER0_SELECT, 0, mmCPF_PERFCOUNTER0_LO, mmCPF_PERFCOUNTER0_HI},
+    {mmCPF_PERFCOUNTER1_SELECT, 0, mmCPF_PERFCOUNTER1_LO, mmCPF_PERFCOUNTER1_HI}};
 
 static const CounterRegInfo RmiCounterRegAddr[] = {
     {mmRMI_PERFCOUNTER0_SELECT, 0, mmRMI_PERFCOUNTER0_LO, mmRMI_PERFCOUNTER0_HI},
@@ -2065,6 +2091,15 @@ static const GpuBlockInfo CpcCounterBlockInfo = {
     CpcCounterBlockNumCounters,
     CpcCounterRegAddr,
     gfx9_cntx_prim::select_value<regCPC_PERFCOUNTER0_SELECT>,
+    CounterBlockDfltAttr};
+static const GpuBlockInfo CpfCounterBlockInfo = {
+    "CPF",
+    CpfCounterBlockId,
+    1,
+    CpfCounterBlockMaxEvent,
+    CpfCounterBlockNumCounters,
+    CpfCounterRegAddr,
+    gfx9_cntx_prim::select_value<regCPF_PERFCOUNTER0_SELECT>,
     CounterBlockDfltAttr};
 static const GpuBlockInfo RmiCounterBlockInfo = {
     "RMI",

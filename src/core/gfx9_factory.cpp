@@ -19,12 +19,13 @@ class Gfx9Factory : public Pm4Factory {
 
 // GFX9 block table
 const GpuBlockInfo* Gfx9Factory::block_table[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER] = {
-    NULL /*CPF*/,         &GrbmCounterBlockInfo, &GrbmSeCounterBlockInfo, &SpiCounterBlockInfo,
-    &SqCounterBlockInfo,  &SqCsCounterBlockInfo, &SxCounterBlockInfo,     &TaCounterBlockInfo,
-    &TcaCounterBlockInfo, &TccCounterBlockInfo,  &TdCounterBlockInfo,     &TcpCounterBlockInfo,
-    &GdsCounterBlockInfo, NULL /*GFX8 MC*/,      NULL /*SRBM*/,           NULL /*TCS*/,
-    &CpcCounterBlockInfo, &GceaCounterBlockInfo, &AtcCounterBlockInfo,    &AtcL2CounterBlockInfo,
-    &RpbCounterBlockInfo, &RmiCounterBlockInfo,  &McVmL2CounterBlockInfo,
+    &CpcCounterBlockInfo, &CpfCounterBlockInfo, &GdsCounterBlockInfo, &GrbmCounterBlockInfo,
+    &GrbmSeCounterBlockInfo, &RmiCounterBlockInfo, &SpiCounterBlockInfo, &SqCounterBlockInfo,
+    &SqCsCounterBlockInfo, NULL /*GFX8 SRBM*/, &SxCounterBlockInfo, &TaCounterBlockInfo,
+    &TcaCounterBlockInfo, &TccCounterBlockInfo, &TcpCounterBlockInfo, &TdCounterBlockInfo,
+    // MC blocks
+    NULL /*GFX8 MC*/, &AtcCounterBlockInfo, &AtcL2CounterBlockInfo, &GceaCounterBlockInfo,
+    &McVmL2CounterBlockInfo, &RpbCounterBlockInfo,
 };
 
 Pm4Factory* Pm4Factory::Gfx9Create() {

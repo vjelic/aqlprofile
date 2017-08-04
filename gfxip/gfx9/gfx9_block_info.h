@@ -7,13 +7,16 @@ namespace gfx9 {
 // Enumeration of Gfx9 hardware counter blocks
 enum CounterBlockId {
   CbCounterBlockId,
-  // Temp commented out for Vega10
-  // CpfCounterBlockId,
+  CpcCounterBlockId,
+  CpfCounterBlockId,
+  CpgCounterBlockId,
   DbCounterBlockId,
+  GdsCounterBlockId,
   GrbmCounterBlockId,
   GrbmSeCounterBlockId,
-  PaSuCounterBlockId,
+  IaCounterBlockId,
   PaScCounterBlockId,
+  PaSuCounterBlockId,
   SpiCounterBlockId,
   SqCounterBlockId,
   SqGsCounterBlockId,
@@ -25,19 +28,13 @@ enum CounterBlockId {
   TaCounterBlockId,
   TcaCounterBlockId,
   TccCounterBlockId,
-  TdCounterBlockId,
   TcpCounterBlockId,
-  GdsCounterBlockId,
-  VgtCounterBlockId,
-  IaCounterBlockId,
-  // Temp commented out for Vega10
-  // SrbmCounterBlockId,
   TcsCounterBlockId,
+  TdCounterBlockId,
+  VgtCounterBlockId,
   WdCounterBlockId,
-  // Temp commented out for Vega10
-  // CpgCounterBlockId,
-  CpcCounterBlockId,
 
+  // MC blocks
   GceaCounterBlockId,
   AtcCounterBlockId,
   AtcL2CounterBlockId,
@@ -51,6 +48,7 @@ enum CounterBlockId {
 
   CpPipeStatsCounterBlockId,
   HwInfoCounterBlockId,
+
   FirstCounterBlockId = CbCounterBlockId,
   LastCounterBlockId = HwInfoCounterBlockId,
 };

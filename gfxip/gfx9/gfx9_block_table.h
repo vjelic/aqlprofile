@@ -30,38 +30,11 @@ static const CounterRegInfo SqCounterRegAddr[] = {
     {mmSQ_PERFCOUNTER15_SELECT, mmSQ_PERFCOUNTER_CTRL, mmSQ_PERFCOUNTER15_LO, mmSQ_PERFCOUNTER15_HI}};
 
 /*
- * DRMDMA
- */
-static const CounterRegInfo DrmdmaCounterRegAddr[] = {
-    {mmSDMA0_PERFMON_CNTL, 0, mmSDMA0_PERFCOUNTER0_RESULT, 0},
-    {mmSDMA0_PERFMON_CNTL, 0, mmSDMA0_PERFCOUNTER1_RESULT, 0},
-    {mmSDMA1_PERFMON_CNTL, 0, mmSDMA1_PERFCOUNTER0_RESULT, 0},
-    {mmSDMA1_PERFMON_CNTL, 0, mmSDMA1_PERFCOUNTER1_RESULT, 0},
-};
-
-/*
  * IH
  */
 static const CounterRegInfo IhCounterRegAddr[] = {
     {mmIH_PERFMON_CNTL, 0, mmIH_PERFCOUNTER0_RESULT, 0},
     {mmIH_PERFMON_CNTL, 0, mmIH_PERFCOUNTER1_RESULT, 0}};
-
-/*
- * CPF
- */
-static const CounterRegInfo CpfCounterRegAddr[] = {
-    {mmCPF_PERFCOUNTER0_SELECT, 0, mmCPF_PERFCOUNTER0_LO, mmCPF_PERFCOUNTER0_HI},
-    {mmCPF_PERFCOUNTER1_SELECT, 0, mmCPF_PERFCOUNTER1_LO, mmCPF_PERFCOUNTER1_HI}};
-
-/*
- * DRM
- */
-static const CounterRegInfo DrmCounterRegAddr[] = {
-    /*
-    {mmDRM_PERFCOUNTER1_SELECT, 0, mmDRM_PERFCOUNTER1_LO, mmDRM_PERFCOUNTER1_HI},
-    {mmDRM_PERFCOUNTER2_SELECT, 0, mmDRM_PERFCOUNTER2_LO, mmDRM_PERFCOUNTER2_HI}
-    */
-};
 
 /*
  * GRBM
@@ -216,16 +189,6 @@ static const CounterRegInfo IaCounterRegAddr[] = {
     {mmIA_PERFCOUNTER3_SELECT, 0, mmIA_PERFCOUNTER3_LO, mmIA_PERFCOUNTER3_HI}};
 
 /*
- * SRBM
- */
-static const CounterRegInfo SrbmCounterRegAddr[] = {
-    /*
-    {mmSRBM_PERFCOUNTER0_SELECT, 0, mmSRBM_PERFCOUNTER0_LO, mmSRBM_PERFCOUNTER0_HI},
-    {mmSRBM_PERFCOUNTER1_SELECT, 0, mmSRBM_PERFCOUNTER1_LO, mmSRBM_PERFCOUNTER1_HI}
-     */
-};
-
-/*
  * WD
  */
 static const CounterRegInfo WdCounterRegAddr[] = {
@@ -235,18 +198,25 @@ static const CounterRegInfo WdCounterRegAddr[] = {
     {mmWD_PERFCOUNTER3_SELECT, 0, mmWD_PERFCOUNTER3_LO, mmWD_PERFCOUNTER3_HI}};
 
 /*
- * CPG
- */
-static const CounterRegInfo CpgCounterRegAddr[] = {
-    {mmCPG_PERFCOUNTER0_SELECT, 0, mmCPG_PERFCOUNTER0_LO, mmCPG_PERFCOUNTER0_HI},
-    {mmCPG_PERFCOUNTER1_SELECT, 0, mmCPG_PERFCOUNTER1_LO, mmCPG_PERFCOUNTER1_HI}};
-
-/*
  * CPC
  */
 static const CounterRegInfo CpcCounterRegAddr[] = {
     {mmCPC_PERFCOUNTER0_SELECT, 0, mmCPC_PERFCOUNTER0_LO, mmCPC_PERFCOUNTER0_HI},
     {mmCPC_PERFCOUNTER1_SELECT, 0, mmCPC_PERFCOUNTER1_LO, mmCPC_PERFCOUNTER1_HI}};
+
+/*
+ * CPF
+ */
+static const CounterRegInfo CpfCounterRegAddr[] = {
+    {mmCPF_PERFCOUNTER0_SELECT, 0, mmCPF_PERFCOUNTER0_LO, mmCPF_PERFCOUNTER0_HI},
+    {mmCPF_PERFCOUNTER1_SELECT, 0, mmCPF_PERFCOUNTER1_LO, mmCPF_PERFCOUNTER1_HI}};
+
+/*
+ * CPG
+ */
+static const CounterRegInfo CpgCounterRegAddr[] = {
+    {mmCPG_PERFCOUNTER0_SELECT, 0, mmCPG_PERFCOUNTER0_LO, mmCPG_PERFCOUNTER0_HI},
+    {mmCPG_PERFCOUNTER1_SELECT, 0, mmCPG_PERFCOUNTER1_LO, mmCPG_PERFCOUNTER1_HI}};
 
 // RMI
 static const CounterRegInfo RmiCounterRegAddr[] = {
@@ -293,11 +263,6 @@ static const CounterRegInfo McVmL2CounterRegAddr[] = {
 // Counter block info table
 // Counter block CB
 static const GpuBlockInfo CbCounterBlockInfo = {"CB", CbCounterBlockId, CbCounterBlockNumInstances, CbCounterBlockMaxEvent, CbCounterBlockNumCounters, CbCounterRegAddr, gfx9_cntx_prim::select_value<regCB_PERFCOUNTER0_SELECT>, CounterBlockSeAttr|CounterBlockCleanAttr};
-// Temp commented for Vega10
-// Counter block CPF
-/*
-static const GpuBlockInfo CpfCounterBlockInfo = {"CPF", CpfCounterBlockId, 1, CpfCounterBlockMaxEvent, CpfCounterBlockNumCounters, CpfCounterRegAddr, gfx9_cntx_prim::select_value<regCPF_PERFCOUNTER0_SELECT>, CounterBlockDfltAttr};
-*/
 // Counter block DB
 static const GpuBlockInfo DbCounterBlockInfo = {"DB", DbCounterBlockId, DbCounterBlockNumInstances, DbCounterBlockMaxEvent, DbCounterBlockNumCounters, DbCounterRegAddr, gfx9_cntx_prim::select_value<regDB_PERFCOUNTER0_SELECT>, CounterBlockSeAttr|CounterBlockCleanAttr};
 // Counter block GRBM
@@ -335,20 +300,12 @@ static const GpuBlockInfo GdsCounterBlockInfo = {"GDS", GdsCounterBlockId, 1, Gd
 static const GpuBlockInfo VgtCounterBlockInfo = {"VGT", VgtCounterBlockId, 1, VgtCounterBlockMaxEvent, VgtCounterBlockNumCounters, VgtCounterRegAddr, gfx9_cntx_prim::select_value<regVGT_PERFCOUNTER0_SELECT>, CounterBlockSeAttr};
 // Counter block IA
 static const GpuBlockInfo IaCounterBlockInfo = {"IA", IaCounterBlockId, 1, IaCounterBlockMaxEvent, IaCounterBlockNumCounters, IaCounterRegAddr, gfx9_cntx_prim::select_value<regIA_PERFCOUNTER0_SELECT>, CounterBlockSeAttr};
-// Temp commented out for Vega10
-// Counter block SRBM
-/*
-static const GpuBlockInfo SrbmCounterBlockInfo = {"SRBM", SrbmCounterBlockId, 1, SrbmCounterBlockMaxEvent, SrbmCounterBlockNumCounters, SrbmCounterRegAddr, gfx9_cntx_prim::select_value<regSRBM_PERFCOUNTER0_SELECT>, CounterBlockDfltAttr};
-*/
 // Counter block WD
 static const GpuBlockInfo WdCounterBlockInfo = {"WD", WdCounterBlockId, 1, WdCounterBlockMaxEvent, WdCounterBlockNumCounters, WdCounterRegAddr, gfx9_cntx_prim::select_value<regWD_PERFCOUNTER0_SELECT>, CounterBlockDfltAttr};
-// Counter block CPG
-// Temp commented for Vega10
-/*
-static const GpuBlockInfo CpgCounterBlockInfo = {"CPG", CpgCounterBlockId, 1, CpgCounterBlockMaxEvent, CpgCounterBlockNumCounters, CpgCounterRegAddr, gfx9_cntx_prim::select_value<regCPG_PERFCOUNTER0_SELECT>, CounterBlockDfltAttr};
-*/
 // Counter block CPC
 static const GpuBlockInfo CpcCounterBlockInfo = {"CPC", CpcCounterBlockId, 1, CpcCounterBlockMaxEvent, CpcCounterBlockNumCounters, CpcCounterRegAddr, gfx9_cntx_prim::select_value<regCPC_PERFCOUNTER0_SELECT>, CounterBlockDfltAttr};
+// Counter block CPF
+static const GpuBlockInfo CpfCounterBlockInfo = {"CPF", CpfCounterBlockId, 1, CpfCounterBlockMaxEvent, CpfCounterBlockNumCounters, CpfCounterRegAddr, gfx9_cntx_prim::select_value<regCPF_PERFCOUNTER0_SELECT>, CounterBlockDfltAttr};
 // Counter block RMI
 static const GpuBlockInfo RmiCounterBlockInfo = {"RMI", RmiCounterBlockId, 1, RmiCounterBlockMaxEvent, RmiCounterBlockNumCounters, RmiCounterRegAddr, gfx9_cntx_prim::select_value<regRMI_PERFCOUNTER0_SELECT>, CounterBlockDfltAttr};
 // Counter block GCEA

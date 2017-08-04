@@ -114,8 +114,8 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Prim {
       const auto& reg_info = block_info->counter_reg_info[counter_des.index];
 
       if (block_info->attr & CounterBlockMcAttr) {
-        Builder::BuildWriteConfigRegPacket(cmdBuff, reg_info.control_addr,
-                                           Prim::mc_config_value(counter_des));
+        Builder::BuildWritePConfigRegPacket(cmdBuff, reg_info.control_addr,
+                                            Prim::mc_config_value(counter_des));
         uint32_t* data = (uint32_t*)dataBuff + read_counter;
         *(uint64_t*)data = 0;
         Builder::BuildCopyCounterDataPacket(cmdBuff, reg_info.register_addr_lo,

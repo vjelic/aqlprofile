@@ -183,8 +183,8 @@ class Gfx8CmdBuilder : public CmdBuilder {
   }
 
   void BuildWriteConfigRegPacket(CmdBuffer* cmdbuf, uint32_t addr, uint32_t value) {
-    return (IsUserConfigReg(addr)) ? BuildWriteUConfigRegPacket(cmdbuf, addr, value)
-                                   : BuildWritePConfigRegPacket(cmdbuf, addr, value);
+    return IsUserConfigReg(addr) ? BuildWriteUConfigRegPacket(cmdbuf, addr, value)
+                                 : BuildWritePConfigRegPacket(cmdbuf, addr, value);
   }
 
   void BuildCopyRegDataPacket(CmdBuffer* cmdbuf, uint32_t src_reg_addr, void* dst_addr,

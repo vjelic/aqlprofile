@@ -26,6 +26,10 @@ class Gfx9CmdBuilder : public CmdBuilder {
     return ((addr >= UCONFIG_SPACE_START) && (addr <= UCONFIG_SPACE_END));
   }
 
+  static bool IsPrivilegedConfigReg(const uint32_t& addr) {
+    return ((addr >= CONFIG_SPACE_START) && (addr <= CONFIG_SPACE_END));
+  }
+
   void BuildBarrierCommand(CmdBuffer* cmdBuf) {
     PM4MEC_EVENT_WRITE event_write;
     memset(&event_write, 0, sizeof(event_write));
@@ -159,6 +163,10 @@ class Gfx9CmdBuilder : public CmdBuilder {
   }
 
   void BuildWritePConfigRegPacket(CmdBuffer* cmdbuf, uint32_t addr, uint32_t value) {
+    const MEC_COPY_DATA_dst_sel_enum dst_sel = IsPrivilegedConfigReg(addr)
+        ? dst_sel__mec_copy_data__perfcounters
+        : dst_sel__mec_copy_data__mem_mapped_register;
+
     PM4MEC_COPY_DATA cmd_data;
     memset(&cmd_data, 0, sizeof(PM4MEC_COPY_DATA));
 
@@ -168,7 +176,7 @@ class Gfx9CmdBuilder : public CmdBuilder {
     cmd_data.bitfields2.src_sel = src_sel__mec_copy_data__immediate_data;
     cmd_data.bitfields2.src_cache_policy = src_cache_policy__mec_copy_data__lru;
 
-    cmd_data.bitfields2.dst_sel = dst_sel__mec_copy_data__perfcounters;
+    cmd_data.bitfields2.dst_sel = dst_sel;
     cmd_data.bitfields2.dst_cache_policy = dst_cache_policy__mec_copy_data__lru;
 
     cmd_data.bitfields2.wr_confirm = wr_confirm__mec_copy_data__do_not_wait_for_confirmation;
@@ -183,15 +191,15 @@ class Gfx9CmdBuilder : public CmdBuilder {
   }
 
   void BuildWriteConfigRegPacket(CmdBuffer* cmdbuf, uint32_t addr, uint32_t value) {
-    return (IsUserConfigReg(addr)) ? BuildWriteUConfigRegPacket(cmdbuf, addr, value)
-                                   : BuildWritePConfigRegPacket(cmdbuf, addr, value);
+    return IsPrivilegedConfigReg(addr) ? BuildWritePConfigRegPacket(cmdbuf, addr, value)
+                                       : BuildWriteUConfigRegPacket(cmdbuf, addr, value);
   }
 
   void BuildCopyRegDataPacket(CmdBuffer* cmdbuf, uint32_t src_reg_addr, void* dst_addr,
                               uint32_t size, bool wait) {
-    MEC_COPY_DATA_src_sel_enum src_sel = IsUserConfigReg(src_reg_addr)
-        ? src_sel__mec_copy_data__mem_mapped_register
-        : src_sel__mec_copy_data__perfcounters;
+    const MEC_COPY_DATA_src_sel_enum src_sel = IsPrivilegedConfigReg(src_reg_addr)
+        ? src_sel__mec_copy_data__perfcounters
+        : src_sel__mec_copy_data__mem_mapped_register;
 
     PM4MEC_COPY_DATA cmd_data;
     memset(&cmd_data, 0, sizeof(PM4MEC_COPY_DATA));

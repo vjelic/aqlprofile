@@ -16,7 +16,7 @@ enum CounterBlockAttr {
   // Need to clean counter registers
   CounterBlockCleanAttr = 4,
   // MC Block
-  CounterBlockMcAttr = 0x8,
+  CounterBlockMcAttr = 8,
 };
 
 // Register address corresponding to each counter
