@@ -1,5 +1,4 @@
 #!/bin/sh
-set -x
 
 tbin=./test/ctrl
 export LD_LIBRARY_PATH=$PWD
