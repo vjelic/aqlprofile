@@ -1,14 +1,11 @@
 cmake_minimum_required ( VERSION 3.5.0 )
+set ( CMAKE_VERBOSE_MAKEFILE TRUE CACHE BOOL "Verbose Output" FORCE )
 
 set ( EXE_NAME "ctrl" )
 
 if ( NOT DEFINED TEST_DIR )
   set ( TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR} )
   project ( ${EXE_NAME} )
-
-  ## Verbose output.
-  set ( CMAKE_VERBOSE_MAKEFILE on )
-
   ## Set build environment
   include ( env )
 endif ()
