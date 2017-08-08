@@ -56,7 +56,7 @@ class TestPGenSQTT : public TestPGen {
   bool buildPackets() { return true; }
 
   bool dumpData() {
-    std::cout << "TestPGenSQTT::dumpData :" << std::endl;
+    std::clog << "TestPGenSQTT::dumpData :" << std::endl;
 
     typedef std::vector<hsa_ven_amd_aqlprofile_info_data_t> callback_data_t;
 
@@ -94,7 +94,7 @@ class TestPGenSQTT : public TestPGen {
   }
 
  public:
-  explicit TestPGenSQTT(TestAql* t) : TestPGen(t) { std::cout << "Test: PGen SQTT" << std::endl; }
+  explicit TestPGenSQTT(TestAql* t) : TestPGen(t) { std::clog << "Test: PGen SQTT" << std::endl; }
 
   bool initialize(int arg_cnt, char** arg_list) {
     if (!TestPMgr::initialize(arg_cnt, arg_list)) return false;

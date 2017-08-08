@@ -50,7 +50,7 @@ template <class Kernel> bool run_kernel(int argc, char* argv[]) {
   // Initialization of Hsa Runtime
   ret_val = test_aql->initialize(argc, argv);
   if (ret_val == false) {
-    std::cout << "Error in the test initialization" << std::endl;
+    std::cerr << "Error in the test initialization" << std::endl;
     test_assert(ret_val);
     return 1;
   }
@@ -58,7 +58,7 @@ template <class Kernel> bool run_kernel(int argc, char* argv[]) {
   // Setup Hsa resources needed for execution
   ret_val = test_aql->setup();
   if (ret_val == false) {
-    std::cout << "Error in creating hsa resources" << std::endl;
+    std::cerr << "Error in creating hsa resources" << std::endl;
     test_assert(ret_val);
     return 1;
   }
@@ -66,7 +66,7 @@ template <class Kernel> bool run_kernel(int argc, char* argv[]) {
   // Run test kernel
   ret_val = test_aql->run();
   if (ret_val == false) {
-    std::cout << "Error in running the test kernel" << std::endl;
+    std::cerr << "Error in running the test kernel" << std::endl;
     test_assert(ret_val);
     return 1;
   }
@@ -89,9 +89,7 @@ template <class Kernel> bool run_kernel(int argc, char* argv[]) {
 }
 
 int main(int argc, char* argv[]) {
-#if defined(NDEBUG)
   clog.rdbuf(NULL);
-#endif
 
   bool ret_val = false;
 

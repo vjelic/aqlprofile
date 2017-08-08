@@ -39,7 +39,7 @@ hsa_queue_t* TestHSA::hsa_queue_ = NULL;
 
 
 bool TestHSA::initialize(int arg_cnt, char** arg_list) {
-  std::cout << "TestHSA::initialize :" << std::endl;
+  std::clog << "TestHSA::initialize :" << std::endl;
   // Initialize command line arguments
   hsa_cmdline_arg_cnt = arg_cnt;
   hsa_cmdline_arg_list = arg_list;
@@ -59,7 +59,7 @@ bool TestHSA::initialize(int arg_cnt, char** arg_list) {
     const char* p = getenv("ROCR_AGENT_IND");
     const uint32_t agent_ind = (p == NULL) ? 0 : atol(p);
     if (!hsa_rsrc_->GetGpuAgentInfo(agent_ind, &agent_info_)) {
-      std::cout << "> error: agent[" << agent_ind << "] is not found" << std::endl;
+      std::cerr << "> error: agent[" << agent_ind << "] is not found" << std::endl;
       return false;
     }
     std::cout << "> Using agent[" << agent_ind << "] : " << agent_info_->name << std::endl;
@@ -88,7 +88,7 @@ bool TestHSA::initialize(int arg_cnt, char** arg_list) {
 }
 
 bool TestHSA::setup() {
-  std::cout << "TestHSA::setup :" << std::endl;
+  std::clog << "TestHSA::setup :" << std::endl;
 
   // Start the timer object
   hsa_timer_.StartTimer(setup_timer_idx_);
@@ -109,7 +109,7 @@ bool TestHSA::setup() {
   const bool ret_val =
       hsa_rsrc_->LoadAndFinalize(agent_info_, brig_path, strdup(name_.c_str()), &kernel_code_desc_);
   if (ret_val == false) {
-    std::cout << "Error in loading and finalizing Kernel" << std::endl;
+    std::cerr << "Error in loading and finalizing Kernel" << std::endl;
     return ret_val;
   }
 
@@ -122,7 +122,7 @@ bool TestHSA::setup() {
 }
 
 bool TestHSA::run() {
-  std::cout << "TestHSA::run :" << std::endl;
+  std::clog << "TestHSA::run :" << std::endl;
 
   const uint32_t work_group_size = 64;
   const uint32_t work_grid_size = test_->get_grid_size();
@@ -199,7 +199,7 @@ bool TestHSA::run() {
   hsa_queue_store_write_index_relaxed(hsa_queue_, (que_idx + 1));
   hsa_signal_store_relaxed(hsa_queue_->doorbell_signal, que_idx);
 
-  std::cout << "> Waiting on kernel dispatch signal, que_idx=" << que_idx << std::endl;
+  std::clog << "> Waiting on kernel dispatch signal, que_idx=" << que_idx << std::endl;
 
   // Wait on the dispatch signal until the kernel is finished.
   // Update wait condition to HSA_WAIT_STATE_ACTIVE for Polling

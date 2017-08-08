@@ -53,7 +53,7 @@ class TestPGenPMC : public TestPGen {
   bool buildPackets() { return true; }
 
   bool dumpData() {
-    std::cout << "TestPGenPMC::dumpData :" << std::endl;
+    std::clog << "TestPGenPMC::dumpData :" << std::endl;
 
     typedef std::vector<hsa_ven_amd_aqlprofile_info_data_t> callback_data_t;
 
@@ -70,7 +70,7 @@ class TestPGenPMC : public TestPGen {
   }
 
  public:
-  explicit TestPGenPMC(TestAql* t) : TestPGen(t) { std::cout << "Test: PGen PMC" << std::endl; }
+  explicit TestPGenPMC(TestAql* t) : TestPGen(t) { std::clog << "Test: PGen PMC" << std::endl; }
 
   bool initialize(int arg_cnt, char** arg_list) {
     if (!TestPMgr::initialize(arg_cnt, arg_list)) return false;
@@ -151,7 +151,7 @@ class TestPGenPMC : public TestPGen {
     if (status != HSA_STATUS_SUCCESS) {
       const char* str = "";
       api.hsa_ven_amd_aqlprofile_error_string(&str);
-      std::cout << "aqlprofile err: " << str << std::endl;
+      std::cerr << "aqlprofile err: " << str << std::endl;
     }
     test_assert(status == HSA_STATUS_SUCCESS);
 
@@ -180,7 +180,7 @@ class TestPGenPMC : public TestPGen {
     if (status != HSA_STATUS_SUCCESS) {
       const char* str;
       api.hsa_ven_amd_aqlprofile_error_string(&str);
-      std::cout << "aqlprofile err: " << str << std::endl;
+      std::cerr << "aqlprofile err: " << str << std::endl;
     }
     test_assert(status == HSA_STATUS_SUCCESS);
     if (status != HSA_STATUS_SUCCESS) return false;

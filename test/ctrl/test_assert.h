@@ -4,7 +4,7 @@
 #define test_assert(cond)                                                                          \
   {                                                                                                \
     if (!(cond)) {                                                                                 \
-      std::cout << "ASSERT FAILED(" << #cond << ") at \"" << __FILE__ << "\" line " << __LINE__    \
+      std::cerr << "ASSERT FAILED(" << #cond << ") at \"" << __FILE__ << "\" line " << __LINE__    \
                 << std::endl;                                                                      \
       exit(-1);                                                                                    \
     }                                                                                              \

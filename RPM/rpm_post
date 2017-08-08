@@ -1,0 +1,1 @@
+echo /opt/rocm/libaqlprofile/lib > /etc/ld.so.conf.d/libhsa-amd-aqlprofile64.conf && ldconfig
