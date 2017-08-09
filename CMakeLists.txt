@@ -77,7 +77,7 @@ endif ()
 add_subdirectory ( ${TEST_DIR} ${PROJECT_BINARY_DIR}/test )
 
 ## Add the install directives for the runtime library.
-install ( TARGETS ${AQLPROFILE_TARGET} LIBRARY DESTINATION libaqlprofile/lib COMPONENT ${AQLPROFILE_LIBRARY} )
+install ( TARGETS ${AQLPROFILE_TARGET} LIBRARY DESTINATION ${AQLPROFILE_NAME}/lib COMPONENT ${AQLPROFILE_LIBRARY} )
 
 ## Add the packaging directives for the runtime library.
 set ( CPACK_PACKAGE_NAME ${AQLPROFILE_NAME} )
