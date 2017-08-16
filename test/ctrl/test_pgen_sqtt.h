@@ -45,7 +45,7 @@ hsa_status_t TestPGenSQTT_Callback(hsa_ven_amd_aqlprofile_info_type_t info_type,
   return status;
 }
 
-// SimpleConvolution: Class implements OpenCL SimpleConvolution sample
+// Class implements SQTT profiling
 class TestPGenSQTT : public TestPGen {
   const static uint32_t buffer_alignment = 0x1000;  // 4K
   const static uint32_t buffer_size = 0x2000000;    // 32M
@@ -63,7 +63,7 @@ class TestPGenSQTT : public TestPGen {
     callback_data_t data;
     api.hsa_ven_amd_aqlprofile_iterate_data(&profile, TestPGenSQTT_Callback, &data);
     for (callback_data_t::iterator it = data.begin(); it != data.end(); ++it) {
-      std::cout << "> sample(" << dec << it->sample_id << ") size(" << dec << it->sqtt_data.size
+      std::cout << "sample(" << dec << it->sample_id << ") size(" << dec << it->sqtt_data.size
                 << ") ptr(" << hex << it->sqtt_data.ptr << ")" << std::endl;
 
       void* sys_buf = getRsrcFactory()->AllocateSysMemory(getAgentInfo(), it->sqtt_data.size);

@@ -62,7 +62,7 @@ bool TestHSA::initialize(int arg_cnt, char** arg_list) {
       std::cerr << "> error: agent[" << agent_ind << "] is not found" << std::endl;
       return false;
     }
-    std::cout << "> Using agent[" << agent_ind << "] : " << agent_info_->name << std::endl;
+    std::clog << "> Using agent[" << agent_ind << "] : " << agent_info_->name << std::endl;
 
     // Create an instance of Aql Queue
     uint32_t num_pkts = 128;
@@ -178,7 +178,7 @@ bool TestHSA::run() {
   const uint64_t que_idx = hsa_queue_load_write_index_relaxed(hsa_queue_);
   const uint32_t mask = hsa_queue_->size - 1;
 
-  std::cout << "> Executing kernel: \"" << name_ << "\"" << std::endl;
+  std::clog << "> Executing kernel: \"" << name_ << "\"" << std::endl;
 
   // Start the timer object
   hsa_timer_.StartTimer(dispatch_timer_idx_);
@@ -229,11 +229,11 @@ bool TestHSA::verify_results() {
 }
 
 void TestHSA::print_time() {
-  std::cout << "Time taken for Setup by " << this->name_ << " : " << this->setup_time_taken_
+  std::clog << "Time taken for Setup by " << this->name_ << " : " << this->setup_time_taken_
             << std::endl;
-  std::cout << "Time taken for Dispatch by " << this->name_ << " : " << this->dispatch_time_taken_
+  std::clog << "Time taken for Dispatch by " << this->name_ << " : " << this->dispatch_time_taken_
             << std::endl;
-  std::cout << "Time taken in Total by " << this->name_ << " : " << this->total_time_taken_
+  std::clog << "Time taken in Total by " << this->name_ << " : " << this->total_time_taken_
             << std::endl;
 }
 

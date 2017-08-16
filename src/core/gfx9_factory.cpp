@@ -24,8 +24,8 @@ const GpuBlockInfo* Gfx9Factory::block_table[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBE
     &SqCsCounterBlockInfo, NULL /*GFX8 SRBM*/, &SxCounterBlockInfo, &TaCounterBlockInfo,
     &TcaCounterBlockInfo, &TccCounterBlockInfo, &TcpCounterBlockInfo, &TdCounterBlockInfo,
     // MC blocks
-    NULL /*GFX8 MC*/, &AtcCounterBlockInfo, &AtcL2CounterBlockInfo, &GceaCounterBlockInfo,
-    &McVmL2CounterBlockInfo, &RpbCounterBlockInfo,
+    NULL /*GFX8 MC*/, NULL /*&AtcCounterBlockInfo*/, &AtcL2CounterBlockInfo, NULL /*&GceaCounterBlockInfo*/,
+    &McVmL2CounterBlockInfo, NULL /*&RpbCounterBlockInfo*/,
 };
 
 Pm4Factory* Pm4Factory::Gfx9Create() {

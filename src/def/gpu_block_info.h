@@ -1,20 +1,24 @@
-#ifndef _GPU_BLOCKINFO_H_
-#define _GPU_BLOCKINFO_H_
+#ifndef _DEF_GPU_BLOCKINFO_H_
+#define _DEF_GPU_BLOCKINFO_H_
 
 #include <stdint.h>
 
 // Counter Block attributes
 enum CounterBlockAttr {
   // Default block attribute
-  CounterBlockDfltAttr = 0,
+  CounterBlockDfltAttr = 1,
   // Per ShaderEngine blocks
-  CounterBlockSeAttr = 1,
+  CounterBlockSeAttr = 2,
   // SQ blocks
-  CounterBlockSqAttr = 2,
+  CounterBlockSqAttr = 4,
   // Need to clean counter registers
-  CounterBlockCleanAttr = 4,
+  CounterBlockCleanAttr = 8,
   // MC Block
-  CounterBlockMcAttr = 8,
+  CounterBlockMcAttr = 0x10,
+  // CP PERFMON controllable blocks
+  CounterBlockCpmonAttr = 0x1f,
+  // SRBM Block
+  CounterBlockSrbmAttr = 0x20,
 };
 
 // Register address corresponding to each counter
@@ -72,4 +76,4 @@ struct counter_des_t {
   const GpuBlockInfo* block_info;
 };
 
-#endif  // _GPU_BLOCKINFO_H_
+#endif  // _DEF_GPU_BLOCKINFO_H_

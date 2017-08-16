@@ -34,7 +34,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "test_aql.h"
 #include "hsa_ven_amd_aqlprofile.h"
 
-// SimpleConvolution: Class implements OpenCL SimpleConvolution sample
+// Class implements profiling manager
 class TestPMgr : public TestAql {
  public:
   typedef hsa_ext_amd_aql_pm4_packet_t packet_t;

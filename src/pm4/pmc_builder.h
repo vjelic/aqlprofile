@@ -13,8 +13,25 @@ namespace pm4_builder {
 class CmdBuffer;
 class CmdBuilder;
 
-typedef std::vector<counter_des_t> counters_vector;
+// Counters vector class
+class counters_vector : public std::vector<counter_des_t> {
+  public:
+  typedef std::vector<counter_des_t> Parent;
 
+  counters_vector() : Parent(), attr(0) {}
+
+  void push_back(const counter_des_t & des) {
+    Parent::push_back(des);
+    attr |= des.block_info->attr;
+  }
+
+  uint32_t get_attr() const { return attr; }
+
+  private:
+  uint32_t attr;
+};
+
+// PMC PM4 commands builder virtual interface
 class PmcBuilder {
  public:
   virtual ~PmcBuilder() {}
@@ -27,6 +44,7 @@ class PmcBuilder {
   constexpr static uint32_t se_number_ = 4;
 };
 
+// PMC PM4 commands builder template
 template <typename Builder, typename Prim>
 class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Prim {
  public:
@@ -37,12 +55,19 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Prim {
                                         Prim::grbm_broadcast_value());
     // Disable RLC Perfmon Clock Gating
     // On Vega this is needed to collect Perf Cntrs
-    if (Prim::GFXIP_LEVEL == 9) {
+    if (Prim::GFXIP_LEVEL == 9)
       Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::RLC_PERFMON_CLK_CNTL_ADDR, 1);
-    }
-    // Reset the counter list
-    Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::CP_PERFMON_CNTL_ADDR,
-                                        Prim::cp_perfmon_cntl_reset_value());
+    // Reset perf counters
+    if (countersVec.get_attr() & CounterBlockCpmonAttr)
+      Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::CP_PERFMON_CNTL_ADDR,
+                                          Prim::cp_perfmon_cntl_reset_value());
+    if (countersVec.get_attr() & CounterBlockSrbmAttr)
+      Builder::BuildWritePConfigRegPacket(cmdBuff, Prim::SRBM_PERFMON_CNTL_ADDR,
+                                          Prim::srbm_reset_value());
+    // Broadcasting to all MC channels
+    if ((Prim::GFXIP_LEVEL == 8) && (countersVec.get_attr() & CounterBlockMcAttr))
+      Builder::BuildWritePConfigRegPacket(cmdBuff, Prim::MC_CONFIG_ADDR,
+                                          Prim::mc_broadcast_value());
     // Programming perf counters
     for (const auto& counter_des : countersVec) {
       const auto* block_info = counter_des.block_info;
@@ -85,11 +110,19 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Prim {
     Builder::BuildWriteShRegPacket(cmdBuff, Prim::COMPUTE_PERFCOUNT_ENABLE_ADDR,
                                    Prim::cp_perfcount_enable_value());
     // Reset the counter list
-    Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::CP_PERFMON_CNTL_ADDR,
-                                        Prim::cp_perfmon_cntl_reset_value());
+    if (countersVec.get_attr() & CounterBlockCpmonAttr)
+      Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::CP_PERFMON_CNTL_ADDR,
+                                          Prim::cp_perfmon_cntl_reset_value());
+    if (countersVec.get_attr() & CounterBlockSrbmAttr)
+      Builder::BuildWritePConfigRegPacket(cmdBuff, Prim::SRBM_PERFMON_CNTL_ADDR,
+                                          Prim::srbm_reset_value());
     // Start the counter list
-    Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::CP_PERFMON_CNTL_ADDR,
-                                        Prim::cp_perfmon_cntl_start_value());
+    if (countersVec.get_attr() & CounterBlockCpmonAttr)
+      Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::CP_PERFMON_CNTL_ADDR,
+                                          Prim::cp_perfmon_cntl_start_value());
+    if (countersVec.get_attr() & CounterBlockSrbmAttr)
+      Builder::BuildWritePConfigRegPacket(cmdBuff, Prim::SRBM_PERFMON_CNTL_ADDR,
+                                          Prim::srbm_start_value());
     // Issue barrier command to apply the commands to configure perfcounters
     Builder::BuildWriteWaitIdlePacket(cmdBuff);
   }
@@ -99,8 +132,12 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Prim {
     // Issue barrier command to wait for dispatch to complete
     Builder::BuildWriteWaitIdlePacket(cmdBuff);
     // Stop and freeze counters
-    Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::CP_PERFMON_CNTL_ADDR,
-                                        Prim::cp_perfmon_cntl_stop_value());
+    if (countersVec.get_attr() & CounterBlockCpmonAttr)
+      Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::CP_PERFMON_CNTL_ADDR,
+                                          Prim::cp_perfmon_cntl_stop_value());
+    if (countersVec.get_attr() & CounterBlockSrbmAttr)
+      Builder::BuildWritePConfigRegPacket(cmdBuff, Prim::SRBM_PERFMON_CNTL_ADDR,
+                                          Prim::srbm_stop_value());
     // Reset Grbm to its default state - broadcast
     Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::GRBM_GFX_INDEX_ADDR,
                                         Prim::grbm_broadcast_value());
@@ -141,14 +178,17 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Prim {
         }
       }
     }
+    // Reset MC config to broadcast
+    if ((Prim::GFXIP_LEVEL == 8) && (countersVec.get_attr() & CounterBlockMcAttr))
+      Builder::BuildWritePConfigRegPacket(cmdBuff, Prim::MC_CONFIG_ADDR,
+                                          Prim::mc_broadcast_value());
     // Reset Grbm to its default state - broadcast
     Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::GRBM_GFX_INDEX_ADDR,
                                         Prim::grbm_broadcast_value());
-    // Enable RLC Perfmon Clock Gating. On Vega this is
+    // Enable RLC Perfmon Clock Gating. On Vega this
     // was disabled during Perf Cntrs collection session
-    if (Prim::GFXIP_LEVEL == 9) {
+    if (Prim::GFXIP_LEVEL == 9)
       Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::RLC_PERFMON_CLK_CNTL_ADDR, 0);
-    }
     // Return amount of data to read
     return read_counter * sizeof(uint32_t);
   }

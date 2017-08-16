@@ -34,7 +34,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <unistd.h>
 #endif
 
-void error(std::string errorMsg) { std::cout << "Error: " << errorMsg << std::endl; }
+void error(std::string errorMsg) { std::cerr << "Error: " << errorMsg << std::endl; }
 
 /*
  * Prints no more than 256 elements of the given array.
@@ -43,13 +43,13 @@ void error(std::string errorMsg) { std::cout << "Error: " << errorMsg << std::en
  */
 template <typename T>
 void printArray(const std::string header, const T* data, const int width, const int height) {
-  std::cout << header << " :\n";
+  std::clog << header << " :\n";
   for (int i = 0; i < height; i++) {
-    std::cout << "> ";
+    std::clog << "> ";
     for (int j = 0; j < width; j++) {
-      std::cout << data[i * width + j] << " ";
+      std::clog << data[i * width + j] << " ";
     }
-    std::cout << "\n";
+    std::clog << "\n";
   }
 }
 

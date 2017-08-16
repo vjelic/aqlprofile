@@ -18,7 +18,7 @@
 namespace pm4_builder {
 
 template <class T> static void PrintPacket(const T& command, const char* name) {
-#if !defined(NDEBUG)
+#if defined(DEBUG_TRACE)
   uint32_t* cmd = (uint32_t*)&command;
   uint32_t size = sizeof(command) / sizeof(uint32_t);
   std::ostringstream oss;

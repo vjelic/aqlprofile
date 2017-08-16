@@ -31,7 +31,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <map>
 #include <stdint.h>
 
-// Class implements Kernel test
+// Class implements kernel test
 class TestKernel {
  public:
   // Memory descriptors IDs

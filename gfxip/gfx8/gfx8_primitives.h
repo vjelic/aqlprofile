@@ -10,7 +10,10 @@ class gfx8_cntx_prim {
   const static uint32_t COMPUTE_PERFCOUNT_ENABLE_ADDR = mmCOMPUTE_PERFCOUNT_ENABLE__CI__VI;
   const static uint32_t RLC_PERFMON_CLK_CNTL_ADDR = mmRLC_PERFMON_CLK_CNTL__VI;
   const static uint32_t CP_PERFMON_CNTL_ADDR = mmCP_PERFMON_CNTL__CI__VI;
+  const static uint32_t SRBM_PERFMON_CNTL_ADDR = mmSRBM_PERFMON_CNTL__VI;
+  const static uint32_t MC_SELECT_ADDR = mmMC_SEQ_PERF_SEQ_CTL__SI__VI;
   const static uint32_t MC_SELECT1_ADDR = mmMC_SEQ_PERF_CNTL_1__SI__CI;
+  const static uint32_t MC_CONFIG_ADDR = mmMC_CONFIG_MCD;
 
   const static uint32_t SQ_PERFCOUNTER_MASK_ADDR = mmSQ_PERFCOUNTER_MASK__CI__VI;
   const static uint32_t SQ_THREAD_TRACE_MASK_ADDR = mmSQ_THREAD_TRACE_MASK__VI;
@@ -232,10 +235,13 @@ class gfx8_cntx_prim {
   }
 
   // MC Counter Config Register value
+  static uint32_t mc_broadcast_value() {
+    const uint32_t write_enable_mask = (1 << McCounterBlockNumInstances) - 1;
+    return write_enable_mask;
+  }
   static uint32_t mc_config_value(const counter_des_t& counter_des) {
     const uint32_t read_enable_mask = counter_des.block_des.index << MC_CONFIG_MCD__MC_RD_ENABLE__SHIFT;
-    const uint32_t write_enable_mask = (1 << McCounterBlockNumInstances) - 1;
-    return read_enable_mask | write_enable_mask;
+    return read_enable_mask | mc_broadcast_value();
   }
 
   // Counter Select Register value templates
@@ -249,6 +255,25 @@ class gfx8_cntx_prim {
     select.bits.PERFCOUNTER_SELECT = counter_des.id;
     return select.u32All;
   }
+
+  // SRBM Registers values
+  static uint32_t srbm_reset_value() {
+    regSRBM_PERFMON_CNTL cntl = {0};
+    return cntl.u32All;
+  }
+  static uint32_t srbm_start_value() {
+    regSRBM_PERFMON_CNTL cntl = {0};
+    cntl.bits.PERFMON_STATE = 1;
+    return cntl.u32All;
+  }
+  static uint32_t srbm_stop_value() {
+    regSRBM_PERFMON_CNTL cntl = {0};
+    cntl.bits.PERFMON_STATE = 2;
+    cntl.bits.PERFMON_SAMPLE_ENABLE = 1;
+    return cntl.u32All;
+  }
+
+  // SQTT primitives
 
   // Enable Thread Trace for all VM Id's
   // Enable all of the SIMD's of the compute unit

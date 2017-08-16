@@ -79,7 +79,7 @@ void* legacyPm4(const packet_t* aql_packet, void* data) {
   rel_mem->ordinal1 = PM4_CMD(IT_RELEASE_MEM__CI__VI, rel_mem_size_dw);
   rel_mem->eventIndex = EVENT_WRITE_INDEX_CACHE_FLUSH_EVENT;
 
-#if !defined(NDEBUG)
+#if defined(DEBUG_TRACE)
   std::ostringstream oss;
   oss << "AQL 'Legacy PM4' size(" << slot_size_dw << ")";
   std::clog << std::setw(40) << std::left << oss.str() << ":";

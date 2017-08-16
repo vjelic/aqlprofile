@@ -285,12 +285,12 @@ bool HsaRsrcFactory::LoadAndFinalize(AgentInfo* agent_info, const char* brig_pat
 
   // Build the code object filename
   std::string filename(brig_path);
-  std::cout << "Code object filename: " << filename << std::endl;
+  std::clog << "Code object filename: " << filename << std::endl;
 
   // Open the file containing code object
   std::ifstream codeStream(filename.c_str(), std::ios::binary | std::ios::ate);
   if (!codeStream) {
-    std::cout << "Error: failed to load " << filename << std::endl;
+    std::cerr << "Error: failed to load " << filename << std::endl;
     assert(false);
     return false;
   }
@@ -299,7 +299,7 @@ bool HsaRsrcFactory::LoadAndFinalize(AgentInfo* agent_info, const char* brig_pat
   size_t size = std::string::size_type(codeStream.tellg());
   char* codeBuff = (char*)AllocateSysMemory(agent_info, size);
   if (!codeBuff) {
-    std::cout << "Error: failed to allocate memory for code object." << std::endl;
+    std::cerr << "Error: failed to allocate memory for code object." << std::endl;
     assert(false);
     return false;
   }
@@ -311,7 +311,7 @@ bool HsaRsrcFactory::LoadAndFinalize(AgentInfo* agent_info, const char* brig_pat
   // De-Serialize the code object that has been read into memory
   status = hsa_code_object_deserialize(codeBuff, size, NULL, &code_object);
   if (status != HSA_STATUS_SUCCESS) {
-    std::cout << "Failed to deserialize code object" << std::endl;
+    std::cerr << "Failed to deserialize code object" << std::endl;
     return false;
   }
 
@@ -355,18 +355,18 @@ void HsaRsrcFactory::AddAgentInfo(AgentInfo* agent_info, bool gpu) {
 
 // Print the various fields of Hsa Gpu Agents
 bool HsaRsrcFactory::PrintGpuAgents(const std::string& header) {
-  std::cout << header << " :" << std::endl;
+  std::clog << header << " :" << std::endl;
 
   AgentInfo* agent_info;
   int size = uint32_t(gpu_list_.size());
   for (int idx = 0; idx < size; idx++) {
     agent_info = gpu_list_[idx];
 
-    std::cout << "> agent[" << idx << "] :" << std::endl;
-    std::cout << ">> Name : " << agent_info->name << std::endl;
-    std::cout << ">> Max Wave Size : " << agent_info->max_wave_size << std::endl;
-    std::cout << ">> Max Queue Size : " << agent_info->max_queue_size << std::endl;
-    std::cout << ">> Kernarg Region Id : " << agent_info->coarse_region.handle << std::endl;
+    std::clog << "> agent[" << idx << "] :" << std::endl;
+    std::clog << ">> Name : " << agent_info->name << std::endl;
+    std::clog << ">> Max Wave Size : " << agent_info->max_wave_size << std::endl;
+    std::clog << ">> Max Queue Size : " << agent_info->max_queue_size << std::endl;
+    std::clog << ">> Kernarg Region Id : " << agent_info->coarse_region.handle << std::endl;
   }
   return true;
 }
@@ -464,13 +464,13 @@ uint32_t HsaRsrcFactory::GetArgIndex(char* arg_value) {
 }
 
 void HsaRsrcFactory::PrintHelpMsg() {
-  std::cout << "Key for passing Brig filepath: " << HsaRsrcFactory::brig_path_key_ << std::endl;
-  std::cout << "Key for passing Number of Compute Units: " << HsaRsrcFactory::num_cus_key_
+  std::clog << "Key for passing Brig filepath: " << HsaRsrcFactory::brig_path_key_ << std::endl;
+  std::clog << "Key for passing Number of Compute Units: " << HsaRsrcFactory::num_cus_key_
             << std::endl;
-  std::cout << "Key for passing Number of Waves per CU: " << HsaRsrcFactory::num_waves_key_
+  std::clog << "Key for passing Number of Waves per CU: " << HsaRsrcFactory::num_waves_key_
             << std::endl;
-  std::cout << "Key for passing Number of Workitems per Wave: "
+  std::clog << "Key for passing Number of Workitems per Wave: "
             << HsaRsrcFactory::num_workitems_key_ << std::endl;
-  std::cout << "Key for passing Kernel Loop Count: " << HsaRsrcFactory::kernel_loop_count_key_
+  std::clog << "Key for passing Kernel Loop Count: " << HsaRsrcFactory::kernel_loop_count_key_
             << std::endl;
 }

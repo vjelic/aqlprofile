@@ -70,7 +70,7 @@ SimpleConvolution::SimpleConvolution() {
 }
 
 void SimpleConvolution::init() {
-  std::cout << "SimpleConvolution::init :" << std::endl;
+  std::clog << "SimpleConvolution::init :" << std::endl;
 
   mem_descr_t input_des = get_descr(INPUT_DES_ID);
   mem_descr_t local_des = get_descr(LOCAL_DES_ID);

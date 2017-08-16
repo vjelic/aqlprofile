@@ -13,7 +13,10 @@ class gfx9_cntx_prim {
   const static uint32_t COMPUTE_PERFCOUNT_ENABLE_ADDR = mmCOMPUTE_PERFCOUNT_ENABLE;
   const static uint32_t RLC_PERFMON_CLK_CNTL_ADDR = mmRLC_PERFMON_CLK_CNTL;
   const static uint32_t CP_PERFMON_CNTL_ADDR = mmCP_PERFMON_CNTL;
+  const static uint32_t SRBM_PERFMON_CNTL_ADDR = 0;
+  const static uint32_t MC_SELECT_ADDR = 0;
   const static uint32_t MC_SELECT1_ADDR = 0;
+  const static uint32_t MC_CONFIG_ADDR = 0;
 
   const static uint32_t SQ_PERFCOUNTER_MASK_ADDR = mmSQ_PERFCOUNTER_MASK;
   const static uint32_t SQ_THREAD_TRACE_MASK_ADDR = mmSQ_THREAD_TRACE_MASK;
@@ -33,6 +36,7 @@ class gfx9_cntx_prim {
       mmSQ_THREAD_TRACE_STATUS - UCONFIG_SPACE_START;
   const static uint32_t TT_BUFF_ALIGN_SHIFT = 12;
 
+  const static uint32_t MC_PERFCOUNTER_RSLT_CNTL__ENABLE_ANY_MASK_PRM = 0x01000000L;
   const static uint32_t COPY_DATA_SEL_REG_PRM = COPY_DATA_SEL_REG;
   const static uint32_t COPY_DATA_SEL_SRC_SYS_PERF_COUNTER_PRM = COPY_DATA_SEL_SRC_SYS_PERF_COUNTER;
   const static uint32_t COPY_DATA_SEL_COUNT_1DW_PRM = COPY_DATA_SEL_COUNT_1DW;
@@ -178,8 +182,9 @@ class gfx9_cntx_prim {
   }
 
   // MC Counter Config Register value
+  static uint32_t mc_broadcast_value() { return 0; }
   static uint32_t mc_config_value(const counter_des_t& counter_des) {
-    return counter_des.block_des.index;
+    return counter_des.index | MC_PERFCOUNTER_RSLT_CNTL__ENABLE_ANY_MASK_PRM;
   }
 
   // Counter Select Register value templates
@@ -198,6 +203,11 @@ class gfx9_cntx_prim {
     select.bits.CNTR_SEL0 = counter_des.id;
     return select.u32All;
   }
+
+  // SRBM Registers values
+  static uint32_t srbm_reset_value() { return 0; }
+  static uint32_t srbm_start_value() { return 0; }
+  static uint32_t srbm_stop_value() { return 0; }
 
   // Enable Thread Trace for all VM Id's
   // Enable all of the SIMD's of the compute unit
