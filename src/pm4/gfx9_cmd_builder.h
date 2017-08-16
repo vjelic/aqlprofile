@@ -1,5 +1,5 @@
-#ifndef _GFX9_CMD_BUILDER_H_
-#define _GFX9_CMD_BUILDER_H_
+#ifndef SRC_PM4_GFX9_CMD_BUILDER_H_
+#define SRC_PM4_GFX9_CMD_BUILDER_H_
 
 #include <string.h>
 #include <assert.h>
@@ -277,4 +277,4 @@ class Gfx9CmdBuilder : public CmdBuilder {
 
 }  // pm4_builder
 
-#endif  //  _GFX9_CMD_BUILDER_H_
+#endif  //  SRC_PM4_GFX9_CMD_BUILDER_H_

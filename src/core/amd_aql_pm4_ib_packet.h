@@ -44,8 +44,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef _AMD_AQL_PM4_IB_PACKET_H_
-#define _AMD_AQL_PM4_IB_PACKET_H_
+#ifndef SRC_CORE_AMD_AQL_PM4_IB_PACKET_H_
+#define SRC_CORE_AMD_AQL_PM4_IB_PACKET_H_
 
 // Value of 'pm4_ib_format' field of amd_aql_pm4_ib_packet_t packet
 const static uint32_t AMD_AQL_PM4_IB_FORMAT = 1;
@@ -64,4 +64,4 @@ typedef struct {
   hsa_signal_t completion_signal;
 } amd_aql_pm4_ib_packet_t;
 
-#endif  // _AMD_AQL_PM4_IB_H_
+#endif  // SRC_CORE_AMD_AQL_PM4_IB_PACKET_H_

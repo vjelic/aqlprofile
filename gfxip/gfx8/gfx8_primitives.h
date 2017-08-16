@@ -175,7 +175,7 @@ class gfx8_cntx_prim {
 
   // MC Counter Select Register value
   static uint32_t mc_select_value(const counter_des_t& counter_des) {
-    MC_SEQ_PERF_SEQ_CTL__SI__CI select = {0};
+    regMC_SEQ_PERF_SEQ_CTL__SI__CI select = {0};
     const uint32_t channel = mc_channel_value(counter_des);
     const uint32_t event_id = counter_des.id;
     if (channel == 0) {

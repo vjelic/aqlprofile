@@ -1,40 +1,54 @@
-#ifndef HSA_RSRC_FACTORY_H_
-#define HSA_RSRC_FACTORY_H_
+/**********************************************************************
+Copyright ©2013 Advanced Micro Devices, Inc. All rights reserved.
 
+Redistribution and use in source and binary forms, with or without modification, are permitted
+provided that the following conditions are met:
+
+<95>    Redistributions of source code must retain the above copyright notice, this list of
+conditions and the following disclaimer.
+<95>    Redistributions in binary form must reproduce the above copyright notice, this list of
+conditions and the following disclaimer in the documentation and/or
+ other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
+IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY
+ DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+********************************************************************/
+
+#ifndef TEST_UTIL_HSA_RSRC_FACTORY_H_
+#define TEST_UTIL_HSA_RSRC_FACTORY_H_
+
+#include <hsa.h>
+#include <hsa_ext_finalize.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <string.h>
 
 #include <iostream>
-#include <vector>
 #include <string>
+#include <vector>
 
-#include "perf_timer.h"
-#include "hsa.h"
-#include "hsa_ext_finalize.h"
+#include "util/perf_timer.h"
 
 #define HSA_ARGUMENT_ALIGN_BYTES 16
 #define HSA_QUEUE_ALIGN_BYTES 64
 #define HSA_PACKET_ALIGN_BYTES 64
 
-#define check(msg, status)                                                                         \
+#define CHECK_STATUS(msg, status)                                                                  \
   if (status != HSA_STATUS_SUCCESS) {                                                              \
     const char* emsg = 0;                                                                          \
     hsa_status_string(status, &emsg);                                                              \
     printf("%s: %s\n", msg, emsg ? emsg : "<unknown error>");                                      \
     exit(1);                                                                                       \
   }
-
-#define check_build(msg, status)                                                                   \
-  if (status != STATUS_SUCCESS) {                                                                  \
-    printf("%s\n", msg);                                                                           \
-    exit(1);                                                                                       \
-  }
-
-// Provide access to command line arguments passed in by user
-extern uint32_t hsa_cmdline_arg_cnt;
-extern char** hsa_cmdline_arg_list;
 
 // Encapsulates information about a Hsa Agent such as its
 // handle, name, max queue size, max wavefront size, etc.
@@ -140,9 +154,6 @@ class HsaRsrcFactory {
   // @return uint8_t* Pointer to buffer, null if allocation fails.
   //
   uint8_t* AllocateLocalMemory(AgentInfo* agent_info, size_t size);
-  uint8_t* AllocateMemory(AgentInfo* agent_info, size_t size);
-
-  bool TransferData(uint8_t* dest_buff, uint8_t* src_buff, uint32_t length, bool host_to_dev);
 
   // Allocate memory tp pass kernel parameters.
   //
@@ -153,6 +164,9 @@ class HsaRsrcFactory {
   // @return uint8_t* Pointer to buffer, null if allocation fails.
   //
   uint8_t* AllocateSysMemory(AgentInfo* agent_info, size_t size);
+
+  // Transfer data method
+  bool TransferData(void* dest_buff, void* src_buff, uint32_t length, bool host_to_dev);
 
   // Loads an Assembled Brig file and Finalizes it into Device Isa
   //
@@ -172,26 +186,6 @@ class HsaRsrcFactory {
 
   // Add an instance of AgentInfo representing a Hsa Gpu agent
   void AddAgentInfo(AgentInfo* agent_info, bool gpu);
-
-  // Returns the file path where brig files is located
-  static char* GetBrigPath();
-
-  // Returns the number of compute units present on platform
-  static uint32_t GetNumOfCUs();
-
-  // Returns the maximum number of waves that can be launched
-  // per compute unit. The actual number that can be launched
-  // is affected by resource availability
-  static uint32_t GetNumOfWavesPerCU();
-
-  // Returns the number of work-items that can execute per wave
-  static uint32_t GetNumOfWorkItemsPerWave();
-
-  // Returns the number of times kernel loop body should execute.
-  static uint32_t GetKernelLoopCount();
-
-  // Returns boolean flag to indicate if debug info should be printed
-  static uint32_t GetPrintDebugInfo();
 
   // Print the various fields of Hsa Gpu Agents
   bool PrintGpuAgents(const std::string& header);
@@ -217,46 +211,6 @@ class HsaRsrcFactory {
 
   // Used to maintain a list of Hsa Cpu Agent Info
   std::vector<AgentInfo*> cpu_list_;
-
-  // Records the file path where Brig file is located.
-  // Value is available only after an instance has been built.
-  static char* brig_path_;
-  static char* brig_path_key_;
-
-  // Records the number of Compute units present on system.
-  // Value is available only after an instance has been built.
-  static uint32_t num_cus_;
-  static char* num_cus_key_;
-
-  // Records the number of waves that can be launched per Compute unit
-  // Value is available only after an instance has been built.
-  static uint32_t num_waves_;
-  static char* num_waves_key_;
-
-  // Records the number of work-items that can be packed into a wave
-  // Value is available only after an instance has been built.
-  static uint32_t num_workitems_;
-  static char* num_workitems_key_;
-
-  // Records the number of times kernel loop body should run. Value
-  // is available only after an instance has been built.
-  static uint32_t kernel_loop_count_;
-  static char* kernel_loop_count_key_;
-
-  // Records the number of times kernel loop body should run. Value
-  // is available only after an instance has been built.
-  static bool print_debug_info_;
-  static char* print_debug_key_;
-
-  // Process command line arguments. The method will capture
-  // various user command line parameters for tests to use
-  static void ProcessCmdline();
-
-  // Prints the help banner on user arg keys
-  static void PrintHelpMsg();
-
-  // Maps an index for the user argument
-  static uint32_t GetArgIndex(char* arg_value);
 };
 
-#endif  //  HSA_RSRC_FACTORY_H_
+#endif  // TEST_UTIL_HSA_RSRC_FACTORY_H_

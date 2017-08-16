@@ -25,13 +25,13 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#ifndef _SIMPLE_CONVOLUTION_H_
-#define _SIMPLE_CONVOLUTION_H_
+#ifndef TEST_SIMPLE_CONVOLUTION_SIMPLE_CONVOLUTION_H_
+#define TEST_SIMPLE_CONVOLUTION_SIMPLE_CONVOLUTION_H_
 
-#include <vector>
 #include <map>
+#include <vector>
 
-#include "test_kernel.h"
+#include "ctrl/test_kernel.h"
 
 // Class implements SimpleConvolution kernel parameters
 class SimpleConvolution : public TestKernel {
@@ -40,13 +40,13 @@ class SimpleConvolution : public TestKernel {
   SimpleConvolution();
 
   // Initialize method
-  void init();
+  void Init();
 
-  // Return number of compute elements
-  uint32_t get_grid_size() const { return width_ * height_; }
+  // Return compute grid size
+  uint32_t GetGridSize() const { return width_ * height_; }
 
   // Print output
-  void print_output() const;
+  void PrintOutput() const;
 
   // Return name
   std::string Name() const { return std::string("SimpleConvolution"); }
@@ -82,9 +82,9 @@ class SimpleConvolution : public TestKernel {
   // @param input_dimensions dimensions of the input matrix
   // @param mask_dimensions  dimensions of the mask matrix
   // @return bool true on success and false on failure
-  bool reference_impl(uint32_t* output, const uint32_t* input, const float* mask,
-                      const uint32_t width, const uint32_t height, const uint32_t maskWidth,
-                      const uint32_t maskHeight);
+  bool ReferenceImplementation(uint32_t* output, const uint32_t* input, const float* mask,
+                               const uint32_t width, const uint32_t height,
+                               const uint32_t maskWidth, const uint32_t maskHeight);
 };
 
-#endif  // _SIMPLE_CONVOLUTION_H_
+#endif  // TEST_SIMPLE_CONVOLUTION_SIMPLE_CONVOLUTION_H_

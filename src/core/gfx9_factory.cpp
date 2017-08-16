@@ -8,24 +8,24 @@ namespace aql_profile {
 
 class Gfx9Factory : public Pm4Factory {
  public:
-  Gfx9Factory() : Pm4Factory(BlockMap(block_table, sizeof(block_table))) {}
-  pm4_builder::CmdBuilder* getCmdBuilder();
-  pm4_builder::PmcBuilder* getPmcBuilder();
-  pm4_builder::SqttBuilder* getSqttBuilder();
+  Gfx9Factory() : Pm4Factory(BlockMap(block_table_, sizeof(block_table_))) {}
+  pm4_builder::CmdBuilder* GetCmdBuilder();
+  pm4_builder::PmcBuilder* GetPmcBuilder();
+  pm4_builder::SqttBuilder* GetSqttBuilder();
 
  private:
-  static const GpuBlockInfo* block_table[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER];
+  static const GpuBlockInfo* block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER];
 };
 
 // GFX9 block table
-const GpuBlockInfo* Gfx9Factory::block_table[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER] = {
+const GpuBlockInfo* Gfx9Factory::block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER] = {
     &CpcCounterBlockInfo, &CpfCounterBlockInfo, &GdsCounterBlockInfo, &GrbmCounterBlockInfo,
     &GrbmSeCounterBlockInfo, &RmiCounterBlockInfo, &SpiCounterBlockInfo, &SqCounterBlockInfo,
     &SqCsCounterBlockInfo, NULL /*GFX8 SRBM*/, &SxCounterBlockInfo, &TaCounterBlockInfo,
     &TcaCounterBlockInfo, &TccCounterBlockInfo, &TcpCounterBlockInfo, &TdCounterBlockInfo,
     // MC blocks
-    NULL /*GFX8 MC*/, NULL /*&AtcCounterBlockInfo*/, &AtcL2CounterBlockInfo, NULL /*&GceaCounterBlockInfo*/,
-    &McVmL2CounterBlockInfo, NULL /*&RpbCounterBlockInfo*/,
+    NULL /*GFX8 MC*/, NULL /*&AtcCounterBlockInfo*/, &AtcL2CounterBlockInfo,
+    NULL /*&GceaCounterBlockInfo*/, &McVmL2CounterBlockInfo, NULL /*&RpbCounterBlockInfo*/,
 };
 
 Pm4Factory* Pm4Factory::Gfx9Create() {
@@ -34,19 +34,19 @@ Pm4Factory* Pm4Factory::Gfx9Create() {
   return p;
 }
 
-pm4_builder::CmdBuilder* Gfx9Factory::getCmdBuilder() {
+pm4_builder::CmdBuilder* Gfx9Factory::GetCmdBuilder() {
   auto p = new pm4_builder::Gfx9CmdBuilder;
   if (p == NULL) throw aql_profile_exc_msg("CmdBuilder allocation failed");
   return p;
 }
 
-pm4_builder::PmcBuilder* Gfx9Factory::getPmcBuilder() {
+pm4_builder::PmcBuilder* Gfx9Factory::GetPmcBuilder() {
   auto p = new pm4_builder::GpuPmcBuilder<pm4_builder::Gfx9CmdBuilder, gfx9_cntx_prim>;
   if (p == NULL) throw aql_profile_exc_msg("PmcBuilder mgr allocation failed");
   return p;
 }
 
-pm4_builder::SqttBuilder* Gfx9Factory::getSqttBuilder() {
+pm4_builder::SqttBuilder* Gfx9Factory::GetSqttBuilder() {
   auto p = new pm4_builder::GpuSqttBuilder<pm4_builder::Gfx9CmdBuilder, gfx9_cntx_prim>;
   if (p == NULL) throw aql_profile_exc_msg("SqttBuilder mgr allocation failed");
   return p;

@@ -1,5 +1,5 @@
-#ifndef _LOGGER_H_
-#define _LOGGER_H_
+#ifndef SRC_CORE_LOGGER_H_
+#define SRC_CORE_LOGGER_H_
 
 #include <time.h>
 #include <stdio.h>
@@ -27,11 +27,11 @@ class Logger {
   template <typename T> Logger& operator<<(const T& m) {
     std::ostringstream oss;
     oss << m;
-    if (!streaming)
-      log(oss.str());
+    if (!streaming_)
+      Log(oss.str());
     else
-      put(oss.str());
-    streaming = true;
+      Put(oss.str());
+    streaming_ = true;
     return *this;
   }
 
@@ -41,70 +41,70 @@ class Logger {
     return *this;
   }
 
-  static void begm() { Instance().messaging = true; }
-  static void endl() { Instance().resetStreaming(); }
+  static void begm() { Instance().messaging_ = true; }
+  static void endl() { Instance().ResetStreaming(); }
 
   static const std::string& LastMessage() {
     Logger& logger = Instance();
-    std::lock_guard<mutex_t> lck(mutex);
-    return logger.message[GetTid()];
+    std::lock_guard<mutex_t> lck(mutex_);
+    return logger.message_[GetTid()];
   }
 
   static Logger& Instance() {
-    std::lock_guard<mutex_t> lck(mutex);
-    if (instance == NULL) instance = new Logger();
-    return *instance;
+    std::lock_guard<mutex_t> lck(mutex_);
+    if (instance_ == NULL) instance_ = new Logger();
+    return *instance_;
   }
 
   static void Destroy() {
-    std::lock_guard<mutex_t> lck(mutex);
-    if (instance != NULL) delete instance;
-    instance = NULL;
+    std::lock_guard<mutex_t> lck(mutex_);
+    if (instance_ != NULL) delete instance_;
+    instance_ = NULL;
   }
 
  private:
   static uint32_t GetPid() { return syscall(__NR_getpid); }
   static uint32_t GetTid() { return syscall(__NR_gettid); }
 
-  Logger() : file(NULL), dirty(false), streaming(false), messaging(false) {
+  Logger() : file_(NULL), dirty_(false), streaming_(false), messaging_(false) {
     const char* path = getenv("HSA_VEN_AMD_AQLPROFILE_LOG");
     if (path != NULL) {
-      file = fopen("/tmp/aql_profile_log.txt", "a");
+      file_ = fopen("/tmp/aql_profile_log.txt", "a");
     }
-    resetStreaming();
+    ResetStreaming();
   }
 
   ~Logger() {
-    if (file != NULL) {
-      if (dirty) put("\n");
-      fclose(file);
+    if (file_ != NULL) {
+      if (dirty_) Put("\n");
+      fclose(file_);
     }
   }
 
-  void resetStreaming() {
-    std::lock_guard<mutex_t> lck(mutex);
-    if (messaging) {
-      message[GetTid()] = "";
+  void ResetStreaming() {
+    std::lock_guard<mutex_t> lck(mutex_);
+    if (messaging_) {
+      message_[GetTid()] = "";
     }
-    messaging = false;
-    streaming = false;
+    messaging_ = false;
+    streaming_ = false;
   }
 
-  void put(const std::string& m) {
-    std::lock_guard<mutex_t> lck(mutex);
-    if (messaging) {
-      message[GetTid()] += m;
+  void Put(const std::string& m) {
+    std::lock_guard<mutex_t> lck(mutex_);
+    if (messaging_) {
+      message_[GetTid()] += m;
     }
-    if (file != NULL) {
-      dirty = true;
-      flock(fileno(file), LOCK_EX);
-      fprintf(file, "%s", m.c_str());
-      fflush(file);
-      flock(fileno(file), LOCK_UN);
+    if (file_ != NULL) {
+      dirty_ = true;
+      flock(fileno(file_), LOCK_EX);
+      fprintf(file_, "%s", m.c_str());
+      fflush(file_);
+      flock(fileno(file_), LOCK_UN);
     }
   }
 
-  void log(const std::string& m) {
+  void Log(const std::string& m) {
     const time_t rawtime = time(NULL);
     tm tm_info;
     localtime_r(&rawtime, &tm_info);
@@ -112,17 +112,17 @@ class Logger {
     strftime(tm_str, 26, "%Y-%m-%d %H:%M:%S", &tm_info);
     std::ostringstream oss;
     oss << "\n<" << tm_str << std::dec << " pid" << GetPid() << " tid" << GetTid() << "> " << m;
-    put(oss.str());
+    Put(oss.str());
   }
 
-  FILE* file;
-  bool dirty;
-  bool streaming;
-  bool messaging;
+  FILE* file_;
+  bool dirty_;
+  bool streaming_;
+  bool messaging_;
 
-  static mutex_t mutex;
-  static Logger* instance;
-  std::map<uint32_t, std::string> message;
+  static mutex_t mutex_;
+  static Logger* instance_;
+  std::map<uint32_t, std::string> message_;
 };
 
 }  // namespace aql_profile
@@ -136,4 +136,4 @@ class Logger {
                                    << "Info: " << __FUNCTION__                                     \
                                    << "(): " << aql_profile::Logger::begm)
 
-#endif  // _LOGGER_H_
+#endif  // SRC_CORE_LOGGER_H_

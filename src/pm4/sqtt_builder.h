@@ -1,5 +1,5 @@
-#ifndef _THREAD_TRACE_H_
-#define _THREAD_TRACE_H_
+#ifndef SRC_PM4_SQTT_BUILDER_H_
+#define SRC_PM4_SQTT_BUILDER_H_
 
 #include <stdint.h>
 
@@ -54,48 +54,50 @@ class SqttBuilder {
   // Builds Pm4 command stream to program hardware registers that
   // enable a thread trace session, including the issue of an event
   // to begin thread session
-  virtual void begin(CmdBuffer* cmdBuff, const ThreadTraceConfig* config) = 0;
+  virtual void Begin(CmdBuffer* cmd_buffer, const ThreadTraceConfig* config) = 0;
   // Builds Pm4 command stream to program hardware registers that
   // disable a thread trace session, including the issue of an event
   // to stop currently ongoing thread session
-  virtual void end(CmdBuffer* cmdBuff, const ThreadTraceConfig* config) = 0;
+  virtual void End(CmdBuffer* cmd_buffer, const ThreadTraceConfig* config) = 0;
 };
 
-template <typename Builder, typename Prim>
-class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Prim {
+template <typename Builder, typename Primitives>
+class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitives {
  public:
-  void begin(CmdBuffer* cmdBuff, const ThreadTraceConfig* config) {
+  void Begin(CmdBuffer* cmd_buffer, const ThreadTraceConfig* config) {
     // Program Grbm to broadcast messages to all shader engines
-    Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::GRBM_GFX_INDEX_ADDR,
-                                        Prim::grbm_broadcast_value());
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
+                                        Primitives::grbm_broadcast_value());
     // Issue a CSPartialFlush cmd including cache flush
-    Builder::BuildWriteWaitIdlePacket(cmdBuff);
+    Builder::BuildWriteWaitIdlePacket(cmd_buffer);
     // Program the thread trace mask - specifies SH, CU, SIMD and
     // VM Id masks to apply. Enabling SQ/SPI/REG_STALL_EN bits
-    const uint32_t mask_value =
-        (config->mask) ? config->mask : Prim::sqtt_mask_value(config->targetCu, config->vmIdMask);
-    Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::SQ_THREAD_TRACE_MASK_ADDR, mask_value);
+    const uint32_t mask_value = (config->mask)
+        ? config->mask
+        : Primitives::sqtt_mask_value(config->targetCu, config->vmIdMask);
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_MASK_ADDR,
+                                        mask_value);
     // Program the thread trace Perf mask
-    Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::SQ_THREAD_TRACE_PERF_MASK_ADDR,
-                                        Prim::sqtt_perf_mask_value());
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_PERF_MASK_ADDR,
+                                        Primitives::sqtt_perf_mask_value());
     // Program the thread trace token mask
     const uint32_t token_mask_value =
-        (config->tokenMask) ? config->tokenMask : Prim::sqtt_token_mask_value();
-    Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::SQ_THREAD_TRACE_TOKEN_MASK_ADDR,
+        (config->tokenMask) ? config->tokenMask : Primitives::sqtt_token_mask_value();
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_TOKEN_MASK_ADDR,
                                         token_mask_value);
     // Program the thread trace token mask2 to specify the list of instruction
     // tokens to record. Disabling INST_PC instruction tokens
     const uint32_t token_mask2_value =
-        (config->tokenMask2) ? config->tokenMask2 : Prim::sqtt_token_mask2_value();
-    Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::SQ_THREAD_TRACE_TOKEN_MASK2_ADDR,
+        (config->tokenMask2) ? config->tokenMask2 : Primitives::sqtt_token_mask2_value();
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_TOKEN_MASK2_ADDR,
                                         token_mask2_value);
     // Program the thread trace mode register, mode OFF
-    Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::SQ_THREAD_TRACE_MODE_ADDR,
-                                        Prim::sqtt_mode_off_value());
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_MODE_ADDR,
+                                        Primitives::sqtt_mode_off_value());
     // Program the HiWaterMark register to support stalling
-    if (Prim::sqtt_stalling_enabled(mask_value, token_mask_value)) {
-      Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::SQ_THREAD_TRACE_HIWATER_ADDR,
-                                          Prim::SQ_THREAD_TRACE_HIWATER_VAL);
+    if (Primitives::sqtt_stalling_enabled(mask_value, token_mask_value)) {
+      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_HIWATER_ADDR,
+                                          Primitives::SQ_THREAD_TRACE_HIWATER_VAL);
     }
     // Iterate through the list of SE's and program the register
     // for carrying address of thread trace buffer which is aligned
@@ -104,87 +106,88 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Prim {
     const uint32_t base_step = config->data_buffer_size / config->se_number;
     for (int se_index = 0; se_index < config->se_number; ++se_index, base_addr += base_step) {
       // Program Grbm to direct writes to one SE
-      Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::GRBM_GFX_INDEX_ADDR,
-                                          Prim::grbm_se_sh_index_value(se_index, 0));
+      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
+                                          Primitives::grbm_se_sh_index_value(se_index, 0));
       // Program base address of buffer to use for thread trace
-      Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::SQ_THREAD_TRACE_BASE_ADDR,
-                                          Prim::sqtt_base_value(base_addr));
+      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_BASE_ADDR,
+                                          Primitives::sqtt_base_value(base_addr));
       // Program the size of thread trace buffer
-      Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::SQ_THREAD_TRACE_SIZE_ADDR,
-                                          Prim::sqtt_size_value(config->data_buffer_size));
+      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_SIZE_ADDR,
+                                          Primitives::sqtt_size_value(config->data_buffer_size));
       // Program the thread trace ctrl register
-      Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::SQ_THREAD_TRACE_CTRL_ADDR,
-                                          Prim::sqtt_ctrl_value());
+      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_CTRL_ADDR,
+                                          Primitives::sqtt_ctrl_value());
     }
     // Reset the GRBM to broadcast mode
-    Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::GRBM_GFX_INDEX_ADDR,
-                                        Prim::grbm_broadcast_value());
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
+                                        Primitives::grbm_broadcast_value());
     // Issue a CSPartialFlush cmd including cache flush
-    Builder::BuildWriteWaitIdlePacket(cmdBuff);
+    Builder::BuildWriteWaitIdlePacket(cmd_buffer);
     // Program the thread trace mode register, mode ON
-    Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::SQ_THREAD_TRACE_MODE_ADDR,
-                                        Prim::sqtt_mode_on_value());
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_MODE_ADDR,
+                                        Primitives::sqtt_mode_on_value());
     // Issue a CSPartialFlush cmd including cache flush
-    Builder::BuildWriteWaitIdlePacket(cmdBuff);
+    Builder::BuildWriteWaitIdlePacket(cmd_buffer);
   }
 
-  void end(CmdBuffer* cmdBuff, const ThreadTraceConfig* config) {
+  void End(CmdBuffer* cmd_buffer, const ThreadTraceConfig* config) {
     // Program Grbm to broadcast messages to all shader engines
-    Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::GRBM_GFX_INDEX_ADDR,
-                                        Prim::grbm_broadcast_value());
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
+                                        Primitives::grbm_broadcast_value());
     // Issue a CSPartialFlush cmd including cache flush
-    Builder::BuildWriteWaitIdlePacket(cmdBuff);
+    Builder::BuildWriteWaitIdlePacket(cmd_buffer);
     // Program the thread trace mode register to disable thread trace
-    Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::SQ_THREAD_TRACE_MODE_ADDR,
-                                        Prim::sqtt_mode_off_value());
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_MODE_ADDR,
+                                        Primitives::sqtt_mode_off_value());
     // Issue a CSPartialFlush cmd including cache flush
-    Builder::BuildWriteWaitIdlePacket(cmdBuff);
+    Builder::BuildWriteWaitIdlePacket(cmd_buffer);
     // Iterate through the list of SE's and read the Status, Counter and
     // Write Pointer registers of Thread Trace subsystem
     for (int se_index = 0; se_index < config->se_number; se_index++) {
       // Program Grbm to direct writes to one SE
-      Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::GRBM_GFX_INDEX_ADDR,
-                                          Prim::grbm_se_sh_index_value(se_index, 0));
+      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
+                                          Primitives::grbm_se_sh_index_value(se_index, 0));
 
       // Issue WaitRegMem command to wait until SQTT event has completed
-      const bool funcEq = false;
-      const bool memSpace = false;
-      const uint32_t waitVal = 0x01;
-      const uint32_t maskVal = 0x40000000L;
-      const uint32_t statusOffset = Prim::SQ_THREAD_TRACE_STATUS_OFFSET;
-      Builder::BuildWaitRegMemCommand(cmdBuff, memSpace, statusOffset, funcEq, maskVal, waitVal);
+      const bool func_eq = false;
+      const bool mem_space = false;
+      const uint32_t wait_val = 0x01;
+      const uint32_t mask_val = 0x40000000L;
+      const uint32_t status_offset = Primitives::SQ_THREAD_TRACE_STATUS_OFFSET;
+      Builder::BuildWaitRegMemCommand(cmd_buffer, mem_space, status_offset, func_eq, mask_val,
+                                      wait_val);
 
       // Retrieve the values from various status registers
       ControlType* control_buffer = reinterpret_cast<ControlType*>(config->control_buffer_ptr);
-      const uint32_t statusIdx = ((TT_STATUS_IDX_MAX * se_index) + TT_STATUS_IDX_STATUS);
-      Builder::BuildCopyRegDataPacket(cmdBuff, Prim::SQ_THREAD_TRACE_STATUS_ADDR,
-                                      control_buffer + statusIdx, Prim::COPY_DATA_SEL_COUNT_1DW_PRM,
-                                      true);
-      const uint32_t cntrIdx = ((TT_STATUS_IDX_MAX * se_index) + TT_STATUS_IDX_CNTR);
-      Builder::BuildCopyRegDataPacket(cmdBuff, Prim::SQ_THREAD_TRACE_CNTR_ADDR,
-                                      control_buffer + cntrIdx, Prim::COPY_DATA_SEL_COUNT_1DW_PRM,
-                                      true);
-      const uint32_t wptrIdx = ((TT_STATUS_IDX_MAX * se_index) + TT_STATUS_IDX_WPTR);
-      Builder::BuildCopyRegDataPacket(cmdBuff, Prim::SQ_THREAD_TRACE_WPTR_ADDR,
-                                      control_buffer + wptrIdx, Prim::COPY_DATA_SEL_COUNT_1DW_PRM,
-                                      true);
+      const uint32_t status_idx = ((TT_STATUS_IDX_MAX * se_index) + TT_STATUS_IDX_STATUS);
+      Builder::BuildCopyRegDataPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_STATUS_ADDR,
+                                      control_buffer + status_idx,
+                                      Primitives::COPY_DATA_SEL_COUNT_1DW_PRM, true);
+      const uint32_t cntr_idx = ((TT_STATUS_IDX_MAX * se_index) + TT_STATUS_IDX_CNTR);
+      Builder::BuildCopyRegDataPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_CNTR_ADDR,
+                                      control_buffer + cntr_idx,
+                                      Primitives::COPY_DATA_SEL_COUNT_1DW_PRM, true);
+      const uint32_t wptr_idx = ((TT_STATUS_IDX_MAX * se_index) + TT_STATUS_IDX_WPTR);
+      Builder::BuildCopyRegDataPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_WPTR_ADDR,
+                                      control_buffer + wptr_idx,
+                                      Primitives::COPY_DATA_SEL_COUNT_1DW_PRM, true);
     }
     // Reset the GRBM to broadcast mode
-    Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::GRBM_GFX_INDEX_ADDR,
-                                        Prim::grbm_broadcast_value());
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
+                                        Primitives::grbm_broadcast_value());
     // Initialize cache flush request object
-    Builder::BuildCacheFlushPacket(cmdBuff);
+    Builder::BuildCacheFlushPacket(cmd_buffer);
     // Program zero size of thread trace buffer
-    Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::SQ_THREAD_TRACE_SIZE_ADDR,
-                                        Prim::sqtt_zero_size_value());
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_SIZE_ADDR,
+                                        Primitives::sqtt_zero_size_value());
     // Program the thread trace ctrl register
-    Builder::BuildWriteUConfigRegPacket(cmdBuff, Prim::SQ_THREAD_TRACE_CTRL_ADDR,
-                                        Prim::sqtt_ctrl_value());
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_CTRL_ADDR,
+                                        Primitives::sqtt_ctrl_value());
     // Issue a CSPartialFlush cmd including cache flush
-    Builder::BuildWriteWaitIdlePacket(cmdBuff);
+    Builder::BuildWriteWaitIdlePacket(cmd_buffer);
   }
 };
 
 }  // pm4_builder
 
-#endif  // _GFX8_SQTT_BUILDER_H_
+#endif  // SRC_PM4_SQTT_BUILDER_H_

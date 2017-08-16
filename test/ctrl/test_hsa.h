@@ -25,52 +25,52 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#ifndef _TEST_HSA_H_
-#define _TEST_HSA_H_
+#ifndef TEST_CTRL_TEST_HSA_H_
+#define TEST_CTRL_TEST_HSA_H_
 
-#include "test_aql.h"
-#include "test_kernel.h"
-#include "hsa_rsrc_factory.h"
+#include "ctrl/test_aql.h"
+#include "ctrl/test_kernel.h"
+#include "util/hsa_rsrc_factory.h"
 
 // Class implements HSA test
-class TestHSA : public TestAql {
+class TestHsa : public TestAql {
  public:
   // Constructor
-  explicit TestHSA(TestKernel* test) : test_(test), name_(test->Name()) {
+  explicit TestHsa(TestKernel* test) : test_(test), name_(test->Name()) {
     total_time_taken_ = 0;
     setup_time_taken_ = 0;
     dispatch_time_taken_ = 0;
   }
 
   // Get methods for Agent Info, HAS queue, HSA Resourcse Manager
-  AgentInfo* getAgentInfo() { return agent_info_; }
-  hsa_queue_t* getQueue() { return hsa_queue_; }
-  HsaRsrcFactory* getRsrcFactory() { return hsa_rsrc_; }
+  AgentInfo* GetAgentInfo() { return agent_info_; }
+  hsa_queue_t* GetQueue() { return hsa_queue_; }
+  HsaRsrcFactory* GetRsrcFactory() { return hsa_rsrc_; }
 
   // Initialize application environment including setting
   // up of various configuration parameters based on
   // command line arguments
   // @return bool true on success and false on failure
-  bool initialize(int argc, char** argv);
+  bool Initialize(int argc, char** argv);
 
   // Setup application parameters for exectuion
   // @return bool true on success and false on failure
-  bool setup();
+  bool Setup();
 
   // Run the BinarySearch kernel
   // @return bool true on success and false on failure
-  bool run();
+  bool Run();
 
   // Verify against reference implementation
   // @return bool true on success and false on failure
-  bool verify_results();
+  bool VerifyResults();
 
   // Print to console the time taken to execute kernel
-  void print_time();
+  void PrintTime();
 
   // Release resources e.g. memory allocations
   // @return bool true on success and false on failure
-  bool cleanup();
+  bool Cleanup();
 
  private:
   typedef TestKernel::mem_descr_t mem_descr_t;
@@ -112,4 +112,4 @@ class TestHSA : public TestAql {
   std::string name_;
 };
 
-#endif  // _TEST_HSA_H_
+#endif  // TEST_CTRL_TEST_HSA_H_

@@ -25,33 +25,33 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#ifndef _TEST_PMGR_H_
-#define _TEST_PMGR_H_
+#ifndef TEST_CTRL_TEST_PMGR_H_
+#define TEST_CTRL_TEST_PMGR_H_
 
+#include <hsa.h>
+#include <hsa_ven_amd_aqlprofile.h>
 #include <atomic>
 
-#include "hsa.h"
-#include "test_aql.h"
-#include "hsa_ven_amd_aqlprofile.h"
+#include "ctrl/test_aql.h"
 
 // Class implements profiling manager
 class TestPMgr : public TestAql {
  public:
   typedef hsa_ext_amd_aql_pm4_packet_t packet_t;
   explicit TestPMgr(TestAql* t);
-  bool run();
+  bool Run();
 
  protected:
-  packet_t prePacket;
-  packet_t postPacket;
-  hsa_signal_t dummySignal;
-  hsa_signal_t postSignal;
+  packet_t pre_packet_;
+  packet_t post_packet_;
+  hsa_signal_t dummy_signal_;
+  hsa_signal_t post_signal_;
 
-  hsa_ven_amd_aqlprofile_1_00_pfn_t api;
+  hsa_ven_amd_aqlprofile_1_00_pfn_t api_;
 
-  virtual bool buildPackets() { return false; }
-  virtual bool dumpData() { return false; }
-  virtual bool initialize(int argc, char** argv);
+  virtual bool BuildPackets() { return false; }
+  virtual bool DumpData() { return false; }
+  virtual bool Initialize(int argc, char** argv);
 
  private:
   enum {
@@ -63,9 +63,9 @@ class TestPMgr : public TestAql {
   };
   typedef std::atomic<slot_pm4_s> slot_pm4_t;
 
-  bool addPacket(const packet_t* packet);
-  bool addPacketGfx8(const packet_t* packet);
-  bool addPacketGfx9(const packet_t* packet);
+  bool AddPacket(const packet_t* packet);
+  bool AddPacketGfx8(const packet_t* packet);
+  bool AddPacketGfx9(const packet_t* packet);
 };
 
-#endif  // _TEST_PMGR_H_
+#endif  // TEST_CTRL_TEST_PMGR_H_

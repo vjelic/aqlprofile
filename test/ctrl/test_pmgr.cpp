@@ -25,17 +25,18 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
+#include "ctrl/test_pmgr.h"
+
 #include <atomic>
-#include "test_assert.h"
 
-#include "test_pmgr.h"
+#include "ctrl/test_assert.h"
 
-bool TestPMgr::addPacketGfx9(const packet_t* packet) {
+bool TestPMgr::AddPacketGfx9(const packet_t* packet) {
   packet_t aql_packet = *packet;
 
   // Compute the write index of queue and copy Aql packet into it
-  uint64_t que_idx = hsa_queue_load_write_index_relaxed(getQueue());
-  const uint32_t mask = getQueue()->size - 1;
+  uint64_t que_idx = hsa_queue_load_write_index_relaxed(GetQueue());
+  const uint32_t mask = GetQueue()->size - 1;
 
   // Disable packet so that submission to HW is complete
   const auto header = HSA_PACKET_TYPE_VENDOR_SPECIFIC << HSA_PACKET_HEADER_TYPE;
@@ -43,92 +44,92 @@ bool TestPMgr::addPacketGfx9(const packet_t* packet) {
   aql_packet.header |= HSA_PACKET_TYPE_INVALID << HSA_PACKET_HEADER_TYPE;
 
   // Copy Aql packet into queue buffer
-  ((packet_t*)(getQueue()->base_address))[que_idx & mask] = aql_packet;
+  (reinterpret_cast<packet_t*>(GetQueue()->base_address))[que_idx & mask] = aql_packet;
 
   // After AQL packet is fully copied into queue buffer
   // update packet header from invalid state to valid state
   std::atomic_thread_fence(std::memory_order_release);
-  ((packet_t*)(getQueue()->base_address))[que_idx & mask].header = header;
+  (reinterpret_cast<packet_t*>(GetQueue()->base_address))[que_idx & mask].header = header;
 
   // Increment the write index and ring the doorbell to dispatch the kernel.
-  hsa_queue_store_write_index_relaxed(getQueue(), (que_idx + 1));
-  hsa_signal_store_relaxed(getQueue()->doorbell_signal, que_idx);
+  hsa_queue_store_write_index_relaxed(GetQueue(), (que_idx + 1));
+  hsa_signal_store_relaxed(GetQueue()->doorbell_signal, que_idx);
 
   return true;
 }
 
-bool TestPMgr::addPacketGfx8(const packet_t* packet) {
+bool TestPMgr::AddPacketGfx8(const packet_t* packet) {
   // Create legacy devices PM4 data
   const hsa_ext_amd_aql_pm4_packet_t* aql_packet = (const hsa_ext_amd_aql_pm4_packet_t*)packet;
   slot_pm4_s data;
-  api.hsa_ven_amd_aqlprofile_legacy_get_pm4(aql_packet, reinterpret_cast<void*>(data.words));
+  api_.hsa_ven_amd_aqlprofile_legacy_get_pm4(aql_packet, reinterpret_cast<void*>(data.words));
 
   // Compute the write index of queue and copy Aql packet into it
-  uint64_t que_idx = hsa_queue_load_write_index_relaxed(getQueue());
-  const uint32_t mask = getQueue()->size - 1;
+  uint64_t que_idx = hsa_queue_load_write_index_relaxed(GetQueue());
+  const uint32_t mask = GetQueue()->size - 1;
 
   // Copy Aql packet into queue buffer
-  packet_t* ptr = ((packet_t*)(getQueue()->base_address)) + (que_idx & mask);
+  packet_t* ptr = (reinterpret_cast<packet_t*>(GetQueue()->base_address)) + (que_idx & mask);
   slot_pm4_t* slot_pm4 = (slot_pm4_t*)ptr;
   slot_pm4->store(data, std::memory_order_relaxed);
 
   // Increment the write index and ring the doorbell to dispatch the kernel.
   que_idx += SLOT_PM4_SIZE_AQLP - 1;
-  hsa_queue_store_write_index_relaxed(getQueue(), (que_idx + 1));
-  hsa_signal_store_relaxed(getQueue()->doorbell_signal, que_idx);
+  hsa_queue_store_write_index_relaxed(GetQueue(), (que_idx + 1));
+  hsa_signal_store_relaxed(GetQueue()->doorbell_signal, que_idx);
 
   return true;
 }
 
-bool TestPMgr::addPacket(const packet_t* packet) {
-  const char* agent_name = getAgentInfo()->name;
-  return (strncmp(agent_name, "gfx8", 4) == 0) ? addPacketGfx8(packet) : addPacketGfx9(packet);
+bool TestPMgr::AddPacket(const packet_t* packet) {
+  const char* agent_name = GetAgentInfo()->name;
+  return (strncmp(agent_name, "gfx8", 4) == 0) ? AddPacketGfx8(packet) : AddPacketGfx9(packet);
 }
 
-bool TestPMgr::run() {
+bool TestPMgr::Run() {
   // Build Aql Pkts
-  const bool active = buildPackets();
+  const bool active = BuildPackets();
   if (active) {
     // Submit Pre-Dispatch Aql packet
-    addPacket(&prePacket);
+    AddPacket(&pre_packet_);
   }
 
-  testAql()->run();
+  Test()->Run();
 
   if (active) {
     // Set post packet completion signal
-    postPacket.completion_signal = postSignal;
+    post_packet_.completion_signal = post_signal_;
 
     // Submit Post-Dispatch Aql packet
-    addPacket(&postPacket);
+    AddPacket(&post_packet_);
 
     // Wait for Post-Dispatch packet to complete
-    hsa_signal_wait_acquire(postSignal, HSA_SIGNAL_CONDITION_LT, 1, (uint64_t)-1,
+    hsa_signal_wait_acquire(post_signal_, HSA_SIGNAL_CONDITION_LT, 1, (uint64_t)-1,
                             HSA_WAIT_STATE_BLOCKED);
 
     // Dumping profiling data
-    dumpData();
+    DumpData();
   }
 
   return true;
 }
 
-bool TestPMgr::initialize(int argc, char** argv) {
-  TestAql::initialize(argc, argv);
+bool TestPMgr::Initialize(int argc, char** argv) {
+  TestAql::Initialize(argc, argv);
 
   hsa_status_t status = HSA_STATUS_ERROR;
-  status = hsa_signal_create(1, 0, NULL, &postSignal);
-  test_assert(status == HSA_STATUS_SUCCESS);
-  status = hsa_system_get_extension_table(HSA_EXTENSION_AMD_AQLPROFILE, 1, 0, &api);
-  test_assert(status == HSA_STATUS_SUCCESS);
+  status = hsa_signal_create(1, 0, NULL, &post_signal_);
+  TEST_ASSERT(status == HSA_STATUS_SUCCESS);
+  status = hsa_system_get_extension_table(HSA_EXTENSION_AMD_AQLPROFILE, 1, 0, &api_);
+  TEST_ASSERT(status == HSA_STATUS_SUCCESS);
 
   return true;
 }
 
-TestPMgr::TestPMgr(TestAql* t) : TestAql(t), api({0}) {
-  memset(&prePacket, 0, sizeof(prePacket));
-  memset(&postPacket, 0, sizeof(postPacket));
-  dummySignal.handle = 0;
-  postSignal = dummySignal;
-  memset(&api, 0, sizeof(api));
+TestPMgr::TestPMgr(TestAql* t) : TestAql(t), api_({0}) {
+  memset(&pre_packet_, 0, sizeof(pre_packet_));
+  memset(&post_packet_, 0, sizeof(post_packet_));
+  dummy_signal_.handle = 0;
+  post_signal_ = dummy_signal_;
+  memset(&api_, 0, sizeof(api_));
 }

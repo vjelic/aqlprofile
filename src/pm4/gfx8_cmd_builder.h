@@ -1,5 +1,5 @@
-#ifndef _GFX8_CMD_BUILDER_H_
-#define _GFX8_CMD_BUILDER_H_
+#ifndef SRC_PM4_GFX8_CMD_BUILDER_H_
+#define SRC_PM4_GFX8_CMD_BUILDER_H_
 
 #include <string.h>
 #include <assert.h>
@@ -251,9 +251,10 @@ class Gfx8CmdBuilder : public CmdBuilder {
     APPEND_COMMAND_WRAPPER(cmdbuf, indirect_buffer);
   }
 
+ private:
   constexpr static bool atc_support_ = false;
 };
 
 }  // pm4_builder
 
-#endif  //  _GFX8_CMD_BUILDER_H_
+#endif  //  SRC_PM4_GFX8_CMD_BUILDER_H_

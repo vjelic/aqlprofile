@@ -13,7 +13,7 @@ namespace aql_profile {
 
 typedef uint16_t aql_packet_header_t;
 
-void* legacyAqlAcquire(const packet_t* aql_packet, void* data) {
+void* LegacyAqlAcquire(const packet_t* aql_packet, void* data) {
   hsa_barrier_and_packet_t* aql_barrier = reinterpret_cast<hsa_barrier_and_packet_t*>(data);
   memset(aql_barrier, 0, sizeof(hsa_barrier_and_packet_t));
   const aql_packet_header_t aql_header_type = HSA_PACKET_TYPE_BARRIER_AND << HSA_PACKET_HEADER_TYPE;
@@ -26,7 +26,7 @@ void* legacyAqlAcquire(const packet_t* aql_packet, void* data) {
   return (char*)data + sizeof(hsa_barrier_and_packet_t);
 }
 
-void* legacyAqlRelease(const packet_t* aql_packet, void* data) {
+void* LegacyAqlRelease(const packet_t* aql_packet, void* data) {
   hsa_barrier_and_packet_t* aql_barrier = reinterpret_cast<hsa_barrier_and_packet_t*>(data);
   memset(aql_barrier, 0, sizeof(hsa_barrier_and_packet_t));
   const aql_packet_header_t aql_header_type = HSA_PACKET_TYPE_BARRIER_AND << HSA_PACKET_HEADER_TYPE;
@@ -40,7 +40,7 @@ void* legacyAqlRelease(const packet_t* aql_packet, void* data) {
   return (char*)data + sizeof(hsa_barrier_and_packet_t);
 }
 
-void* legacyPm4(const packet_t* aql_packet, void* data) {
+void* LegacyPm4(const packet_t* aql_packet, void* data) {
   constexpr uint32_t major_version = 8;
   constexpr uint32_t slot_size_b = 0x40;
   constexpr uint32_t slot_size_dw = uint32_t(slot_size_b / sizeof(uint32_t));

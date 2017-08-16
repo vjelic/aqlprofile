@@ -25,24 +25,21 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#include "test_assert.h"
+#include "ctrl/test_hsa.h"
+
 #include <atomic>
 
-//#include "os.h"
-#include "helper_funcs.h"
-#include "hsa_rsrc_factory.h"
-#include "test_hsa.h"
+#include "ctrl/test_assert.h"
+#include "util/helper_funcs.h"
+#include "util/hsa_rsrc_factory.h"
 
-HsaRsrcFactory* TestHSA::hsa_rsrc_ = NULL;
-AgentInfo* TestHSA::agent_info_ = NULL;
-hsa_queue_t* TestHSA::hsa_queue_ = NULL;
+HsaRsrcFactory* TestHsa::hsa_rsrc_ = NULL;
+AgentInfo* TestHsa::agent_info_ = NULL;
+hsa_queue_t* TestHsa::hsa_queue_ = NULL;
 
 
-bool TestHSA::initialize(int arg_cnt, char** arg_list) {
-  std::clog << "TestHSA::initialize :" << std::endl;
-  // Initialize command line arguments
-  hsa_cmdline_arg_cnt = arg_cnt;
-  hsa_cmdline_arg_list = arg_list;
+bool TestHsa::Initialize(int arg_cnt, char** arg_list) {
+  std::clog << "TestHsa::Initialize :" << std::endl;
 
   // Instantiate a Timer object
   setup_timer_idx_ = hsa_timer_.CreateTimer();
@@ -56,7 +53,7 @@ bool TestHSA::initialize(int arg_cnt, char** arg_list) {
     hsa_rsrc_->PrintGpuAgents("> GPU agents");
 
     // Create an instance of Gpu agent
-    const char* p = getenv("ROCR_AGENT_IND");
+    const char* p = getenv("AQLPROFILE_AGENT_IND");
     const uint32_t agent_ind = (p == NULL) ? 0 : atol(p);
     if (!hsa_rsrc_->GetGpuAgentInfo(agent_ind, &agent_info_)) {
       std::cerr << "> error: agent[" << agent_ind << "] is not found" << std::endl;
@@ -79,7 +76,7 @@ bool TestHSA::initialize(int arg_cnt, char** arg_list) {
   } else if (agentName.compare(0, 4, "gfx9") == 0) {
     brig_path_obj_.append("gfx9");
   } else {
-    test_assert(false);
+    TEST_ASSERT(false);
     return false;
   }
   brig_path_obj_.append("_" + name_ + ".hsaco");
@@ -87,22 +84,22 @@ bool TestHSA::initialize(int arg_cnt, char** arg_list) {
   return true;
 }
 
-bool TestHSA::setup() {
-  std::clog << "TestHSA::setup :" << std::endl;
+bool TestHsa::Setup() {
+  std::clog << "TestHsa::setup :" << std::endl;
 
   // Start the timer object
   hsa_timer_.StartTimer(setup_timer_idx_);
 
-  mem_map_t& mem_map = test_->get_mem_map();
+  mem_map_t& mem_map = test_->GetMemMap();
   for (mem_it_t it = mem_map.begin(); it != mem_map.end(); ++it) {
     mem_descr_t& des = it->second;
     void* ptr = (des.local) ? hsa_rsrc_->AllocateLocalMemory(agent_info_, des.size)
                             : hsa_rsrc_->AllocateSysMemory(agent_info_, des.size);
     des.ptr = ptr;
-    test_assert(ptr != NULL);
+    TEST_ASSERT(ptr != NULL);
     if (ptr == NULL) return false;
   }
-  test_->init();
+  test_->Init();
 
   // Load and Finalize Kernel Code Descriptor
   char* brig_path = (char*)brig_path_obj_.c_str();
@@ -121,14 +118,14 @@ bool TestHSA::setup() {
   return true;
 }
 
-bool TestHSA::run() {
-  std::clog << "TestHSA::run :" << std::endl;
+bool TestHsa::Run() {
+  std::clog << "TestHsa::run :" << std::endl;
 
   const uint32_t work_group_size = 64;
-  const uint32_t work_grid_size = test_->get_grid_size();
+  const uint32_t work_grid_size = test_->GetGridSize();
   uint32_t group_segment_size = 0;
   uint32_t private_segment_size = 0;
-  const size_t kernarg_segment_size = test_->get_kernarg_size();
+  const size_t kernarg_segment_size = test_->GetKernargSize();
   uint64_t code_handle = 0;
 
   // Retrieve the amount of group memory needed
@@ -144,7 +141,7 @@ bool TestHSA::run() {
   size_t size_info = 0;
   hsa_executable_symbol_get_info(
       kernel_code_desc_, HSA_EXECUTABLE_SYMBOL_INFO_KERNEL_KERNARG_SEGMENT_SIZE, &size_info);
-  test_assert(kernarg_segment_size == size_info);
+  TEST_ASSERT(kernarg_segment_size == size_info);
   if (kernarg_segment_size != size_info) return false;
 
   // Retrieve handle of the code block
@@ -168,7 +165,7 @@ bool TestHSA::run() {
   aql.workgroup_size_z = 1;
   // Bind the kernel code descriptor and arguments
   aql.kernel_object = code_handle;
-  aql.kernarg_address = test_->get_kernarg_ptr();
+  aql.kernarg_address = test_->GetKernargPtr();
   aql.group_segment_size = group_segment_size;
   aql.private_segment_size = private_segment_size;
   // Initialize Aql packet with handle of signal
@@ -212,23 +209,22 @@ bool TestHSA::run() {
   total_time_taken_ += dispatch_time_taken_;
 
   // Copy kernel buffers from local memory into system memory
-  hsa_rsrc_->TransferData((uint8_t*)test_->get_output_ptr(), (uint8_t*)test_->get_local_ptr(),
-                          test_->get_output_size(), false);
-  test_->print_output();
+  hsa_rsrc_->TransferData(test_->GetOutputPtr(), test_->GetLocalPtr(), test_->GetOutputSize(),
+                          false);
+  test_->PrintOutput();
 
   return true;
 }
 
-bool TestHSA::verify_results() {
+bool TestHsa::VerifyResults() {
   // Compare the results and see if they match
-  const void* const refout_ptr = test_->get_refout_ptr();
-  const int32_t cmp_val = (refout_ptr != NULL)
-      ? memcmp(test_->get_output_ptr(), refout_ptr, test_->get_output_size())
-      : 0;
+  const void* const refout_ptr = test_->GetRefoutPtr();
+  const int32_t cmp_val =
+      (refout_ptr != NULL) ? memcmp(test_->GetOutputPtr(), refout_ptr, test_->GetOutputSize()) : 0;
   return (cmp_val == 0);
 }
 
-void TestHSA::print_time() {
+void TestHsa::PrintTime() {
   std::clog << "Time taken for Setup by " << this->name_ << " : " << this->setup_time_taken_
             << std::endl;
   std::clog << "Time taken for Dispatch by " << this->name_ << " : " << this->dispatch_time_taken_
@@ -237,4 +233,4 @@ void TestHSA::print_time() {
             << std::endl;
 }
 
-bool TestHSA::cleanup() { return true; }
+bool TestHsa::Cleanup() { return true; }

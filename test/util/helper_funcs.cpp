@@ -34,7 +34,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <unistd.h>
 #endif
 
-void error(std::string errorMsg) { std::cerr << "Error: " << errorMsg << std::endl; }
+static void error(std::string errorMsg) { std::cerr << "Error: " << errorMsg << std::endl; }
 
 /*
  * Prints no more than 256 elements of the given array.
@@ -206,20 +206,17 @@ template bool isPowerOf2<unsigned int>(unsigned int val);
 template bool isPowerOf2<int>(int val);
 template bool isPowerOf2<long>(long val);
 
-template <> bool fillPos<short>(short* arrayPtr, const int width, const int height);
-template <> bool fillPos<unsigned int>(unsigned int* arrayPtr, const int width, const int height);
-template <> bool fillPos<int>(int* arrayPtr, const int width, const int height);
-template <> bool fillPos<long>(long* arrayPtr, const int width, const int height);
+template bool fillPos<short>(short* arrayPtr, const int width, const int height);
+template bool fillPos<unsigned int>(unsigned int* arrayPtr, const int width, const int height);
+template bool fillPos<int>(int* arrayPtr, const int width, const int height);
+template bool fillPos<long>(long* arrayPtr, const int width, const int height);
 
-template <>
-bool fillConstant<short>(short* arrayPtr, const int width, const int height, const short val);
-template <>
-bool fillConstant(unsigned int* arrayPtr, const int width, const int height,
-                  const unsigned int val);
-template <> bool fillConstant(int* arrayPtr, const int width, const int height, const int val);
-template <> bool fillConstant(long* arrayPtr, const int width, const int height, const long val);
-template <> bool fillConstant(long* arrayPtr, const int width, const int height, const long val);
-template <> bool fillConstant(long* arrayPtr, const int width, const int height, const long val);
+template bool fillConstant<short>(short* arrayPtr, const int width, const int height,
+                                  const short val);
+template bool fillConstant(unsigned int* arrayPtr, const int width, const int height,
+                           const unsigned int val);
+template bool fillConstant(int* arrayPtr, const int width, const int height, const int val);
+template bool fillConstant(long* arrayPtr, const int width, const int height, const long val);
 
 template std::string toString<char>(char t, std::ios_base& (*r)(std::ios_base&));
 template std::string toString<short>(short t, std::ios_base& (*r)(std::ios_base&));

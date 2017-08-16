@@ -25,48 +25,48 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#ifndef _RUN_KERNEL_H_
-#define _RUN_KERNEL_H_
+#ifndef TEST_CTRL_RUN_KERNEL_H_
+#define TEST_CTRL_RUN_KERNEL_H_
 
-#include "test_assert.h"
-#include "test_hsa.h"
+#include "ctrl/test_assert.h"
+#include "ctrl/test_hsa.h"
 
-template <class Kernel, class Test> bool run_kernel(int argc, char* argv[]) {
+template <class Kernel, class Test> bool RunKernel(int argc, char* argv[]) {
   bool ret_val = false;
 
   // Create test kernel object
   Kernel test_kernel;
-  TestAql* test_aql = new TestHSA(&test_kernel);
+  TestAql* test_aql = new TestHsa(&test_kernel);
   test_aql = new Test(test_aql);
-  test_assert(test_aql != NULL);
+  TEST_ASSERT(test_aql != NULL);
   if (test_aql == NULL) return 1;
 
   // Initialization of Hsa Runtime
-  ret_val = test_aql->initialize(argc, argv);
+  ret_val = test_aql->Initialize(argc, argv);
   if (ret_val == false) {
     std::cerr << "Error in the test initialization" << std::endl;
-    //test_assert(ret_val);
+    // TEST_ASSERT(ret_val);
     return false;
   }
 
   // Setup Hsa resources needed for execution
-  ret_val = test_aql->setup();
+  ret_val = test_aql->Setup();
   if (ret_val == false) {
     std::cerr << "Error in creating hsa resources" << std::endl;
-    test_assert(ret_val);
+    TEST_ASSERT(ret_val);
     return false;
   }
 
   // Run test kernel
-  ret_val = test_aql->run();
+  ret_val = test_aql->Run();
   if (ret_val == false) {
     std::cerr << "Error in running the test kernel" << std::endl;
-    test_assert(ret_val);
+    TEST_ASSERT(ret_val);
     return false;
   }
 
   // Verify the results of the execution
-  ret_val = test_aql->verify_results();
+  ret_val = test_aql->VerifyResults();
   if (ret_val) {
     std::clog << "Test : Passed" << std::endl;
   } else {
@@ -74,12 +74,12 @@ template <class Kernel, class Test> bool run_kernel(int argc, char* argv[]) {
   }
 
   // Print time taken by sample
-  test_aql->print_time();
+  test_aql->PrintTime();
 
-  test_aql->cleanup();
+  test_aql->Cleanup();
   delete test_aql;
 
   return ret_val;
 }
 
-#endif // _RUN_KERNEL_H_
+#endif  // TEST_CTRL_RUN_KERNEL_H_

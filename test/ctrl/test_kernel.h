@@ -25,11 +25,11 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#ifndef _TEST_KERNEL_H_
-#define _TEST_KERNEL_H_
+#ifndef TEST_CTRL_TEST_KERNEL_H_
+#define TEST_CTRL_TEST_KERNEL_H_
 
-#include <map>
 #include <stdint.h>
+#include <map>
 
 // Class implements kernel test
 class TestKernel {
@@ -52,49 +52,49 @@ class TestKernel {
   virtual ~TestKernel() {}
 
   // Initialize method
-  virtual void init() = 0;
+  virtual void Init() = 0;
 
   // Return kernel memory map
-  mem_map_t& get_mem_map() { return mem_map_; }
+  mem_map_t& GetMemMap() { return mem_map_; }
 
   // Return NULL descriptor
-  static mem_descr_t null_descriptor() { return {NULL, 0, 0}; }
+  static mem_descr_t NullDescriptor() { return {NULL, 0, 0}; }
 
   // Methods to get the kernel attributes
-  void* get_kernarg_ptr() const { return get_descr(KERNARG_DES_ID).ptr; }
-  uint32_t get_kernarg_size() const { return get_descr(KERNARG_DES_ID).size; }
-  void* get_output_ptr() const { return get_descr(OUTPUT_DES_ID).ptr; }
-  uint32_t get_output_size() const { return get_descr(OUTPUT_DES_ID).size; }
-  void* get_local_ptr() const { return get_descr(LOCAL_DES_ID).ptr; }
-  void* get_refout_ptr() const { return get_descr(REFOUT_DES_ID).ptr; }
-  virtual uint32_t get_grid_size() const = 0;
+  void* GetKernargPtr() const { return GetDescr(KERNARG_DES_ID).ptr; }
+  uint32_t GetKernargSize() const { return GetDescr(KERNARG_DES_ID).size; }
+  void* GetOutputPtr() const { return GetDescr(OUTPUT_DES_ID).ptr; }
+  uint32_t GetOutputSize() const { return GetDescr(OUTPUT_DES_ID).size; }
+  void* GetLocalPtr() const { return GetDescr(LOCAL_DES_ID).ptr; }
+  void* GetRefoutPtr() const { return GetDescr(REFOUT_DES_ID).ptr; }
+  virtual uint32_t GetGridSize() const = 0;
 
   // Print output
-  virtual void print_output() const = 0;
+  virtual void PrintOutput() const = 0;
 
   // Return name
   virtual std::string Name() const = 0;
 
  protected:
   // Set system memory descriptor
-  bool set_sys_descr(const uint32_t& id, const uint32_t& size) {
-    return set_mem_descr(id, size, false);
+  bool SetSysDescr(const uint32_t& id, const uint32_t& size) {
+    return SetMemDescr(id, size, false);
   }
 
   // Set local memory descriptor
-  bool set_local_descr(const uint32_t& id, const uint32_t& size) {
-    return set_mem_descr(id, size, true);
+  bool SetLocalDescr(const uint32_t& id, const uint32_t& size) {
+    return SetMemDescr(id, size, true);
   }
 
   // Get memory descriptor
-  mem_descr_t get_descr(const uint32_t& id) const {
+  mem_descr_t GetDescr(const uint32_t& id) const {
     mem_const_it_t it = mem_map_.find(id);
-    return (it != mem_map_.end()) ? it->second : null_descriptor();
+    return (it != mem_map_.end()) ? it->second : NullDescriptor();
   }
 
  private:
   // Set memory descriptor
-  bool set_mem_descr(const uint32_t& id, const uint32_t& size, const bool& local) {
+  bool SetMemDescr(const uint32_t& id, const uint32_t& size, const bool& local) {
     const mem_descr_t des = {NULL, size, local};
     auto ret = mem_map_.insert(mem_map_t::value_type(id, des));
     return ret.second;
@@ -104,4 +104,4 @@ class TestKernel {
   mem_map_t mem_map_;
 };
 
-#endif  // _TEST_KERNEL_H_
+#endif  // TEST_CTRL_TEST_KERNEL_H_

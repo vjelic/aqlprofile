@@ -25,11 +25,12 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#include <iostream>
-#include <string.h>
+#include "simple_convolution/simple_convolution.h"
 
-#include "helper_funcs.h"
-#include "simple_convolution.h"
+#include <string.h>
+#include <iostream>
+
+#include "util/helper_funcs.h"
 
 SimpleConvolution::SimpleConvolution() {
   width_ = 64;
@@ -61,22 +62,22 @@ SimpleConvolution::SimpleConvolution() {
   const uint32_t input_size_bytes = width_ * height_ * sizeof(uint32_t);
   const uint32_t mask_size_bytes = mask_width_ * mask_height_ * sizeof(float);
 
-  set_sys_descr(KERNARG_DES_ID, sizeof(kernel_args_t));
-  set_sys_descr(INPUT_DES_ID, input_size_bytes);
-  set_sys_descr(OUTPUT_DES_ID, input_size_bytes);
-  set_local_descr(LOCAL_DES_ID, input_size_bytes);
-  set_sys_descr(MASK_DES_ID, mask_size_bytes);
-  set_sys_descr(REFOUT_DES_ID, input_size_bytes);
+  SetSysDescr(KERNARG_DES_ID, sizeof(kernel_args_t));
+  SetSysDescr(INPUT_DES_ID, input_size_bytes);
+  SetSysDescr(OUTPUT_DES_ID, input_size_bytes);
+  SetLocalDescr(LOCAL_DES_ID, input_size_bytes);
+  SetSysDescr(MASK_DES_ID, mask_size_bytes);
+  SetSysDescr(REFOUT_DES_ID, input_size_bytes);
 }
 
-void SimpleConvolution::init() {
+void SimpleConvolution::Init() {
   std::clog << "SimpleConvolution::init :" << std::endl;
 
-  mem_descr_t input_des = get_descr(INPUT_DES_ID);
-  mem_descr_t local_des = get_descr(LOCAL_DES_ID);
-  mem_descr_t mask_des = get_descr(MASK_DES_ID);
-  mem_descr_t refout_des = get_descr(REFOUT_DES_ID);
-  mem_descr_t kernarg_des = get_descr(KERNARG_DES_ID);
+  mem_descr_t input_des = GetDescr(INPUT_DES_ID);
+  mem_descr_t local_des = GetDescr(LOCAL_DES_ID);
+  mem_descr_t mask_des = GetDescr(MASK_DES_ID);
+  mem_descr_t refout_des = GetDescr(REFOUT_DES_ID);
+  mem_descr_t kernarg_des = GetDescr(KERNARG_DES_ID);
 
   uint32_t* input = (uint32_t*)input_des.ptr;
   uint32_t* output_local = (uint32_t*)local_des.ptr;
@@ -115,17 +116,18 @@ void SimpleConvolution::init() {
 
   // Calculate the reference output
   memset(refout_des.ptr, 0, refout_des.size);
-  reference_impl((uint32_t*)refout_des.ptr, input, mask, width_, height_, mask_width_,
-                 mask_height_);
+  ReferenceImplementation(reinterpret_cast<uint32_t*>(refout_des.ptr), input, mask, width_, height_,
+                          mask_width_, mask_height_);
 }
 
-void SimpleConvolution::print_output() const {
-  printArray<uint32_t>("> Output[0]", (uint32_t*)get_output_ptr(), width_, 1);
+void SimpleConvolution::PrintOutput() const {
+  printArray<uint32_t>("> Output[0]", reinterpret_cast<uint32_t*>(GetOutputPtr()), width_, 1);
 }
 
-bool SimpleConvolution::reference_impl(uint32_t* output, const uint32_t* input, const float* mask,
-                                       const uint32_t width, const uint32_t height,
-                                       const uint32_t mask_width, const uint32_t mask_height) {
+bool SimpleConvolution::ReferenceImplementation(uint32_t* output, const uint32_t* input,
+                                                const float* mask, const uint32_t width,
+                                                const uint32_t height, const uint32_t mask_width,
+                                                const uint32_t mask_height) {
   const uint32_t vstep = (mask_width - 1) / 2;
   const uint32_t hstep = (mask_height - 1) / 2;
 

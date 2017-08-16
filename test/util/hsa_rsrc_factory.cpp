@@ -1,26 +1,44 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-#include <cassert>
+/**********************************************************************
+Copyright ©2013 Advanced Micro Devices, Inc. All rights reserved.
 
+Redistribution and use in source and binary forms, with or without modification, are permitted
+provided that the following conditions are met:
+
+<95>    Redistributions of source code must retain the above copyright notice, this list of
+conditions and the following disclaimer.
+<95>    Redistributions in binary form must reproduce the above copyright notice, this list of
+conditions and the following disclaimer in the documentation and/or
+ other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
+IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY
+ DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+********************************************************************/
+
+#include <hsa.h>
+#include <hsa_ext_finalize.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#include <cassert>
 #include <fstream>
 #include <iostream>
-#include <vector>
 #include <string>
+#include <vector>
 
-#include "hsa.h"
-#include "hsa_rsrc_factory.h"
-#include "hsa_ext_finalize.h"
-
-using namespace std;
-
-// Provide access to command line arguments passed in by user
-uint32_t hsa_cmdline_arg_cnt;
-char** hsa_cmdline_arg_list;
+#include "util/hsa_rsrc_factory.h"
 
 // Callback function to find and bind kernarg region of an agent
-static hsa_status_t find_memregions(hsa_region_t region, void* data) {
+static hsa_status_t FindMemRegionsCallback(hsa_region_t region, void* data) {
   hsa_region_global_flag_t flags;
   hsa_region_segment_t segment_id;
 
@@ -43,7 +61,7 @@ static hsa_status_t find_memregions(hsa_region_t region, void* data) {
 }
 
 // Callback function to get the number of agents
-static hsa_status_t get_hsa_agents(hsa_agent_t agent, void* data) {
+static hsa_status_t GetHsaAgentsCallback(hsa_agent_t agent, void* data) {
   // Copy handle of agent and increment number of agents reported
   HsaRsrcFactory* rsrcFactory = reinterpret_cast<HsaRsrcFactory*>(data);
 
@@ -80,46 +98,29 @@ static hsa_status_t get_hsa_agents(hsa_agent_t agent, void* data) {
   agent_info->coarse_region.handle = 0;
 
   // Find and Bind Memory regions of the Gpu agent
-  hsa_agent_iterate_regions(agent, find_memregions, agent_info);
+  hsa_agent_iterate_regions(agent, FindMemRegionsCallback, agent_info);
 
   // Save the instance of AgentInfo
   rsrcFactory->AddAgentInfo(agent_info, true);
+
   return HSA_STATUS_SUCCESS;
 }
-
-// Definitions for Static Data members of the class
-char* HsaRsrcFactory::brig_path_ = NULL;
-uint32_t HsaRsrcFactory::num_cus_ = 4;
-uint32_t HsaRsrcFactory::num_waves_;
-uint32_t HsaRsrcFactory::num_workitems_;
-uint32_t HsaRsrcFactory::kernel_loop_count_;
-bool HsaRsrcFactory::print_debug_info_ = false;
-
-char* HsaRsrcFactory::num_cus_key_ = "num_cus";
-char* HsaRsrcFactory::brig_path_key_ = "brig_path";
-char* HsaRsrcFactory::num_waves_key_ = "waves_per_cu";
-char* HsaRsrcFactory::num_workitems_key_ = "workitems_per_wave";
-char* HsaRsrcFactory::print_debug_key_ = "print_debug";
-char* HsaRsrcFactory::kernel_loop_count_key_ = "kernel_loop_count";
 
 // Constructor of the class
 HsaRsrcFactory::HsaRsrcFactory() {
   // Initialize the Hsa Runtime
   hsa_status_t status = hsa_init();
-  check("Error in hsa_init", status);
+  CHECK_STATUS("Error in hsa_init", status);
 
   // Discover the set of Gpu devices available on the platform
-  status = hsa_iterate_agents(get_hsa_agents, this);
-  check("Error Calling hsa_iterate_agents", status);
-
-  // Process command line arguments
-  ProcessCmdline();
+  status = hsa_iterate_agents(GetHsaAgentsCallback, this);
+  CHECK_STATUS("Error Calling hsa_iterate_agents", status);
 }
 
 // Destructor of the class
 HsaRsrcFactory::~HsaRsrcFactory() {
   hsa_status_t status = hsa_shut_down();
-  check("Error in hsa_shut_down", status);
+  CHECK_STATUS("Error in hsa_shut_down", status);
 }
 
 // Get the count of Hsa Gpu Agents available on the platform
@@ -249,19 +250,12 @@ uint8_t* HsaRsrcFactory::AllocateSysMemory(AgentInfo* agent_info, size_t size) {
   return (status == HSA_STATUS_SUCCESS) ? buffer : NULL;
 }
 
-bool HsaRsrcFactory::TransferData(uint8_t* dest_buff, uint8_t* src_buff, uint32_t length,
+// Transfer data method
+bool HsaRsrcFactory::TransferData(void* dest_buff, void* src_buff, uint32_t length,
                                   bool host_to_dev) {
   hsa_status_t status;
   status = hsa_memory_copy(dest_buff, src_buff, length);
   return (status == HSA_STATUS_SUCCESS);
-}
-
-// Fake method for compilation steps only
-uint8_t* HsaRsrcFactory::AllocateMemory(AgentInfo* agent_info, size_t size) {
-  hsa_status_t status;
-  uint8_t* buffer = NULL;
-  status = hsa_memory_allocate(agent_info->kernarg_region, size, (void**)&buffer);
-  return (status == HSA_STATUS_SUCCESS) ? buffer : NULL;
 }
 
 // Loads an Assembled Brig file and Finalizes it into Device Isa
@@ -317,24 +311,23 @@ bool HsaRsrcFactory::LoadAndFinalize(AgentInfo* agent_info, const char* brig_pat
 
   // Create executable.
   hsa_executable_t hsaExecutable;
-  // status = hsa_executable_create(agent_info->profile,
   status =
       hsa_executable_create(HSA_PROFILE_FULL, HSA_EXECUTABLE_STATE_UNFROZEN, "", &hsaExecutable);
-  check("Error in creating executable object", status);
+  CHECK_STATUS("Error in creating executable object", status);
 
   // Load code object.
   status = hsa_executable_load_code_object(hsaExecutable, agent_info->dev_id, code_object, "");
-  check("Error in loading executable object", status);
+  CHECK_STATUS("Error in loading executable object", status);
 
   // Freeze executable.
   status = hsa_executable_freeze(hsaExecutable, "");
-  check("Error in freezing executable object", status);
+  CHECK_STATUS("Error in freezing executable object", status);
 
   // Get symbol handle.
   hsa_executable_symbol_t kernelSymbol;
   status = hsa_executable_get_symbol(hsaExecutable, NULL, kernel_name, agent_info->dev_id, 0,
                                      &kernelSymbol);
-  check("Error in looking up kernel symbol", status);
+  CHECK_STATUS("Error in looking up kernel symbol", status);
 
   // Update output parameter
   *code_desc = kernelSymbol;
@@ -369,108 +362,4 @@ bool HsaRsrcFactory::PrintGpuAgents(const std::string& header) {
     std::clog << ">> Kernarg Region Id : " << agent_info->coarse_region.handle << std::endl;
   }
   return true;
-}
-
-// Returns the file path where brig files is located. Value is
-// available only after an instance has been built.
-char* HsaRsrcFactory::GetBrigPath() { return HsaRsrcFactory::brig_path_; }
-
-// Returns the number of compute units present on platform
-// Value is available only after an instance has been built.
-uint32_t HsaRsrcFactory::GetNumOfCUs() { return HsaRsrcFactory::num_cus_; }
-
-// Returns the maximum number of waves that can be launched
-// per compute unit. The actual number that can be launched
-// is affected by resource availability
-//
-// Value is available only after an instance has been built.
-uint32_t HsaRsrcFactory::GetNumOfWavesPerCU() { return HsaRsrcFactory::num_waves_; }
-
-// Returns the number of work-items that can execute per wave
-// Value is available only after an instance has been built.
-uint32_t HsaRsrcFactory::GetNumOfWorkItemsPerWave() { return HsaRsrcFactory::num_workitems_; }
-
-// Returns the number of times kernel loop body should execute.
-// Value is available only after an instance has been built.
-uint32_t HsaRsrcFactory::GetKernelLoopCount() { return HsaRsrcFactory::kernel_loop_count_; }
-
-// Returns boolean flag to indicate if debug info should be printed
-// Value is available only after an instance has been built.
-uint32_t HsaRsrcFactory::GetPrintDebugInfo() { return HsaRsrcFactory::print_debug_info_; }
-
-// Process command line arguments. The method will capture
-// various user command line parameters for tests to use
-void HsaRsrcFactory::ProcessCmdline() {
-  // Command line arguments are given
-  uint32_t idx;
-  uint32_t arg_idx;
-  for (idx = 1; idx < hsa_cmdline_arg_cnt; idx += 2) {
-    arg_idx = GetArgIndex((char*)hsa_cmdline_arg_list[idx]);
-    switch (arg_idx) {
-      case 0:
-        HsaRsrcFactory::brig_path_ = hsa_cmdline_arg_list[idx + 1];
-        break;
-      case 1:
-        HsaRsrcFactory::num_cus_ = atoi(hsa_cmdline_arg_list[idx + 1]);
-        break;
-      case 2:
-        HsaRsrcFactory::num_waves_ = atoi(hsa_cmdline_arg_list[idx + 1]);
-        break;
-      case 3:
-        HsaRsrcFactory::num_workitems_ = atoi(hsa_cmdline_arg_list[idx + 1]);
-        break;
-      case 4:
-        HsaRsrcFactory::kernel_loop_count_ = atoi(hsa_cmdline_arg_list[idx + 1]);
-        break;
-      case 5:
-        HsaRsrcFactory::print_debug_info_ = true;
-        break;
-    }
-  }
-}
-
-uint32_t HsaRsrcFactory::GetArgIndex(char* arg_value) {
-  // Map Brig file path to index zero
-  if (!strcmp(HsaRsrcFactory::brig_path_key_, arg_value)) {
-    return 0;
-  }
-
-  // Map Number of Compute Units to index one
-  if (!strcmp(HsaRsrcFactory::num_cus_key_, arg_value)) {
-    return 1;
-  }
-
-  // Map Number of Waves per CU to index two
-  if (!strcmp(HsaRsrcFactory::num_waves_key_, arg_value)) {
-    return 2;
-  }
-
-  // Map Number of Workitems per Wave to index three
-  if (!strcmp(HsaRsrcFactory::num_workitems_key_, arg_value)) {
-    return 3;
-  }
-
-  // Map Kernel Loop Count to index four
-  if (!strcmp(HsaRsrcFactory::kernel_loop_count_key_, arg_value)) {
-    return 4;
-  }
-
-  // Map print debug info parameter
-  if (!strcmp(HsaRsrcFactory::print_debug_key_, arg_value)) {
-    return 5;
-  }
-
-  return 108;
-}
-
-void HsaRsrcFactory::PrintHelpMsg() {
-  std::clog << "Key for passing Brig filepath: " << HsaRsrcFactory::brig_path_key_ << std::endl;
-  std::clog << "Key for passing Number of Compute Units: " << HsaRsrcFactory::num_cus_key_
-            << std::endl;
-  std::clog << "Key for passing Number of Waves per CU: " << HsaRsrcFactory::num_waves_key_
-            << std::endl;
-  std::clog << "Key for passing Number of Workitems per Wave: "
-            << HsaRsrcFactory::num_workitems_key_ << std::endl;
-  std::clog << "Key for passing Kernel Loop Count: " << HsaRsrcFactory::kernel_loop_count_key_
-            << std::endl;
 }

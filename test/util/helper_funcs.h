@@ -21,8 +21,8 @@ WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************/
-#ifndef _HELPER_FUNCS_H_
-#define _HELPER_FUNCS_H_
+#ifndef TEST_UTIL_HELPER_FUNCS_H_
+#define TEST_UTIL_HELPER_FUNCS_H_
 
 #include <string>
 
@@ -87,4 +87,4 @@ template <typename T> bool isPowerOf2(T val);
  */
 template <typename T> std::string toString(T t, std::ios_base& (*r)(std::ios_base&));
 
-#endif  // _HELPER_FUNCS_H_
+#endif  // TEST_UTIL_HELPER_FUNCS_H_

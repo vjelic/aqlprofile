@@ -1,34 +1,58 @@
-#include "perf_timer.h"
+/**********************************************************************
+Copyright ©2013 Advanced Micro Devices, Inc. All rights reserved.
 
-PerfTimer::PerfTimer() { freq_in_100mhz = MeasureTSCFreqHz(); }
+Redistribution and use in source and binary forms, with or without modification, are permitted
+provided that the following conditions are met:
+
+<95>    Redistributions of source code must retain the above copyright notice, this list of
+conditions and the following disclaimer.
+<95>    Redistributions in binary form must reproduce the above copyright notice, this list of
+conditions and the following disclaimer in the documentation and/or
+ other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
+IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY
+ DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+ OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+********************************************************************/
+
+#include "util/perf_timer.h"
+
+PerfTimer::PerfTimer() { freq_in_100mhz_ = MeasureTSCFreqHz(); }
 
 PerfTimer::~PerfTimer() {
-  while (!_timers.empty()) {
-    Timer* temp = _timers.back();
-    _timers.pop_back();
+  while (!timers_.empty()) {
+    Timer* temp = timers_.back();
+    timers_.pop_back();
     delete temp;
   }
 }
 
-// a new cretaed timer instantance index will be returned
+// New cretaed timer instantance index will be returned
 int PerfTimer::CreateTimer() {
   Timer* newTimer = new Timer;
-  newTimer->_start = 0;
-  newTimer->_clocks = 0;
+  newTimer->start = 0;
+  newTimer->clocks = 0;
 
 #ifdef _WIN32
-  QueryPerformanceFrequency((LARGE_INTEGER*)&newTimer->_freq);
+  QueryPerformanceFrequency((LARGE_INTEGER*)&newTimer->freq);
 #else
-  newTimer->_freq = (long long)1.0E3;
+  newTimer->freq = (long long)1.0E3;
 #endif
 
   /* Push back the address of new Timer instance created */
-  _timers.push_back(newTimer);
-  return (int)(_timers.size() - 1);
+  timers_.push_back(newTimer);
+  return (int)(timers_.size() - 1);
 }
 
 int PerfTimer::StartTimer(int index) {
-  if (index >= (int)_timers.size()) {
+  if (index >= (int)timers_.size()) {
     Error("Cannot reset timer. Invalid handle.");
     return FAILURE;
   }
@@ -38,7 +62,7 @@ int PerfTimer::StartTimer(int index) {
 #ifndef _AMD
   long long tmpStart;
   QueryPerformanceCounter((LARGE_INTEGER*)&(tmpStart));
-  _timers[index]->_start = (double)tmpStart;
+  timers_[index]->start = (double)tmpStart;
 #else
 // AMD Windows timing method
 #endif
@@ -47,11 +71,11 @@ int PerfTimer::StartTimer(int index) {
 #ifndef _AMD
   struct timeval s;
   gettimeofday(&s, 0);
-  _timers[index]->_start = s.tv_sec * 1.0E3 + ((double)(s.tv_usec / 1.0E3));
+  timers_[index]->start = s.tv_sec * 1.0E3 + ((double)(s.tv_usec / 1.0E3));
 #else
   // AMD timing method
   unsigned int unused;
-  _timers[index]->_start = __rdtscp(&unused);
+  timers_[index]->start = __rdtscp(&unused);
 #endif
 #endif
 
@@ -61,7 +85,7 @@ int PerfTimer::StartTimer(int index) {
 
 int PerfTimer::StopTimer(int index) {
   double n = 0;
-  if (index >= (int)_timers.size()) {
+  if (index >= (int)timers_.size()) {
     Error("Cannot reset timer. Invalid handle.");
     return FAILURE;
   }
@@ -87,31 +111,31 @@ int PerfTimer::StopTimer(int index) {
 #endif
 #endif
 
-  n -= _timers[index]->_start;
-  _timers[index]->_start = 0;
+  n -= timers_[index]->start;
+  timers_[index]->start = 0;
 
 #ifndef _AMD
-  _timers[index]->_clocks += n;
+  timers_[index]->clocks += n;
 #else
-  //_timers[index]->_clocks += 10 * n /freq_in_100mhz;      // unit is ns
-  _timers[index]->_clocks += 1.0E-6 * 10 * n / freq_in_100mhz;  // convert to ms
+  // timers_[index]->clocks += 10 * n / freq_in_100mhz_; // unit is ns
+  timers_[index]->clocks += 1.0E-6 * 10 * n / freq_in_100mhz_;  // convert to ms
 #endif
 
   return SUCCESS;
 }
 
-void PerfTimer::Error(string str) { cout << str << endl; }
+void PerfTimer::Error(std::string str) { std::cout << str << std::endl; }
 
 
 double PerfTimer::ReadTimer(int index) {
-  if (index >= (int)_timers.size()) {
+  if (index >= (int)timers_.size()) {
     Error("Cannot read timer. Invalid handle.");
     return FAILURE;
   }
 
-  double reading = double(_timers[index]->_clocks);
+  double reading = double(timers_[index]->clocks);
 
-  reading = double(reading / _timers[index]->_freq);
+  reading = double(reading / timers_[index]->freq);
 
   return reading;
 }

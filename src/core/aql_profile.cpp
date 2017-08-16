@@ -26,74 +26,73 @@ namespace aql_profile {
 // Supports Pre/Post commands partitioning
 // and postfix control partition
 class CommandBufferMgr {
-  const static uint32_t align_size = 0x100;
-  const static uint32_t align_mask = align_size - 1;
-
+ public:
   struct info_t {
     uint32_t precmds_size;
     uint32_t postcmds_size;
   };
 
-  descriptor_t buffer;
-  uint32_t postfix_size;
-  info_t* info;
-
-  uint32_t align(const uint32_t& size) { return (size + align_mask) & ~align_mask; }
-
- public:
   explicit CommandBufferMgr(const profile_t* profile)
-      : buffer(profile->command_buffer), postfix_size(0), info(NULL) {
-    info = (info_t*)setPostfix(sizeof(info_t));
+      : buffer_(profile->command_buffer), postfix_size_(0), info_(NULL) {
+    info_ = reinterpret_cast<info_t*>(SetPostfix(sizeof(info_t)));
   }
 
-  uint32_t getSize() { return buffer.size; }
-
-  void* setPostfix(const uint32_t& size) {
-    if (size > postfix_size) {
-      const uint32_t delta = size - postfix_size;
-      postfix_size = size;
-      buffer.size -= (delta < buffer.size) ? delta : buffer.size;
+  void* SetPostfix(const uint32_t& size) {
+    if (size > postfix_size_) {
+      const uint32_t delta = size - postfix_size_;
+      postfix_size_ = size;
+      buffer_.size -= (delta < buffer_.size) ? delta : buffer_.size;
     }
-    if (buffer.size == 0)
-      throw aql_profile_exc_msg("CommandBufferMgr::setPostfix(): buffer size set to zero");
-    return (buffer.size != 0) ? (char*)(buffer.ptr) + buffer.size : NULL;
+    if (buffer_.size == 0)
+      throw aql_profile_exc_msg("CommandBufferMgr::SetPostfix(): buffer size set to zero");
+    return (buffer_.size != 0) ? reinterpret_cast<char*>(buffer_.ptr) + buffer_.size : NULL;
   }
 
-  bool setPreSize(const uint32_t& size) {
-    bool suc = (size <= buffer.size);
-    if (suc) info->precmds_size = size;
+  bool SetPreSize(const uint32_t& size) {
+    bool suc = (size <= buffer_.size);
+    if (suc) info_->precmds_size = size;
     if (!suc)
-      throw aql_profile_exc_msg("CommandBufferMgr::setPreSize(): size set out of the buffer");
+      throw aql_profile_exc_msg("CommandBufferMgr::SetPreSize(): size set out of the buffer");
     return suc;
   }
 
-  uint32_t getPostOffset() { return align(info->precmds_size); }
+  uint32_t GetPostOffset() { return Align(info_->precmds_size); }
 
-  bool checkTotalSize(const uint32_t& size) {
-    bool suc = (size <= buffer.size);
-    if (suc) suc = (size >= info->precmds_size);
+  bool CheckTotalSize(const uint32_t& size) {
+    bool suc = (size <= buffer_.size);
+    if (suc) suc = (size >= info_->precmds_size);
     if (suc) {
-      info->postcmds_size = size - info->precmds_size;
-      suc = ((getPostOffset() + info->postcmds_size) <= buffer.size);
+      info_->postcmds_size = size - info_->precmds_size;
+      suc = ((GetPostOffset() + info_->postcmds_size) <= buffer_.size);
     }
     if (!suc)
-      throw aql_profile_exc_msg("CommandBufferMgr::checkTotalSize(): size set out of the buffer");
+      throw aql_profile_exc_msg("CommandBufferMgr::CheckTotalSize(): size set out of the buffer");
     return suc;
   }
 
-  descriptor_t getPreDescr() {
+  descriptor_t GetPreDescr() {
     descriptor_t descr;
-    descr.ptr = buffer.ptr;
-    descr.size = info->precmds_size;
+    descr.ptr = buffer_.ptr;
+    descr.size = info_->precmds_size;
     return descr;
   }
 
-  descriptor_t getPostDescr() {
+  descriptor_t GetPostDescr() {
     descriptor_t descr;
-    descr.ptr = (char*)(buffer.ptr) + getPostOffset();
-    descr.size = info->postcmds_size;
+    descr.ptr = reinterpret_cast<char*>(buffer_.ptr) + GetPostOffset();
+    descr.size = info_->postcmds_size;
     return descr;
   }
+
+ private:
+  static const uint32_t align_size_ = 0x100;
+  static const uint32_t align_mask_ = align_size_ - 1;
+
+  descriptor_t buffer_;
+  uint32_t postfix_size_;
+  info_t* info_;
+
+  uint32_t Align(const uint32_t& size) { return (size + align_mask_) & ~align_mask_; }
 };
 
 
@@ -103,8 +102,8 @@ static inline pm4_builder::counters_vector CountersVec(const profile_t* profile,
   std::map<block_des_t, uint32_t, lt_block_des> index_map;
   for (const hsa_ven_amd_aqlprofile_event_t* p = profile->events;
        p < profile->events + profile->event_count; ++p) {
-    const GpuBlockInfo* block_info = pm4_factory->getBlockInfo(p);
-    const block_des_t block_des = {pm4_factory->getBlockId(p), p->block_index};
+    const GpuBlockInfo* block_info = pm4_factory->GetBlockInfo(p);
+    const block_des_t block_des = {pm4_factory->GetBlockId(p), p->block_index};
     // Counting counter register index per block
     const auto ret = index_map.insert({block_des, 0});
     uint32_t& reg_index = ret.first->second;
@@ -120,20 +119,20 @@ static inline pm4_builder::counters_vector CountersVec(const profile_t* profile,
   return vec;
 }
 
-static inline bool is_event_match(const event_t& event1, const event_t& event2) {
+static inline bool IsEventMatch(const event_t& event1, const event_t& event2) {
   return (event1.block_name == event2.block_name) && (event1.block_index == event2.block_index) &&
       (event1.counter_id == event2.counter_id);
 }
 
-hsa_status_t default_pmcdata_callback(hsa_ven_amd_aqlprofile_info_type_t info_type,
-                                      hsa_ven_amd_aqlprofile_info_data_t* info_data,
-                                      void* callback_data) {
+hsa_status_t DefaultPmcdataCallback(hsa_ven_amd_aqlprofile_info_type_t info_type,
+                                    hsa_ven_amd_aqlprofile_info_data_t* info_data,
+                                    void* callback_data) {
   hsa_status_t status = HSA_STATUS_SUCCESS;
   hsa_ven_amd_aqlprofile_info_data_t* passed_data =
       reinterpret_cast<hsa_ven_amd_aqlprofile_info_data_t*>(callback_data);
 
   if (info_type == HSA_VEN_AMD_AQLPROFILE_INFO_PMC_DATA) {
-    if (is_event_match(info_data->pmc_data.event, passed_data->pmc_data.event)) {
+    if (IsEventMatch(info_data->pmc_data.event, passed_data->pmc_data.event)) {
       if (passed_data->sample_id == UINT32_MAX) {
         passed_data->pmc_data.result += info_data->pmc_data.result;
       } else if (passed_data->sample_id == info_data->sample_id) {
@@ -146,9 +145,9 @@ hsa_status_t default_pmcdata_callback(hsa_ven_amd_aqlprofile_info_type_t info_ty
   return status;
 }
 
-hsa_status_t default_sqttdata_callback(hsa_ven_amd_aqlprofile_info_type_t info_type,
-                                       hsa_ven_amd_aqlprofile_info_data_t* info_data,
-                                       void* callback_data) {
+hsa_status_t DefaultSqttdataCallback(hsa_ven_amd_aqlprofile_info_type_t info_type,
+                                     hsa_ven_amd_aqlprofile_info_data_t* info_data,
+                                     void* callback_data) {
   hsa_status_t status = HSA_STATUS_SUCCESS;
   hsa_ven_amd_aqlprofile_info_data_t* passed_data =
       reinterpret_cast<hsa_ven_amd_aqlprofile_info_data_t*>(callback_data);
@@ -163,10 +162,10 @@ hsa_status_t default_sqttdata_callback(hsa_ven_amd_aqlprofile_info_type_t info_t
   return status;
 }
 
-Logger::mutex_t Logger::mutex;
-Logger* Logger::instance = NULL;
-std::mutex Pm4Factory::mutex;
-Pm4Factory::instances_t Pm4Factory::instances;
+Logger::mutex_t Logger::mutex_;
+Logger* Logger::instance_ = NULL;
+Pm4Factory::mutex_t Pm4Factory::mutex_;
+Pm4Factory::instances_t Pm4Factory::instances_;
 
 DESTRUCTOR_API void destructor() {
   Logger::Destroy();
@@ -191,7 +190,7 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_validate_event(
 
   try {
     aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(agent);
-    if (pm4_factory->getBlockInfo(event) != NULL) *result = true;
+    if (pm4_factory->GetBlockInfo(event) != NULL) *result = true;
   } catch (aql_profile::event_exception& e) {
     INFO_LOGGING << e.what();
   } catch (std::exception& e) {
@@ -208,19 +207,19 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(
   try {
     aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile);
     pm4_builder::CmdBuffer commands;
-    aql_profile::CommandBufferMgr cmdBufMgr(profile);
+    aql_profile::CommandBufferMgr cmd_buffer_mgr(profile);
 
     if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_PMC) {
-      pm4_builder::PmcBuilder* pmc_builder = pm4_factory->getPmcBuilder();
+      pm4_builder::PmcBuilder* pmc_builder = pm4_factory->GetPmcBuilder();
       const pm4_builder::counters_vector countersVec = CountersVec(profile, pm4_factory);
 
       // Generate start commands
-      pmc_builder->begin(&commands, countersVec);
-      cmdBufMgr.setPreSize(commands.size());
+      pmc_builder->Begin(&commands, countersVec);
+      cmd_buffer_mgr.SetPreSize(commands.Size());
 
       // Generate stop commands
       const uint32_t data_size =
-          pmc_builder->end(&commands, countersVec, profile->output_buffer.ptr);
+          pmc_builder->End(&commands, countersVec, profile->output_buffer.ptr);
       ERR_CHECK(data_size == 0, HSA_STATUS_ERROR, "PMC Builder end(): data size set to zero");
       assert(data_size <= profile->output_buffer.size);
       if (data_size > profile->output_buffer.size) {
@@ -229,13 +228,12 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(
         return HSA_STATUS_ERROR;
       }
     } else if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_SQTT) {
-      pm4_builder::ThreadTraceConfig sqtt_config = {0};
-
-      const uint32_t se_number = pm4_factory->getShaderEnginesNumber();
+      const uint32_t se_number = pm4_factory->GetShaderEnginesNumber();
       const uint32_t control_size =
           pm4_builder::TT_STATUS_IDX_MAX * sizeof(pm4_builder::ControlType) * se_number;
-      void* control_ptr = cmdBufMgr.setPostfix(control_size);
+      void* control_ptr = cmd_buffer_mgr.SetPostfix(control_size);
 
+      pm4_builder::ThreadTraceConfig sqtt_config = {0};
       sqtt_config.se_number = se_number;
       sqtt_config.control_buffer_ptr = control_ptr;
       sqtt_config.data_buffer_ptr = profile->output_buffer.ptr;
@@ -285,28 +283,29 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(
         }
       }
 
-      pm4_builder::SqttBuilder* sqtt_builder = pm4_factory->getSqttBuilder();
+      pm4_builder::SqttBuilder* sqtt_builder = pm4_factory->GetSqttBuilder();
 
       // Generate start commands
-      sqtt_builder->begin(&commands, &sqtt_config);
-      cmdBufMgr.setPreSize(commands.size());
+      sqtt_builder->Begin(&commands, &sqtt_config);
+      cmd_buffer_mgr.SetPreSize(commands.Size());
       // Generate stop commands
-      sqtt_builder->end(&commands, &sqtt_config);
+      sqtt_builder->End(&commands, &sqtt_config);
     } else {
       ERR_LOGGING << "Bad profile type (" << profile->type << ")";
       return HSA_STATUS_ERROR_INVALID_ARGUMENT;
     }
 
-    cmdBufMgr.checkTotalSize(commands.size());
+    cmd_buffer_mgr.CheckTotalSize(commands.Size());
 
-    const aql_profile::descriptor_t pre_descr = cmdBufMgr.getPreDescr();
-    const aql_profile::descriptor_t post_descr = cmdBufMgr.getPostDescr();
-    memcpy(pre_descr.ptr, commands.data(), pre_descr.size);
-    memcpy(post_descr.ptr, (char*)(commands.data()) + pre_descr.size, post_descr.size);
+    const aql_profile::descriptor_t pre_descr = cmd_buffer_mgr.GetPreDescr();
+    const aql_profile::descriptor_t post_descr = cmd_buffer_mgr.GetPostDescr();
+    memcpy(pre_descr.ptr, commands.Data(), pre_descr.size);
+    memcpy(post_descr.ptr, reinterpret_cast<const char*>(commands.Data()) + pre_descr.size,
+           post_descr.size);
 
     // Populate start aql packet
-    pm4_builder::CmdBuilder* cmd_writer = pm4_factory->getCmdBuilder();
-    aql_profile::populateAql(pre_descr.ptr, pre_descr.size, cmd_writer, aql_start_packet);
+    pm4_builder::CmdBuilder* cmd_writer = pm4_factory->GetCmdBuilder();
+    aql_profile::PopulateAql(pre_descr.ptr, pre_descr.size, cmd_writer, aql_start_packet);
   } catch (std::exception& e) {
     ERR_LOGGING << e.what();
     return HSA_STATUS_ERROR;
@@ -321,10 +320,10 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_stop(const hsa_ven_amd_aqlprofile
   try {
     // Populate stop aql packet
     aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile);
-    pm4_builder::CmdBuilder* cmd_writer = pm4_factory->getCmdBuilder();
-    aql_profile::CommandBufferMgr cmdBufMgr(profile);
-    const aql_profile::descriptor_t post_descr = cmdBufMgr.getPostDescr();
-    aql_profile::populateAql(post_descr.ptr, post_descr.size, cmd_writer, aql_stop_packet);
+    pm4_builder::CmdBuilder* cmd_writer = pm4_factory->GetCmdBuilder();
+    aql_profile::CommandBufferMgr cmd_buffer_mgr(profile);
+    const aql_profile::descriptor_t post_descr = cmd_buffer_mgr.GetPostDescr();
+    aql_profile::PopulateAql(post_descr.ptr, post_descr.size, cmd_writer, aql_stop_packet);
   } catch (std::exception& e) {
     ERR_LOGGING << e.what();
     return HSA_STATUS_ERROR;
@@ -339,11 +338,11 @@ hsa_ven_amd_aqlprofile_legacy_get_pm4(const aql_profile::packet_t* aql_packet, v
   try {
     // Populate GFX8 pm4 packet blob
     // Adding HSA barrier acquire packet
-    data = aql_profile::legacyAqlAcquire(aql_packet, data);
+    data = aql_profile::LegacyAqlAcquire(aql_packet, data);
     // Adding PM4 command packet
-    data = aql_profile::legacyPm4(aql_packet, data);
+    data = aql_profile::LegacyPm4(aql_packet, data);
     // Adding HSA barrier release packet
-    data = aql_profile::legacyAqlRelease(aql_packet, data);
+    data = aql_profile::LegacyAqlRelease(aql_packet, data);
   } catch (std::exception& e) {
     ERR_LOGGING << e.what();
     return HSA_STATUS_ERROR;
@@ -368,12 +367,12 @@ hsa_ven_amd_aqlprofile_get_info(const hsa_ven_amd_aqlprofile_profile_t* profile,
         break;
       case HSA_VEN_AMD_AQLPROFILE_INFO_PMC_DATA:
         reinterpret_cast<hsa_ven_amd_aqlprofile_info_data_t*>(value)->pmc_data.result = 0;
-        status = hsa_ven_amd_aqlprofile_iterate_data(profile, aql_profile::default_pmcdata_callback,
+        status = hsa_ven_amd_aqlprofile_iterate_data(profile, aql_profile::DefaultPmcdataCallback,
                                                      value);
         break;
       case HSA_VEN_AMD_AQLPROFILE_INFO_SQTT_DATA:
-        status = hsa_ven_amd_aqlprofile_iterate_data(profile,
-                                                     aql_profile::default_sqttdata_callback, value);
+        status = hsa_ven_amd_aqlprofile_iterate_data(profile, aql_profile::DefaultSqttdataCallback,
+                                                     value);
         break;
       default:
         status = HSA_STATUS_ERROR_INVALID_ARGUMENT;
@@ -395,20 +394,17 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
 
   try {
     aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile);
-    const uint32_t se_number = pm4_factory->getShaderEnginesNumber();
+    const uint32_t se_number = pm4_factory->GetShaderEnginesNumber();
 
     if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_PMC) {
-      uint64_t* samples = (uint64_t*)profile->output_buffer.ptr;
+      uint64_t* samples = reinterpret_cast<uint64_t*>(profile->output_buffer.ptr);
       const uint32_t sample_count = profile->output_buffer.size / sizeof(uint64_t);
       uint32_t sample_index = 0;
-
-      pm4_builder::PmcBuilder* pmc_builder = pm4_factory->getPmcBuilder();
-
       for (const hsa_ven_amd_aqlprofile_event_t* p = profile->events;
            p < profile->events + profile->event_count; ++p) {
         // A perfcounter data sample per ShaderEngine
         const uint32_t block_samples_count =
-            (pm4_factory->getBlockInfo(p)->attr & CounterBlockSeAttr) ? se_number : 1;
+            (pm4_factory->GetBlockInfo(p)->attr & CounterBlockSeAttr) ? se_number : 1;
         for (uint32_t i = 0; i < block_samples_count; ++i) {
           assert(sample_index < sample_count);
           if (sample_index >= sample_count) {
@@ -434,13 +430,12 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
         }
       }
     } else if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_SQTT) {
-      aql_profile::CommandBufferMgr cmdBufMgr(profile);
-
       // Control buffer was allocated as the CmdBuffer postfix partition
+      aql_profile::CommandBufferMgr cmd_buffer_mgr(profile);
       const uint32_t control_size =
           pm4_builder::TT_STATUS_IDX_MAX * sizeof(pm4_builder::ControlType) * se_number;
       const pm4_builder::ControlType* const control_ptr =
-          reinterpret_cast<pm4_builder::ControlType*>(cmdBufMgr.setPostfix(control_size));
+          reinterpret_cast<pm4_builder::ControlType*>(cmd_buffer_mgr.SetPostfix(control_size));
 
       // Check if SQTT buffer was wrapped
       for (int i = 0; i < se_number; ++i) {
@@ -479,7 +474,7 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
           break;
         }
 
-        sample_ptr = (char*)sample_ptr + sample_capacity;
+        sample_ptr = reinterpret_cast<char*>(sample_ptr) + sample_capacity;
       }
     } else {
       ERR_LOGGING << "Bad profile type (" << profile->type << ")";

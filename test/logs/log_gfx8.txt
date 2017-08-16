@@ -1,6 +1,6 @@
 
 Run simple convolution kernel
-TestHSA::initialize :
+TestHsa::Initialize :
 > GPU agents :
 > agent[0] :
 >> Name : gfx803
@@ -8,7 +8,7 @@ TestHSA::initialize :
 >> Max Queue Size : 131072
 >> Kernarg Region Id : 31457216
 > Using agent[0] : gfx803
-TestHSA::setup :
+TestHsa::setup :
 SimpleConvolution::init :
 > Input[0] :
 > 15 201 51 89 92 34 96 66 11 225 161 96 81 211 108 124 202 244 182 90 215 92 98 20 44 225 55 247 202 0 45 218 202 97 51 39 131 147 105 143 116 11 239 198 222 92 67 169 81 250 3 40 86 101 60 131 70 116 123 17 117 168 236 64 
@@ -17,7 +17,7 @@ SimpleConvolution::init :
 > 0.2 0.2 0.2 
 > 0 0.2 0 
 Code object filename: gfx8_SimpleConvolution.hsaco
-TestHSA::run :
+TestHsa::run :
 > Executing kernel: "SimpleConvolution"
 > Waiting on kernel dispatch signal, que_idx=0
 > Output[0] :
@@ -29,7 +29,7 @@ Time taken in Total by SimpleConvolution : 0.000919922
 
 Run with PMC
 Test: PGen PMC
-TestHSA::initialize :
+TestHsa::Initialize :
 > GPU agents :
 > agent[0] :
 >> Name : gfx803
@@ -122,7 +122,7 @@ TestHSA::initialize :
 AQL 'IB' size(16)                       : 10000000 c0023f02 38dd0000 00000000 80004e00 a0000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
 'BuildIndirectBufferCmd' size(4)        : c0023f02 038dd200 00000000 00800111
 AQL 'IB' size(16)                       : 10000000 c0023f02 38dd2000 00000000 80011100 a0000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-TestHSA::setup :
+TestHsa::setup :
 SimpleConvolution::init :
 > Input[0] :
 > f c9 33 59 5c 22 60 42 b e1 a1 60 51 d3 6c 7c ca f4 b6 5a d7 5c 62 14 2c e1 37 f7 ca 0 2d da ca 61 33 27 83 93 69 8f 74 b ef c6 de 5c 43 a9 51 fa 3 28 56 65 3c 83 46 74 7b 11 75 a8 ec 40 
@@ -132,7 +132,7 @@ SimpleConvolution::init :
 > 0 0.2 0 
 Code object filename: gfx8_SimpleConvolution.hsaco
 AQL 'Legacy PM4' size(16)               : c0031000 00000000 00000000 00000000 00000000 c0023f02 38dd0000 00000000 80004e00 c0054900 70000000 00000000 00000000 00000000 00000000 00000000
-TestHSA::run :
+TestHsa::run :
 > Executing kernel: "SimpleConvolution"
 > Waiting on kernel dispatch signal, que_idx=3
 > Output[0] :
@@ -163,7 +163,7 @@ Time taken in Total by SimpleConvolution : 0.000873047
 
 Run with SQTT
 Test: PGen SQTT
-TestHSA::initialize :
+TestHsa::Initialize :
 > GPU agents :
 > agent[0] :
 >> Name : gfx803
@@ -238,7 +238,7 @@ TestHSA::initialize :
 AQL 'IB' size(16)                       : 10000000 c0023f02 32dd0000 00000000 80006600 a0000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
 'BuildIndirectBufferCmd' size(4)        : c0023f02 032dd200 00000000 008000a1
 AQL 'IB' size(16)                       : 10000000 c0023f02 32dd2000 00000000 8000a100 a0000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-TestHSA::setup :
+TestHsa::setup :
 SimpleConvolution::init :
 > Input[0] :
 > f c9 33 59 5c 22 60 42 b e1 a1 60 51 d3 6c 7c ca f4 b6 5a d7 5c 62 14 2c e1 37 f7 ca 0 2d da ca 61 33 27 83 93 69 8f 74 b ef c6 de 5c 43 a9 51 fa 3 28 56 65 3c 83 46 74 7b 11 75 a8 ec 40 
@@ -248,7 +248,7 @@ SimpleConvolution::init :
 > 0 0.2 0 
 Code object filename: gfx8_SimpleConvolution.hsaco
 AQL 'Legacy PM4' size(16)               : c0031000 00000000 00000000 00000000 00000000 c0023f02 32dd0000 00000000 80006600 c0054900 70000000 00000000 00000000 00000000 00000000 00000000
-TestHSA::run :
+TestHsa::run :
 > Executing kernel: "SimpleConvolution"
 > Waiting on kernel dispatch signal, que_idx=3
 > Output[0] :

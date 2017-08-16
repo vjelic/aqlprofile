@@ -25,21 +25,21 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#ifndef _TEST_PGEN_H_
-#define _TEST_PGEN_H_
+#ifndef TEST_CTRL_TEST_PGEN_H_
+#define TEST_CTRL_TEST_PGEN_H_
 
-#include "test_pmgr.h"
+#include "ctrl/test_pmgr.h"
 
 // SimpleConvolution: Class implements OpenCL SimpleConvolution sample
 class TestPGen : public TestPMgr {
  protected:
   typedef hsa_ext_amd_aql_pm4_packet_t packet_t;
 
-  packet_t* PrePacket() { return reinterpret_cast<packet_t*>(&prePacket); }
-  packet_t* PostPacket() { return reinterpret_cast<packet_t*>(&postPacket); }
+  packet_t* PrePacket() { return reinterpret_cast<packet_t*>(&pre_packet_); }
+  packet_t* PostPacket() { return reinterpret_cast<packet_t*>(&post_packet_); }
 
  public:
   explicit TestPGen(TestAql* t) : TestPMgr(t) {}
 };
 
-#endif  // _TEST_PGEN_H_
+#endif  // TEST_CTRL_TEST_PGEN_H_

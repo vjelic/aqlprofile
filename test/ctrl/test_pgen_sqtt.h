@@ -25,20 +25,20 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#ifndef _TEST_PGEN_SQTT_H_
-#define _TEST_PGEN_SQTT_H_
+#ifndef TEST_CTRL_TEST_PGEN_SQTT_H_
+#define TEST_CTRL_TEST_PGEN_SQTT_H_
 
+#include <fstream>
 #include <iostream>
 #include <iomanip>
-#include <fstream>
 #include <vector>
 
-#include "test_assert.h"
-#include "test_pgen.h"
+#include "ctrl/test_assert.h"
+#include "ctrl/test_pgen.h"
 
-hsa_status_t TestPGenSQTT_Callback(hsa_ven_amd_aqlprofile_info_type_t info_type,
-                                   hsa_ven_amd_aqlprofile_info_data_t* info_data,
-                                   void* callback_data) {
+hsa_status_t TestPGenSqttCallback(hsa_ven_amd_aqlprofile_info_type_t info_type,
+                                  hsa_ven_amd_aqlprofile_info_data_t* info_data,
+                                  void* callback_data) {
   hsa_status_t status = HSA_STATUS_SUCCESS;
   typedef std::vector<hsa_ven_amd_aqlprofile_info_data_t> passed_data_t;
   reinterpret_cast<passed_data_t*>(callback_data)->push_back(*info_data);
@@ -46,32 +46,33 @@ hsa_status_t TestPGenSQTT_Callback(hsa_ven_amd_aqlprofile_info_type_t info_type,
 }
 
 // Class implements SQTT profiling
-class TestPGenSQTT : public TestPGen {
+class TestPGenSqtt : public TestPGen {
   const static uint32_t buffer_alignment = 0x1000;  // 4K
   const static uint32_t buffer_size = 0x2000000;    // 32M
 
   hsa_agent_t agent;
   hsa_ven_amd_aqlprofile_profile_t profile;
 
-  bool buildPackets() { return true; }
+  bool BuildPackets() { return true; }
 
-  bool dumpData() {
-    std::clog << "TestPGenSQTT::dumpData :" << std::endl;
+  bool DumpData() {
+    std::clog << "TestPGenSqtt::DumpData :" << std::endl;
 
     typedef std::vector<hsa_ven_amd_aqlprofile_info_data_t> callback_data_t;
 
     callback_data_t data;
-    api.hsa_ven_amd_aqlprofile_iterate_data(&profile, TestPGenSQTT_Callback, &data);
+    api_.hsa_ven_amd_aqlprofile_iterate_data(&profile, TestPGenSqttCallback, &data);
     for (callback_data_t::iterator it = data.begin(); it != data.end(); ++it) {
-      std::cout << "sample(" << dec << it->sample_id << ") size(" << dec << it->sqtt_data.size
-                << ") ptr(" << hex << it->sqtt_data.ptr << ")" << std::endl;
+      std::cout << "sample(" << std::dec << it->sample_id << ") size(" << std::dec
+                << it->sqtt_data.size << ") ptr(" << std::hex << it->sqtt_data.ptr << ")"
+                << std::endl;
 
-      void* sys_buf = getRsrcFactory()->AllocateSysMemory(getAgentInfo(), it->sqtt_data.size);
-      test_assert(sys_buf != NULL);
+      void* sys_buf = GetRsrcFactory()->AllocateSysMemory(GetAgentInfo(), it->sqtt_data.size);
+      TEST_ASSERT(sys_buf != NULL);
       if (sys_buf == NULL) return HSA_STATUS_ERROR;
 
       hsa_status_t status = hsa_memory_copy(sys_buf, it->sqtt_data.ptr, it->sqtt_data.size);
-      test_assert(status == HSA_STATUS_SUCCESS);
+      TEST_ASSERT(status == HSA_STATUS_SUCCESS);
       if (status != HSA_STATUS_SUCCESS) return status;
 
       std::string file_name;
@@ -94,10 +95,10 @@ class TestPGenSQTT : public TestPGen {
   }
 
  public:
-  explicit TestPGenSQTT(TestAql* t) : TestPGen(t) { std::clog << "Test: PGen SQTT" << std::endl; }
+  explicit TestPGenSqtt(TestAql* t) : TestPGen(t) { std::clog << "Test: PGen SQTT" << std::endl; }
 
-  bool initialize(int arg_cnt, char** arg_list) {
-    if (!TestPMgr::initialize(arg_cnt, arg_list)) return false;
+  bool Initialize(int arg_cnt, char** arg_list) {
+    if (!TestPMgr::Initialize(arg_cnt, arg_list)) return false;
 
     hsa_status_t status;
     hsa_agent_t agent;
@@ -107,27 +108,18 @@ class TestPGenSQTT : public TestPGen {
     uint32_t output_buffer_size;
 
     // GPU identificator
-    agent = getAgentInfo()->dev_id;
+    agent = GetAgentInfo()->dev_id;
 
-    // Instantiation of the profile object
-    // //////////////////////////////////////////////////////////////
-    // Set the parameters
-    // parameters = ....;
-
-    // Initialization the profile
+    // Initialization of the profile
     memset(&profile, 0, sizeof(profile));
     profile.agent = agent;
     profile.type = HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_SQTT;
 
-    // set parameters
-    // profile.parameters = &event;
-    // profile.parameter_count = 1;
-
     // Profile buffers attributes
     command_buffer_alignment = buffer_alignment;
-    status = api.hsa_ven_amd_aqlprofile_get_info(
+    status = api_.hsa_ven_amd_aqlprofile_get_info(
         &profile, HSA_VEN_AMD_AQLPROFILE_INFO_COMMAND_BUFFER_SIZE, &command_buffer_size);
-    test_assert(status == HSA_STATUS_SUCCESS);
+    TEST_ASSERT(status == HSA_STATUS_SUCCESS);
 
     output_buffer_alignment = buffer_alignment;
     output_buffer_size = buffer_size;
@@ -136,27 +128,27 @@ class TestPGenSQTT : public TestPGen {
     // AllocateSystem(command_buffer_alignment, command_buffer_size,
     //                MODE_HOST_ACC|MODE_DEV_ACC|MODE_EXEC_DATA)
     profile.command_buffer.ptr =
-        getRsrcFactory()->AllocateSysMemory(getAgentInfo(), command_buffer_size);
+        GetRsrcFactory()->AllocateSysMemory(GetAgentInfo(), command_buffer_size);
     profile.command_buffer.size = command_buffer_size;
 
     // Application is allocating the output buffer
     // AllocateLocal(output_buffer_alignment, output_buffer_size,
     //               MODE_DEV_ACC)
     profile.output_buffer.ptr =
-        getRsrcFactory()->AllocateLocalMemory(getAgentInfo(), output_buffer_size);
+        GetRsrcFactory()->AllocateLocalMemory(GetAgentInfo(), output_buffer_size);
     profile.output_buffer.size = output_buffer_size;
 
     // Populating the AQL start packet
-    status = api.hsa_ven_amd_aqlprofile_start(&profile, PrePacket());
-    test_assert(status == HSA_STATUS_SUCCESS);
+    status = api_.hsa_ven_amd_aqlprofile_start(&profile, PrePacket());
+    TEST_ASSERT(status == HSA_STATUS_SUCCESS);
     if (status != HSA_STATUS_SUCCESS) return false;
 
     // Populating the AQL stop packet
-    status = api.hsa_ven_amd_aqlprofile_stop(&profile, PostPacket());
-    test_assert(status == HSA_STATUS_SUCCESS);
+    status = api_.hsa_ven_amd_aqlprofile_stop(&profile, PostPacket());
+    TEST_ASSERT(status == HSA_STATUS_SUCCESS);
 
     return (status == HSA_STATUS_SUCCESS);
   }
 };
 
-#endif  // _TEST_PGEN_SQTT_H_
+#endif  // TEST_CTRL_TEST_PGEN_SQTT_H_

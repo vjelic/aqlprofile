@@ -25,10 +25,10 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#include "run_kernel.h"
-#include "simple_convolution.h"
-#include "test_pgen_pmc.h"
-#include "test_pgen_sqtt.h"
+#include "ctrl/run_kernel.h"
+#include "ctrl/test_pgen_pmc.h"
+#include "ctrl/test_pgen_sqtt.h"
+#include "simple_convolution/simple_convolution.h"
 
 int main(int argc, char* argv[]) {
   bool ret_val = false;
@@ -38,18 +38,18 @@ int main(int argc, char* argv[]) {
   const bool trace_enable = (getenv("AQLPROFILE_TRACE") != NULL);
 
   if (!trace_enable) {
-    clog.rdbuf(NULL);
+    std::clog.rdbuf(NULL);
   }
   if (scan_enable) {
-    cerr.rdbuf(NULL);
+    std::cerr.rdbuf(NULL);
   }
 
   // Run simple convolution test
   if (pmc_enable) {
     if (!scan_enable) {
-      ret_val = run_kernel<SimpleConvolution, TestPGenPMC>(argc, argv);
+      ret_val = RunKernel<SimpleConvolution, TestPGenPmc>(argc, argv);
     } else {
-      const int block_index_max = 0; // 15;
+      const int block_index_max = 0;  // 15;
       const int event_id_max = 128;
       const int argc_pmc = 4;
       const int argv_pmc_size = 5;
@@ -59,13 +59,13 @@ int main(int argc, char* argv[]) {
         argv_pmc[i] = new char[argv_pmc_size];
       }
       for (int i = 0; i < HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER; ++i) {
-  //      i = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MCVML2;
-  //      i = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_ATCL2;
-  //      i = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_GCEA;
-  //      i = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SRBM;
-  //      i = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SQ;
-  //      i = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SPI;
-  //      i = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MC;
+        //      i = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MCVML2;
+        //      i = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_ATCL2;
+        //      i = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_GCEA;
+        //      i = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SRBM;
+        //      i = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SQ;
+        //      i = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SPI;
+        //      i = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MC;
         for (int j = 0; j <= block_index_max; ++j) {
           for (int k = 0; k <= event_id_max; ++k) {
             fflush(stdout);
@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
             snprintf(argv_pmc[1], argv_pmc_size, "%d", i);
             snprintf(argv_pmc[2], argv_pmc_size, "%d", j);
             snprintf(argv_pmc[3], argv_pmc_size, "%d", k);
-            if (!run_kernel<SimpleConvolution, TestPGenPMC>(argc_pmc, argv_pmc)) {
+            if (!RunKernel<SimpleConvolution, TestPGenPmc>(argc_pmc, argv_pmc)) {
               if (k == 0) {
                 k = event_id_max + 1;
                 if (j == 0) j = block_index_max + 1;
@@ -86,9 +86,9 @@ int main(int argc, char* argv[]) {
       }
     }
   } else if (sqtt_enable) {
-    ret_val = run_kernel<SimpleConvolution, TestPGenSQTT>(argc, argv);
+    ret_val = RunKernel<SimpleConvolution, TestPGenSqtt>(argc, argv);
   } else {
-    ret_val = run_kernel<SimpleConvolution, TestAql>(argc, argv);
+    ret_val = RunKernel<SimpleConvolution, TestAql>(argc, argv);
   }
 
   return (ret_val) ? 0 : 1;

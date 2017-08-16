@@ -1,5 +1,5 @@
-#ifndef _DEF_GPU_BLOCKINFO_H_
-#define _DEF_GPU_BLOCKINFO_H_
+#ifndef SRC_DEF_GPU_BLOCK_INFO_H_
+#define SRC_DEF_GPU_BLOCK_INFO_H_
 
 #include <stdint.h>
 
@@ -76,4 +76,4 @@ struct counter_des_t {
   const GpuBlockInfo* block_info;
 };
 
-#endif  // _DEF_GPU_BLOCKINFO_H_
+#endif  // SRC_DEF_GPU_BLOCK_INFO_H_

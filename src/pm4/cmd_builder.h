@@ -1,7 +1,7 @@
 // Header file for CmdBuilder and CmdBuffer interfaces
 
-#ifndef _CMD_BUILDER_H_
-#define _CMD_BUILDER_H_
+#ifndef SRC_PM4_CMD_BUILDER_H_
+#define SRC_PM4_CMD_BUILDER_H_
 
 #include <stdint.h>
 #include <string.h>
@@ -13,7 +13,7 @@
 
 #define APPEND_COMMAND_WRAPPER(cmdbuf, command)                                                    \
   PrintPacket(command, __FUNCTION__);                                                              \
-  cmdbuf->append(&command, sizeof(command));
+  cmdbuf->Append(&command, sizeof(command));
 
 namespace pm4_builder {
 
@@ -42,19 +42,19 @@ class CmdBuffer {
   /// @brief Append the command into the underlying buffer
   /// @param cmd Buffer containing one or more instances of Gpu commands
   /// @param size Size of Gpu command(s) in bytes
-  void append(const void* cmd, uint32_t size) { memcpy(reserve(size), cmd, size); }
+  void Append(const void* cmd, uint32_t size) { memcpy(Reserve(size), cmd, size); }
 
   /// @brief Return size of Gpu commands in bytes in the underlying buffer
-  size_t size() const { return data_.size() * sizeof(value_type); }
+  size_t Size() const { return data_.size() * sizeof(value_type); }
 
   /// @brief Return address of the start of accumulated commands.
-  const void* data() const { return &data_[0]; }
+  const void* Data() const { return &data_[0]; }
 
  private:
   /// @brief Increase Gpu command buffer by specified size
   /// @param size Size in bytes by which command buffer should be resized.
   /// @return Pointer into the buffer where the next command can be written
-  void* reserve(std::size_t size) {
+  void* Reserve(std::size_t size) {
     const size_t len = data_.size();
     data_.resize(len + size / sizeof(value_type));
     return &data_[len];
@@ -137,4 +137,4 @@ inline uint32_t PtrHigh32(const void* p) { return reinterpret_cast<uintptr_t>(p)
 
 }  // pm4_builder
 
-#endif  // _CMD_BUILDER_H_
+#endif  // SRC_PM4_CMD_BUILDER_H_

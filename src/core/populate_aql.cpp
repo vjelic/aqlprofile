@@ -10,7 +10,7 @@
 
 namespace aql_profile {
 
-void populateAql(const uint32_t* ib_packet, packet_t* aql_packet) {
+void PopulateAql(const uint32_t* ib_packet, packet_t* aql_packet) {
   // Populate relevant fields of Aql pkt
   // Size of IB pkt is four DWords
   // Header and completion sinal are not set
@@ -39,11 +39,11 @@ void populateAql(const uint32_t* ib_packet, packet_t* aql_packet) {
 #endif
 }
 
-void populateAql(const void* cmd_buffer, uint32_t cmd_size, pm4_builder::CmdBuilder* cmd_writer,
+void PopulateAql(const void* cmd_buffer, uint32_t cmd_size, pm4_builder::CmdBuilder* cmd_writer,
                  packet_t* aql_packet) {
   pm4_builder::CmdBuffer ib_buffer;
   cmd_writer->BuildIndirectBufferCmd(&ib_buffer, cmd_buffer, (size_t)cmd_size);
-  populateAql((const uint32_t*)ib_buffer.data(), aql_packet);
+  PopulateAql((const uint32_t*)ib_buffer.Data(), aql_packet);
 }
 
 }  // namespace aql_profile

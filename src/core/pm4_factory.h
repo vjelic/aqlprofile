@@ -1,5 +1,5 @@
-#ifndef _PM4_FACTORY_H_
-#define _PM4_FACTORY_H_
+#ifndef SRC_CORE_PM4_FACTORY_H_
+#define SRC_CORE_PM4_FACTORY_H_
 
 #include <string.h>
 #include <assert.h>
@@ -25,34 +25,36 @@ namespace aql_profile {
 class BlockMap {
  public:
   BlockMap(const GpuBlockInfo** table, const uint32_t& count)
-      : block_table(table), block_count(count) {}
-  BlockMap(const BlockMap& map) : block_table(map.block_table), block_count(map.block_count) {}
+      : block_table_(table), block_count_(count) {}
+  BlockMap(const BlockMap& map) : block_table_(map.block_table_), block_count_(map.block_count_) {}
 
-  const GpuBlockInfo* get(const uint32_t& id) const {
-    return (id < block_count) ? block_table[id] : NULL;
+  const GpuBlockInfo* Get(const uint32_t& id) const {
+    return (id < block_count_) ? block_table_[id] : NULL;
   }
 
  private:
-  const GpuBlockInfo** const block_table;
-  const uint32_t block_count;
+  const GpuBlockInfo** const block_table_;
+  const uint32_t block_count_;
 };
 
 class Pm4Factory {
  public:
+  typedef std::mutex mutex_t;
+
   static Pm4Factory* Create(const hsa_agent_t agent);
   static Pm4Factory* Create(const profile_t* profile) { return Create(profile->agent); }
   static Pm4Factory* Gfx8Create();
   static Pm4Factory* Gfx9Create();
   static void Destroy();
 
-  virtual pm4_builder::CmdBuilder* getCmdBuilder() = 0;
-  virtual pm4_builder::PmcBuilder* getPmcBuilder() = 0;
-  virtual pm4_builder::SqttBuilder* getSqttBuilder() = 0;
+  virtual pm4_builder::CmdBuilder* GetCmdBuilder() = 0;
+  virtual pm4_builder::PmcBuilder* GetPmcBuilder() = 0;
+  virtual pm4_builder::SqttBuilder* GetSqttBuilder() = 0;
 
-  const uint32_t getShaderEnginesNumber() { return 4; }
+  const uint32_t GetShaderEnginesNumber() { return 4; }
 
-  const GpuBlockInfo* getBlockInfo(const event_t* event) const {
-    const GpuBlockInfo* info = block_map.get(event->block_name);
+  const GpuBlockInfo* GetBlockInfo(const event_t* event) const {
+    const GpuBlockInfo* info = block_map_.Get(event->block_name);
     if (info == NULL) throw event_exception(std::string("Bad block, "), *event);
     if (event->block_index >= info->instance_count)
       throw event_exception(std::string("Bad block index, "), *event);
@@ -61,28 +63,28 @@ class Pm4Factory {
     return info;
   }
 
-  uint32_t getBlockId(const event_t* event) const { return getBlockInfo(event)->id; }
+  uint32_t GetBlockId(const event_t* event) const { return GetBlockInfo(event)->id; }
 
  protected:
-  explicit Pm4Factory(const BlockMap& map) : block_map(map) {}
+  explicit Pm4Factory(const BlockMap& map) : block_map_(map) {}
   virtual ~Pm4Factory() {}
 
  private:
   typedef std::map<std::string, Pm4Factory*> instances_t;
 
-  static std::mutex mutex;
-  static instances_t instances;
-  const BlockMap block_map;
+  static mutex_t mutex_;
+  static instances_t instances_;
+  const BlockMap block_map_;
 };
 
 inline Pm4Factory* Pm4Factory::Create(const hsa_agent_t agent) {
-  std::lock_guard<std::mutex> lck(mutex);
+  std::lock_guard<mutex_t> lck(mutex_);
 
   char agent_name[64];
   hsa_agent_get_info(agent, HSA_AGENT_INFO_NAME, agent_name);
-  instances_t::iterator it = instances.find(agent_name);
+  instances_t::iterator it = instances_.find(agent_name);
 
-  if (it == instances.end()) {
+  if (it == instances_.end()) {
     if (strncmp(agent_name, "gfx801", 6) == 0) {
       throw aql_profile_exc_val<std::string>(std::string("GFX8 Carrizo is not supported "),
                                              agent_name);
@@ -100,11 +102,11 @@ inline Pm4Factory* Pm4Factory::Create(const hsa_agent_t agent) {
 }
 
 inline void Pm4Factory::Destroy() {
-  std::lock_guard<std::mutex> lck(mutex);
-  for (auto it : instances) delete it.second;
-  instances.clear();
+  std::lock_guard<mutex_t> lck(mutex_);
+  for (auto& item : instances_) delete item.second;
+  instances_.clear();
 }
 
 }  // namespace aql_profile
 
-#endif  // _PM4_FACTORY_H_
+#endif  // SRC_CORE_PM4_FACTORY_H_

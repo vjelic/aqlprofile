@@ -1,5 +1,5 @@
-#ifndef _AQL_PROFILE_EXCEPTION_H_
-#define _AQL_PROFILE_EXCEPTION_H_
+#ifndef SRC_CORE_AQL_PROFILE_EXCEPTION_H_
+#define SRC_CORE_AQL_PROFILE_EXCEPTION_H_
 
 #include <string.h>
 
@@ -10,11 +10,11 @@ namespace aql_profile {
 
 class aql_profile_exc_msg : public std::exception {
  public:
-  explicit aql_profile_exc_msg(const std::string& msg) : str(msg) {}
-  virtual const char* what() const throw() { return str.c_str(); }
+  explicit aql_profile_exc_msg(const std::string& msg) : str_(msg) {}
+  virtual const char* what() const throw() { return str_.c_str(); }
 
  protected:
-  std::string str;
+  std::string str_;
 };
 
 template <typename T> class aql_profile_exc_val : public std::exception {
@@ -22,13 +22,13 @@ template <typename T> class aql_profile_exc_val : public std::exception {
   aql_profile_exc_val(const std::string& msg, const T& val) {
     std::ostringstream oss;
     oss << msg << "(" << val << ")";
-    str = oss.str();
+    str_ = oss.str();
   }
-  virtual const char* what() const throw() { return str.c_str(); }
+  virtual const char* what() const throw() { return str_.c_str(); }
 
  protected:
-  std::string str;
+  std::string str_;
 };
 }  // namespace aql_profile
 
-#endif  // _AQL_PROFILE_EXCEPTION_H_
+#endif  // SRC_CORE_AQL_PROFILE_EXCEPTION_H_

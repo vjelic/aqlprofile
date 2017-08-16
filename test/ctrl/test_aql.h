@@ -25,54 +25,56 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#ifndef _TEST_AQL_H_
-#define _TEST_AQL_H_
+#ifndef TEST_CTRL_TEST_AQL_H_
+#define TEST_CTRL_TEST_AQL_H_
 
-#include "hsa.h"
-#include "hsa_rsrc_factory.h"
-#include "hsa_ven_amd_aqlprofile.h"
+#include <hsa.h>
+#include <hsa_ven_amd_aqlprofile.h>
+
+#include "util/hsa_rsrc_factory.h"
 
 // Test AQL interface
 class TestAql {
-  TestAql* const test_aql;
-
  public:
-  explicit TestAql(TestAql* t = 0) : test_aql(t) {}
+  explicit TestAql(TestAql* t = 0) : test_(t) {}
   virtual ~TestAql() {}
 
-  TestAql* testAql() { return test_aql; }
-  virtual AgentInfo* getAgentInfo() { return (test_aql) ? test_aql->getAgentInfo() : 0; }
-  virtual hsa_queue_t* getQueue() { return (test_aql) ? test_aql->getQueue() : 0; }
-  virtual HsaRsrcFactory* getRsrcFactory() { return (test_aql) ? test_aql->getRsrcFactory() : 0; }
+  TestAql* Test() { return test_; }
+  virtual AgentInfo* GetAgentInfo() { return (test_) ? test_->GetAgentInfo() : 0; }
+  virtual hsa_queue_t* GetQueue() { return (test_) ? test_->GetQueue() : 0; }
+  virtual HsaRsrcFactory* GetRsrcFactory() { return (test_) ? test_->GetRsrcFactory() : 0; }
 
   // Initialize application environment including setting
   // up of various configuration parameters based on
   // command line arguments
   // @return bool true on success and false on failure
-  virtual bool initialize(int argc, char** argv) {
-    return (test_aql) ? test_aql->initialize(argc, argv) : true;
+  virtual bool Initialize(int argc, char** argv) {
+    return (test_) ? test_->Initialize(argc, argv) : true;
   }
 
   // Setup application parameters for exectuion
   // @return bool true on success and false on failure
-  virtual bool setup() { return (test_aql) ? test_aql->setup() : true; }
+  virtual bool Setup() { return (test_) ? test_->Setup() : true; }
 
   // Run the kernel
   // @return bool true on success and false on failure
-  virtual bool run() { return (test_aql) ? test_aql->run() : true; }
+  virtual bool Run() { return (test_) ? test_->Run() : true; }
 
   // Verify results
   // @return bool true on success and false on failure
-  virtual bool verify_results() { return (test_aql) ? test_aql->verify_results() : true; }
+  virtual bool VerifyResults() { return (test_) ? test_->VerifyResults() : true; }
 
   // Print to console the time taken to execute kernel
-  virtual void print_time() {
-    if (test_aql) test_aql->print_time();
+  virtual void PrintTime() {
+    if (test_) test_->PrintTime();
   }
 
   // Release resources e.g. memory allocations
   // @return bool true on success and false on failure
-  virtual bool cleanup() { return (test_aql) ? test_aql->cleanup() : true; }
+  virtual bool Cleanup() { return (test_) ? test_->Cleanup() : true; }
+
+ private:
+  TestAql* const test_;
 };
 
-#endif  // _TEST_AQL_H_
+#endif  // TEST_CTRL_TEST_AQL_H_
