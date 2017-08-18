@@ -48,11 +48,11 @@
 #define SRC_CORE_AMD_AQL_PM4_IB_PACKET_H_
 
 // Value of 'pm4_ib_format' field of amd_aql_pm4_ib_packet_t packet
-const static uint32_t AMD_AQL_PM4_IB_FORMAT = 1;
+static const uint32_t AMD_AQL_PM4_IB_FORMAT = 1;
 // Value of 'dw_count_remain' field of amd_aql_pm4_ib_packet_t packet
-const static uint32_t AMD_AQL_PM4_IB_DW_COUNT_REMAIN = 10;
+static const uint32_t AMD_AQL_PM4_IB_DW_COUNT_REMAIN = 10;
 // Size of 'reserved' array of amd_aql_pm4_ib_packet_t packet
-const static uint32_t AMD_AQL_PM4_IB_RESERVED_COUNT = 8;
+static const uint32_t AMD_AQL_PM4_IB_RESERVED_COUNT = 8;
 
 // AQL Vendor Specific Packet which carry PM4 IB command
 typedef struct {

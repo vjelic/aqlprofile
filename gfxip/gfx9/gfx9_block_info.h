@@ -54,16 +54,20 @@ enum CounterBlockId {
 };
 
 // Number of block instances
-// Number of CB block instances per SE
 static const uint32_t CbCounterBlockNumInstances    = 4;
 static const uint32_t DbCounterBlockNumInstances    = 4;
 static const uint32_t TaCounterBlockNumInstances    = 16;
 static const uint32_t TdCounterBlockNumInstances    = 16;
 static const uint32_t TcpCounterBlockNumInstances   = 16;
-// Number of TCA block instances per chip
 static const uint32_t TcaCounterBlockNumInstances   = 2;
 static const uint32_t TccCounterBlockNumInstances   = 16;
 static const uint32_t SdmaCounterBlockNumInstances  = 2;
+static const uint32_t RmiCounterBlockNumInstances   = 8;
+static const uint32_t GceaCounterBlockNumInstances  = 16;
+static const uint32_t AtcCounterBlockNumInstances   = 16;
+static const uint32_t AtcL2CounterBlockNumInstances = 16;
+static const uint32_t McVmL2CounterBlockNumInstances = 16;
+static const uint32_t RpbCounterBlockNumInstances   = 16;
 
 // Number of block counter registers
 static const uint32_t CbCounterBlockNumCounters     = 4;

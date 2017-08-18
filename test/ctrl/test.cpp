@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
         argv_pmc[i] = new char[argv_pmc_size];
       }
       for (int i = 0; i < HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER; ++i) {
-        //      i = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MCVML2;
+        i = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MCVML2;
         //      i = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_ATCL2;
         //      i = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_GCEA;
         //      i = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SRBM;

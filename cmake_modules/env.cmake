@@ -41,6 +41,11 @@ if ( "$ENV{CXX}" STREQUAL "/usr/bin/clang++" )
 set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ferror-limit=1000000" )
 endif()
 
+## Enable debug trace
+if ( DEFINED ENV{CMAKE_DEBUG_TRACE} )
+  add_definitions ( -DDEBUG_TRACE=1 )
+endif()
+
 ## Check env vars
 if ( NOT DEFINED CMAKE_BUILD_TYPE OR "${CMAKE_BUILD_TYPE}" STREQUAL "" )
   if ( DEFINED ENV{CMAKE_BUILD_TYPE} )

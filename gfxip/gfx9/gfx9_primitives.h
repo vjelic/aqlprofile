@@ -8,38 +8,47 @@ namespace gfx9 {
 
 class gfx9_cntx_prim {
  public:
-  const static uint32_t GFXIP_LEVEL = 9;
-  const static uint32_t GRBM_GFX_INDEX_ADDR = mmGRBM_GFX_INDEX;
-  const static uint32_t COMPUTE_PERFCOUNT_ENABLE_ADDR = mmCOMPUTE_PERFCOUNT_ENABLE;
-  const static uint32_t RLC_PERFMON_CLK_CNTL_ADDR = mmRLC_PERFMON_CLK_CNTL;
-  const static uint32_t CP_PERFMON_CNTL_ADDR = mmCP_PERFMON_CNTL;
-  const static uint32_t SRBM_PERFMON_CNTL_ADDR = 0;
-  const static uint32_t MC_SELECT_ADDR = 0;
-  const static uint32_t MC_SELECT1_ADDR = 0;
-  const static uint32_t MC_CONFIG_ADDR = 0;
+  static const uint32_t GFXIP_LEVEL = 9;
+  static const uint32_t GRBM_GFX_INDEX_ADDR = mmGRBM_GFX_INDEX;
+  static const uint32_t COMPUTE_PERFCOUNT_ENABLE_ADDR = mmCOMPUTE_PERFCOUNT_ENABLE;
+  static const uint32_t RLC_PERFMON_CLK_CNTL_ADDR = mmRLC_PERFMON_CLK_CNTL;
+  static const uint32_t CP_PERFMON_CNTL_ADDR = mmCP_PERFMON_CNTL;
+  static const uint32_t SRBM_PERFMON_CNTL_ADDR = 0;
 
-  const static uint32_t SQ_PERFCOUNTER_MASK_ADDR = mmSQ_PERFCOUNTER_MASK;
-  const static uint32_t SQ_THREAD_TRACE_MASK_ADDR = mmSQ_THREAD_TRACE_MASK;
-  const static uint32_t SQ_THREAD_TRACE_PERF_MASK_ADDR = mmSQ_THREAD_TRACE_PERF_MASK;
-  const static uint32_t SQ_THREAD_TRACE_TOKEN_MASK_ADDR = mmSQ_THREAD_TRACE_TOKEN_MASK;
-  const static uint32_t SQ_THREAD_TRACE_TOKEN_MASK2_ADDR = mmSQ_THREAD_TRACE_TOKEN_MASK2;
-  const static uint32_t SQ_THREAD_TRACE_MODE_ADDR = mmSQ_THREAD_TRACE_MODE;
-  const static uint32_t SQ_THREAD_TRACE_BASE_ADDR = mmSQ_THREAD_TRACE_BASE;
-  const static uint32_t SQ_THREAD_TRACE_SIZE_ADDR = mmSQ_THREAD_TRACE_SIZE;
-  const static uint32_t SQ_THREAD_TRACE_CTRL_ADDR = mmSQ_THREAD_TRACE_CTRL;
-  const static uint32_t SQ_THREAD_TRACE_HIWATER_ADDR = mmSQ_THREAD_TRACE_HIWATER;
-  const static uint32_t SQ_THREAD_TRACE_HIWATER_VAL = 0x6;
-  const static uint32_t SQ_THREAD_TRACE_STATUS_ADDR = mmSQ_THREAD_TRACE_STATUS;
-  const static uint32_t SQ_THREAD_TRACE_CNTR_ADDR = mmSQ_THREAD_TRACE_CNTR;
-  const static uint32_t SQ_THREAD_TRACE_WPTR_ADDR = mmSQ_THREAD_TRACE_WPTR;
-  const static uint32_t SQ_THREAD_TRACE_STATUS_OFFSET =
+  static const uint32_t MC_SELECT_ADDR = 0;
+  static const uint32_t MC_SELECT1_ADDR = 0;
+  static const uint32_t MC_CONFIG_ADDR = 0;
+  static const uint32_t MC_PERFCOUNTER_RSLT_CNTL__ENABLE_ANY_MASK_PRM = 0x01000000L;
+  static const uint32_t MC_PERFCOUNTER_RSLT_CNTL__CLEAR_ALL_MASK_PRM = 0x02000000L;
+
+  static const uint32_t RMI_PERF_COUNTER_CNTL_ADDR = mmRMI_PERF_COUNTER_CNTL;
+  static const uint32_t RMI_EN_SEL_ON = 1;
+  static const uint32_t RMI_EVENT_WINDOW_MASK0_DEFAULT = 1;
+  static const uint32_t RMI_EVENT_WINDOW_MASK1_DEFAULT = 2;
+  static const uint32_t RMI_CHANNEL_ID_ALL = 8;
+  static const uint32_t RMI_BURST_LENGTH_THRESHOLD_DEFAULT = 1;
+
+  static const uint32_t SQ_PERFCOUNTER_MASK_ADDR = mmSQ_PERFCOUNTER_MASK;
+  static const uint32_t SQ_THREAD_TRACE_MASK_ADDR = mmSQ_THREAD_TRACE_MASK;
+  static const uint32_t SQ_THREAD_TRACE_PERF_MASK_ADDR = mmSQ_THREAD_TRACE_PERF_MASK;
+  static const uint32_t SQ_THREAD_TRACE_TOKEN_MASK_ADDR = mmSQ_THREAD_TRACE_TOKEN_MASK;
+  static const uint32_t SQ_THREAD_TRACE_TOKEN_MASK2_ADDR = mmSQ_THREAD_TRACE_TOKEN_MASK2;
+  static const uint32_t SQ_THREAD_TRACE_MODE_ADDR = mmSQ_THREAD_TRACE_MODE;
+  static const uint32_t SQ_THREAD_TRACE_BASE_ADDR = mmSQ_THREAD_TRACE_BASE;
+  static const uint32_t SQ_THREAD_TRACE_SIZE_ADDR = mmSQ_THREAD_TRACE_SIZE;
+  static const uint32_t SQ_THREAD_TRACE_CTRL_ADDR = mmSQ_THREAD_TRACE_CTRL;
+  static const uint32_t SQ_THREAD_TRACE_HIWATER_ADDR = mmSQ_THREAD_TRACE_HIWATER;
+  static const uint32_t SQ_THREAD_TRACE_HIWATER_VAL = 0x6;
+  static const uint32_t SQ_THREAD_TRACE_STATUS_ADDR = mmSQ_THREAD_TRACE_STATUS;
+  static const uint32_t SQ_THREAD_TRACE_CNTR_ADDR = mmSQ_THREAD_TRACE_CNTR;
+  static const uint32_t SQ_THREAD_TRACE_WPTR_ADDR = mmSQ_THREAD_TRACE_WPTR;
+  static const uint32_t SQ_THREAD_TRACE_STATUS_OFFSET =
       mmSQ_THREAD_TRACE_STATUS - UCONFIG_SPACE_START;
-  const static uint32_t TT_BUFF_ALIGN_SHIFT = 12;
+  static const uint32_t TT_BUFF_ALIGN_SHIFT = 12;
 
-  const static uint32_t MC_PERFCOUNTER_RSLT_CNTL__ENABLE_ANY_MASK_PRM = 0x01000000L;
-  const static uint32_t COPY_DATA_SEL_REG_PRM = COPY_DATA_SEL_REG;
-  const static uint32_t COPY_DATA_SEL_SRC_SYS_PERF_COUNTER_PRM = COPY_DATA_SEL_SRC_SYS_PERF_COUNTER;
-  const static uint32_t COPY_DATA_SEL_COUNT_1DW_PRM = COPY_DATA_SEL_COUNT_1DW;
+  static const uint32_t COPY_DATA_SEL_REG_PRM = COPY_DATA_SEL_REG;
+  static const uint32_t COPY_DATA_SEL_SRC_SYS_PERF_COUNTER_PRM = COPY_DATA_SEL_SRC_SYS_PERF_COUNTER;
+  static const uint32_t COPY_DATA_SEL_COUNT_1DW_PRM = COPY_DATA_SEL_COUNT_1DW;
 
   static uint32_t Low32(const uint64_t& v) { return (v & 0xFFFFFFFFul); }
 
@@ -176,15 +185,33 @@ class gfx9_cntx_prim {
     select.bits.ENABLE = 1;
     return select.u32All;
   }
-
   static uint32_t mc_select1_value(const counter_des_t& counter_des) {
     return 0;
   }
 
   // MC Counter Config Register value
   static uint32_t mc_broadcast_value() { return 0; }
+  static uint32_t mc_reset_value() {
+    return MC_PERFCOUNTER_RSLT_CNTL__CLEAR_ALL_MASK_PRM;
+  }
+  static uint32_t mc_start_value() {
+    return MC_PERFCOUNTER_RSLT_CNTL__ENABLE_ANY_MASK_PRM;
+  }
   static uint32_t mc_config_value(const counter_des_t& counter_des) {
-    return counter_des.index | MC_PERFCOUNTER_RSLT_CNTL__ENABLE_ANY_MASK_PRM;
+    return counter_des.index;
+  }
+
+  // RMI block primitives
+  static uint32_t rmi_start_value() {
+    regRMI_PERF_COUNTER_CNTL cntl = {0};
+    cntl.bits.TRANS_BASED_PERF_EN_SEL = RMI_EN_SEL_ON;
+    cntl.bits.EVENT_BASED_PERF_EN_SEL = RMI_EN_SEL_ON;
+    cntl.bits.TC_PERF_EN_SEL          = RMI_EN_SEL_ON;
+    cntl.bits.PERF_EVENT_WINDOW_MASK0 = RMI_EVENT_WINDOW_MASK0_DEFAULT;
+    cntl.bits.PERF_EVENT_WINDOW_MASK1 = RMI_EVENT_WINDOW_MASK1_DEFAULT;
+    cntl.bits.PERF_COUNTER_CID        = RMI_CHANNEL_ID_ALL;
+    cntl.bits.PERF_COUNTER_BURST_LENGTH_THRESHOLD = RMI_BURST_LENGTH_THRESHOLD_DEFAULT;
+    return cntl.u32All;
   }
 
   // Counter Select Register value templates
