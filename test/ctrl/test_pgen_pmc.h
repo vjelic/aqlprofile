@@ -87,6 +87,7 @@ class TestPGenPmc : public TestPGen {
     } else {
       // Set the events list
       const hsa_ven_amd_aqlprofile_event_t events_arr[] = {
+#if 1
         {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SQ, 0, 4 /*WAVES*/},
         {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SQ, 0, 14 /*ITEMS*/},
         {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SQ, 0, 47 /*WAVE_READY*/},
@@ -95,6 +96,8 @@ class TestPGenPmc : public TestPGen {
         {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_TCC, 2, 22 /*WRITEBACK*/},
         {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_CPC, 0, 0 /*ALWAYS_COUNT*/},
         {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_CPC, 0, 8 /*ME1_STALL_WAIT_ON_RCIU_READ*/},
+#endif
+#if 0
         {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MC, 0, 0 /**/},
         {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MC, 0, 1 /**/},
         {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MC, 0, 2 /**/},
@@ -111,7 +114,6 @@ class TestPGenPmc : public TestPGen {
         {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MC, 3, 1 /**/},
         {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MC, 3, 2 /**/},
         {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MC, 3, 3 /**/},
-#if 0
         //{HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_ATC, 0, 0 /**/},
         //{HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_ATC, 0, 1 /**/},
         //{HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_ATCL2, 0, 0 /**/},

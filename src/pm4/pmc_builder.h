@@ -98,8 +98,12 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
                                            block_info->select_value(counter_des));
       }
       if ((Primitives::GFXIP_LEVEL == 8) && (block_info->attr & CounterBlockMcAttr)) {
-        Builder::BuildWriteConfigRegPacket(cmd_buffer, Primitives::MC_SELECT1_ADDR,
+        Builder::BuildWriteConfigRegPacket(cmd_buffer, Primitives::MC_SEQ_SELECT1_ADDR,
                                            Primitives::mc_select1_value(counter_des));
+        Builder::BuildWriteConfigRegPacket(cmd_buffer, Primitives::MC_SEQ_CONTROL_ADDR,
+                                           Primitives::mc_reset_value());
+        Builder::BuildWriteConfigRegPacket(cmd_buffer, Primitives::MC_SEQ_CONTROL_ADDR,
+                                           Primitives::mc_start_value());
       }
       // Start GFX9 MC counters
       if ((Primitives::GFXIP_LEVEL == 9) && (counters_vec.get_attr() & CounterBlockMcAttr)) {

@@ -12,9 +12,13 @@ class gfx8_cntx_prim {
   static const uint32_t CP_PERFMON_CNTL_ADDR = mmCP_PERFMON_CNTL__CI__VI;
   static const uint32_t SRBM_PERFMON_CNTL_ADDR = mmSRBM_PERFMON_CNTL__VI;
 
-  static const uint32_t MC_SELECT_ADDR = mmMC_SEQ_PERF_SEQ_CTL__SI__VI;
-  static const uint32_t MC_SELECT1_ADDR = mmMC_SEQ_PERF_CNTL_1__SI__CI;
+  static const uint32_t MC_SEQ_SELECT_ADDR = mmMC_SEQ_PERF_SEQ_CTL__SI__VI;
+  static const uint32_t MC_SEQ_SELECT1_ADDR = mmMC_SEQ_PERF_CNTL_1__SI__CI;
+  static const uint32_t MC_SEQ_CONTROL_ADDR = mmMC_SEQ_PERF_CNTL__SI__CI;
   static const uint32_t MC_CONFIG_ADDR = mmMC_CONFIG_MCD;
+  static const uint32_t MC_SEQ_MONITOR_PERIOD = 0;
+  static const uint32_t MC_SEQ_CLEAR_COUNTER = 2;
+  static const uint32_t MC_SEQ_START_COUNTER = 0;
 
   static const uint32_t RMI_PERF_COUNTER_CNTL_ADDR = 0;
 
@@ -242,8 +246,17 @@ class gfx8_cntx_prim {
     const uint32_t write_enable_mask = (1 << McCounterBlockNumInstances) - 1;
     return write_enable_mask;
   }
-  static uint32_t mc_reset_value() { return 0; }
-  static uint32_t mc_start_value() { return 0; }
+  static uint32_t mc_reset_value() {
+    regMC_SEQ_PERF_CNTL__SI__CI cntl = {0};
+    cntl.bits.MONITOR_PERIOD = MC_SEQ_MONITOR_PERIOD;
+    cntl.bits.CNTL = MC_SEQ_CLEAR_COUNTER;
+    return cntl.u32All;
+  }
+  static uint32_t mc_start_value() {
+    regMC_SEQ_PERF_CNTL__SI__CI cntl = {0};
+    cntl.bits.CNTL = MC_SEQ_START_COUNTER;
+    return cntl.u32All;
+  }
   static uint32_t mc_config_value(const counter_des_t& counter_des) {
     const uint32_t read_enable_mask = counter_des.block_des.index << MC_CONFIG_MCD__MC_RD_ENABLE__SHIFT;
     return read_enable_mask | mc_broadcast_value();
