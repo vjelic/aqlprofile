@@ -15,12 +15,14 @@ enum CounterBlockAttr {
   CounterBlockCleanAttr = 8,
   // MC Block
   CounterBlockMcAttr = 0x10,
+  // MC SEQ Block
+  CounterBlockMcSeqAttr = 0x20,
   // RMI Block
-  CounterBlockRmiAttr = 0x20,
+  CounterBlockRmiAttr = 0x40,
   // CP PERFMON controllable blocks
-  CounterBlockCpmonAttr = 0x3f,
+  CounterBlockCpmonAttr = 0x7f,
   // SRBM Block
-  CounterBlockSrbmAttr = 0x40,
+  CounterBlockSrbmAttr = 0x80,
 };
 
 // Register address corresponding to each counter

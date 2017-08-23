@@ -3,8 +3,6 @@
 
 #include <stdint.h>
 
-namespace gfxip {
-
 // Counter Block attributes
 enum CounterBlockAttr {
   // Default block attribute
@@ -17,12 +15,14 @@ enum CounterBlockAttr {
   CounterBlockCleanAttr = 8,
   // MC Block
   CounterBlockMcAttr = 0x10,
+  // MC SEQ Block
+  CounterBlockMcSeqAttr = 0x20,
   // RMI Block
-  CounterBlockRmiAttr = 0x20,
+  CounterBlockRmiAttr = 0x40,
   // CP PERFMON controllable blocks
-  CounterBlockCpmonAttr = 0x3f,
+  CounterBlockCpmonAttr = 0x7f,
   // SRBM Block
-  CounterBlockSrbmAttr = 0x40,
+  CounterBlockSrbmAttr = 0x80,
 };
 
 // Register address corresponding to each counter
@@ -79,7 +79,5 @@ struct counter_des_t {
   block_des_t block_des;
   const GpuBlockInfo* block_info;
 };
-
-}  // namespace gfxip
 
 #endif  // _GPU_BLOCKINFO_H_

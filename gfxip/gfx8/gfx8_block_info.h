@@ -28,12 +28,17 @@ enum CounterBlockId {
   GdsCounterBlockId,
   VgtCounterBlockId,
   IaCounterBlockId,
-  McCounterBlockId,
   SrbmCounterBlockId,
   TcsCounterBlockId,
   WdCounterBlockId,
   CpgCounterBlockId,
   CpcCounterBlockId,
+
+  McArbCounterBlockId,
+  McHubCounterBlockId,
+  McMcbvmCounterBlockId,
+  McSeqCounterBlockId,
+  McVmL2CounterBlockId,
 
   // Counters retrieved by KFD
   IommuV2CounterBlockId,
@@ -76,7 +81,6 @@ static const uint32_t GdsCounterBlockNumCounters    = 4;
 static const uint32_t GrbmCounterBlockNumCounters   = 2;
 static const uint32_t GrbmSeCounterBlockNumCounters = 1;
 static const uint32_t IaCounterBlockNumCounters     = 4;
-static const uint32_t McCounterBlockNumCounters     = 4;
 static const uint32_t RlcCounterBlockNumCounters    = 2;
 static const uint32_t PaSuCounterBlockNumCounters   = 4;
 static const uint32_t PaScCounterBlockNumCounters   = 8;
@@ -92,6 +96,11 @@ static const uint32_t TcpCounterBlockNumCounters    = 4;
 static const uint32_t TdCounterBlockNumCounters     = 2;
 static const uint32_t VgtCounterBlockNumCounters    = 4;
 static const uint32_t WdCounterBlockNumCounters     = 4;
+static const uint32_t McArbCounterBlockNumCounters  = 4;
+static const uint32_t McHubCounterBlockNumCounters  = 4;
+static const uint32_t McMcbvmCounterBlockNumCounters = 4;
+static const uint32_t McSeqCounterBlockNumCounters  = 4;
+static const uint32_t McVmL2CounterBlockNumCounters = 2;
 
 // Block counters max event value
 static const uint32_t CpfCounterBlockMaxEvent       = 18;
@@ -117,7 +126,11 @@ static const uint32_t SdmaCounterBlockMaxEvent      = 61;
 static const uint32_t SxCounterBlockMaxEvent        = 32;
 static const uint32_t VgtCounterBlockMaxEvent       = 145;
 static const uint32_t IaCounterBlockMaxEvent        = 21;
-static const uint32_t McSeqCounterBlockMaxEvent     = 21;
 static const uint32_t WdCounterBlockMaxEvent        = 36;
+static const uint32_t McArbCounterBlockMaxEvent     = 21; /*?*/
+static const uint32_t McHubCounterBlockMaxEvent     = 21; /*?*/
+static const uint32_t McMcbvmCounterBlockMaxEvent   = 21; /*?*/
+static const uint32_t McSeqCounterBlockMaxEvent     = 21;
+static const uint32_t McVmL2CounterBlockMaxEvent    = 21; /*?*/
 
 #endif  // _GFX8_BLOCKINFO_H_

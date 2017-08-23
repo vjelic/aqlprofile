@@ -68,7 +68,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::SRBM_PERFMON_CNTL_ADDR,
                                           Primitives::srbm_reset_value());
     // Broadcasting to all MC channels
-    if ((Primitives::GFXIP_LEVEL == 8) && (counters_vec.get_attr() & CounterBlockMcAttr))
+    if (counters_vec.get_attr() & CounterBlockMcSeqAttr)
       Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::MC_CONFIG_ADDR,
                                           Primitives::mc_broadcast_value());
     // Programming perf counters
@@ -83,7 +83,15 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
         Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
                                             Primitives::grbm_inst_index_value(block_des.index));
       }
-      // Clean counters
+      // Reset counters
+      if (block_info->attr & CounterBlockMcSeqAttr) {
+        Builder::BuildWriteConfigRegPacket(cmd_buffer, Primitives::MC_SEQ_CONTROL_ADDR,
+                                           Primitives::mc_seq_reset_value());
+      }
+      if (counters_vec.get_attr() & CounterBlockMcAttr) {
+        Builder::BuildWritePConfigRegPacket(cmd_buffer, reg_info.control_addr,
+                                            Primitives::mc_reset_value());
+      }
       if (block_info->attr & CounterBlockCleanAttr) {
         for (uint32_t i = 0; i < block_info->counter_count; ++i) {
           Builder::BuildWriteConfigRegPacket(cmd_buffer,
@@ -97,20 +105,28 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
         Builder::BuildWriteConfigRegPacket(cmd_buffer, reg_info.select_addr,
                                            block_info->select_value(counter_des));
       }
-      if ((Primitives::GFXIP_LEVEL == 8) && (block_info->attr & CounterBlockMcAttr)) {
+      if (block_info->attr & CounterBlockMcSeqAttr) {
         Builder::BuildWriteConfigRegPacket(cmd_buffer, Primitives::MC_SEQ_SELECT1_ADDR,
-                                           Primitives::mc_select1_value(counter_des));
-        Builder::BuildWriteConfigRegPacket(cmd_buffer, Primitives::MC_SEQ_CONTROL_ADDR,
-                                           Primitives::mc_reset_value());
-        Builder::BuildWriteConfigRegPacket(cmd_buffer, Primitives::MC_SEQ_CONTROL_ADDR,
-                                           Primitives::mc_start_value());
+                                           Primitives::mc_seq_select1_value(counter_des));
       }
-      // Start GFX9 MC counters
-      if ((Primitives::GFXIP_LEVEL == 9) && (counters_vec.get_attr() & CounterBlockMcAttr)) {
+      // Start counters
+      if (block_info->attr & CounterBlockMcSeqAttr) {
+        Builder::BuildWriteConfigRegPacket(cmd_buffer, Primitives::MC_SEQ_CONTROL_ADDR,
+                                           Primitives::mc_seq_start_value());
+      }
+      if (counters_vec.get_attr() & CounterBlockMcAttr) {
         Builder::BuildWritePConfigRegPacket(cmd_buffer, reg_info.control_addr,
-                                            Primitives::mc_reset_value());
+                                            Primitives::mc_config_value(counter_des));
         Builder::BuildWritePConfigRegPacket(cmd_buffer, reg_info.control_addr,
                                             Primitives::mc_start_value());
+      }
+      if (block_info->attr & CounterBlockCleanAttr) {
+        for (uint32_t i = 0; i < block_info->counter_count; ++i) {
+          Builder::BuildWriteConfigRegPacket(cmd_buffer,
+                                             block_info->counter_reg_info[i].register_addr_lo, 0);
+          Builder::BuildWriteConfigRegPacket(cmd_buffer,
+                                             block_info->counter_reg_info[i].register_addr_hi, 0);
+        }
       }
       // Configure SQ block
       if (block_info->attr & CounterBlockSqAttr) {
@@ -171,11 +187,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       const auto& block_des = counter_des.block_des;
       const auto& reg_info = block_info->counter_reg_info[counter_des.index];
 
-      if (block_info->attr & CounterBlockMcAttr) {
-        if ((Primitives::GFXIP_LEVEL == 9) && (block_info->instance_count > 1)) {
-          Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
-                                              Primitives::grbm_inst_index_value(block_des.index));
-        }
+      if (block_info->attr & CounterBlockMcSeqAttr) {
         Builder::BuildWritePConfigRegPacket(cmd_buffer, reg_info.control_addr,
                                             Primitives::mc_config_value(counter_des));
         uint32_t* data = reinterpret_cast<uint32_t*>(data_buffer) + read_counter;
@@ -183,6 +195,17 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
         Builder::BuildCopyCounterDataPacket(cmd_buffer, reg_info.register_addr_lo,
                                             reg_info.register_addr_hi, data,
                                             Primitives::mc_channel_mask(counter_des));
+        read_counter += 2;
+      } else if (block_info->attr & CounterBlockMcAttr) {
+        if (block_info->instance_count > 1) {
+          Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
+                                            Primitives::grbm_inst_index_value(block_des.index));
+        }
+        Builder::BuildWritePConfigRegPacket(cmd_buffer, reg_info.control_addr,
+                                            Primitives::mc_config_value(counter_des));
+        uint32_t* data = reinterpret_cast<uint32_t*>(data_buffer) + read_counter;
+        Builder::BuildCopyCounterDataPacket(cmd_buffer, reg_info.register_addr_lo,
+                                            reg_info.register_addr_hi, data, 3);
         read_counter += 2;
       } else {
         const uint32_t se_end_index = (block_info->attr & CounterBlockSeAttr) ? se_number_ : 1;
@@ -205,7 +228,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       }
     }
     // Reset MC config to broadcast
-    if ((Primitives::GFXIP_LEVEL == 8) && (counters_vec.get_attr() & CounterBlockMcAttr))
+    if (counters_vec.get_attr() & CounterBlockMcSeqAttr)
       Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::MC_CONFIG_ADDR,
                                           Primitives::mc_broadcast_value());
     // Reset Grbm to its default state - broadcast

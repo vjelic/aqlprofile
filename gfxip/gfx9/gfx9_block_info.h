@@ -64,10 +64,6 @@ static const uint32_t TccCounterBlockNumInstances   = 16;
 static const uint32_t SdmaCounterBlockNumInstances  = 2;
 static const uint32_t RmiCounterBlockNumInstances   = 8;
 static const uint32_t GceaCounterBlockNumInstances  = 16;
-static const uint32_t AtcCounterBlockNumInstances   = 16;
-static const uint32_t AtcL2CounterBlockNumInstances = 16;
-static const uint32_t McVmL2CounterBlockNumInstances = 16;
-static const uint32_t RpbCounterBlockNumInstances   = 16;
 
 // Number of block counter registers
 static const uint32_t CbCounterBlockNumCounters     = 4;

@@ -309,15 +309,15 @@ static const GpuBlockInfo CpfCounterBlockInfo = {"CPF", CpfCounterBlockId, 1, Cp
 // Counter block RMI
 static const GpuBlockInfo RmiCounterBlockInfo = {"RMI", RmiCounterBlockId, RmiCounterBlockNumInstances, RmiCounterBlockMaxEvent, RmiCounterBlockNumCounters, RmiCounterRegAddr, gfx9_cntx_prim::select_value<regRMI_PERFCOUNTER0_SELECT>, CounterBlockRmiAttr};
 // Counter block ATC
-static const GpuBlockInfo AtcCounterBlockInfo = {"ATC", AtcCounterBlockId, AtcCounterBlockNumInstances, AtcCounterBlockMaxEvent, AtcCounterBlockNumCounters, AtcCounterRegAddr, gfx9_cntx_prim::mc_select_value<regATC_PERFCOUNTER0_CFG>, CounterBlockMcAttr};
+static const GpuBlockInfo AtcCounterBlockInfo = {"ATC", AtcCounterBlockId, 1, AtcCounterBlockMaxEvent, AtcCounterBlockNumCounters, AtcCounterRegAddr, gfx9_cntx_prim::mc_select_value<regATC_PERFCOUNTER0_CFG>, CounterBlockMcAttr};
 // Counter block ATC L2
-static const GpuBlockInfo AtcL2CounterBlockInfo = {"ATC_L2", AtcL2CounterBlockId, AtcL2CounterBlockNumInstances, AtcL2CounterBlockMaxEvent, AtcL2CounterBlockNumCounters, AtcL2CounterRegAddr, gfx9_cntx_prim::mc_select_value<regATC_L2_PERFCOUNTER0_CFG>, CounterBlockMcAttr};
+static const GpuBlockInfo AtcL2CounterBlockInfo = {"ATC_L2", AtcL2CounterBlockId, 1, AtcL2CounterBlockMaxEvent, AtcL2CounterBlockNumCounters, AtcL2CounterRegAddr, gfx9_cntx_prim::mc_select_value<regATC_L2_PERFCOUNTER0_CFG>, CounterBlockMcAttr};
 // Counter block GCEA
 static const GpuBlockInfo GceaCounterBlockInfo = {"GCEA", GceaCounterBlockId, GceaCounterBlockNumInstances, GceaCounterBlockMaxEvent, GceaCounterBlockNumCounters, GceaCounterRegAddr, gfx9_cntx_prim::mc_select_value<regGCEA_PERFCOUNTER0_CFG>, CounterBlockMcAttr};
 // Counter block MC VM L2
-static const GpuBlockInfo McVmL2CounterBlockInfo = {"MC_VM_L2", McVmL2CounterBlockId, McVmL2CounterBlockNumInstances, McVmL2CounterBlockMaxEvent, McVmL2CounterBlockNumCounters, McVmL2CounterRegAddr, gfx9_cntx_prim::mc_select_value<regMC_VM_L2_PERFCOUNTER0_CFG>, CounterBlockMcAttr};
+static const GpuBlockInfo McVmL2CounterBlockInfo = {"MC_VM_L2", McVmL2CounterBlockId, 1, McVmL2CounterBlockMaxEvent, McVmL2CounterBlockNumCounters, McVmL2CounterRegAddr, gfx9_cntx_prim::mc_select_value<regMC_VM_L2_PERFCOUNTER0_CFG>, CounterBlockMcAttr};
 // Counter block RPB
-static const GpuBlockInfo RpbCounterBlockInfo = {"RPB", RpbCounterBlockId, RpbCounterBlockNumInstances, RpbCounterBlockMaxEvent, RpbCounterBlockNumCounters, RpbCounterRegAddr, gfx9_cntx_prim::mc_select_value<regRPB_PERFCOUNTER0_CFG>, CounterBlockMcAttr};
+static const GpuBlockInfo RpbCounterBlockInfo = {"RPB", RpbCounterBlockId, 1, RpbCounterBlockMaxEvent, RpbCounterBlockNumCounters, RpbCounterRegAddr, gfx9_cntx_prim::mc_select_value<regRPB_PERFCOUNTER0_CFG>, CounterBlockMcAttr};
 
 }  // namespace gfx9
 }  // namespace gfxip

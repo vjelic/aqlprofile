@@ -15,10 +15,11 @@ class gfx9_cntx_prim {
   static const uint32_t CP_PERFMON_CNTL_ADDR = mmCP_PERFMON_CNTL;
   static const uint32_t SRBM_PERFMON_CNTL_ADDR = 0;
 
+  static const uint32_t MC_CONFIG_ADDR = 0;
   static const uint32_t MC_SEQ_SELECT_ADDR = 0;
   static const uint32_t MC_SEQ_SELECT1_ADDR = 0;
   static const uint32_t MC_SEQ_CONTROL_ADDR = 0;
-  static const uint32_t MC_CONFIG_ADDR = 0;
+
   static const uint32_t MC_PERFCOUNTER_RSLT_CNTL__ENABLE_ANY_MASK_PRM = 0x01000000L;
   static const uint32_t MC_PERFCOUNTER_RSLT_CNTL__CLEAR_ALL_MASK_PRM = 0x02000000L;
 
@@ -177,8 +178,18 @@ class gfx9_cntx_prim {
   static uint32_t mc_channel_mask(const counter_des_t& counter_des) {
     return 3;
   }
+  static uint32_t mc_broadcast_value() { return 0; }
+  static uint32_t mc_config_value(const counter_des_t& counter_des) {
+    return counter_des.index;
+  }
 
-  // MC Counter Select Register value
+  // MC SQE registers values
+  static uint32_t mc_seq_select_value(const counter_des_t&) { return 0; }
+  static uint32_t mc_seq_select1_value(const counter_des_t&) { return 0; }
+  static uint32_t mc_seq_reset_value() { return 0; }
+  static uint32_t mc_seq_start_value() { return 0; }
+
+  // MC registers values
   template <typename Select> static uint32_t mc_select_value(const counter_des_t& counter_des) {
     Select select = {0};
     select.bits.PERF_SEL = counter_des.id;
@@ -186,20 +197,11 @@ class gfx9_cntx_prim {
     select.bits.ENABLE = 1;
     return select.u32All;
   }
-  static uint32_t mc_select1_value(const counter_des_t& counter_des) {
-    return 0;
-  }
-
-  // MC Counter Config Register value
-  static uint32_t mc_broadcast_value() { return 0; }
   static uint32_t mc_reset_value() {
     return MC_PERFCOUNTER_RSLT_CNTL__CLEAR_ALL_MASK_PRM;
   }
   static uint32_t mc_start_value() {
     return MC_PERFCOUNTER_RSLT_CNTL__ENABLE_ANY_MASK_PRM;
-  }
-  static uint32_t mc_config_value(const counter_des_t& counter_des) {
-    return counter_des.index;
   }
 
   // RMI block primitives
