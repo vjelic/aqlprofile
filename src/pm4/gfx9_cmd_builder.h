@@ -22,10 +22,6 @@ template <class T> static void GenerateCmdHeader(T* pm4, IT_OpCodeType op_code) 
 /// for GFX9 chipsets
 class Gfx9CmdBuilder : public CmdBuilder {
  public:
-  static bool IsUserConfigReg(const uint32_t& addr) {
-    return ((addr >= UCONFIG_SPACE_START) && (addr <= UCONFIG_SPACE_END));
-  }
-
   static bool IsPrivilegedConfigReg(const uint32_t& addr) {
     return ((addr >= CONFIG_SPACE_START) && (addr <= CONFIG_SPACE_END));
   }
