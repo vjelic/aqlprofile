@@ -199,7 +199,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       } else if (block_info->attr & CounterBlockMcAttr) {
         if (block_info->instance_count > 1) {
           Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
-                                            Primitives::grbm_inst_index_value(block_des.index));
+                                              Primitives::grbm_inst_index_value(block_des.index));
         }
         Builder::BuildWritePConfigRegPacket(cmd_buffer, reg_info.control_addr,
                                             Primitives::mc_config_value(counter_des));
