@@ -438,7 +438,7 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
           reinterpret_cast<pm4_builder::ControlType*>(cmd_buffer_mgr.SetPostfix(control_size));
 
       // Check if SQTT buffer was wrapped
-      for (int i = 0; i < se_number; ++i) {
+      for (unsigned i = 0; i < se_number; ++i) {
         const uint32_t status_ind =
             (pm4_builder::TT_STATUS_IDX_MAX * i) + pm4_builder::TT_STATUS_IDX_STATUS;
         if (control_ptr[status_ind] & pm4_builder::TT_CONTROL_WRAP_MASK) {
@@ -451,7 +451,7 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
       void* sample_ptr = profile->output_buffer.ptr;
       const uint32_t sample_capacity = profile->output_buffer.size / se_number;
       // The samples sizes are returned in the control buffer
-      for (int i = 0; i < se_number; ++i) {
+      for (unsigned i = 0; i < se_number; ++i) {
         // WPTR specifies the index in thread trace buffer where next token will be
         // written by hardware. The index is incremented by size of 32 bytes.
         const uint32_t wptr_ind =

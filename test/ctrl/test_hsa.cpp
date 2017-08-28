@@ -200,8 +200,8 @@ bool TestHsa::Run() {
 
   // Wait on the dispatch signal until the kernel is finished.
   // Update wait condition to HSA_WAIT_STATE_ACTIVE for Polling
-  hsa_signal_value_t value = hsa_signal_wait_acquire(hsa_signal_, HSA_SIGNAL_CONDITION_LT, 1,
-                                                     (uint64_t)-1, HSA_WAIT_STATE_BLOCKED);
+  hsa_signal_wait_acquire(hsa_signal_, HSA_SIGNAL_CONDITION_LT, 1, (uint64_t)-1,
+                          HSA_WAIT_STATE_BLOCKED);
 
   // Stop the timer object
   hsa_timer_.StopTimer(dispatch_timer_idx_);

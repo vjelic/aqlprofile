@@ -24,67 +24,62 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifndef TEST_UTIL_HELPER_FUNCS_H_
 #define TEST_UTIL_HELPER_FUNCS_H_
 
+#include <time.h>
+#include <cmath>
+#include <iostream>
+#include <sstream>
 #include <string>
 
-/**
- * compare template version
- * compare data to check error
- * @param refData templated input
- * @param data templated input
- * @param length number of values to compare
- * @param epsilon errorWindow
- */
-bool compare(const float* refData, const float* data, const int length,
-             const float epsilon = 1e-6f);
-bool compare(const double* refData, const double* data, const int length,
-             const double epsilon = 1e-6);
+static void Error(std::string error_msg) { std::cerr << "Error: " << error_msg << std::endl; }
 
-/**
- * printArray
- * displays a array on std::out
- */
 template <typename T>
-void printArray(const std::string header, const T* data, const int width, const int height);
+void PrintArray(const std::string header, const T* data, const int width, const int height) {
+  std::clog << header << " :\n";
+  for (int i = 0; i < height; i++) {
+    std::clog << "> ";
+    for (int j = 0; j < width; j++) {
+      std::clog << data[i * width + j] << " ";
+    }
+    std::clog << "\n";
+  }
+}
 
-
-/**
- * fillRandom
- * fill array with random values
- */
 template <typename T>
-bool fillRandom(T* arrayPtr, const int width, const int height, const T rangeMin, const T rangeMax,
-                unsigned int seed = 123);
+bool FillRandom(T* array_ptr, const int width, const int height, const T range_min,
+                const T range_max, unsigned int seed = 123) {
+  if (!array_ptr) {
+    Error("Cannot fill array. NULL pointer.");
+    return false;
+  }
 
-/**
- * fillPos
- * fill the specified positions
- */
-template <typename T> bool fillPos(T* arrayPtr, const int width, const int height);
+  if (!seed) seed = (unsigned int)time(NULL);
 
-/**
- * fillConstant
- * fill the array with constant value
- */
-template <typename T>
-bool fillConstant(T* arrayPtr, const int width, const int height, const T val);
+  srand(seed);
+  double range = double(range_max - range_min) + 1.0;
 
+  /* random initialisation of input */
+  for (int i = 0; i < height; i++)
+    for (int j = 0; j < width; j++) {
+      int index = i * width + j;
+      array_ptr[index] = range_min + T(range * rand() / (RAND_MAX + 1.0));
+    }
 
-/**
- * roundToPowerOf2
- * rounds to a power of 2
- */
-template <typename T> T roundToPowerOf2(T val);
+  return true;
+}
 
-/**
- * isPowerOf2
- * checks if input is a power of 2
- */
-template <typename T> bool isPowerOf2(T val);
+template <typename T> T RoundToPowerOf2(T val) {
+  int bytes = sizeof(T);
 
-/**
- * toString
- * convert a T type to string
- */
-template <typename T> std::string toString(T t, std::ios_base& (*r)(std::ios_base&));
+  val--;
+  for (int i = 0; i < bytes; i++) val |= val >> (1 << i);
+  val++;
+
+  return val;
+}
+
+template <typename T> bool IsPowerOf2(T val) {
+  long long long_val = val;
+  return (((long_val & (-long_val)) - long_val == 0) && (long_val != 0));
+}
 
 #endif  // TEST_UTIL_HELPER_FUNCS_H_

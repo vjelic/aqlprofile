@@ -38,12 +38,12 @@ SimpleConvolution::SimpleConvolution() {
   mask_width_ = 3;
   mask_height_ = mask_width_;
 
-  if (!isPowerOf2(width_)) {
-    width_ = roundToPowerOf2(width_);
+  if (!IsPowerOf2(width_)) {
+    width_ = RoundToPowerOf2(width_);
   }
 
-  if (!isPowerOf2(height_)) {
-    height_ = roundToPowerOf2(height_);
+  if (!IsPowerOf2(height_)) {
+    height_ = RoundToPowerOf2(height_);
   }
 
   if (!(mask_width_ % 2)) {
@@ -85,7 +85,7 @@ void SimpleConvolution::Init() {
   kernel_args_t* kernel_args = (kernel_args_t*)kernarg_des.ptr;
 
   // random initialisation of input
-  fillRandom<uint32_t>(input, width_, height_, 0, 255);
+  FillRandom<uint32_t>(input, width_, height_, 0, 255);
 
   // Fill a blurr filter or some other filter of your choice
   const float val = 1.0f / (mask_width_ * 2.0f - 1.0f);
@@ -102,8 +102,8 @@ void SimpleConvolution::Init() {
   }
 
   // Print the INPUT array.
-  printArray<uint32_t>("> Input[0]", input, width_, 1);
-  printArray<float>("> Mask", mask, mask_width_, mask_height_);
+  PrintArray<uint32_t>("> Input[0]", input, width_, 1);
+  PrintArray<float>("> Mask", mask, mask_width_, mask_height_);
 
   // Fill the kernel args
   kernel_args->arg1 = output_local;
@@ -121,7 +121,7 @@ void SimpleConvolution::Init() {
 }
 
 void SimpleConvolution::PrintOutput() const {
-  printArray<uint32_t>("> Output[0]", reinterpret_cast<uint32_t*>(GetOutputPtr()), width_, 1);
+  PrintArray<uint32_t>("> Output[0]", reinterpret_cast<uint32_t*>(GetOutputPtr()), width_, 1);
 }
 
 bool SimpleConvolution::ReferenceImplementation(uint32_t* output, const uint32_t* input,

@@ -41,7 +41,6 @@ void* LegacyAqlRelease(const packet_t* aql_packet, void* data) {
 }
 
 void* LegacyPm4(const packet_t* aql_packet, void* data) {
-  constexpr uint32_t major_version = 8;
   constexpr uint32_t slot_size_b = 0x40;
   constexpr uint32_t slot_size_dw = uint32_t(slot_size_b / sizeof(uint32_t));
   constexpr uint32_t ib_jump_size_dw = 4;
@@ -58,7 +57,7 @@ void* LegacyPm4(const packet_t* aql_packet, void* data) {
   uint32_t* nop_pad = &slot_data[slot_dw_idx];
   slot_dw_idx += nop_pad_size_dw;
   nop_pad[0] = PM4_CMD(IT_NOP, nop_pad_size_dw);
-  for (int i = 1; i < nop_pad_size_dw; ++i) {
+  for (unsigned i = 1; i < nop_pad_size_dw; ++i) {
     nop_pad[i] = 0;
   }
 

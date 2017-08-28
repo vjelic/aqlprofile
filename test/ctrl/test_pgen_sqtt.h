@@ -83,6 +83,8 @@ class TestPGenSqtt : public TestPGen {
     profile_.command_buffer.ptr =
         GetRsrcFactory()->AllocateSysMemory(GetAgentInfo(), command_buffer_size);
     profile_.command_buffer.size = command_buffer_size;
+    TEST_ASSERT((reinterpret_cast<uintptr_t>(profile_.command_buffer.ptr) &
+                 (command_buffer_alignment - 1)) == 0);
 
     // Application is allocating the output buffer
     // AllocateLocal(output_buffer_alignment, output_buffer_size,
@@ -90,6 +92,8 @@ class TestPGenSqtt : public TestPGen {
     profile_.output_buffer.ptr =
         GetRsrcFactory()->AllocateLocalMemory(GetAgentInfo(), output_buffer_size);
     profile_.output_buffer.size = output_buffer_size;
+    TEST_ASSERT((reinterpret_cast<uintptr_t>(profile_.output_buffer.ptr) &
+                 (output_buffer_alignment - 1)) == 0);
 
     // Populating the AQL start packet
     status = api_.hsa_ven_amd_aqlprofile_start(&profile_, PrePacket());
@@ -134,7 +138,7 @@ class TestPGenSqtt : public TestPGen {
 
       // Write the buffer in terms of shorts (16 bits)
       short* sqtt_data = (short*)sys_buf;
-      for (int i = 0; i < (it->sqtt_data.size / sizeof(short)); ++i) {
+      for (unsigned i = 0; i < (it->sqtt_data.size / sizeof(short)); ++i) {
         out_file << std::setw(4) << std::setfill('0') << std::hex << sqtt_data[i] << "\n";
       }
 

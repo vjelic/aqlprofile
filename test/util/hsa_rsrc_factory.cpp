@@ -69,6 +69,7 @@ static hsa_status_t GetHsaAgentsCallback(hsa_agent_t agent, void* data) {
   hsa_status_t status;
   hsa_device_type_t type;
   status = hsa_agent_get_info(agent, HSA_AGENT_INFO_DEVICE, &type);
+  CHECK_STATUS("Error Calling hsa_agent_get_info", status);
   if (type == HSA_DEVICE_TYPE_DSP) {
     return HSA_STATUS_SUCCESS;
   }

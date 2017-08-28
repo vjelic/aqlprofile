@@ -45,32 +45,6 @@ hsa_status_t TestPGenPmcCallback(hsa_ven_amd_aqlprofile_info_type_t info_type,
 
 // Class implements PMC profiling
 class TestPGenPmc : public TestPGen {
-  static const uint32_t buffer_alignment = 0x1000;  // 4K
-
-  hsa_agent_t agent;
-  hsa_ven_amd_aqlprofile_profile_t profile;
-  hsa_ven_amd_aqlprofile_event_t* events;
-
-  bool BuildPackets() { return true; }
-
-  bool DumpData() {
-    std::clog << "TestPGenPmc::DumpData :" << std::endl;
-
-    typedef std::vector<hsa_ven_amd_aqlprofile_info_data_t> callback_data_t;
-
-    callback_data_t data;
-    api_.hsa_ven_amd_aqlprofile_iterate_data(&profile, TestPGenPmcCallback, &data);
-    for (callback_data_t::iterator it = data.begin(); it != data.end(); ++it) {
-      //      if (it->pmc_data.result)
-      std::cout << std::dec << "event(block(" << it->pmc_data.event.block_name << "_"
-                << it->pmc_data.event.block_index << "), id(" << it->pmc_data.event.counter_id
-                << ")), sample(" << it->sample_id << "), result(" << it->pmc_data.result << ")"
-                << std::endl;
-    }
-
-    return true;
-  }
-
  public:
   explicit TestPGenPmc(TestAql* t) : TestPGen(t) { std::clog << "Test: PGen PMC" << std::endl; }
 
@@ -78,9 +52,11 @@ class TestPGenPmc : public TestPGen {
     std::vector<hsa_ven_amd_aqlprofile_event_t> event_vec;
 
     if (arg_cnt == 4) {
+      const uint32_t block_id = static_cast<uint32_t>(atoi(arg_list[1]));
+      const uint32_t block_index = static_cast<uint32_t>(atoi(arg_list[2]));
+      const uint32_t event_id = static_cast<uint32_t>(atoi(arg_list[3]));
       const hsa_ven_amd_aqlprofile_event_t event = {
-          static_cast<hsa_ven_amd_aqlprofile_block_name_t>(atoi(arg_list[1])), atoi(arg_list[2]),
-          atoi(arg_list[3])};
+          static_cast<hsa_ven_amd_aqlprofile_block_name_t>(block_id), block_index, event_id};
       event_vec.push_back(event);
       arg_cnt -= 3;
       arg_list += 3;
@@ -193,7 +169,7 @@ class TestPGenPmc : public TestPGen {
       }
     }
     const size_t event_count = event_vec_filtered.size();
-    events = new hsa_ven_amd_aqlprofile_event_t[event_count];
+    hsa_ven_amd_aqlprofile_event_t* events = new hsa_ven_amd_aqlprofile_event_t[event_count];
     for (uint32_t i = 0; i < event_count; ++i) {
       events[i] = event_vec_filtered.at(i);
     }
@@ -201,18 +177,18 @@ class TestPGenPmc : public TestPGen {
     if (!event_count) return false;
 
     // Initialization the profile
-    memset(&profile, 0, sizeof(profile));
-    profile.agent = agent;
-    profile.type = HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_PMC;
+    memset(&profile_, 0, sizeof(profile_));
+    profile_.agent = agent;
+    profile_.type = HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_PMC;
 
     // Set enabled events list
-    profile.events = events;
-    profile.event_count = event_count;
+    profile_.events = events;
+    profile_.event_count = event_count;
 
     // Profile buffers attributes
-    command_buffer_alignment = buffer_alignment;
+    command_buffer_alignment = buffer_alignment_;
     status = api_.hsa_ven_amd_aqlprofile_get_info(
-        &profile, HSA_VEN_AMD_AQLPROFILE_INFO_COMMAND_BUFFER_SIZE, &command_buffer_size);
+        &profile_, HSA_VEN_AMD_AQLPROFILE_INFO_COMMAND_BUFFER_SIZE, &command_buffer_size);
     if (status != HSA_STATUS_SUCCESS) {
       const char* str = "";
       api_.hsa_ven_amd_aqlprofile_error_string(&str);
@@ -220,28 +196,32 @@ class TestPGenPmc : public TestPGen {
     }
     TEST_ASSERT(status == HSA_STATUS_SUCCESS);
 
-    output_buffer_alignment = buffer_alignment;
+    output_buffer_alignment = buffer_alignment_;
     status = api_.hsa_ven_amd_aqlprofile_get_info(
-        &profile, HSA_VEN_AMD_AQLPROFILE_INFO_PMC_DATA_SIZE, &output_buffer_size);
+        &profile_, HSA_VEN_AMD_AQLPROFILE_INFO_PMC_DATA_SIZE, &output_buffer_size);
     TEST_ASSERT(status == HSA_STATUS_SUCCESS);
 
     // Application is allocating the command buffer
     // Allocate(command_buffer_alignment, command_buffer_size,
     //          MODE_HOST_ACC|MODE_DEV_ACC|MODE_EXEC_DATA)
-    profile.command_buffer.ptr =
+    profile_.command_buffer.ptr =
         GetRsrcFactory()->AllocateSysMemory(GetAgentInfo(), command_buffer_size);
-    profile.command_buffer.size = command_buffer_size;
+    profile_.command_buffer.size = command_buffer_size;
+    TEST_ASSERT((reinterpret_cast<uintptr_t>(profile_.command_buffer.ptr) &
+                 (command_buffer_alignment - 1)) == 0);
 
     // Application is allocating the output buffer
     // Allocate(output_buffer_alignment, output_buffer_size,
     //          MODE_HOST_ACC|MODE_DEV_ACC)
-    profile.output_buffer.ptr =
+    profile_.output_buffer.ptr =
         GetRsrcFactory()->AllocateSysMemory(GetAgentInfo(), output_buffer_size);
-    profile.output_buffer.size = output_buffer_size;
-    memset(profile.output_buffer.ptr, 0x77, output_buffer_size);
+    profile_.output_buffer.size = output_buffer_size;
+    memset(profile_.output_buffer.ptr, 0x77, output_buffer_size);
+    TEST_ASSERT((reinterpret_cast<uintptr_t>(profile_.output_buffer.ptr) &
+                 (output_buffer_alignment - 1)) == 0);
 
     // Populating the AQL start packet
-    status = api_.hsa_ven_amd_aqlprofile_start(&profile, PrePacket());
+    status = api_.hsa_ven_amd_aqlprofile_start(&profile_, PrePacket());
     if (status != HSA_STATUS_SUCCESS) {
       const char* str;
       api_.hsa_ven_amd_aqlprofile_error_string(&str);
@@ -251,11 +231,36 @@ class TestPGenPmc : public TestPGen {
     if (status != HSA_STATUS_SUCCESS) return false;
 
     // Populating the AQL stop packet
-    status = api_.hsa_ven_amd_aqlprofile_stop(&profile, PostPacket());
+    status = api_.hsa_ven_amd_aqlprofile_stop(&profile_, PostPacket());
     TEST_ASSERT(status == HSA_STATUS_SUCCESS);
 
     return (status == HSA_STATUS_SUCCESS);
   }
+
+ private:
+  bool BuildPackets() { return true; }
+
+  bool DumpData() {
+    std::clog << "TestPGenPmc::DumpData :" << std::endl;
+
+    typedef std::vector<hsa_ven_amd_aqlprofile_info_data_t> callback_data_t;
+
+    callback_data_t data;
+    api_.hsa_ven_amd_aqlprofile_iterate_data(&profile_, TestPGenPmcCallback, &data);
+    for (callback_data_t::iterator it = data.begin(); it != data.end(); ++it) {
+      //      if (it->pmc_data.result)
+      std::cout << std::dec << "event(block(" << it->pmc_data.event.block_name << "_"
+                << it->pmc_data.event.block_index << "), id(" << it->pmc_data.event.counter_id
+                << ")), sample(" << it->sample_id << "), result(" << it->pmc_data.result << ")"
+                << std::endl;
+    }
+
+    return true;
+  }
+
+  static const uint32_t buffer_alignment_ = 0x1000;  // 4K
+
+  hsa_ven_amd_aqlprofile_profile_t profile_;
 };
 
 #endif  // TEST_CTRL_TEST_PGEN_PMC_H_

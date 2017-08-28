@@ -21,7 +21,7 @@ void PopulateAql(const uint32_t* ib_packet, packet_t* aql_packet) {
   aql_pm4_ib->pm4_ib_command[2] = ib_packet[2];
   aql_pm4_ib->pm4_ib_command[3] = ib_packet[3];
   aql_pm4_ib->dw_count_remain = AMD_AQL_PM4_IB_DW_COUNT_REMAIN;
-  for (int i = 0; i < AMD_AQL_PM4_IB_RESERVED_COUNT; ++i) {
+  for (unsigned i = 0; i < AMD_AQL_PM4_IB_RESERVED_COUNT; ++i) {
     aql_pm4_ib->reserved[i] = 0;
   }
 
