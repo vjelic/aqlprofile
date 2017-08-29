@@ -58,10 +58,9 @@ class TestPMgr : public TestAql {
     SLOT_PM4_SIZE_DW = HSA_VEN_AMD_AQLPROFILE_LEGACY_PM4_PACKET_SIZE / sizeof(uint32_t),
     SLOT_PM4_SIZE_AQLP = HSA_VEN_AMD_AQLPROFILE_LEGACY_PM4_PACKET_SIZE / sizeof(packet_t)
   };
-  struct slot_pm4_s {
+  struct slot_pm4_t {
     uint32_t words[SLOT_PM4_SIZE_DW];
   };
-  typedef std::atomic<slot_pm4_s> slot_pm4_t;
 
   bool AddPacket(const packet_t* packet);
   bool AddPacketGfx8(const packet_t* packet);
