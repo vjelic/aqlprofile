@@ -246,8 +246,7 @@ class Gfx9CmdBuilder : public CmdBuilder {
 
   void BuildIndirectBufferCmd(CmdBuffer* cmdbuf, const void* cmd_addr, std::size_t cmd_size) {
     // Verify the address is 4-byte aligned
-    uint64_t addr = uintptr_t(cmd_addr);
-    assert(!(addr & 0x3) && "IndirectBuffer address must be 4 byte aligned");
+    assert(!(uintptr_t(cmd_addr) & 0x3) && "IndirectBuffer address must be 4 byte aligned");
 
     PM4MEC_INDIRECT_BUFFER indirect_buffer;
     memset(&indirect_buffer, 0, sizeof(indirect_buffer));
