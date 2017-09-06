@@ -233,7 +233,7 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(
           pm4_builder::TT_STATUS_IDX_MAX * sizeof(pm4_builder::ControlType) * se_number;
       void* control_ptr = cmd_buffer_mgr.SetPostfix(control_size);
 
-      pm4_builder::ThreadTraceConfig sqtt_config = {0};
+      pm4_builder::ThreadTraceConfig sqtt_config{};
       sqtt_config.se_number = se_number;
       sqtt_config.control_buffer_ptr = control_ptr;
       sqtt_config.data_buffer_ptr = profile->output_buffer.ptr;

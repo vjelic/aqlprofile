@@ -191,20 +191,11 @@ class HsaRsrcFactory {
   bool PrintGpuAgents(const std::string& header);
 
  private:
-  // Number of queues to create
-  uint32_t num_queues_;
-
   // Used to maintain a list of Hsa Queue handles
   std::vector<hsa_queue_t*> queue_list_;
 
-  // Number of Signals to create
-  uint32_t num_signals_;
-
   // Used to maintain a list of Hsa Signal handles
   std::vector<hsa_signal_t*> signal_list_;
-
-  // Number of agents reported by platform
-  uint32_t num_agents_;
 
   // Used to maintain a list of Hsa Gpu Agent Info
   std::vector<AgentInfo*> gpu_list_;

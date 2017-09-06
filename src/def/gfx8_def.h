@@ -1643,7 +1643,7 @@ class gfx8_cntx_prim {
 
   // GRBM broadcasting mode
   static uint32_t grbm_broadcast_value() {
-    regGRBM_GFX_INDEX grbm_gfx_index = {0};
+    regGRBM_GFX_INDEX grbm_gfx_index{};
     grbm_gfx_index.bitfields.INSTANCE_BROADCAST_WRITES = 1;
     grbm_gfx_index.bitfields.SE_BROADCAST_WRITES = 1;
     grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
@@ -1652,7 +1652,7 @@ class gfx8_cntx_prim {
 
   // GRBM SE indexing
   static uint32_t grbm_inst_index_value(const uint32_t& instance_index) {
-    regGRBM_GFX_INDEX grbm_gfx_index = {0};
+    regGRBM_GFX_INDEX grbm_gfx_index{};
     grbm_gfx_index.bitfields.INSTANCE_INDEX = instance_index;
     grbm_gfx_index.bitfields.SE_BROADCAST_WRITES = 1;
     grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
@@ -1661,7 +1661,7 @@ class gfx8_cntx_prim {
 
   // GRBM SE indexing
   static uint32_t grbm_se_index_value(const uint32_t& se_index) {
-    regGRBM_GFX_INDEX grbm_gfx_index = {0};
+    regGRBM_GFX_INDEX grbm_gfx_index{};
     grbm_gfx_index.bitfields.INSTANCE_BROADCAST_WRITES = 1;
     grbm_gfx_index.bitfields.SE_INDEX = se_index;
     grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
@@ -1671,7 +1671,7 @@ class gfx8_cntx_prim {
   // GRBM SE/BlockInstance indexing
   static uint32_t grbm_inst_se_index_value(const uint32_t& instance_index,
                                            const uint32_t& se_index) {
-    regGRBM_GFX_INDEX grbm_gfx_index = {0};
+    regGRBM_GFX_INDEX grbm_gfx_index{};
     grbm_gfx_index.bitfields.INSTANCE_INDEX = instance_index;
     grbm_gfx_index.bitfields.SE_INDEX = se_index;
     grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
@@ -1680,7 +1680,7 @@ class gfx8_cntx_prim {
 
   // GRBM SE/SH indexing
   static uint32_t grbm_se_sh_index_value(const uint32_t& se_index, const uint32_t& sh_index) {
-    regGRBM_GFX_INDEX grbm_gfx_index = {0};
+    regGRBM_GFX_INDEX grbm_gfx_index{};
     grbm_gfx_index.bitfields.INSTANCE_BROADCAST_WRITES = 1;
     grbm_gfx_index.bitfields.SE_INDEX = se_index;
     grbm_gfx_index.bitfields.SH_INDEX = sh_index;
@@ -1689,20 +1689,20 @@ class gfx8_cntx_prim {
 
   // CP_PERFMON_CNTL value to reset counters
   static uint32_t cp_perfmon_cntl_reset_value() {
-    regCP_PERFMON_CNTL cp_perfmon_cntl = {0};
+    regCP_PERFMON_CNTL cp_perfmon_cntl{};
     return cp_perfmon_cntl.u32All;
   }
 
   // CP_PERFMON_CNTL value to start counters
   static uint32_t cp_perfmon_cntl_start_value() {
-    regCP_PERFMON_CNTL cp_perfmon_cntl = {0};
+    regCP_PERFMON_CNTL cp_perfmon_cntl{};
     cp_perfmon_cntl.bits.PERFMON_STATE = 1;
     return cp_perfmon_cntl.u32All;
   }
 
   // CP_PERFMON_CNTL value to stop/freeze counters
   static uint32_t cp_perfmon_cntl_stop_value() {
-    regCP_PERFMON_CNTL cp_perfmon_cntl = {0};
+    regCP_PERFMON_CNTL cp_perfmon_cntl{};
     cp_perfmon_cntl.bits.PERFMON_STATE = 2;
     cp_perfmon_cntl.bits.PERFMON_SAMPLE_ENABLE = 1;
     return cp_perfmon_cntl.u32All;
@@ -1710,7 +1710,7 @@ class gfx8_cntx_prim {
 
   // Compute Perfcount Enable register value to enable counting
   static uint32_t cp_perfcount_enable_value() {
-    regCOMPUTE_PERFCOUNT_ENABLE__CI__VI cp_perfcount_enable = {0};
+    regCOMPUTE_PERFCOUNT_ENABLE__CI__VI cp_perfcount_enable{};
     cp_perfcount_enable.bits.PERFCOUNT_ENABLE = 1;
     return cp_perfcount_enable.u32All;
   }
@@ -1719,7 +1719,7 @@ class gfx8_cntx_prim {
 
   // SQ Counter Select Register value
   static uint32_t sq_select_value(const counter_des_t& counter_des) {
-    regSQ_PERFCOUNTER0_SELECT__CI__VI sq_cntr_sel = {0};
+    regSQ_PERFCOUNTER0_SELECT__CI__VI sq_cntr_sel{};
     sq_cntr_sel.bits.SIMD_MASK = 0xF;
     sq_cntr_sel.bits.SQC_BANK_MASK = 0xF;
     sq_cntr_sel.bits.SQC_CLIENT_MASK = 0xF;
@@ -1729,7 +1729,7 @@ class gfx8_cntx_prim {
 
   // SQ Counter Mask Register value
   static uint32_t sq_mask_value(const counter_des_t&) {
-    regSQ_PERFCOUNTER_MASK__CI__VI sq_cntr_mask = {0};
+    regSQ_PERFCOUNTER_MASK__CI__VI sq_cntr_mask{};
     sq_cntr_mask.bits.SH0_MASK = 0xFFFF;
     sq_cntr_mask.bits.SH1_MASK = 0xFFFF;
     return sq_cntr_mask.u32All;
@@ -1738,7 +1738,7 @@ class gfx8_cntx_prim {
   // SQ Counter Control Register value
   static uint32_t sq_control_value(const counter_des_t& counter_des) {
     const uint32_t block_id = counter_des.block_des.id;
-    regSQ_PERFCOUNTER_CTRL sq_cntr_ctrl = {0};
+    regSQ_PERFCOUNTER_CTRL sq_cntr_ctrl{};
     if (block_id == SqCounterBlockId) {
       sq_cntr_ctrl.bits.ES_EN = 0x1;
       sq_cntr_ctrl.bits.GS_EN = 0x1;
@@ -1786,7 +1786,7 @@ class gfx8_cntx_prim {
 
   // MC SQE registers values
   static uint32_t mc_seq_select_value(const counter_des_t& counter_des) {
-    regMC_SEQ_PERF_SEQ_CTL__SI__CI select = {0};
+    regMC_SEQ_PERF_SEQ_CTL__SI__CI select{};
     const uint32_t channel = mc_channel_value(counter_des);
     const uint32_t event_id = counter_des.id;
     if (channel == 0) {
@@ -1816,7 +1816,7 @@ class gfx8_cntx_prim {
   }
 
   static uint32_t mc_seq_select1_value(const counter_des_t& counter_des) {
-    regMC_SEQ_PERF_CNTL_1__SI__CI select = {0};
+    regMC_SEQ_PERF_CNTL_1__SI__CI select{};
     const uint32_t channel = mc_channel_value(counter_des);
     const uint32_t event_id_msb = counter_des.id >> MC_SEQ_PERF_SEQ_CTL__SEL_B__SHIFT__SI__CI;
     if (channel == 0) {
@@ -1846,21 +1846,21 @@ class gfx8_cntx_prim {
   }
 
   static uint32_t mc_seq_reset_value() {
-    regMC_SEQ_PERF_CNTL__SI__CI cntl = {0};
+    regMC_SEQ_PERF_CNTL__SI__CI cntl{};
     cntl.bits.MONITOR_PERIOD = MC_SEQ_MONITOR_PERIOD;
     cntl.bits.CNTL = MC_SEQ_CLEAR_COUNTER;
     return cntl.u32All;
   }
 
   static uint32_t mc_seq_start_value() {
-    regMC_SEQ_PERF_CNTL__SI__CI cntl = {0};
+    regMC_SEQ_PERF_CNTL__SI__CI cntl{};
     cntl.bits.CNTL = MC_SEQ_START_COUNTER;
     return cntl.u32All;
   }
 
   // MC registers values
   template <typename Select> static uint32_t mc_select_value(const counter_des_t& counter_des) {
-    Select select = {0};
+    Select select{};
     select.bits.PERF_SEL = counter_des.id;
     select.bits.PERF_MODE = PERFMON_COUNTER_MODE_ACCUM;
     select.bits.ENABLE = 1;
@@ -1874,28 +1874,28 @@ class gfx8_cntx_prim {
 
   // Counter Select Register value templates
   template <typename Select> static uint32_t select_value(const counter_des_t& counter_des) {
-    Select select = {0};
+    Select select{};
     select.bits.PERF_SEL = counter_des.id;
     return select.u32All;
   }
   template <typename Select> static uint32_t select_value_t2(const counter_des_t& counter_des) {
-    Select select = {0};
+    Select select{};
     select.bits.PERFCOUNTER_SELECT = counter_des.id;
     return select.u32All;
   }
 
   // SRBM Registers values
   static uint32_t srbm_reset_value() {
-    regSRBM_PERFMON_CNTL cntl = {0};
+    regSRBM_PERFMON_CNTL cntl{};
     return cntl.u32All;
   }
   static uint32_t srbm_start_value() {
-    regSRBM_PERFMON_CNTL cntl = {0};
+    regSRBM_PERFMON_CNTL cntl{};
     cntl.bits.PERFMON_STATE = 1;
     return cntl.u32All;
   }
   static uint32_t srbm_stop_value() {
-    regSRBM_PERFMON_CNTL cntl = {0};
+    regSRBM_PERFMON_CNTL cntl{};
     cntl.bits.PERFMON_STATE = 2;
     cntl.bits.PERFMON_SAMPLE_ENABLE = 1;
     return cntl.u32All;
@@ -1912,7 +1912,7 @@ class gfx8_cntx_prim {
   // are useful if we wish to program buffer throttling.
   //
   static uint32_t sqtt_mask_value(const uint32_t& targetCu, const uint32_t& vmIdMask) {
-    regSQ_THREAD_TRACE_MASK mask = {0};
+    regSQ_THREAD_TRACE_MASK mask{};
     mask.bits.SH_SEL = 0x0;
     mask.bits.SIMD_EN = 0xF;
     mask.bits.CU_SEL = targetCu;
@@ -1925,7 +1925,7 @@ class gfx8_cntx_prim {
 
   // Mask of compute units to get thread trace data from
   static uint32_t sqtt_perf_mask_value() {
-    regSQ_THREAD_TRACE_PERF_MASK perf_mask = {0};
+    regSQ_THREAD_TRACE_PERF_MASK perf_mask{};
     perf_mask.bits.SH0_MASK = 0xFFFF;
     perf_mask.bits.SH1_MASK = 0xFFFF;
     return perf_mask.u32All;
@@ -1934,7 +1934,7 @@ class gfx8_cntx_prim {
   // Indicate the different TT messages/tokens that should be enabled/logged
   // Indicate the different TT tokens that specify register operations to be logged
   static uint32_t sqtt_token_mask_value() {
-    regSQ_THREAD_TRACE_TOKEN_MASK token_mask = {0};
+    regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
     token_mask.bits.REG_MASK = 0xFF;
     token_mask.bits.TOKEN_MASK = 0xFFFF;
     token_mask.bits.REG_DROP_ON_STALL__CI__VI = 0x1;
@@ -1945,16 +1945,16 @@ class gfx8_cntx_prim {
   // Disabling specifically instruction operations updating Program Counter (PC).
   // @note: The field is defined in the spec incorrectly as a 16-bit value
   static uint32_t sqtt_token_mask2_value() {
-    regSQ_THREAD_TRACE_TOKEN_MASK2__VI token_mask2 = {0};
+    regSQ_THREAD_TRACE_TOKEN_MASK2__VI token_mask2{};
     token_mask2.bits.INST_MASK = 0xFFFFFF7F;
     return token_mask2.u32All;
   }
 
   // Check if stalling is supported
   static bool sqtt_stalling_enabled(const uint32_t& mask_val, const uint32_t& token_mask_val) {
-    regSQ_THREAD_TRACE_MASK mask = {0};
+    regSQ_THREAD_TRACE_MASK mask{};
     mask.u32All = mask_val;
-    regSQ_THREAD_TRACE_TOKEN_MASK token_mask = {0};
+    regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
     token_mask.u32All = token_mask_val;
     return ((mask.bits.SQ_STALL_EN__CI__VI) || (mask.bits.SPI_STALL_EN__CI__VI) ||
             (mask.bits.REG_STALL_EN__CI__VI) || (token_mask.bits.REG_DROP_ON_STALL__CI__VI));
@@ -1977,7 +1977,7 @@ class gfx8_cntx_prim {
   //
   // Thread trace mode OFF value
   static uint32_t sqtt_mode_off_value() {
-    regSQ_THREAD_TRACE_MODE mode = {0};
+    regSQ_THREAD_TRACE_MODE mode{};
     mode.bits.WRAP = 0;
     mode.bits.CAPTURE_MODE = 0;
     mode.bits.MASK_CS = 1;
@@ -1987,7 +1987,7 @@ class gfx8_cntx_prim {
   }
   // Thread trace mode ON value
   static uint32_t sqtt_mode_on_value() {
-    regSQ_THREAD_TRACE_MODE mode = {0};
+    regSQ_THREAD_TRACE_MODE mode{};
     mode.u32All = sqtt_mode_off_value();
     mode.bits.MODE = SQ_THREAD_TRACE_MODE_ON;
     return mode.u32All;
@@ -1995,7 +1995,7 @@ class gfx8_cntx_prim {
 
   // Base address of buffer to use for thread trace
   static uint32_t sqtt_base_value(const uint64_t& base_addr) {
-    regSQ_THREAD_TRACE_BASE base = {0};
+    regSQ_THREAD_TRACE_BASE base{};
     base.bits.ADDR = Low32(base_addr >> TT_BUFF_ALIGN_SHIFT);
     return base.u32All;
   }
@@ -2003,7 +2003,7 @@ class gfx8_cntx_prim {
   // Indicates the size of buffer to use per Shader Engine instance.
   // The size is specified in terms of 4KB blocks
   static uint32_t sqtt_size_value(const uint32_t& size_val) {
-    regSQ_THREAD_TRACE_SIZE size = {0};
+    regSQ_THREAD_TRACE_SIZE size{};
     size.bits.SIZE = size_val >> TT_BUFF_ALIGN_SHIFT;
     return size.u32All;
   }
@@ -2011,7 +2011,7 @@ class gfx8_cntx_prim {
 
   // Thread trace ctrl register value
   static uint32_t sqtt_ctrl_value() {
-    regSQ_THREAD_TRACE_CTRL ctrl = {0};
+    regSQ_THREAD_TRACE_CTRL ctrl{};
     ctrl.bits.RESET_BUFFER = 1;
     return ctrl.u32All;
   }

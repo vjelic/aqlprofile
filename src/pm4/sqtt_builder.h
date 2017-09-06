@@ -6,7 +6,7 @@
 namespace pm4_builder {
 class CmdBuffer;
 class CmdBuilder;
-class ThreadTraceConfig;
+struct ThreadTraceConfig;
 
 enum {
   // Mask to check if SQTT buffer is wrapped
