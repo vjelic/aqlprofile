@@ -63,6 +63,17 @@ class SimpleConvolution : public TestKernel {
     uint32_t arg51;
   };
 
+  // Reference CPU implementation of Simple Convolution
+  // @param output Output matrix after performing convolution
+  // @param input  Input  matrix on which convolution is to be performed
+  // @param mask   mask matrix using which convolution was to be performed
+  // @param input_dimensions dimensions of the input matrix
+  // @param mask_dimensions  dimensions of the mask matrix
+  // @return bool true on success and false on failure
+  bool ReferenceImplementation(uint32_t* output, const uint32_t* input, const float* mask,
+                               const uint32_t width, const uint32_t height,
+                               const uint32_t maskWidth, const uint32_t maskHeight);
+
   // Width of the Input array
   uint32_t width_;
 
@@ -75,16 +86,11 @@ class SimpleConvolution : public TestKernel {
   // Mask dimensions
   uint32_t mask_height_;
 
-  // Reference CPU implementation of Simple Convolution
-  // @param output Output matrix after performing convolution
-  // @param input  Input  matrix on which convolution is to be performed
-  // @param mask   mask matrix using which convolution was to be performed
-  // @param input_dimensions dimensions of the input matrix
-  // @param mask_dimensions  dimensions of the mask matrix
-  // @return bool true on success and false on failure
-  bool ReferenceImplementation(uint32_t* output, const uint32_t* input, const float* mask,
-                               const uint32_t width, const uint32_t height,
-                               const uint32_t maskWidth, const uint32_t maskHeight);
+  // Randomize input data
+  unsigned randomize_seed_;
+
+  // Input data
+  static const uint32_t input_data_[];
 };
 
 #endif  // TEST_SIMPLE_CONVOLUTION_SIMPLE_CONVOLUTION_H_

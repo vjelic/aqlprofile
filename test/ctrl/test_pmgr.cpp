@@ -48,7 +48,8 @@ bool TestPMgr::AddPacketGfx9(const packet_t* packet) {
   *slot = aql_packet;
   // After AQL packet is fully copied into queue buffer
   // update packet header from invalid state to valid state
-  std::atomic<uint32_t>* header_atomic_ptr = reinterpret_cast<std::atomic<uint32_t>*>(&slot->header);
+  std::atomic<uint32_t>* header_atomic_ptr =
+      reinterpret_cast<std::atomic<uint32_t>*>(&slot->header);
   header_atomic_ptr->store(header, std::memory_order_release);
 
   // Increment the write index and ring the doorbell to dispatch the kernel.
@@ -77,7 +78,8 @@ bool TestPMgr::AddPacketGfx8(const packet_t* packet) {
   // To maintain global order to ensure the prior copy of the packet contents is made visible
   // before the header is updated.
   // With in-order CP it will wait until the first packet in the blob will be valid
-  std::atomic<uint32_t>* header_atomic_ptr = reinterpret_cast<std::atomic<uint32_t>*>(&slot->words[0]);
+  std::atomic<uint32_t>* header_atomic_ptr =
+      reinterpret_cast<std::atomic<uint32_t>*>(&slot->words[0]);
   header_atomic_ptr->store(data.words[0], std::memory_order_release);
 
   // Increment the write index and ring the doorbell to dispatch the kernel.

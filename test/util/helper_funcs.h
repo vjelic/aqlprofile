@@ -30,7 +30,9 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <sstream>
 #include <string>
 
-static inline void Error(std::string error_msg) { std::cerr << "Error: " << error_msg << std::endl; }
+static inline void Error(std::string error_msg) {
+  std::cerr << "Error: " << error_msg << std::endl;
+}
 
 template <typename T>
 void PrintArray(const std::string header, const T* data, const int width, const int height) {
