@@ -40,7 +40,7 @@ bool TestPMgr::AddPacketGfx9(const packet_t* packet) {
   packet_t* slot = (reinterpret_cast<packet_t*>(GetQueue()->base_address)) + (que_idx & mask);
 
   // Disable packet so that submission to HW is complete
-  const uint32_t header = HSA_PACKET_TYPE_VENDOR_SPECIFIC << HSA_PACKET_HEADER_TYPE;
+  const auto header = HSA_PACKET_TYPE_VENDOR_SPECIFIC << HSA_PACKET_HEADER_TYPE;
   aql_packet.header &= (~((1ul << HSA_PACKET_HEADER_WIDTH_TYPE) - 1)) << HSA_PACKET_HEADER_TYPE;
   aql_packet.header |= HSA_PACKET_TYPE_INVALID << HSA_PACKET_HEADER_TYPE;
 
@@ -48,8 +48,8 @@ bool TestPMgr::AddPacketGfx9(const packet_t* packet) {
   *slot = aql_packet;
   // After AQL packet is fully copied into queue buffer
   // update packet header from invalid state to valid state
-  std::atomic<uint32_t>* header_atomic_ptr =
-      reinterpret_cast<std::atomic<uint32_t>*>(&slot->header);
+  auto header_atomic_ptr =
+      reinterpret_cast<std::atomic<uint16_t>*>(&slot->header);
   header_atomic_ptr->store(header, std::memory_order_release);
 
   // Increment the write index and ring the doorbell to dispatch the kernel.
