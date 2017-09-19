@@ -22,6 +22,8 @@ WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************/
 
+#include "util/hsa_rsrc_factory.h"
+
 #include <hsa.h>
 #include <hsa_ext_finalize.h>
 #include <stdint.h>
@@ -34,8 +36,6 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 #include <string>
 #include <vector>
-
-#include "util/hsa_rsrc_factory.h"
 
 // Callback function to find and bind kernarg region of an agent
 static hsa_status_t FindMemRegionsCallback(hsa_region_t region, void* data) {
