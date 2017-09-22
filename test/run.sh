@@ -1,7 +1,9 @@
 #!/bin/sh
+RPATH=`realpath $0`
+cd `dirname $RPATH`
 
-tbin=./test/ctrl
-export LD_LIBRARY_PATH=$PWD
+tbin=./ctrl
+export LD_LIBRARY_PATH=$PWD:/opt/rocm/hsa-amd-aqlprofile/lib
 
 echo "Run simple convolution kernel"
 unset AQLPROFILE_PMC

@@ -74,7 +74,8 @@ if ( "${CMAKE_BUILD_TYPE}" STREQUAL release )
 endif ()
 
 ## Build tests
-add_subdirectory ( ${TEST_DIR} ${PROJECT_BINARY_DIR}/test )
+set ( TEST_BINARY_DIR ${PROJECT_BINARY_DIR}/test )
+add_subdirectory ( ${TEST_DIR} ${TEST_BINARY_DIR} )
 
 ## Add the install directives for the runtime library.
 install ( TARGETS ${AQLPROFILE_TARGET} LIBRARY DESTINATION ${AQLPROFILE_NAME}/lib COMPONENT ${AQLPROFILE_LIBRARY} )
