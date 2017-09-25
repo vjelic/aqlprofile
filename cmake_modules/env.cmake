@@ -24,9 +24,15 @@ set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden" )
 set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti" )
 set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-math-errno" )
 set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-threadsafe-statics" )
+set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fmerge-all-constants" )
 set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fms-extensions" )
 set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fmerge-all-constants" )
 set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC" )
+
+set ( CMAKE_SHARED_LINKER_FLAGS "-Wl,-Bdynamic -Wl,-z,noexecstack" )
+
+set ( CMAKE_SKIP_BUILD_RPATH TRUE )
+
 ## CLANG options
 if ( "$ENV{CXX}" STREQUAL "/usr/bin/clang++" )
 set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ferror-limit=1000000" )
@@ -74,9 +80,14 @@ if ( "${HSA_RUNTIME_INC_PATH}" STREQUAL "" )
   find_file ( HSA_RUNTIME_INC "hsa.h" )
   get_filename_component ( HSA_RUNTIME_INC_PATH ${HSA_RUNTIME_INC} DIRECTORY )
 endif()
-find_library ( HSA_RUNTIME_LIB "libhsa-runtime64.so" )
+
+set ( HSA_RUNTIME_NAME "hsa-runtime64" )
+find_library ( HSA_RUNTIME_LIB "lib${HSA_RUNTIME_NAME}.so" )
 get_filename_component ( HSA_RUNTIME_LIB_PATH ${HSA_RUNTIME_LIB} DIRECTORY )
 
+set ( HSA_KMT_NAME "hsakmt" )
+find_library ( HSA_KMT_LIB "lib${HSA_KMT_NAME}.so" )
+get_filename_component ( HSA_KMT_LIB_PATH ${HSA_KMT_LIB} DIRECTORY )
 
 set ( API_PATH ${HSA_RUNTIME_INC_PATH} )
 
