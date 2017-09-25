@@ -11,6 +11,5 @@ set ( LIB_SRC
 )
 include_directories ( ${LIB_DIR} )
 include_directories ( ${API_PATH} )
-LINK_DIRECTORIES ( ${HSA_RUNTIME_LIB_PATH}  ${HSA_KMT_LIB_PATH} )
 add_library ( ${TARGET_LIB} SHARED ${LIB_SRC} )
-target_link_libraries( ${TARGET_LIB} PRIVATE ${HSA_RUNTIME_NAME} PRIVATE ${HSA_KMT_NAME} c stdc++ )
+target_link_libraries( ${TARGET_LIB} PRIVATE ${HSA_RUNTIME_LIB} PRIVATE ${HSA_KMT_LIB} c stdc++ )

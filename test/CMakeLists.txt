@@ -30,9 +30,8 @@ set ( TEST_NAME simple_convolution )
 set ( KERN_SRC ${TEST_DIR}/${TEST_NAME}/${TEST_NAME}.cpp )
 
 ## Building test executable
-LINK_DIRECTORIES ( ${HSA_RUNTIME_LIB_PATH}  ${HSA_KMT_LIB_PATH} )
 add_executable ( ${EXE_NAME} ${KERN_SRC} ${CTRL_SRC} ${UTIL_SRC} )
-target_link_libraries( ${EXE_NAME} ${HSA_RUNTIME_NAME} ${HSA_KMT_NAME} c stdc++ dl pthread rt atomic )
+target_link_libraries( ${EXE_NAME} ${HSA_RUNTIME_LIB} ${HSA_KMT_LIB} c stdc++ dl pthread rt atomic )
 
 ## Deploying test files
 execute_process ( COMMAND sh -xc "cp --remove-destination ${TEST_DIR}/${TEST_NAME}/*.hsaco ${TEST_BINARY_DIR}" )
