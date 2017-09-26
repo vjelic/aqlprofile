@@ -39,6 +39,7 @@ enum CounterBlockId {
   McMcbvmCounterBlockId,
   McSeqCounterBlockId,
   McVmL2CounterBlockId,
+  McXbarCounterBlockId,
 
   // Counters retrieved by KFD
   IommuV2CounterBlockId,
@@ -101,6 +102,7 @@ static const uint32_t McHubCounterBlockNumCounters  = 4;
 static const uint32_t McMcbvmCounterBlockNumCounters = 4;
 static const uint32_t McSeqCounterBlockNumCounters  = 4;
 static const uint32_t McVmL2CounterBlockNumCounters = 2;
+static const uint32_t McXbarCounterBlockNumCounters = 4;
 
 // Block counters max event value
 static const uint32_t CpfCounterBlockMaxEvent       = 18;
@@ -127,10 +129,11 @@ static const uint32_t SxCounterBlockMaxEvent        = 32;
 static const uint32_t VgtCounterBlockMaxEvent       = 145;
 static const uint32_t IaCounterBlockMaxEvent        = 21;
 static const uint32_t WdCounterBlockMaxEvent        = 36;
-static const uint32_t McArbCounterBlockMaxEvent     = 21; /*?*/
-static const uint32_t McHubCounterBlockMaxEvent     = 21; /*?*/
-static const uint32_t McMcbvmCounterBlockMaxEvent   = 21; /*?*/
+static const uint32_t McArbCounterBlockMaxEvent     = 162;
+static const uint32_t McHubCounterBlockMaxEvent     = 208;
+static const uint32_t McMcbvmCounterBlockMaxEvent   = 48;
 static const uint32_t McSeqCounterBlockMaxEvent     = 21;
-static const uint32_t McVmL2CounterBlockMaxEvent    = 21; /*?*/
+static const uint32_t McVmL2CounterBlockMaxEvent    = 20;
+static const uint32_t McXbarCounterBlockMaxEvent    = 115;
 
 #endif  // _GFX8_BLOCKINFO_H_

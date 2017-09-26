@@ -25,10 +25,33 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
+#include <stdlib.h>
+
 #include "ctrl/run_kernel.h"
 #include "ctrl/test_pgen_pmc.h"
 #include "ctrl/test_pgen_sqtt.h"
 #include "simple_convolution/simple_convolution.h"
+
+const int argv_pmc_size = 32;
+unsigned argc_pmc = 0;
+char* argv_arr = NULL;
+char** argv_pmc = NULL;
+
+char** pmc_argv(unsigned argc, const hsa_ven_amd_aqlprofile_event_t *events) {
+  if (argc > argc_pmc) {
+    argc_pmc = argc;
+    argv_arr = reinterpret_cast<char*>(realloc(argv_arr, argc_pmc * argv_pmc_size));
+    if (argv_pmc) delete argv_pmc;
+    argv_pmc = new char*[argc + 1];
+  }
+  for (unsigned i = 0; i < argc; ++i) {
+    char* argv_ptr = argv_arr + (i * argv_pmc_size);
+    snprintf(argv_ptr, argv_pmc_size, "%d:%d:%d", events[i].block_name, events[i].block_index, events[i].counter_id);
+    argv_pmc[i] = argv_ptr;
+  }
+  argv_pmc[argc] = NULL;
+  return argv_pmc;
+}
 
 int main(int argc, char* argv[]) {
   bool ret_val = false;
@@ -46,35 +69,44 @@ int main(int argc, char* argv[]) {
 
   // Run simple convolution test
   if (pmc_enable) {
-    if (!scan_enable) {
-      ret_val = RunKernel<SimpleConvolution, TestPGenPmc>(argc, argv);
+    if (argc > 1) {
+      ret_val = RunKernel<SimpleConvolution, TestPGenPmc>(argc - 1, argv + 1);
+    } else if (!scan_enable) {
+      int events_count = 0;
+      const hsa_ven_amd_aqlprofile_event_t events_arr1[] = {
+        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SQ, 0, 4 /*WAVES*/},
+        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SQ, 0, 14 /*ITEMS*/},
+        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SQ, 0, 47 /*WAVE_READY*/},
+        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_TCC, 2, 1 /*CYCLE*/},
+        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_TCC, 2, 3 /*REQ*/},
+        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_TCC, 2, 22 /*WRITEBACK*/},
+        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_CPC, 0, 0 /*ALWAYS_COUNT*/},
+        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_CPC, 0, 8 /*ME1_STALL_WAIT_ON_RCIU_READ*/},
+      };
+      events_count = sizeof(events_arr1) / sizeof(hsa_ven_amd_aqlprofile_event_t);
+      ret_val = RunKernel<SimpleConvolution, TestPGenPmc>(events_count, pmc_argv(events_count, events_arr1));
+#if 0
+      const hsa_ven_amd_aqlprofile_event_t events_arr2[] = {
+        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MCXBAR, 0, 0 /**/},
+        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MCXBAR, 0, 1 /**/},
+        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MCXBAR, 0, 2 /**/},
+        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MCXBAR, 0, 3 /**/},
+      };
+      events_count = sizeof(events_arr2) / sizeof(hsa_ven_amd_aqlprofile_event_t);
+      ret_val = RunKernel<SimpleConvolution, TestPGenPmc>(events_count, pmc_argv(events_count, events_arr2));
+#endif
     } else {
       const int block_index_max = 0;  // 15;
       const int event_id_max = 128;
-      const int argc_pmc = 4;
-      const int argv_pmc_size = 5;
-      char* argv_pmc[argc_pmc];
-      argv_pmc[0] = argv[0];
-      for (int i = 1; i < argc_pmc; ++i) {
-        argv_pmc[i] = new char[argv_pmc_size];
-      }
-      for (int i = 0; i < HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER; ++i) {
+      for (unsigned i = 0; i < HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER; ++i) {
         i = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MCVML2;
-        //      i = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_ATCL2;
-        //      i = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_GCEA;
-        //      i = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SRBM;
-        //      i = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SQ;
-        //      i = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SPI;
-        //      i = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MC;
-        for (int j = 0; j <= block_index_max; ++j) {
-          for (int k = 0; k <= event_id_max; ++k) {
+        for (unsigned j = 0; j <= block_index_max; ++j) {
+          for (unsigned k = 0; k <= event_id_max; ++k) {
             fflush(stdout);
             fprintf(stderr, " %d %d %d                 \r", i, j, k);
             fflush(stderr);
-            snprintf(argv_pmc[1], argv_pmc_size, "%d", i);
-            snprintf(argv_pmc[2], argv_pmc_size, "%d", j);
-            snprintf(argv_pmc[3], argv_pmc_size, "%d", k);
-            if (!RunKernel<SimpleConvolution, TestPGenPmc>(argc_pmc, argv_pmc)) {
+            hsa_ven_amd_aqlprofile_event_t event = {(hsa_ven_amd_aqlprofile_block_name_t)i, j, k};
+            if (!RunKernel<SimpleConvolution, TestPGenPmc>(1, pmc_argv(1, &event))) {
               if (k == 0) {
                 k = event_id_max + 1;
                 if (j == 0) j = block_index_max + 1;

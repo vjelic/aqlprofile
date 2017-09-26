@@ -51,97 +51,14 @@ class TestPGenPmc : public TestPGen {
   bool Initialize(int arg_cnt, char** arg_list) {
     std::vector<hsa_ven_amd_aqlprofile_event_t> event_vec;
 
-    if (arg_cnt == 4) {
-      const uint32_t block_id = static_cast<uint32_t>(atoi(arg_list[1]));
-      const uint32_t block_index = static_cast<uint32_t>(atoi(arg_list[2]));
-      const uint32_t event_id = static_cast<uint32_t>(atoi(arg_list[3]));
+    for (int i = 0; i < arg_cnt; ++i) {
+      unsigned block_id = 0;
+      unsigned block_index = 0;
+      unsigned event_id = 0;
+      sscanf(arg_list[i], "%u:%u:%u", &block_id, &block_index, &event_id);
       const hsa_ven_amd_aqlprofile_event_t event = {
           static_cast<hsa_ven_amd_aqlprofile_block_name_t>(block_id), block_index, event_id};
       event_vec.push_back(event);
-      arg_cnt -= 3;
-      arg_list += 3;
-    } else {
-      // Set the events list
-      const hsa_ven_amd_aqlprofile_event_t events_arr[] = {
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SQ, 0, 4 /*WAVES*/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SQ, 0, 14 /*ITEMS*/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SQ, 0, 47 /*WAVE_READY*/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_TCC, 2, 1 /*CYCLE*/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_TCC, 2, 3 /*REQ*/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_TCC, 2, 22 /*WRITEBACK*/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_CPC, 0, 0 /*ALWAYS_COUNT*/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_CPC, 0, 8 /*ME1_STALL_WAIT_ON_RCIU_READ*/},
-#if 0
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MCSEQ, 1, 0 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MCSEQ, 1, 1 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_ATCL2, 0, 0 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_ATCL2, 0, 1 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MCVML2, 0, 0 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MCVML2, 0, 1 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MCVML2, 0, 2 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MCVML2, 0, 3 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MCVML2, 0, 4 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MCVML2, 0, 5 /**/},
-        {(hsa_ven_amd_aqlprofile_block_name_t)16 /*MC_ARB*/, 0, 0 /**/},
-        {(hsa_ven_amd_aqlprofile_block_name_t)22 /*ATC*/, 0, 0 /**/},
-        {(hsa_ven_amd_aqlprofile_block_name_t)24 /*GCEA*/, 0, 0 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_ATCL2, 0, 0 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_ATCL2, 0, 1 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MCVML2, 0, 0 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MCVML2, 0, 1 /**/},
-#endif
-#if 0
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MC_SEQ, 0, 0 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MC_SEQ, 0, 1 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MC_SEQ, 0, 2 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MC_SEQ, 0, 3 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MC_SEQ, 1, 0 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MC_SEQ, 1, 1 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MC_SEQ, 1, 2 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MC_SEQ, 1, 3 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MC_SEQ, 2, 0 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MC_SEQ, 2, 1 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MC_SEQ, 2, 2 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MC_SEQ, 2, 3 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MC_SEQ, 3, 0 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MC_SEQ, 3, 1 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MC_SEQ, 3, 2 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MC_SEQ, 3, 3 /**/},
-#endif
-#if 0
-        //{HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_ATC, 0, 0 /**/},
-        //{HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_ATC, 0, 1 /**/},
-        //{HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_ATCL2, 0, 0 /**/},
-        //{HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_ATCL2, 0, 1 /**/},
-        //{HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MCVML2, 0, 0 /**/},
-        //{HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MCVML2, 0, 1 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_RMI, 0, 0 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_RMI, 0, 1 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_RMI, 0, 2 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_RMI, 0, 3 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_RMI, 1, 0 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_RMI, 1, 1 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_RMI, 1, 2 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_RMI, 1, 3 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_RMI, 2, 0 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_RMI, 2, 1 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_RMI, 2, 2 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_RMI, 2, 3 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_RMI, 3, 0 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_RMI, 3, 1 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_RMI, 3, 2 /**/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_RMI, 3, 3 /**/},
-        //{HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SPI, 0, 20},
-        //{HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_RMI, 0, 0 /**/},
-        //{HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_RMI, 0, 1 /**/},
-        //{HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_RMI, 0, 2 /**/},
-        //{HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_ATC, 0, 0 /**/},
-        //{HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_GCEA, 0, 0 /**/},
-        //{HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_RPB, 0, 0 /**/},
-#endif
-      };
-      event_vec.insert(event_vec.end(), events_arr,
-                       events_arr + (sizeof(events_arr) / sizeof(hsa_ven_amd_aqlprofile_event_t)));
     }
 
     if (!TestPMgr::Initialize(arg_cnt, arg_list)) return false;

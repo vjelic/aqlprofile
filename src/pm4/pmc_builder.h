@@ -120,14 +120,6 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
         Builder::BuildWritePConfigRegPacket(cmd_buffer, reg_info.control_addr,
                                             Primitives::mc_start_value());
       }
-      if (block_info->attr & CounterBlockCleanAttr) {
-        for (uint32_t i = 0; i < block_info->counter_count; ++i) {
-          Builder::BuildWriteConfigRegPacket(cmd_buffer,
-                                             block_info->counter_reg_info[i].register_addr_lo, 0);
-          Builder::BuildWriteConfigRegPacket(cmd_buffer,
-                                             block_info->counter_reg_info[i].register_addr_hi, 0);
-        }
-      }
       // Configure SQ block
       if (block_info->attr & CounterBlockSqAttr) {
         Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_PERFCOUNTER_MASK_ADDR,
@@ -136,10 +128,6 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
                                             Primitives::sq_control_value(counter_des));
       }
     }
-    // Start RMI block counters
-    if (counters_vec.get_attr() & CounterBlockRmiAttr)
-      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RMI_PERF_COUNTER_CNTL_ADDR,
-                                          Primitives::rmi_start_value());
     // Reset Grbm to its default state - broadcast
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
                                         Primitives::grbm_broadcast_value());

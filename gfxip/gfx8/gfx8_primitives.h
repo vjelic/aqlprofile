@@ -23,8 +23,6 @@ class gfx8_cntx_prim {
   static const uint32_t MC_PERFCOUNTER_RSLT_CNTL__ENABLE_ANY_MASK_PRM = 0x01000000L;
   static const uint32_t MC_PERFCOUNTER_RSLT_CNTL__CLEAR_ALL_MASK_PRM = 0x02000000L;
 
-  static const uint32_t RMI_PERF_COUNTER_CNTL_ADDR = 0;
-
   static const uint32_t SQ_PERFCOUNTER_MASK_ADDR = mmSQ_PERFCOUNTER_MASK__CI__VI;
   static const uint32_t SQ_THREAD_TRACE_MASK_ADDR = mmSQ_THREAD_TRACE_MASK__VI;
   static const uint32_t SQ_THREAD_TRACE_PERF_MASK_ADDR = mmSQ_THREAD_TRACE_PERF_MASK__VI;
@@ -279,9 +277,6 @@ class gfx8_cntx_prim {
   static uint32_t mc_start_value() {
     return MC_PERFCOUNTER_RSLT_CNTL__ENABLE_ANY_MASK_PRM;
   }
-
-  // RMI block - missing in GFX8
-  static uint32_t rmi_start_value() { return 0; }
 
   // Counter Select Register value templates
   template <typename Select> static uint32_t select_value(const counter_des_t& counter_des) {

@@ -15,7 +15,6 @@
 #include "gfxip/gfx9/gfx9_primitives.h"
 #include "gfxip/gfx9/gfx9_block_table.h"
 
-using namespace gfxip;
 using namespace gfxip::gfx9;
 
 #endif  // _GFX9_DEF_H_

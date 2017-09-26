@@ -134181,6 +134181,32 @@ union MC_XBAR_CHTRIREMAP {
 };
 
 
+union MC_XBAR_PERFCOUNTER0_CFG__CI__VI {
+  struct {
+#if defined(LITTLEENDIAN_CPU)
+    unsigned int PERF_SEL : 8;
+    unsigned int PERF_SEL_END : 8;
+    unsigned int : 8;
+    unsigned int PERF_MODE : 4;
+    unsigned int ENABLE : 1;
+    unsigned int CLEAR : 1;
+    unsigned int : 2;
+#elif defined(BIGENDIAN_CPU)
+    unsigned int : 2;
+    unsigned int CLEAR : 1;
+    unsigned int ENABLE : 1;
+    unsigned int PERF_MODE : 4;
+    unsigned int : 8;
+    unsigned int PERF_SEL_END : 8;
+    unsigned int PERF_SEL : 8;
+#endif
+  } bitfields, bits;
+  unsigned int u32All;
+  signed int i32All;
+  float f32All;
+};
+
+
 union MC_XBAR_PERF_MON_CNTL0__SI__CI {
   struct {
 #if defined(LITTLEENDIAN_CPU)

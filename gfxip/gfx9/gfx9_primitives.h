@@ -23,13 +23,6 @@ class gfx9_cntx_prim {
   static const uint32_t MC_PERFCOUNTER_RSLT_CNTL__ENABLE_ANY_MASK_PRM = 0x01000000L;
   static const uint32_t MC_PERFCOUNTER_RSLT_CNTL__CLEAR_ALL_MASK_PRM = 0x02000000L;
 
-  static const uint32_t RMI_PERF_COUNTER_CNTL_ADDR = mmRMI_PERF_COUNTER_CNTL;
-  static const uint32_t RMI_EN_SEL_ON = 1;
-  static const uint32_t RMI_EVENT_WINDOW_MASK0_DEFAULT = 1;
-  static const uint32_t RMI_EVENT_WINDOW_MASK1_DEFAULT = 2;
-  static const uint32_t RMI_CHANNEL_ID_ALL = 8;
-  static const uint32_t RMI_BURST_LENGTH_THRESHOLD_DEFAULT = 1;
-
   static const uint32_t SQ_PERFCOUNTER_MASK_ADDR = mmSQ_PERFCOUNTER_MASK;
   static const uint32_t SQ_THREAD_TRACE_MASK_ADDR = mmSQ_THREAD_TRACE_MASK;
   static const uint32_t SQ_THREAD_TRACE_PERF_MASK_ADDR = mmSQ_THREAD_TRACE_PERF_MASK;
@@ -202,19 +195,6 @@ class gfx9_cntx_prim {
   }
   static uint32_t mc_start_value() {
     return MC_PERFCOUNTER_RSLT_CNTL__ENABLE_ANY_MASK_PRM;
-  }
-
-  // RMI block primitives
-  static uint32_t rmi_start_value() {
-    regRMI_PERF_COUNTER_CNTL cntl{};
-    cntl.bits.TRANS_BASED_PERF_EN_SEL = RMI_EN_SEL_ON;
-    cntl.bits.EVENT_BASED_PERF_EN_SEL = RMI_EN_SEL_ON;
-    cntl.bits.TC_PERF_EN_SEL          = RMI_EN_SEL_ON;
-    cntl.bits.PERF_EVENT_WINDOW_MASK0 = RMI_EVENT_WINDOW_MASK0_DEFAULT;
-    cntl.bits.PERF_EVENT_WINDOW_MASK1 = RMI_EVENT_WINDOW_MASK1_DEFAULT;
-    cntl.bits.PERF_COUNTER_CID        = RMI_CHANNEL_ID_ALL;
-    cntl.bits.PERF_COUNTER_BURST_LENGTH_THRESHOLD = RMI_BURST_LENGTH_THRESHOLD_DEFAULT;
-    return cntl.u32All;
   }
 
   // Counter Select Register value templates

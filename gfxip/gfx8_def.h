@@ -12,7 +12,6 @@
 #include "gfxip/gfx8/si_pm4defs.h"
 #include "gfxip/gfx8/gfx8_utils.h"
 #include "gfxip/gpu_block_info.h"
-using namespace gfxip;
 #include "gfxip/gfx8/gfx8_block_info.h"
 #include "gfxip/gfx8/gfx8_primitives.h"
 #include "gfxip/gfx8/gfx8_block_table.h"
