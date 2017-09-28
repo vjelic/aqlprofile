@@ -9,7 +9,9 @@ set ( LIB_SRC
   ${LIB_DIR}/core/gfx9_factory.cpp
   ${LIB_DIR}/core/legacy_pm4.cpp
 )
-include_directories ( ${LIB_DIR} )
-include_directories ( ${API_PATH} )
+
+#include_directories ( ${ROOT_DIR} )
+
 add_library ( ${TARGET_LIB} SHARED ${LIB_SRC} )
-target_link_libraries( ${TARGET_LIB} PRIVATE ${HSA_RUNTIME_LIB} PRIVATE ${HSA_KMT_LIB} c stdc++ )
+target_include_directories ( ${TARGET_LIB} PRIVATE ${LIB_DIR} ${API_PATH} )
+target_link_libraries( ${TARGET_LIB} PRIVATE ${HSA_RUNTIME_LIB} ${HSA_KMT_LIB} c stdc++ )

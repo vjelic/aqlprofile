@@ -11,12 +11,9 @@ if ( NOT DEFINED TEST_DIR )
   include ( env )
 endif ()
 
-include_directories ( ${TEST_DIR} )
-include_directories ( ${API_PATH} )
 
 ## Util sources
 file( GLOB UTIL_SRC "${TEST_DIR}/util/*.cpp" )
-include_directories ( ${TEST_DIR}/util )
 
 ## Test control sources
 set ( CTRL_SRC
@@ -31,7 +28,8 @@ set ( KERN_SRC ${TEST_DIR}/${TEST_NAME}/${TEST_NAME}.cpp )
 
 ## Building test executable
 add_executable ( ${EXE_NAME} ${KERN_SRC} ${CTRL_SRC} ${UTIL_SRC} )
-target_link_libraries( ${EXE_NAME} ${HSA_RUNTIME_LIB} ${HSA_KMT_LIB} c stdc++ dl pthread rt atomic )
+target_include_directories ( ${EXE_NAME} PRIVATE ${TEST_DIR} ${API_PATH} )
+target_link_libraries( ${EXE_NAME} PRIVATE ${HSA_RUNTIME_LIB} ${HSA_KMT_LIB} c stdc++ dl pthread rt atomic )
 
 ## Deploying test files
 execute_process ( COMMAND sh -xc "cp --remove-destination ${TEST_DIR}/${TEST_NAME}/*.hsaco ${TEST_BINARY_DIR}" )
