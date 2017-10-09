@@ -13,7 +13,6 @@ add_definitions ( -DAMD_INTERNAL_BUILD )
 add_definitions ( -DLITTLEENDIAN_CPU=1 )
 add_definitions ( -DHSA_LARGE_MODEL= )
 add_definitions ( -DHSA_DEPRECATED= )
-add_definitions ( -DAQLPROFILE_NGEN_API )
 
 ## Linux Compiler options
 set ( CMAKE_CXX_FLAGS "-std=c++11")
