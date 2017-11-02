@@ -78,7 +78,9 @@ set ( TEST_BINARY_DIR ${PROJECT_BINARY_DIR}/test )
 add_subdirectory ( ${TEST_DIR} ${TEST_BINARY_DIR} )
 
 ## Add the install directives for the runtime library.
+#add_custom_target ( ${AQLPROFILE_TARGET}.so-link ALL WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} COMMAND ${CMAKE_COMMAND} -E create_symlink ../hsa-amd-aqlprofile/lib/${AQLPROFILE_LIBRARY}.so ${AQLPROFILE_LIBRARY}.so-link )
 install ( TARGETS ${AQLPROFILE_TARGET} LIBRARY DESTINATION ${AQLPROFILE_NAME}/lib COMPONENT ${AQLPROFILE_LIBRARY} )
+#install ( FILES ${CMAKE_CURRENT_BINARY_DIR}/${AQLPROFILE_LIBRARY}.so-link DESTINATION lib PERMISSIONS OWNER_WRITE OWNER_READ RENAME ${AQLPROFILE_LIBRARY}.so )
 
 ## Add the packaging directives for the runtime library.
 set ( CPACK_PACKAGE_NAME ${AQLPROFILE_NAME} )
