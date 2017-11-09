@@ -24,12 +24,24 @@ namespace aql_profile {
 
 class BlockMap {
  public:
-  BlockMap(const GpuBlockInfo** table, const uint32_t& count)
-      : block_table_(table), block_count_(count) {}
+  BlockMap(const GpuBlockInfo** table, const uint32_t& size)
+      : block_table_(table), block_count_(size / sizeof(uintptr_t)) {}
   BlockMap(const BlockMap& map) : block_table_(map.block_table_), block_count_(map.block_count_) {}
 
   const GpuBlockInfo* Get(const uint32_t& id) const {
     return (id < block_count_) ? block_table_[id] : NULL;
+  }
+
+  uint32_t Find(const char* name) const {
+    uint32_t index = 0;
+    while (index < block_count_) {
+      const GpuBlockInfo* entry = block_table_[index];
+      if (entry) {
+        if (strcmp(name, entry->name) == 0) break;
+      }
+      ++index;
+    }
+    return (index == block_count_) ? UINT32_MAX : index;
   }
 
  private:
@@ -61,6 +73,14 @@ class Pm4Factory {
     if (event->counter_id > info->event_id_max)
       throw event_exception(std::string("Bad event ID, "), *event);
     return info;
+  }
+
+  const GpuBlockInfo* GetBlockInfo(const uint32_t& block) const {
+    return block_map_.Get(block);
+  }
+
+  uint32_t FindBlock(const char* name) const {
+    return block_map_.Find(name);
   }
 
   uint32_t GetBlockId(const event_t* event) const { return GetBlockInfo(event)->id; }

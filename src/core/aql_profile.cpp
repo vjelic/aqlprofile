@@ -24,7 +24,7 @@ namespace aql_profile {
 
 // Command buffer partitioning manager
 // Supports Pre/Post commands partitioning
-// and postfix control partition
+// and prefix control partition
 class CommandBufferMgr {
  public:
   struct info_t {
@@ -32,52 +32,69 @@ class CommandBufferMgr {
     uint32_t postcmds_size;
   };
 
-  explicit CommandBufferMgr(const profile_t* profile)
-      : buffer_(profile->command_buffer), postfix_size_(0), info_(NULL) {
-    info_ = reinterpret_cast<info_t*>(SetPostfix(sizeof(info_t)));
+  explicit CommandBufferMgr(const profile_t* profile) {
+    Init(profile->command_buffer);
   }
 
-  void* SetPostfix(const uint32_t& size) {
-    if (size > postfix_size_) {
-      const uint32_t delta = size - postfix_size_;
-      postfix_size_ = size;
+  CommandBufferMgr(void* ptr, const uint32_t& size) {
+    Init(descriptor_t{ptr, size});
+  }
+
+  void* SetPrefix(const uint32_t& data_size) {
+    const uint32_t size = Align(data_size);
+    if (size > prefix_size_) {
+      const uint32_t delta = size - prefix_size_;
+      prefix_size_ = size;
       buffer_.size -= (delta < buffer_.size) ? delta : buffer_.size;
     }
     if (buffer_.size == 0)
-      throw aql_profile_exc_msg("CommandBufferMgr::SetPostfix(): buffer size set to zero");
-    return (buffer_.size != 0) ? reinterpret_cast<char*>(buffer_.ptr) + buffer_.size : NULL;
+      throw aql_profile_exc_msg("CommandBufferMgr::SetPrefix(): buffer size set to zero");
+    return (buffer_.size != 0) ? reinterpret_cast<char*>(buffer_.ptr) : NULL;
   }
 
-  bool SetPreSize(const uint32_t& size) {
-    bool suc = (size <= buffer_.size);
-    if (suc) info_->precmds_size = size;
+  bool SetPreSize(const uint32_t& pre_data_size) {
+    const uint32_t size = Align(pre_data_size);
+    const bool suc = (size <= buffer_.size);
+    if (suc) {
+      info_->precmds_size = pre_data_size;
+      buffer_.size -= size;
+    }
     if (!suc)
       throw aql_profile_exc_msg("CommandBufferMgr::SetPreSize(): size set out of the buffer");
     return suc;
   }
 
-  uint32_t GetPostOffset() { return Align(info_->precmds_size); }
-
-  bool CheckTotalSize(const uint32_t& size) {
-    bool suc = (size <= buffer_.size);
-    if (suc) suc = (size >= info_->precmds_size);
+  bool Finalize(const uint32_t& data_size) {
+    bool suc = (data_size > info_->precmds_size);
     if (suc) {
-      info_->postcmds_size = size - info_->precmds_size;
-      suc = ((GetPostOffset() + info_->postcmds_size) <= buffer_.size);
+      const uint32_t post_data_size = data_size - info_->precmds_size;
+      const uint32_t size = Align(post_data_size);
+      suc = (size <= buffer_.size);
+      if (suc) {
+        info_->postcmds_size = post_data_size;
+        buffer_.size -= size;
+      }
+      if (!suc)
+        throw aql_profile_exc_msg(
+            "CommandBufferMgr::Finalize(): postcmd size is out of cmdbuffer");
     }
-    if (!suc)
-      throw aql_profile_exc_msg("CommandBufferMgr::CheckTotalSize(): size set out of the buffer");
+    if (!suc) throw aql_profile_exc_msg("CommandBufferMgr::Finalize(): postcmd size is zero");
+
+    if (info_slot_) *info_slot_ = *info_;
+
     return suc;
   }
 
-  descriptor_t GetPreDescr() {
+  uint32_t GetSize() const { return GetEndOffset(); }
+
+  descriptor_t GetPreDescr() const {
     descriptor_t descr;
-    descr.ptr = buffer_.ptr;
+    descr.ptr = reinterpret_cast<char*>(buffer_.ptr) + GetPreOffset();
     descr.size = info_->precmds_size;
     return descr;
   }
 
-  descriptor_t GetPostDescr() {
+  descriptor_t GetPostDescr() const {
     descriptor_t descr;
     descr.ptr = reinterpret_cast<char*>(buffer_.ptr) + GetPostOffset();
     descr.size = info_->postcmds_size;
@@ -85,14 +102,31 @@ class CommandBufferMgr {
   }
 
  private:
+  void Init(const descriptor_t& buffer) {
+    buffer_ = buffer;
+    prefix_size_ = 0;
+    info_slot_ = NULL;
+    info_ = &info_val_;
+    *info_ = {};
+    if (buffer_.ptr == NULL) buffer_.size = UINT_MAX;
+    info_slot_ = reinterpret_cast<info_t*>(SetPrefix(sizeof(info_t)));
+    if (info_slot_) *info_ = *info_slot_;
+  }
+
+  uint32_t GetPreOffset() const { return prefix_size_; }
+  uint32_t GetPostOffset() const { return GetPreOffset() + Align(info_->precmds_size); }
+  uint32_t GetEndOffset() const { return GetPostOffset() + Align(info_->postcmds_size); }
+
+  static uint32_t Align(const uint32_t& size) { return (size + align_mask_) & ~align_mask_; }
+
   static const uint32_t align_size_ = 0x100;
   static const uint32_t align_mask_ = align_size_ - 1;
 
   descriptor_t buffer_;
-  uint32_t postfix_size_;
+  uint32_t prefix_size_;
   info_t* info_;
-
-  uint32_t Align(const uint32_t& size) { return (size + align_mask_) & ~align_mask_; }
+  info_t* info_slot_;
+  info_t info_val_;
 };
 
 
@@ -202,12 +236,12 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_validate_event(
 }
 
 // Method to populate the provided AQL packet with profiling start commands
-PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(
-    const hsa_ven_amd_aqlprofile_profile_t* profile, aql_profile::packet_t* aql_start_packet) {
+PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_profile_t* profile,
+                                                     aql_profile::packet_t* aql_start_packet) {
   try {
     aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile);
     pm4_builder::CmdBuffer commands;
-    aql_profile::CommandBufferMgr cmd_buffer_mgr(profile);
+    aql_profile::CommandBufferMgr cmd_buffer_mgr(profile->command_buffer.ptr, UINT_MAX);
 
     if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_PMC) {
       pm4_builder::PmcBuilder* pmc_builder = pm4_factory->GetPmcBuilder();
@@ -221,6 +255,9 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(
       const uint32_t data_size =
           pmc_builder->End(&commands, countersVec, profile->output_buffer.ptr);
       ERR_CHECK(data_size == 0, HSA_STATUS_ERROR, "PMC Builder end(): data size set to zero");
+      if (profile->output_buffer.size < data_size) {
+        profile->output_buffer.size = data_size;
+      }
       assert(data_size <= profile->output_buffer.size);
       if (data_size > profile->output_buffer.size) {
         ERR_LOGGING << "data size assertion failed, data_size(" << data_size << "), buffer size("
@@ -231,7 +268,7 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(
       const uint32_t se_number = pm4_factory->GetShaderEnginesNumber();
       const uint32_t control_size =
           pm4_builder::TT_STATUS_IDX_MAX * sizeof(pm4_builder::ControlType) * se_number;
-      void* control_ptr = cmd_buffer_mgr.SetPostfix(control_size);
+      void* control_ptr = cmd_buffer_mgr.SetPrefix(control_size);
 
       pm4_builder::ThreadTraceConfig sqtt_config{};
       sqtt_config.se_number = se_number;
@@ -295,17 +332,24 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(
       return HSA_STATUS_ERROR_INVALID_ARGUMENT;
     }
 
-    cmd_buffer_mgr.CheckTotalSize(commands.Size());
+    cmd_buffer_mgr.Finalize(commands.Size());
+    const uint32_t cmd_size = cmd_buffer_mgr.GetSize();
+    if (profile->command_buffer.size < cmd_size) {
+      profile->command_buffer.size = cmd_size;
+    }
+    assert(cmd_size <= profile->command_buffer.size);
 
-    const aql_profile::descriptor_t pre_descr = cmd_buffer_mgr.GetPreDescr();
-    const aql_profile::descriptor_t post_descr = cmd_buffer_mgr.GetPostDescr();
-    memcpy(pre_descr.ptr, commands.Data(), pre_descr.size);
-    memcpy(post_descr.ptr, reinterpret_cast<const char*>(commands.Data()) + pre_descr.size,
-           post_descr.size);
-
-    // Populate start aql packet
-    pm4_builder::CmdBuilder* cmd_writer = pm4_factory->GetCmdBuilder();
-    aql_profile::PopulateAql(pre_descr.ptr, pre_descr.size, cmd_writer, aql_start_packet);
+    if (profile->command_buffer.ptr != NULL) {
+      // Copy generated commands
+      const aql_profile::descriptor_t pre_descr = cmd_buffer_mgr.GetPreDescr();
+      const aql_profile::descriptor_t post_descr = cmd_buffer_mgr.GetPostDescr();
+      memcpy(pre_descr.ptr, commands.Data(), pre_descr.size);
+      memcpy(post_descr.ptr, reinterpret_cast<const char*>(commands.Data()) + pre_descr.size,
+             post_descr.size);
+      // Populate start aql packet
+      pm4_builder::CmdBuilder* cmd_writer = pm4_factory->GetCmdBuilder();
+      aql_profile::PopulateAql(pre_descr.ptr, pre_descr.size, cmd_writer, aql_start_packet);
+    }
   } catch (std::exception& e) {
     ERR_LOGGING << e.what();
     return HSA_STATUS_ERROR;
@@ -358,6 +402,7 @@ hsa_ven_amd_aqlprofile_get_info(const hsa_ven_amd_aqlprofile_profile_t* profile,
   hsa_status_t status = HSA_STATUS_SUCCESS;
 
   try {
+    aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile);
     switch (attribute) {
       case HSA_VEN_AMD_AQLPROFILE_INFO_COMMAND_BUFFER_SIZE:
         *(uint32_t*)value = 0x1000;  // a current approximation as 4K is big enaugh
@@ -374,6 +419,21 @@ hsa_ven_amd_aqlprofile_get_info(const hsa_ven_amd_aqlprofile_profile_t* profile,
         status = hsa_ven_amd_aqlprofile_iterate_data(profile, aql_profile::DefaultSqttdataCallback,
                                                      value);
         break;
+      case HSA_VEN_AMD_AQLPROFILE_INFO_BLOCK_COUNTERS:
+        *reinterpret_cast<uint32_t*>(value) = pm4_factory->GetBlockInfo(&(profile->events[0]))->counter_count;
+        break;
+      case HSA_VEN_AMD_AQLPROFILE_INFO_BLOCK_ID: {
+        hsa_ven_amd_aqlprofile_id_query_t* query =
+            reinterpret_cast<hsa_ven_amd_aqlprofile_id_query_t*>(value);
+        const uint32_t block = pm4_factory->FindBlock(query->name);
+        const GpuBlockInfo* info = pm4_factory->GetBlockInfo(block);
+        status = (info == NULL) ? HSA_STATUS_ERROR : HSA_STATUS_SUCCESS;
+        if (status == HSA_STATUS_SUCCESS) {
+          query->id = block;
+          query->instance_count = info->instance_count;
+        }
+        break;
+      }
       default:
         status = HSA_STATUS_ERROR_INVALID_ARGUMENT;
         ERR_LOGGING << "Invalid attribute (" << attribute << ")";
@@ -430,12 +490,12 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
         }
       }
     } else if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_SQTT) {
-      // Control buffer was allocated as the CmdBuffer postfix partition
+      // Control buffer was allocated as the CmdBuffer prefix partition
       aql_profile::CommandBufferMgr cmd_buffer_mgr(profile);
       const uint32_t control_size =
           pm4_builder::TT_STATUS_IDX_MAX * sizeof(pm4_builder::ControlType) * se_number;
       const pm4_builder::ControlType* const control_ptr =
-          reinterpret_cast<pm4_builder::ControlType*>(cmd_buffer_mgr.SetPostfix(control_size));
+          reinterpret_cast<pm4_builder::ControlType*>(cmd_buffer_mgr.SetPrefix(control_size));
 
       // Check if SQTT buffer was wrapped
       for (unsigned i = 0; i < se_number; ++i) {
