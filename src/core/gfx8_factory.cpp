@@ -6,34 +6,19 @@
 
 namespace aql_profile {
 
+// Gfx8 factory class
 class Gfx8Factory : public Pm4Factory {
  public:
-  Gfx8Factory() : Pm4Factory(BlockMap(block_table_, sizeof(block_table_))) {}
+  Gfx8Factory() : Pm4Factory(BlockInfoMap(block_table_, sizeof(block_table_))) {}
+  Gfx8Factory(const GpuBlockInfo** table, const uint32_t& size)
+      : Pm4Factory(BlockInfoMap(table, size)) {}
   pm4_builder::CmdBuilder* GetCmdBuilder();
   pm4_builder::PmcBuilder* GetPmcBuilder();
   pm4_builder::SqttBuilder* GetSqttBuilder();
 
- private:
+ protected:
   static const GpuBlockInfo* block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER];
 };
-
-// GFX8 block table
-const GpuBlockInfo* Gfx8Factory::block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER] = {
-    &CpcCounterBlockInfo, &CpfCounterBlockInfo, &GdsCounterBlockInfo, &GrbmCounterBlockInfo,
-    &GrbmSeCounterBlockInfo, &SpiCounterBlockInfo, &SqCounterBlockInfo, &SqCsCounterBlockInfo,
-    &SrbmCounterBlockInfo, &SxCounterBlockInfo, &TaCounterBlockInfo, &TcaCounterBlockInfo,
-    &TccCounterBlockInfo, &TcpCounterBlockInfo, &TdCounterBlockInfo,
-    // MC blocks
-    &McArbCounterBlockInfo, &McHubCounterBlockInfo, &McMcbvmCounterBlockInfo,
-    &McSeqCounterBlockInfo, &McVmL2CounterBlockInfo, &McXbarCounterBlockInfo, NULL /*GFX9 ATC*/,
-    NULL /*GFX9 ATC_L2*/, NULL /*GFX9 GCEA*/, NULL /*GFX9 RPB*/,
-};
-
-Pm4Factory* Pm4Factory::Gfx8Create() {
-  auto p = new Gfx8Factory;
-  if (p == NULL) throw aql_profile_exc_msg("Gfx8Factory allocation failed");
-  return p;
-}
 
 pm4_builder::CmdBuilder* Gfx8Factory::GetCmdBuilder() {
   auto p = new pm4_builder::Gfx8CmdBuilder;
@@ -50,6 +35,47 @@ pm4_builder::PmcBuilder* Gfx8Factory::GetPmcBuilder() {
 pm4_builder::SqttBuilder* Gfx8Factory::GetSqttBuilder() {
   auto p = new pm4_builder::GpuSqttBuilder<pm4_builder::Gfx8CmdBuilder, gfx8_cntx_prim>;
   if (p == NULL) throw aql_profile_exc_msg("SqttBuilder allocation failed");
+  return p;
+}
+
+// GFX8 block table
+const GpuBlockInfo* Gfx8Factory::block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER] = {
+    &CpcCounterBlockInfo, &CpfCounterBlockInfo, &GdsCounterBlockInfo, &GrbmCounterBlockInfo,
+    &GrbmSeCounterBlockInfo, &SpiCounterBlockInfo, &SqCounterBlockInfo, &SqCsCounterBlockInfo,
+    &SrbmCounterBlockInfo, &SxCounterBlockInfo, &TaCounterBlockInfo, &TcaCounterBlockInfo,
+    &TccCounterBlockInfo, &TcpCounterBlockInfo, &TdCounterBlockInfo,
+    // MC blocks
+    &McArbCounterBlockInfo, &McHubCounterBlockInfo, &McMcbvmCounterBlockInfo,
+    &McSeqCounterBlockInfo, &McVmL2CounterBlockInfo, &McXbarCounterBlockInfo, NULL /*GFX9 ATC*/,
+    NULL /*GFX9 ATC_L2*/, NULL /*GFX9 GCEA*/, NULL /*GFX9 RPB*/,
+};
+
+// Fiji factory class
+class FijiFactory : public Gfx8Factory {
+ public:
+  FijiFactory() : Gfx8Factory(block_table_, sizeof(block_table_)) {
+    for (unsigned i = 0; i < HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER; ++i) {
+      block_table_[i] = Gfx8Factory::block_table_[i];
+    }
+    block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MCSEQ] = &McSeqHbmCounterBlockInfo;
+  }
+
+ protected:
+  static const GpuBlockInfo* block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER];
+};
+
+const GpuBlockInfo* FijiFactory::block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER] = {};
+
+// Pm4Factory create mathods
+Pm4Factory* Pm4Factory::Gfx8Create() {
+  auto p = new Gfx8Factory;
+  if (p == NULL) throw aql_profile_exc_msg("Gfx8Factory allocation failed");
+  return p;
+}
+
+Pm4Factory* Pm4Factory::FijiCreate() {
+  auto p = new FijiFactory;
+  if (p == NULL) throw aql_profile_exc_msg("FijiFactory allocation failed");
   return p;
 }
 

@@ -6,27 +6,16 @@
 
 namespace aql_profile {
 
+// Gfx9 factory class
 class Gfx9Factory : public Pm4Factory {
  public:
-  Gfx9Factory() : Pm4Factory(BlockMap(block_table_, sizeof(block_table_))) {}
+  Gfx9Factory() : Pm4Factory(BlockInfoMap(block_table_, sizeof(block_table_))) {}
   pm4_builder::CmdBuilder* GetCmdBuilder();
   pm4_builder::PmcBuilder* GetPmcBuilder();
   pm4_builder::SqttBuilder* GetSqttBuilder();
 
  private:
   static const GpuBlockInfo* block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER];
-};
-
-// GFX9 block table
-const GpuBlockInfo* Gfx9Factory::block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER] = {
-    &CpcCounterBlockInfo, &CpfCounterBlockInfo, &GdsCounterBlockInfo, &GrbmCounterBlockInfo,
-    &GrbmSeCounterBlockInfo, &SpiCounterBlockInfo, &SqCounterBlockInfo, &SqCsCounterBlockInfo,
-    NULL /*GFX8 SRBM*/, &SxCounterBlockInfo, &TaCounterBlockInfo, &TcaCounterBlockInfo,
-    &TccCounterBlockInfo, &TcpCounterBlockInfo, &TdCounterBlockInfo,
-    // MC blocks
-    NULL /*MC_ARB*/, NULL /*MC_HUB*/, NULL /*MC_MCBVM*/, NULL /*MC_SEQ*/, &McVmL2CounterBlockInfo,
-    NULL /*MC_XBAR*/, &AtcCounterBlockInfo, &AtcL2CounterBlockInfo, &GceaCounterBlockInfo,
-    &RpbCounterBlockInfo,
 };
 
 Pm4Factory* Pm4Factory::Gfx9Create() {
@@ -52,5 +41,17 @@ pm4_builder::SqttBuilder* Gfx9Factory::GetSqttBuilder() {
   if (p == NULL) throw aql_profile_exc_msg("SqttBuilder mgr allocation failed");
   return p;
 }
+
+// GFX9 block table
+const GpuBlockInfo* Gfx9Factory::block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER] = {
+    &CpcCounterBlockInfo, &CpfCounterBlockInfo, &GdsCounterBlockInfo, &GrbmCounterBlockInfo,
+    &GrbmSeCounterBlockInfo, &SpiCounterBlockInfo, &SqCounterBlockInfo, &SqCsCounterBlockInfo,
+    NULL /*GFX8 SRBM*/, &SxCounterBlockInfo, &TaCounterBlockInfo, &TcaCounterBlockInfo,
+    &TccCounterBlockInfo, &TcpCounterBlockInfo, &TdCounterBlockInfo,
+    // MC blocks
+    NULL /*MC_ARB*/, NULL /*MC_HUB*/, NULL /*MC_MCBVM*/, NULL /*MC_SEQ*/, &McVmL2CounterBlockInfo,
+    NULL /*MC_XBAR*/, &AtcCounterBlockInfo, &AtcL2CounterBlockInfo, &GceaCounterBlockInfo,
+    &RpbCounterBlockInfo,
+};
 
 }  // namespace aql_profile

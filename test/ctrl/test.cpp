@@ -37,7 +37,7 @@ unsigned argc_pmc = 0;
 char* argv_arr = NULL;
 char** argv_pmc = NULL;
 
-char** pmc_argv(unsigned argc, const hsa_ven_amd_aqlprofile_event_t *events) {
+char** pmc_argv(unsigned argc, const hsa_ven_amd_aqlprofile_event_t* events) {
   if (argc > argc_pmc) {
     argc_pmc = argc;
     argv_arr = reinterpret_cast<char*>(realloc(argv_arr, argc_pmc * argv_pmc_size));
@@ -46,7 +46,8 @@ char** pmc_argv(unsigned argc, const hsa_ven_amd_aqlprofile_event_t *events) {
   }
   for (unsigned i = 0; i < argc; ++i) {
     char* argv_ptr = argv_arr + (i * argv_pmc_size);
-    snprintf(argv_ptr, argv_pmc_size, "%d:%d:%d", events[i].block_name, events[i].block_index, events[i].counter_id);
+    snprintf(argv_ptr, argv_pmc_size, "%d:%d:%d", events[i].block_name, events[i].block_index,
+             events[i].counter_id);
     argv_pmc[i] = argv_ptr;
   }
   argv_pmc[argc] = NULL;
@@ -74,17 +75,18 @@ int main(int argc, char* argv[]) {
     } else if (!scan_enable) {
       int events_count = 0;
       const hsa_ven_amd_aqlprofile_event_t events_arr1[] = {
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SQ, 0, 4 /*WAVES*/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SQ, 0, 14 /*ITEMS*/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SQ, 0, 47 /*WAVE_READY*/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_TCC, 2, 1 /*CYCLE*/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_TCC, 2, 3 /*REQ*/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_TCC, 2, 22 /*WRITEBACK*/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_CPC, 0, 0 /*ALWAYS_COUNT*/},
-        {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_CPC, 0, 8 /*ME1_STALL_WAIT_ON_RCIU_READ*/},
+          {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SQ, 0, 4 /*WAVES*/},
+          {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SQ, 0, 14 /*ITEMS*/},
+          {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SQ, 0, 47 /*WAVE_READY*/},
+          {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_TCC, 2, 1 /*CYCLE*/},
+          {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_TCC, 2, 3 /*REQ*/},
+          {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_TCC, 2, 22 /*WRITEBACK*/},
+          {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_CPC, 0, 0 /*ALWAYS_COUNT*/},
+          {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_CPC, 0, 8 /*ME1_STALL_WAIT_ON_RCIU_READ*/},
       };
       events_count = sizeof(events_arr1) / sizeof(hsa_ven_amd_aqlprofile_event_t);
-      ret_val = RunKernel<SimpleConvolution, TestPGenPmc>(events_count, pmc_argv(events_count, events_arr1));
+      ret_val = RunKernel<SimpleConvolution, TestPGenPmc>(events_count,
+                                                          pmc_argv(events_count, events_arr1));
 #if 0
       const hsa_ven_amd_aqlprofile_event_t events_arr2[] = {
         {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MCXBAR, 0, 0 /**/},

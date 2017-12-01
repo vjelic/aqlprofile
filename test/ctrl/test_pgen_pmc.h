@@ -77,7 +77,12 @@ class TestPGenPmc : public TestPGen {
     std::vector<hsa_ven_amd_aqlprofile_event_t> event_vec_filtered;
     for (auto it = event_vec.begin(); it != event_vec.end(); ++it) {
       bool result = false;
-      api_.hsa_ven_amd_aqlprofile_validate_event(agent, &(*it), &result);
+      hsa_status_t status = api_.hsa_ven_amd_aqlprofile_validate_event(agent, &(*it), &result);
+      if (status != HSA_STATUS_SUCCESS) {
+        const char* str = "";
+        api_.hsa_ven_amd_aqlprofile_error_string(&str);
+        std::cerr << "aqlprofile err: " << str << std::endl;
+      }
       if (!result) {
         std::cerr << "Bad event: block (" << it->block_name << "_" << it->block_index << ") id ("
                   << it->counter_id << ")" << std::endl;
@@ -117,6 +122,9 @@ class TestPGenPmc : public TestPGen {
     status = api_.hsa_ven_amd_aqlprofile_get_info(
         &profile_, HSA_VEN_AMD_AQLPROFILE_INFO_PMC_DATA_SIZE, &output_buffer_size);
     TEST_ASSERT(status == HSA_STATUS_SUCCESS);
+
+    command_buffer_size *= 4;
+    output_buffer_size *= 4;
 
     // Application is allocating the command buffer
     // Allocate(command_buffer_alignment, command_buffer_size,

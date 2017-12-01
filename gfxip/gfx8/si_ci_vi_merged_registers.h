@@ -268602,5 +268602,651 @@ union WD_QOS__VI {
   float f32All;
 };
 
+union MC_SEQ_PERFCOUNTER0_CFG__VI {
+  struct {
+#if    defined(LITTLEENDIAN_CPU)
+    unsigned int                        PERF_SEL : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                                 : 8;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                          ENABLE : 1;
+    unsigned int                           CLEAR : 1;
+    unsigned int                                 : 2;
+#elif    defined(BIGENDIAN_CPU)
+    unsigned int                                 : 2;
+    unsigned int                           CLEAR : 1;
+    unsigned int                          ENABLE : 1;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                                 : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                        PERF_SEL : 8;
+#endif
+  } bitfields, bits;
+  unsigned int  u32All;
+  signed int  i32All;
+  float  f32All;
+};
+
+
+union MC_SEQ_PERFCOUNTER0_CFG_M1__VI {
+  struct {
+#if    defined(LITTLEENDIAN_CPU)
+    unsigned int                        PERF_SEL : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                                 : 8;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                          ENABLE : 1;
+    unsigned int                           CLEAR : 1;
+    unsigned int                                 : 2;
+#elif    defined(BIGENDIAN_CPU)
+    unsigned int                                 : 2;
+    unsigned int                           CLEAR : 1;
+    unsigned int                          ENABLE : 1;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                                 : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                        PERF_SEL : 8;
+#endif
+  } bitfields, bits;
+  unsigned int  u32All;
+  signed int  i32All;
+  float  f32All;
+};
+
+
+union MC_SEQ_PERFCOUNTER0_CFG_M2__VI {
+  struct {
+#if    defined(LITTLEENDIAN_CPU)
+    unsigned int                        PERF_SEL : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                                 : 8;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                          ENABLE : 1;
+    unsigned int                           CLEAR : 1;
+    unsigned int                                 : 2;
+#elif    defined(BIGENDIAN_CPU)
+    unsigned int                                 : 2;
+    unsigned int                           CLEAR : 1;
+    unsigned int                          ENABLE : 1;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                                 : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                        PERF_SEL : 8;
+#endif
+  } bitfields, bits;
+  unsigned int  u32All;
+  signed int  i32All;
+  float  f32All;
+};
+
+
+union MC_SEQ_PERFCOUNTER0_CFG_M3__VI {
+  struct {
+#if    defined(LITTLEENDIAN_CPU)
+    unsigned int                        PERF_SEL : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                                 : 8;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                          ENABLE : 1;
+    unsigned int                           CLEAR : 1;
+    unsigned int                                 : 2;
+#elif    defined(BIGENDIAN_CPU)
+    unsigned int                                 : 2;
+    unsigned int                           CLEAR : 1;
+    unsigned int                          ENABLE : 1;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                                 : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                        PERF_SEL : 8;
+#endif
+  } bitfields, bits;
+  unsigned int  u32All;
+  signed int  i32All;
+  float  f32All;
+};
+
+
+union MC_SEQ_PERFCOUNTER1_CFG__VI {
+  struct {
+#if    defined(LITTLEENDIAN_CPU)
+    unsigned int                        PERF_SEL : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                                 : 8;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                          ENABLE : 1;
+    unsigned int                           CLEAR : 1;
+    unsigned int                                 : 2;
+#elif    defined(BIGENDIAN_CPU)
+    unsigned int                                 : 2;
+    unsigned int                           CLEAR : 1;
+    unsigned int                          ENABLE : 1;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                                 : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                        PERF_SEL : 8;
+#endif
+  } bitfields, bits;
+  unsigned int  u32All;
+  signed int  i32All;
+  float  f32All;
+};
+
+
+union MC_SEQ_PERFCOUNTER1_CFG_M1__VI {
+  struct {
+#if    defined(LITTLEENDIAN_CPU)
+    unsigned int                        PERF_SEL : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                                 : 8;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                          ENABLE : 1;
+    unsigned int                           CLEAR : 1;
+    unsigned int                                 : 2;
+#elif    defined(BIGENDIAN_CPU)
+    unsigned int                                 : 2;
+    unsigned int                           CLEAR : 1;
+    unsigned int                          ENABLE : 1;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                                 : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                        PERF_SEL : 8;
+#endif
+  } bitfields, bits;
+  unsigned int  u32All;
+  signed int  i32All;
+  float  f32All;
+};
+
+
+union MC_SEQ_PERFCOUNTER1_CFG_M2__VI {
+  struct {
+#if    defined(LITTLEENDIAN_CPU)
+    unsigned int                        PERF_SEL : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                                 : 8;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                          ENABLE : 1;
+    unsigned int                           CLEAR : 1;
+    unsigned int                                 : 2;
+#elif    defined(BIGENDIAN_CPU)
+    unsigned int                                 : 2;
+    unsigned int                           CLEAR : 1;
+    unsigned int                          ENABLE : 1;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                                 : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                        PERF_SEL : 8;
+#endif
+  } bitfields, bits;
+  unsigned int  u32All;
+  signed int  i32All;
+  float  f32All;
+};
+
+
+union MC_SEQ_PERFCOUNTER1_CFG_M3__VI {
+  struct {
+#if    defined(LITTLEENDIAN_CPU)
+    unsigned int                        PERF_SEL : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                                 : 8;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                          ENABLE : 1;
+    unsigned int                           CLEAR : 1;
+    unsigned int                                 : 2;
+#elif    defined(BIGENDIAN_CPU)
+    unsigned int                                 : 2;
+    unsigned int                           CLEAR : 1;
+    unsigned int                          ENABLE : 1;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                                 : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                        PERF_SEL : 8;
+#endif
+  } bitfields, bits;
+  unsigned int  u32All;
+  signed int  i32All;
+  float  f32All;
+};
+
+
+union MC_SEQ_PERFCOUNTER2_CFG__VI {
+  struct {
+#if    defined(LITTLEENDIAN_CPU)
+    unsigned int                        PERF_SEL : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                                 : 8;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                          ENABLE : 1;
+    unsigned int                           CLEAR : 1;
+    unsigned int                                 : 2;
+#elif    defined(BIGENDIAN_CPU)
+    unsigned int                                 : 2;
+    unsigned int                           CLEAR : 1;
+    unsigned int                          ENABLE : 1;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                                 : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                        PERF_SEL : 8;
+#endif
+  } bitfields, bits;
+  unsigned int  u32All;
+  signed int  i32All;
+  float  f32All;
+};
+
+
+union MC_SEQ_PERFCOUNTER2_CFG_M1__VI {
+  struct {
+#if    defined(LITTLEENDIAN_CPU)
+    unsigned int                        PERF_SEL : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                                 : 8;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                          ENABLE : 1;
+    unsigned int                           CLEAR : 1;
+    unsigned int                                 : 2;
+#elif    defined(BIGENDIAN_CPU)
+    unsigned int                                 : 2;
+    unsigned int                           CLEAR : 1;
+    unsigned int                          ENABLE : 1;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                                 : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                        PERF_SEL : 8;
+#endif
+  } bitfields, bits;
+  unsigned int  u32All;
+  signed int  i32All;
+  float  f32All;
+};
+
+
+union MC_SEQ_PERFCOUNTER2_CFG_M2__VI {
+  struct {
+#if    defined(LITTLEENDIAN_CPU)
+    unsigned int                        PERF_SEL : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                                 : 8;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                          ENABLE : 1;
+    unsigned int                           CLEAR : 1;
+    unsigned int                                 : 2;
+#elif    defined(BIGENDIAN_CPU)
+    unsigned int                                 : 2;
+    unsigned int                           CLEAR : 1;
+    unsigned int                          ENABLE : 1;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                                 : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                        PERF_SEL : 8;
+#endif
+  } bitfields, bits;
+  unsigned int  u32All;
+  signed int  i32All;
+  float  f32All;
+};
+
+
+union MC_SEQ_PERFCOUNTER2_CFG_M3__VI {
+  struct {
+#if    defined(LITTLEENDIAN_CPU)
+    unsigned int                        PERF_SEL : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                                 : 8;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                          ENABLE : 1;
+    unsigned int                           CLEAR : 1;
+    unsigned int                                 : 2;
+#elif    defined(BIGENDIAN_CPU)
+    unsigned int                                 : 2;
+    unsigned int                           CLEAR : 1;
+    unsigned int                          ENABLE : 1;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                                 : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                        PERF_SEL : 8;
+#endif
+  } bitfields, bits;
+  unsigned int  u32All;
+  signed int  i32All;
+  float  f32All;
+};
+
+
+union MC_SEQ_PERFCOUNTER3_CFG__VI {
+  struct {
+#if    defined(LITTLEENDIAN_CPU)
+    unsigned int                        PERF_SEL : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                                 : 8;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                          ENABLE : 1;
+    unsigned int                           CLEAR : 1;
+    unsigned int                                 : 2;
+#elif    defined(BIGENDIAN_CPU)
+    unsigned int                                 : 2;
+    unsigned int                           CLEAR : 1;
+    unsigned int                          ENABLE : 1;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                                 : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                        PERF_SEL : 8;
+#endif
+  } bitfields, bits;
+  unsigned int  u32All;
+  signed int  i32All;
+  float  f32All;
+};
+
+
+union MC_SEQ_PERFCOUNTER3_CFG_M1__VI {
+  struct {
+#if    defined(LITTLEENDIAN_CPU)
+    unsigned int                        PERF_SEL : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                                 : 8;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                          ENABLE : 1;
+    unsigned int                           CLEAR : 1;
+    unsigned int                                 : 2;
+#elif    defined(BIGENDIAN_CPU)
+    unsigned int                                 : 2;
+    unsigned int                           CLEAR : 1;
+    unsigned int                          ENABLE : 1;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                                 : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                        PERF_SEL : 8;
+#endif
+  } bitfields, bits;
+  unsigned int  u32All;
+  signed int  i32All;
+  float  f32All;
+};
+
+
+union MC_SEQ_PERFCOUNTER3_CFG_M2__VI {
+  struct {
+#if    defined(LITTLEENDIAN_CPU)
+    unsigned int                        PERF_SEL : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                                 : 8;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                          ENABLE : 1;
+    unsigned int                           CLEAR : 1;
+    unsigned int                                 : 2;
+#elif    defined(BIGENDIAN_CPU)
+    unsigned int                                 : 2;
+    unsigned int                           CLEAR : 1;
+    unsigned int                          ENABLE : 1;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                                 : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                        PERF_SEL : 8;
+#endif
+  } bitfields, bits;
+  unsigned int  u32All;
+  signed int  i32All;
+  float  f32All;
+};
+
+
+union MC_SEQ_PERFCOUNTER3_CFG_M3__VI {
+  struct {
+#if    defined(LITTLEENDIAN_CPU)
+    unsigned int                        PERF_SEL : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                                 : 8;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                          ENABLE : 1;
+    unsigned int                           CLEAR : 1;
+    unsigned int                                 : 2;
+#elif    defined(BIGENDIAN_CPU)
+    unsigned int                                 : 2;
+    unsigned int                           CLEAR : 1;
+    unsigned int                          ENABLE : 1;
+    unsigned int                       PERF_MODE : 4;
+    unsigned int                                 : 8;
+    unsigned int                    PERF_SEL_END : 8;
+    unsigned int                        PERF_SEL : 8;
+#endif
+  } bitfields, bits;
+  unsigned int  u32All;
+  signed int  i32All;
+  float  f32All;
+};
+
+
+union MC_SEQ_PERFCOUNTER_HI__VI {
+  struct {
+#if    defined(LITTLEENDIAN_CPU)
+    unsigned int                      COUNTER_HI : 16;
+    unsigned int                   COMPARE_VALUE : 16;
+#elif    defined(BIGENDIAN_CPU)
+    unsigned int                   COMPARE_VALUE : 16;
+    unsigned int                      COUNTER_HI : 16;
+#endif
+  } bitfields, bits;
+  unsigned int  u32All;
+  signed int  i32All;
+  float  f32All;
+};
+
+
+union MC_SEQ_PERFCOUNTER_HI_M1__VI {
+  struct {
+#if    defined(LITTLEENDIAN_CPU)
+    unsigned int                      COUNTER_HI : 16;
+    unsigned int                   COMPARE_VALUE : 16;
+#elif    defined(BIGENDIAN_CPU)
+    unsigned int                   COMPARE_VALUE : 16;
+    unsigned int                      COUNTER_HI : 16;
+#endif
+  } bitfields, bits;
+  unsigned int  u32All;
+  signed int  i32All;
+  float  f32All;
+};
+
+
+union MC_SEQ_PERFCOUNTER_HI_M2__VI {
+  struct {
+#if    defined(LITTLEENDIAN_CPU)
+    unsigned int                      COUNTER_HI : 16;
+    unsigned int                   COMPARE_VALUE : 16;
+#elif    defined(BIGENDIAN_CPU)
+    unsigned int                   COMPARE_VALUE : 16;
+    unsigned int                      COUNTER_HI : 16;
+#endif
+  } bitfields, bits;
+  unsigned int  u32All;
+  signed int  i32All;
+  float  f32All;
+};
+
+
+union MC_SEQ_PERFCOUNTER_HI_M3__VI {
+  struct {
+#if    defined(LITTLEENDIAN_CPU)
+    unsigned int                      COUNTER_HI : 16;
+    unsigned int                   COMPARE_VALUE : 16;
+#elif    defined(BIGENDIAN_CPU)
+    unsigned int                   COMPARE_VALUE : 16;
+    unsigned int                      COUNTER_HI : 16;
+#endif
+  } bitfields, bits;
+  unsigned int  u32All;
+  signed int  i32All;
+  float  f32All;
+};
+
+
+union MC_SEQ_PERFCOUNTER_LO__VI {
+  struct {
+#if    defined(LITTLEENDIAN_CPU)
+    unsigned int                      COUNTER_LO : 32;
+#elif    defined(BIGENDIAN_CPU)
+    unsigned int                      COUNTER_LO : 32;
+#endif
+  } bitfields, bits;
+  unsigned int  u32All;
+  signed int  i32All;
+  float  f32All;
+};
+
+
+union MC_SEQ_PERFCOUNTER_LO_M1__VI {
+  struct {
+#if    defined(LITTLEENDIAN_CPU)
+    unsigned int                      COUNTER_LO : 32;
+#elif    defined(BIGENDIAN_CPU)
+    unsigned int                      COUNTER_LO : 32;
+#endif
+  } bitfields, bits;
+  unsigned int  u32All;
+  signed int  i32All;
+  float  f32All;
+};
+
+
+union MC_SEQ_PERFCOUNTER_LO_M2__VI {
+  struct {
+#if    defined(LITTLEENDIAN_CPU)
+    unsigned int                      COUNTER_LO : 32;
+#elif    defined(BIGENDIAN_CPU)
+    unsigned int                      COUNTER_LO : 32;
+#endif
+  } bitfields, bits;
+  unsigned int  u32All;
+  signed int  i32All;
+  float  f32All;
+};
+
+
+union MC_SEQ_PERFCOUNTER_LO_M3__VI {
+  struct {
+#if    defined(LITTLEENDIAN_CPU)
+    unsigned int                      COUNTER_LO : 32;
+#elif    defined(BIGENDIAN_CPU)
+    unsigned int                      COUNTER_LO : 32;
+#endif
+  } bitfields, bits;
+  unsigned int  u32All;
+  signed int  i32All;
+  float  f32All;
+};
+
+
+union MC_SEQ_PERFCOUNTER_RSLT_CNTL__VI {
+  struct {
+#if    defined(LITTLEENDIAN_CPU)
+    unsigned int             PERF_COUNTER_SELECT : 4;
+    unsigned int                                 : 4;
+    unsigned int                   START_TRIGGER : 8;
+    unsigned int                    STOP_TRIGGER : 8;
+    unsigned int                      ENABLE_ANY : 1;
+    unsigned int                       CLEAR_ALL : 1;
+    unsigned int            STOP_ALL_ON_SATURATE : 1;
+    unsigned int                                 : 5;
+#elif    defined(BIGENDIAN_CPU)
+    unsigned int                                 : 5;
+    unsigned int            STOP_ALL_ON_SATURATE : 1;
+    unsigned int                       CLEAR_ALL : 1;
+    unsigned int                      ENABLE_ANY : 1;
+    unsigned int                    STOP_TRIGGER : 8;
+    unsigned int                   START_TRIGGER : 8;
+    unsigned int                                 : 4;
+    unsigned int             PERF_COUNTER_SELECT : 4;
+#endif
+  } bitfields, bits;
+  unsigned int  u32All;
+  signed int  i32All;
+  float  f32All;
+};
+
+
+union MC_SEQ_PERFCOUNTER_RSLT_CNTL_M1__VI {
+  struct {
+#if    defined(LITTLEENDIAN_CPU)
+    unsigned int             PERF_COUNTER_SELECT : 4;
+    unsigned int                                 : 4;
+    unsigned int                   START_TRIGGER : 8;
+    unsigned int                    STOP_TRIGGER : 8;
+    unsigned int                      ENABLE_ANY : 1;
+    unsigned int                       CLEAR_ALL : 1;
+    unsigned int            STOP_ALL_ON_SATURATE : 1;
+    unsigned int                                 : 5;
+#elif    defined(BIGENDIAN_CPU)
+    unsigned int                                 : 5;
+    unsigned int            STOP_ALL_ON_SATURATE : 1;
+    unsigned int                       CLEAR_ALL : 1;
+    unsigned int                      ENABLE_ANY : 1;
+    unsigned int                    STOP_TRIGGER : 8;
+    unsigned int                   START_TRIGGER : 8;
+    unsigned int                                 : 4;
+    unsigned int             PERF_COUNTER_SELECT : 4;
+#endif
+  } bitfields, bits;
+  unsigned int  u32All;
+  signed int  i32All;
+  float  f32All;
+};
+
+
+union MC_SEQ_PERFCOUNTER_RSLT_CNTL_M2__VI {
+  struct {
+#if    defined(LITTLEENDIAN_CPU)
+    unsigned int             PERF_COUNTER_SELECT : 4;
+    unsigned int                                 : 4;
+    unsigned int                   START_TRIGGER : 8;
+    unsigned int                    STOP_TRIGGER : 8;
+    unsigned int                      ENABLE_ANY : 1;
+    unsigned int                       CLEAR_ALL : 1;
+    unsigned int            STOP_ALL_ON_SATURATE : 1;
+    unsigned int                                 : 5;
+#elif    defined(BIGENDIAN_CPU)
+    unsigned int                                 : 5;
+    unsigned int            STOP_ALL_ON_SATURATE : 1;
+    unsigned int                       CLEAR_ALL : 1;
+    unsigned int                      ENABLE_ANY : 1;
+    unsigned int                    STOP_TRIGGER : 8;
+    unsigned int                   START_TRIGGER : 8;
+    unsigned int                                 : 4;
+    unsigned int             PERF_COUNTER_SELECT : 4;
+#endif
+  } bitfields, bits;
+  unsigned int  u32All;
+  signed int  i32All;
+  float  f32All;
+};
+
+
+union MC_SEQ_PERFCOUNTER_RSLT_CNTL_M3__VI {
+  struct {
+#if    defined(LITTLEENDIAN_CPU)
+    unsigned int             PERF_COUNTER_SELECT : 4;
+    unsigned int                                 : 4;
+    unsigned int                   START_TRIGGER : 8;
+    unsigned int                    STOP_TRIGGER : 8;
+    unsigned int                      ENABLE_ANY : 1;
+    unsigned int                       CLEAR_ALL : 1;
+    unsigned int            STOP_ALL_ON_SATURATE : 1;
+    unsigned int                                 : 5;
+#elif    defined(BIGENDIAN_CPU)
+    unsigned int                                 : 5;
+    unsigned int            STOP_ALL_ON_SATURATE : 1;
+    unsigned int                       CLEAR_ALL : 1;
+    unsigned int                      ENABLE_ANY : 1;
+    unsigned int                    STOP_TRIGGER : 8;
+    unsigned int                   START_TRIGGER : 8;
+    unsigned int                                 : 4;
+    unsigned int             PERF_COUNTER_SELECT : 4;
+#endif
+  } bitfields, bits;
+  unsigned int  u32All;
+  signed int  i32All;
+  float  f32All;
+};
 
 #endif  // SI_CI_VI_MERGED_REG_HEADER

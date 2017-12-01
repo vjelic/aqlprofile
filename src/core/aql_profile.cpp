@@ -32,13 +32,9 @@ class CommandBufferMgr {
     uint32_t postcmds_size;
   };
 
-  explicit CommandBufferMgr(const profile_t* profile) {
-    Init(profile->command_buffer);
-  }
+  explicit CommandBufferMgr(const profile_t* profile) { Init(profile->command_buffer); }
 
-  CommandBufferMgr(void* ptr, const uint32_t& size) {
-    Init(descriptor_t{ptr, size});
-  }
+  CommandBufferMgr(void* ptr, const uint32_t& size) { Init(descriptor_t{ptr, size}); }
 
   void* SetPrefix(const uint32_t& data_size) {
     const uint32_t size = Align(data_size);
@@ -75,8 +71,7 @@ class CommandBufferMgr {
         buffer_.size -= size;
       }
       if (!suc)
-        throw aql_profile_exc_msg(
-            "CommandBufferMgr::Finalize(): postcmd size is out of cmdbuffer");
+        throw aql_profile_exc_msg("CommandBufferMgr::Finalize(): postcmd size is out of cmdbuffer");
     }
     if (!suc) throw aql_profile_exc_msg("CommandBufferMgr::Finalize(): postcmd size is zero");
 
@@ -137,7 +132,7 @@ static inline pm4_builder::counters_vector CountersVec(const profile_t* profile,
   for (const hsa_ven_amd_aqlprofile_event_t* p = profile->events;
        p < profile->events + profile->event_count; ++p) {
     const GpuBlockInfo* block_info = pm4_factory->GetBlockInfo(p);
-    const block_des_t block_des = {pm4_factory->GetBlockId(p), p->block_index};
+    const block_des_t block_des = {pm4_factory->GetBlockInfo(p)->id, p->block_index};
     // Counting counter register index per block
     const auto ret = index_map.insert({block_des, 0});
     uint32_t& reg_index = ret.first->second;
@@ -420,7 +415,8 @@ hsa_ven_amd_aqlprofile_get_info(const hsa_ven_amd_aqlprofile_profile_t* profile,
                                                      value);
         break;
       case HSA_VEN_AMD_AQLPROFILE_INFO_BLOCK_COUNTERS:
-        *reinterpret_cast<uint32_t*>(value) = pm4_factory->GetBlockInfo(&(profile->events[0]))->counter_count;
+        *reinterpret_cast<uint32_t*>(value) =
+            pm4_factory->GetBlockInfo(&(profile->events[0]))->counter_count;
         break;
       case HSA_VEN_AMD_AQLPROFILE_INFO_BLOCK_ID: {
         hsa_ven_amd_aqlprofile_id_query_t* query =

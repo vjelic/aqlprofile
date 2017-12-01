@@ -70,7 +70,8 @@ static const uint32_t TcaCounterBlockNumInstances   = 2;
 static const uint32_t TccCounterBlockNumInstances   = 16;
 static const uint32_t SdmaCounterBlockNumInstances  = 2;
 // MC instances
-static const uint32_t McCounterBlockNumInstances    = 8; // Fiji, 2 channels
+static const uint32_t McCounterBlockNumInstances    = 8;
+static const uint32_t McHbmCounterBlockNumInstances = 32;
 
 // Number of block counter registers
 static const uint32_t CbCounterBlockNumCounters     = 4;
@@ -133,6 +134,7 @@ static const uint32_t McArbCounterBlockMaxEvent     = 162;
 static const uint32_t McHubCounterBlockMaxEvent     = 208;
 static const uint32_t McMcbvmCounterBlockMaxEvent   = 48;
 static const uint32_t McSeqCounterBlockMaxEvent     = 21;
+static const uint32_t McSeqHbmCounterBlockMaxEvent  = 24;
 static const uint32_t McVmL2CounterBlockMaxEvent    = 20;
 static const uint32_t McXbarCounterBlockMaxEvent    = 115;
 

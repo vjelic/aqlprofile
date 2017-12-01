@@ -12,13 +12,18 @@ class gfx8_cntx_prim {
   static const uint32_t CP_PERFMON_CNTL_ADDR = mmCP_PERFMON_CNTL__CI__VI;
   static const uint32_t SRBM_PERFMON_CNTL_ADDR = mmSRBM_PERFMON_CNTL__VI;
 
-  static const uint32_t MC_CONFIG_ADDR = mmMC_CONFIG_MCD;
+  static const uint32_t MC_CONFIG_MCD_ADDR = mmMC_CONFIG_MCD;
   static const uint32_t MC_SEQ_SELECT_ADDR = mmMC_SEQ_PERF_SEQ_CTL__SI__VI;
   static const uint32_t MC_SEQ_SELECT1_ADDR = mmMC_SEQ_PERF_CNTL_1__SI__CI;
   static const uint32_t MC_SEQ_CONTROL_ADDR = mmMC_SEQ_PERF_CNTL__SI__CI;
   static const uint32_t MC_SEQ_MONITOR_PERIOD = 0;
   static const uint32_t MC_SEQ_CLEAR_COUNTER = 2;
   static const uint32_t MC_SEQ_START_COUNTER = 0;
+
+  static const uint32_t MC_SEQ_PERFCOUNTER_RSLT_CNTL_ADDR = mmMC_SEQ_PERFCOUNTER_RSLT_CNTL__VI;
+  static const uint32_t MC_SEQ_PERFCOUNTER_RSLT_CNTL_M1_ADDR = mmMC_SEQ_PERFCOUNTER_RSLT_CNTL_M1__VI;
+  static const uint32_t MC_SEQ_PERFCOUNTER_RSLT_CNTL_M2_ADDR = mmMC_SEQ_PERFCOUNTER_RSLT_CNTL_M2__VI;
+  static const uint32_t MC_SEQ_PERFCOUNTER_RSLT_CNTL_M3_ADDR = mmMC_SEQ_PERFCOUNTER_RSLT_CNTL_M3__VI;
 
   static const uint32_t MC_PERFCOUNTER_RSLT_CNTL__ENABLE_ANY_MASK_PRM = 0x01000000L;
   static const uint32_t MC_PERFCOUNTER_RSLT_CNTL__CLEAR_ALL_MASK_PRM = 0x02000000L;
@@ -172,24 +177,63 @@ class gfx8_cntx_prim {
   }
 
   // MC Block primitives
+  // Ellesmere has 4 MCD tiles and 2 channels per tile
+  // Fiji (HBM) has 8 MCD tiles and 4 channels per tile
 
-  // MC Channel value
+  static uint32_t mc_tile_value(const counter_des_t& counter_des) {
+    return counter_des.block_des.index >> 1;
+  }
   static uint32_t mc_channel_value(const counter_des_t& counter_des) {
     return counter_des.block_des.index & 1;
+  }
+  static uint32_t mc_broadcast_mcd_value() {
+    const uint32_t write_enable_mask = 0xf;
+    return write_enable_mask;
+  }
+  static uint32_t mc_config_value(const counter_des_t& counter_des) {
+    const uint32_t read_enable_mask = mc_tile_value(counter_des) << MC_CONFIG_MCD__MC_RD_ENABLE__SHIFT;
+    return read_enable_mask;
   }
   static uint32_t mc_channel_mask(const counter_des_t& counter_des) {
     return 1u << mc_channel_value(counter_des);
   }
-  static uint32_t mc_broadcast_value() {
-    const uint32_t write_enable_mask = (1 << McCounterBlockNumInstances) - 1;
-    return write_enable_mask;
+
+  static uint32_t mc_hbm_tile_value(const counter_des_t& counter_des) {
+    return counter_des.block_des.index >> 2;
   }
-  static uint32_t mc_config_value(const counter_des_t& counter_des) {
-    const uint32_t read_enable_mask = counter_des.block_des.index << MC_CONFIG_MCD__MC_RD_ENABLE__SHIFT;
-    return read_enable_mask | mc_broadcast_value();
+  static uint32_t mc_hbm_channel_value(const counter_des_t& counter_des) {
+    return counter_des.block_des.index & 3;
+  }
+  static uint32_t mc_config_mcd_hbm_set_bits() {
+    regMC_CONFIG_MCD cfg{};
+    cfg.bits.ARB0_WR_ENABLE__VI = 1;
+    cfg.bits.ARB1_WR_ENABLE__VI = 1;
+    return cfg.u32All;
+  }
+  static uint32_t mc_hbm_broadcast_mcd_value() {
+    const uint32_t write_enable_mask = 0xff;
+    return write_enable_mask | mc_config_mcd_hbm_set_bits();
+  }
+  static uint32_t mc_hbm_config_value(const counter_des_t& counter_des) {
+    const uint32_t tile = mc_tile_value(counter_des);
+    const uint32_t read_enable_mask = (1 << tile) | (tile << MC_CONFIG_MCD__MC_RD_ENABLE__SHIFT);
+    return read_enable_mask | mc_config_mcd_hbm_set_bits();
   }
 
-  // MC SQE registers values
+  // MC SEQ registers values
+  static uint32_t mc_seq_reset_value() {
+    regMC_SEQ_PERF_CNTL__SI__CI cntl{};
+    cntl.bits.MONITOR_PERIOD = MC_SEQ_MONITOR_PERIOD;
+    cntl.bits.CNTL = MC_SEQ_CLEAR_COUNTER;
+    return cntl.u32All;
+  }
+
+  static uint32_t mc_seq_start_value() {
+    regMC_SEQ_PERF_CNTL__SI__CI cntl{};
+    cntl.bits.CNTL = MC_SEQ_START_COUNTER;
+    return cntl.u32All;
+  }
+
   static uint32_t mc_seq_select_value(const counter_des_t& counter_des) {
     regMC_SEQ_PERF_SEQ_CTL__SI__CI select{};
     const uint32_t channel = mc_channel_value(counter_des);
@@ -250,17 +294,69 @@ class gfx8_cntx_prim {
     return select.u32All;
   }
 
-  static uint32_t mc_seq_reset_value() {
-    regMC_SEQ_PERF_CNTL__SI__CI cntl{};
-    cntl.bits.MONITOR_PERIOD = MC_SEQ_MONITOR_PERIOD;
-    cntl.bits.CNTL = MC_SEQ_CLEAR_COUNTER;
+  static uint32_t mc_seq_hbm_reset_value() {
+    regMC_SEQ_PERFCOUNTER_RSLT_CNTL__VI cntl = {};
+    cntl.bits.ENABLE_ANY = 0; // Stop counters
+    cntl.bits.CLEAR_ALL = 1; // Reset counters
     return cntl.u32All;
   }
-
-  static uint32_t mc_seq_start_value() {
-    regMC_SEQ_PERF_CNTL__SI__CI cntl{};
-    cntl.bits.CNTL = MC_SEQ_START_COUNTER;
+  static uint32_t mc_seq_hbm_start_value() {
+    regMC_SEQ_PERFCOUNTER_RSLT_CNTL__VI cntl = {};
+    cntl.bits.ENABLE_ANY = 1; // Start counters
+    cntl.bits.CLEAR_ALL = 1; // Reset counters
     return cntl.u32All;
+  }
+  static uint32_t mc_seq_hbm_stop_value() {
+    regMC_SEQ_PERFCOUNTER_RSLT_CNTL__VI cntl = {};
+    cntl.bits.ENABLE_ANY = 0; // Stop counters
+    return cntl.u32All;
+  }
+  static uint32_t mc_config_mcd_select_value(const counter_des_t& counter_des) {
+    const uint32_t tile = mc_hbm_tile_value(counter_des);
+    regMC_CONFIG_MCD cfg{};
+    cfg.u32All |= 1 << tile;
+    cfg.u32All |= mc_config_mcd_hbm_set_bits();
+    return cfg.u32All;
+  }
+  static uint32_t mc_seq_perfcounter_cfg_addr(const counter_des_t& counter_des) {
+    const uint32_t counter = counter_des.index;
+    const uint32_t channel = mc_hbm_channel_value(counter_des);
+    const uint32_t counter_addr_stride = mmMC_SEQ_PERFCOUNTER1_CFG__VI - mmMC_SEQ_PERFCOUNTER0_CFG__VI;
+    const uint32_t channel_addr_stride = mmMC_SEQ_PERFCOUNTER0_CFG_M1__VI - mmMC_SEQ_PERFCOUNTER0_CFG__VI;
+    return mmMC_SEQ_PERFCOUNTER0_CFG__VI + (counter_addr_stride * counter) + (channel_addr_stride * channel);
+  }
+  static uint32_t mc_seq_perfcounter_select_value(const counter_des_t& counter_des) {
+    regMC_SEQ_PERFCOUNTER0_CFG__VI select{};
+    const uint32_t event_id = counter_des.id;
+    select.bits.PERF_SEL = event_id;
+    select.bits.ENABLE = 1;
+    return select.u32All;
+  }
+  static uint32_t mc_config_mcd_hbm_sample_value(const counter_des_t& counter_des) {
+    return mc_hbm_config_value(counter_des);
+  }
+  // mmMC_SEQ_PERFCOUNTER_RSLT_CNTL__VI ... mmMC_SEQ_PERFCOUNTER_RSLT_CNTL_M3__VI
+  static uint32_t mc_seq_perfcounter_rslt_cntl_addr(const counter_des_t& counter_des) {
+    const uint32_t channel = mc_hbm_channel_value(counter_des);
+    const uint32_t channel_addr_stride = mmMC_SEQ_PERFCOUNTER_RSLT_CNTL_M1__VI - mmMC_SEQ_PERFCOUNTER_RSLT_CNTL__VI;
+    return mmMC_SEQ_PERFCOUNTER_RSLT_CNTL__VI + (channel * channel_addr_stride);
+  }
+  static uint32_t mc_seq_perfcounter_rslt_cntl_value(const counter_des_t& counter_des) {
+    regMC_SEQ_PERFCOUNTER_RSLT_CNTL__VI cntl{};
+    cntl.bits.PERF_COUNTER_SELECT = counter_des.index;
+    return cntl.u32All;
+  }
+  // mmMC_SEQ_PERFCOUNTER_LO__VI ... mmMC_SEQ_PERFCOUNTER_LO_M3__VI
+  static uint32_t mc_hbm_register_lo_addr(const counter_des_t& counter_des) {
+    const uint32_t channel = mc_hbm_channel_value(counter_des);
+    const uint32_t channel_addr_stride = mmMC_SEQ_PERFCOUNTER_LO_M1__VI - mmMC_SEQ_PERFCOUNTER_LO__VI;
+    return mmMC_SEQ_PERFCOUNTER_LO__VI + (channel * channel_addr_stride);
+  }
+  // mmMC_SEQ_PERFCOUNTER_Hi__VI ... mmMC_SEQ_PERFCOUNTER_Hi_M3__VI
+  static uint32_t mc_hbm_register_hi_addr(const counter_des_t& counter_des) {
+    const uint32_t channel = mc_hbm_channel_value(counter_des);
+    const uint32_t channel_addr_stride = mmMC_SEQ_PERFCOUNTER_HI_M1__VI - mmMC_SEQ_PERFCOUNTER_HI__VI;
+    return mmMC_SEQ_PERFCOUNTER_HI__VI + (channel * channel_addr_stride);
   }
 
   // MC registers values

@@ -19188,4 +19188,33 @@
 #define pciVENDOR_ID_alt_8__VI 0x0000
 #define pciVENDOR_ID_alt_9__VI 0x0000
 
+#define mmMC_SEQ_PERFCOUNTER0_CFG__VI                   0x0ACB
+#define mmMC_SEQ_PERFCOUNTER0_CFG_M1__VI                0x0ACC
+#define mmMC_SEQ_PERFCOUNTER0_CFG_M2__VI                0x0ACD
+#define mmMC_SEQ_PERFCOUNTER0_CFG_M3__VI                0x0ACE
+#define mmMC_SEQ_PERFCOUNTER1_CFG__VI                   0x0ACF
+#define mmMC_SEQ_PERFCOUNTER1_CFG_M1__VI                0x0AD0
+#define mmMC_SEQ_PERFCOUNTER1_CFG_M2__VI                0x0AD1
+#define mmMC_SEQ_PERFCOUNTER1_CFG_M3__VI                0x0AD2
+#define mmMC_SEQ_PERFCOUNTER2_CFG__VI                   0x0AD3
+#define mmMC_SEQ_PERFCOUNTER2_CFG_M1__VI                0x0AD4
+#define mmMC_SEQ_PERFCOUNTER2_CFG_M2__VI                0x0AD5
+#define mmMC_SEQ_PERFCOUNTER2_CFG_M3__VI                0x0AD6
+#define mmMC_SEQ_PERFCOUNTER3_CFG__VI                   0x0AD7
+#define mmMC_SEQ_PERFCOUNTER3_CFG_M1__VI                0x0AD8
+#define mmMC_SEQ_PERFCOUNTER3_CFG_M2__VI                0x0AD9
+#define mmMC_SEQ_PERFCOUNTER3_CFG_M3__VI                0x0ADA
+#define mmMC_SEQ_PERFCOUNTER_HI__VI                     0x0AE3
+#define mmMC_SEQ_PERFCOUNTER_HI_M1__VI                  0x0AE4
+#define mmMC_SEQ_PERFCOUNTER_HI_M2__VI                  0x0AE5
+#define mmMC_SEQ_PERFCOUNTER_HI_M3__VI                  0x0AE6
+#define mmMC_SEQ_PERFCOUNTER_LO__VI                     0x0ADF
+#define mmMC_SEQ_PERFCOUNTER_LO_M1__VI                  0x0AE0
+#define mmMC_SEQ_PERFCOUNTER_LO_M2__VI                  0x0AE1
+#define mmMC_SEQ_PERFCOUNTER_LO_M3__VI                  0x0AE2
+#define mmMC_SEQ_PERFCOUNTER_RSLT_CNTL__VI              0x0ADB
+#define mmMC_SEQ_PERFCOUNTER_RSLT_CNTL_M1__VI           0x0ADC
+#define mmMC_SEQ_PERFCOUNTER_RSLT_CNTL_M2__VI           0x0ADD
+#define mmMC_SEQ_PERFCOUNTER_RSLT_CNTL_M3__VI           0x0ADE
+
 #endif  // SI_CI_VI_merged_offset_HEADER
