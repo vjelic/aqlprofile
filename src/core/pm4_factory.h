@@ -101,10 +101,12 @@ inline Pm4Factory* Pm4Factory::Create(const hsa_agent_t agent) {
   std::lock_guard<mutex_t> lck(mutex_);
 
   char agent_name[64];
-  hsa_agent_get_info(agent, HSA_AGENT_INFO_NAME, agent_name);
-  instances_t::iterator it = instances_.find(agent_name);
+  hsa_status_t status = hsa_agent_get_info(agent, HSA_AGENT_INFO_NAME, agent_name);
+  if (status != HSA_STATUS_SUCCESS) throw aql_profile_exc_msg("get agent name failed");
+  auto ret = instances_.insert({agent_name, NULL});
+  instances_t::iterator it = ret.first;;
 
-  if (it == instances_.end()) {
+  if (ret.second) {
     if (strncmp(agent_name, "gfx801", 6) == 0) {
       throw aql_profile_exc_val<std::string>(std::string("GFX8 Carrizo is not supported "),
                                              agent_name);
