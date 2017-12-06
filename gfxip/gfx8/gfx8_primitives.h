@@ -215,7 +215,7 @@ class gfx8_cntx_prim {
     return write_enable_mask | mc_config_mcd_hbm_set_bits();
   }
   static uint32_t mc_hbm_config_value(const counter_des_t& counter_des) {
-    const uint32_t tile = mc_tile_value(counter_des);
+    const uint32_t tile = mc_hbm_tile_value(counter_des);
     const uint32_t read_enable_mask = (1 << tile) | (tile << MC_CONFIG_MCD__MC_RD_ENABLE__SHIFT);
     return read_enable_mask | mc_config_mcd_hbm_set_bits();
   }

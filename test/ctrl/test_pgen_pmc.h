@@ -123,9 +123,6 @@ class TestPGenPmc : public TestPGen {
         &profile_, HSA_VEN_AMD_AQLPROFILE_INFO_PMC_DATA_SIZE, &output_buffer_size);
     TEST_ASSERT(status == HSA_STATUS_SUCCESS);
 
-    command_buffer_size *= 4;
-    output_buffer_size *= 4;
-
     // Application is allocating the command buffer
     // Allocate(command_buffer_alignment, command_buffer_size,
     //          MODE_HOST_ACC|MODE_DEV_ACC|MODE_EXEC_DATA)
