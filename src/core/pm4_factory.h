@@ -129,7 +129,7 @@ class Pm4Factory {
   // Mutex for inter thread synchronization for the instances create/destroy
   static mutex_t mutex_;
   // Factory instances container
-  static instances_t instances_;
+  static instances_t* instances_;
   // Block info container
   const BlockInfoMap block_map_;
 };
@@ -141,7 +141,8 @@ inline Pm4Factory* Pm4Factory::Create(const hsa_agent_t agent) {
   // Get GPU id for a given agent
   const gpu_id_t gpu_id = GetGpuId(agent);
   // Check if we have the instance already created
-  const auto ret = instances_.insert({gpu_id, NULL});
+  if (instances_ == NULL) instances_ = new instances_t;
+  const auto ret = instances_->insert({gpu_id, NULL});
   instances_t::iterator it = ret.first;
   // Create a factory implementation for the GPU id
   if (ret.second) {
@@ -170,8 +171,12 @@ inline Pm4Factory* Pm4Factory::Create(const hsa_agent_t agent) {
 // Destroy PM4 factory
 inline void Pm4Factory::Destroy() {
   std::lock_guard<mutex_t> lck(mutex_);
-  for (auto& item : instances_) delete item.second;
-  instances_.clear();
+
+  if (instances_ != NULL) {
+    for (auto& item : *instances_) delete item.second;
+    delete instances_;
+    instances_ = NULL;
+  }
 }
 
 // Return GPU id for a given agent

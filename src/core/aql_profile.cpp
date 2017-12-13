@@ -194,7 +194,7 @@ hsa_status_t DefaultSqttdataCallback(hsa_ven_amd_aqlprofile_info_type_t info_typ
 Logger::mutex_t Logger::mutex_;
 Logger* Logger::instance_ = NULL;
 Pm4Factory::mutex_t Pm4Factory::mutex_;
-Pm4Factory::instances_t Pm4Factory::instances_;
+Pm4Factory::instances_t* Pm4Factory::instances_ = NULL;
 
 DESTRUCTOR_API void destructor() {
   Logger::Destroy();
