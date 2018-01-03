@@ -196,6 +196,11 @@ inline gpu_id_t Pm4Factory::GetGpuId(const hsa_agent_t agent) {
     throw aql_profile_exc_msg("Pm4Factory::Create() bad agent");
   }
 
+  const char* override_id = getenv("HSA_VEN_AMD_AQLPROFILE_DID");
+  if (override_id != NULL) {
+    device_id = atoi(override_id);
+  }
+
   // Obtaining GPU id
   gpu_id_t gpu_id = INVAL_GPU_ID;
   if (strncmp(agent_name, "gfx801", 6) == 0) {
@@ -216,6 +221,17 @@ inline gpu_id_t Pm4Factory::GetGpuId(const hsa_agent_t agent) {
       case 0x67CA:  // Ellesmere Server XT Kicker
       case 0x67CC:  // Ellesmere GL XT Kicker
       case 0x67CF:  // Ellesmere GL PRO Kicker
+      // Buffin
+      case 0x67E0:  // BaffinM GL XT
+      case 0x67E3:  // Baffin Desktop GL XT
+      case 0x67E8:  // BaffinM GL Pro
+      case 0x67EB:  // BaffinM Server
+      case 0x67EF:  // BaffinM, Baffin Desktop; Polaris21; Polaris21M
+      case 0x67FF:  // BaffinM XPA; Polaris21; Polaris21M
+      // Baffin Kickers
+      case 0x67E1:  // BaffinM GL XT Kicker
+      case 0x67E7:  // Baffin Desktop GL XT Kicker
+      case 0x67E9:  // BaffinM GL Pro Kicker
         gpu_id = GFX8_GPU_ID;
         break;
       // Fiji
