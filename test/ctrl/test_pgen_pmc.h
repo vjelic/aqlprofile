@@ -77,10 +77,10 @@ class TestPGenPmc : public TestPGen {
     std::vector<hsa_ven_amd_aqlprofile_event_t> event_vec_filtered;
     for (auto it = event_vec.begin(); it != event_vec.end(); ++it) {
       bool result = false;
-      hsa_status_t status = api_.hsa_ven_amd_aqlprofile_validate_event(agent, &(*it), &result);
+      hsa_status_t status = api_->hsa_ven_amd_aqlprofile_validate_event(agent, &(*it), &result);
       if (status != HSA_STATUS_SUCCESS) {
         const char* str = "";
-        api_.hsa_ven_amd_aqlprofile_error_string(&str);
+        api_->hsa_ven_amd_aqlprofile_error_string(&str);
         std::cerr << "aqlprofile err: " << str << std::endl;
       }
       if (!result) {
@@ -109,17 +109,17 @@ class TestPGenPmc : public TestPGen {
 
     // Profile buffers attributes
     command_buffer_alignment = buffer_alignment_;
-    status = api_.hsa_ven_amd_aqlprofile_get_info(
+    status = api_->hsa_ven_amd_aqlprofile_get_info(
         &profile_, HSA_VEN_AMD_AQLPROFILE_INFO_COMMAND_BUFFER_SIZE, &command_buffer_size);
     if (status != HSA_STATUS_SUCCESS) {
       const char* str = "";
-      api_.hsa_ven_amd_aqlprofile_error_string(&str);
+      api_->hsa_ven_amd_aqlprofile_error_string(&str);
       std::cerr << "aqlprofile err: " << str << std::endl;
     }
     TEST_ASSERT(status == HSA_STATUS_SUCCESS);
 
     output_buffer_alignment = buffer_alignment_;
-    status = api_.hsa_ven_amd_aqlprofile_get_info(
+    status = api_->hsa_ven_amd_aqlprofile_get_info(
         &profile_, HSA_VEN_AMD_AQLPROFILE_INFO_PMC_DATA_SIZE, &output_buffer_size);
     TEST_ASSERT(status == HSA_STATUS_SUCCESS);
 
@@ -143,17 +143,17 @@ class TestPGenPmc : public TestPGen {
                  (output_buffer_alignment - 1)) == 0);
 
     // Populating the AQL start packet
-    status = api_.hsa_ven_amd_aqlprofile_start(&profile_, PrePacket());
+    status = api_->hsa_ven_amd_aqlprofile_start(&profile_, PrePacket());
     if (status != HSA_STATUS_SUCCESS) {
       const char* str;
-      api_.hsa_ven_amd_aqlprofile_error_string(&str);
+      api_->hsa_ven_amd_aqlprofile_error_string(&str);
       std::cerr << "aqlprofile err: " << str << std::endl;
     }
     TEST_ASSERT(status == HSA_STATUS_SUCCESS);
     if (status != HSA_STATUS_SUCCESS) return false;
 
     // Populating the AQL stop packet
-    status = api_.hsa_ven_amd_aqlprofile_stop(&profile_, PostPacket());
+    status = api_->hsa_ven_amd_aqlprofile_stop(&profile_, PostPacket());
     TEST_ASSERT(status == HSA_STATUS_SUCCESS);
 
     return (status == HSA_STATUS_SUCCESS);
@@ -168,7 +168,7 @@ class TestPGenPmc : public TestPGen {
     typedef std::vector<hsa_ven_amd_aqlprofile_info_data_t> callback_data_t;
 
     callback_data_t data;
-    api_.hsa_ven_amd_aqlprofile_iterate_data(&profile_, TestPGenPmcCallback, &data);
+    api_->hsa_ven_amd_aqlprofile_iterate_data(&profile_, TestPGenPmcCallback, &data);
     for (callback_data_t::iterator it = data.begin(); it != data.end(); ++it) {
       //      if (it->pmc_data.result)
       std::cout << std::dec << "event(block(" << it->pmc_data.event.block_name << "_"

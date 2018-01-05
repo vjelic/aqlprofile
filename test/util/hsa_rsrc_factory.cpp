@@ -24,6 +24,7 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include "util/hsa_rsrc_factory.h"
 
+#include <dlfcn.h>
 #include <hsa.h>
 #include <hsa_ext_finalize.h>
 #include <stdint.h>
@@ -116,12 +117,54 @@ HsaRsrcFactory::HsaRsrcFactory() {
   // Discover the set of Gpu devices available on the platform
   status = hsa_iterate_agents(GetHsaAgentsCallback, this);
   CHECK_STATUS("Error Calling hsa_iterate_agents", status);
+
+  // Get AqlProfile API table
+  aqlprofile_api_ = {0};
+#ifdef ROCP_LD_AQLPROFILE
+  status = LoadAqlProfileLib(&aqlprofile_api_);
+#else
+  status = hsa_system_get_extension_table(HSA_EXTENSION_AMD_AQLPROFILE, 1, 0, &aqlprofile_api_);
+#endif
+  CHECK_STATUS("aqlprofile API table load failed", status);
 }
 
 // Destructor of the class
 HsaRsrcFactory::~HsaRsrcFactory() {
   hsa_status_t status = hsa_shut_down();
   CHECK_STATUS("Error in hsa_shut_down", status);
+}
+
+hsa_status_t HsaRsrcFactory::LoadAqlProfileLib(aqlprofile_pfn_t* api) {
+    void* handle = dlopen(kAqlProfileLib, RTLD_NOW);
+    if (handle == NULL) {
+      fprintf(stderr, "Loading '%s' failed, %s\n", kAqlProfileLib, dlerror());
+      return HSA_STATUS_ERROR;
+    }
+    dlerror(); /* Clear any existing error */
+
+    api->hsa_ven_amd_aqlprofile_error_string =
+      (decltype(::hsa_ven_amd_aqlprofile_error_string)*)
+        dlsym(handle, "hsa_ven_amd_aqlprofile_error_string");
+    api->hsa_ven_amd_aqlprofile_validate_event =
+      (decltype(::hsa_ven_amd_aqlprofile_validate_event)*)
+        dlsym(handle, "hsa_ven_amd_aqlprofile_validate_event");
+    api->hsa_ven_amd_aqlprofile_start =
+      (decltype(::hsa_ven_amd_aqlprofile_start)*)
+        dlsym(handle, "hsa_ven_amd_aqlprofile_start");
+    api->hsa_ven_amd_aqlprofile_stop =
+      (decltype(::hsa_ven_amd_aqlprofile_stop)*)
+        dlsym(handle, "hsa_ven_amd_aqlprofile_stop");
+    api->hsa_ven_amd_aqlprofile_legacy_get_pm4 =
+      (decltype(::hsa_ven_amd_aqlprofile_legacy_get_pm4)*)
+        dlsym(handle, "hsa_ven_amd_aqlprofile_legacy_get_pm4");
+    api->hsa_ven_amd_aqlprofile_get_info =
+      (decltype(::hsa_ven_amd_aqlprofile_get_info)*)
+        dlsym(handle, "hsa_ven_amd_aqlprofile_get_info");
+    api->hsa_ven_amd_aqlprofile_iterate_data =
+      (decltype(::hsa_ven_amd_aqlprofile_iterate_data)*)
+        dlsym(handle, "hsa_ven_amd_aqlprofile_iterate_data");
+
+  return HSA_STATUS_SUCCESS;
 }
 
 // Get the count of Hsa Gpu Agents available on the platform
@@ -218,9 +261,10 @@ bool HsaRsrcFactory::CreateSignal(uint32_t value, hsa_signal_t* signal) {
 //
 // @return uint8_t* Pointer to buffer, null if allocation fails.
 //
-uint8_t* HsaRsrcFactory::AllocateLocalMemory(AgentInfo* agent_info, size_t size) {
+uint8_t* HsaRsrcFactory::AllocateLocalMemory(const AgentInfo* agent_info, size_t size) {
   hsa_status_t status;
   uint8_t* buffer = NULL;
+  size = (size + MEM_PAGE_MASK) & ~MEM_PAGE_MASK;
 
   if (agent_info->coarse_region.handle != 0) {
     // Allocate in local memory if it is available
@@ -244,8 +288,10 @@ uint8_t* HsaRsrcFactory::AllocateLocalMemory(AgentInfo* agent_info, size_t size)
 //
 // @return uint8_t* Pointer to buffer, null if allocation fails.
 //
-uint8_t* HsaRsrcFactory::AllocateSysMemory(AgentInfo* agent_info, size_t size) {
+uint8_t* HsaRsrcFactory::AllocateSysMemory(const AgentInfo* agent_info, size_t size) {
   hsa_status_t status;
+  size = (size + MEM_PAGE_MASK) & ~MEM_PAGE_MASK;
+
   uint8_t* buffer = NULL;
   status = hsa_memory_allocate(agent_info->kernarg_region, size, (void**)&buffer);
   return (status == HSA_STATUS_SUCCESS) ? buffer : NULL;
@@ -364,3 +410,6 @@ bool HsaRsrcFactory::PrintGpuAgents(const std::string& header) {
   }
   return true;
 }
+
+HsaRsrcFactory* HsaRsrcFactory::instance_ = NULL;
+HsaRsrcFactory::mutex_t HsaRsrcFactory::mutex_;

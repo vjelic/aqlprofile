@@ -31,6 +31,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ctrl/test_aql.h"
 #include "ctrl/test_kernel.h"
 #include "util/hsa_rsrc_factory.h"
+#include "util/perf_timer.h"
 
 // Class implements HSA test
 class TestHsa : public TestAql {

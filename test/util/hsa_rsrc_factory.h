@@ -27,16 +27,16 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include <hsa.h>
 #include <hsa_ext_finalize.h>
+#include <hsa_ven_amd_aqlprofile.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <iostream>
+#include <mutex>
 #include <string>
 #include <vector>
-
-#include "util/perf_timer.h"
 
 #define HSA_ARGUMENT_ALIGN_BYTES 16
 #define HSA_QUEUE_ALIGN_BYTES 64
@@ -50,9 +50,12 @@ POSSIBILITY OF SUCH DAMAGE.
     exit(1);                                                                                       \
   }
 
+static const unsigned MEM_PAGE_BYTES = 0x1000;
+static const unsigned MEM_PAGE_MASK = MEM_PAGE_BYTES - 1;
+
 // Encapsulates information about a Hsa Agent such as its
 // handle, name, max queue size, max wavefront size, etc.
-typedef struct {
+struct AgentInfo {
   // Handle of Agent
   hsa_agent_t dev_id;
 
@@ -76,17 +79,31 @@ typedef struct {
 
   // Memory region supporting kernel arguments
   hsa_region_t kernarg_region;
-
-} AgentInfo;
+};
 
 class HsaRsrcFactory {
  public:
-  // Constructor of the class. Will initialize the Hsa Runtime and
-  // query the system topology to get the list of Cpu and Gpu devices
-  HsaRsrcFactory();
+  typedef std::recursive_mutex mutex_t;
 
-  // Destructor of the class
-  ~HsaRsrcFactory();
+  static HsaRsrcFactory* Create() {
+    std::lock_guard<mutex_t> lck(mutex_);
+    if (HsaRsrcFactory::instance_ == NULL) {
+      HsaRsrcFactory::instance_ = new HsaRsrcFactory();
+    }
+    return instance_;
+  }
+
+  static void Destroy() {
+    std::lock_guard<mutex_t> lck(mutex_);
+    if (instance_) delete instance_;
+    instance_ = NULL;
+  }
+
+  static HsaRsrcFactory& Instance() {
+    hsa_status_t status = (instance_ != NULL) ? HSA_STATUS_SUCCESS : HSA_STATUS_ERROR;
+    CHECK_STATUS("HsaRsrcFactory::Instance()", status);
+    return *instance_;
+  }
 
   // Get the count of Hsa Gpu Agents available on the platform
   //
@@ -153,7 +170,7 @@ class HsaRsrcFactory {
   //
   // @return uint8_t* Pointer to buffer, null if allocation fails.
   //
-  uint8_t* AllocateLocalMemory(AgentInfo* agent_info, size_t size);
+  uint8_t* AllocateLocalMemory(const AgentInfo* agent_info, size_t size);
 
   // Allocate memory tp pass kernel parameters.
   //
@@ -163,7 +180,7 @@ class HsaRsrcFactory {
   //
   // @return uint8_t* Pointer to buffer, null if allocation fails.
   //
-  uint8_t* AllocateSysMemory(AgentInfo* agent_info, size_t size);
+  uint8_t* AllocateSysMemory(const AgentInfo* agent_info, size_t size);
 
   // Transfer data method
   bool TransferData(void* dest_buff, void* src_buff, uint32_t length, bool host_to_dev);
@@ -190,7 +207,24 @@ class HsaRsrcFactory {
   // Print the various fields of Hsa Gpu Agents
   bool PrintGpuAgents(const std::string& header);
 
+  // Return AqlProfile API table
+  typedef hsa_ven_amd_aqlprofile_1_00_pfn_t aqlprofile_pfn_t;
+  const aqlprofile_pfn_t* AqlProfileApi() const { return &aqlprofile_api_; }
+
  private:
+  // Load AQL profile HSA extension library directly
+  static hsa_status_t LoadAqlProfileLib(aqlprofile_pfn_t* api);
+
+  // Constructor of the class. Will initialize the Hsa Runtime and
+  // query the system topology to get the list of Cpu and Gpu devices
+  HsaRsrcFactory();
+
+  // Destructor of the class
+  ~HsaRsrcFactory();
+
+  static HsaRsrcFactory* instance_;
+  static mutex_t mutex_;
+
   // Used to maintain a list of Hsa Queue handles
   std::vector<hsa_queue_t*> queue_list_;
 
@@ -202,6 +236,9 @@ class HsaRsrcFactory {
 
   // Used to maintain a list of Hsa Cpu Agent Info
   std::vector<AgentInfo*> cpu_list_;
+
+  // AqlProfile API table
+  aqlprofile_pfn_t aqlprofile_api_;
 };
 
 #endif  // TEST_UTIL_HSA_RSRC_FACTORY_H_

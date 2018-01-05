@@ -70,7 +70,7 @@ class TestPGenSqtt : public TestPGen {
 
     // Profile buffers attributes
     command_buffer_alignment = buffer_alignment_;
-    status = api_.hsa_ven_amd_aqlprofile_get_info(
+    status = api_->hsa_ven_amd_aqlprofile_get_info(
         &profile_, HSA_VEN_AMD_AQLPROFILE_INFO_COMMAND_BUFFER_SIZE, &command_buffer_size);
     TEST_ASSERT(status == HSA_STATUS_SUCCESS);
 
@@ -96,12 +96,12 @@ class TestPGenSqtt : public TestPGen {
                  (output_buffer_alignment - 1)) == 0);
 
     // Populating the AQL start packet
-    status = api_.hsa_ven_amd_aqlprofile_start(&profile_, PrePacket());
+    status = api_->hsa_ven_amd_aqlprofile_start(&profile_, PrePacket());
     TEST_ASSERT(status == HSA_STATUS_SUCCESS);
     if (status != HSA_STATUS_SUCCESS) return false;
 
     // Populating the AQL stop packet
-    status = api_.hsa_ven_amd_aqlprofile_stop(&profile_, PostPacket());
+    status = api_->hsa_ven_amd_aqlprofile_stop(&profile_, PostPacket());
     TEST_ASSERT(status == HSA_STATUS_SUCCESS);
 
     return (status == HSA_STATUS_SUCCESS);
@@ -115,7 +115,7 @@ class TestPGenSqtt : public TestPGen {
     typedef std::vector<hsa_ven_amd_aqlprofile_info_data_t> callback_data_t;
 
     callback_data_t data;
-    api_.hsa_ven_amd_aqlprofile_iterate_data(&profile_, TestPGenSqttCallback, &data);
+    api_->hsa_ven_amd_aqlprofile_iterate_data(&profile_, TestPGenSqttCallback, &data);
     for (callback_data_t::iterator it = data.begin(); it != data.end(); ++it) {
       std::cout << "sample(" << std::dec << it->sample_id << ") size(" << std::dec
                 << it->sqtt_data.size << ") ptr(" << std::hex << it->sqtt_data.ptr << ")"

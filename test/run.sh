@@ -2,7 +2,7 @@
 RPATH=`realpath $0`
 
 tbin=./ctrl
-export LD_LIBRARY_PATH=$PWD:/opt/rocm/hsa-amd-aqlprofile/lib
+export LD_LIBRARY_PATH=$PWD
 
 cd `dirname $RPATH`
 

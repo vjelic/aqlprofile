@@ -47,7 +47,7 @@ bool TestHsa::Initialize(int arg_cnt, char** arg_list) {
 
   // Instantiate an instance of Hsa Resources Factory
   if (hsa_rsrc_ == NULL) {
-    hsa_rsrc_ = new HsaRsrcFactory();
+    hsa_rsrc_ = HsaRsrcFactory::Create();
 
     // Print properties of the agents
     hsa_rsrc_->PrintGpuAgents("> GPU agents");
