@@ -34,12 +34,13 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ctrl/test_assert.h"
 #include "ctrl/test_pgen.h"
 
+typedef std::vector<hsa_ven_amd_aqlprofile_info_data_t> callback_data_t;
+
 hsa_status_t TestPGenPmcCallback(hsa_ven_amd_aqlprofile_info_type_t info_type,
                                  hsa_ven_amd_aqlprofile_info_data_t* info_data,
                                  void* callback_data) {
   hsa_status_t status = HSA_STATUS_SUCCESS;
-  typedef std::vector<hsa_ven_amd_aqlprofile_info_data_t> passed_data_t;
-  reinterpret_cast<passed_data_t*>(callback_data)->push_back(*info_data);
+  reinterpret_cast<callback_data_t*>(callback_data)->push_back(*info_data);
   return status;
 }
 
@@ -164,8 +165,6 @@ class TestPGenPmc : public TestPGen {
 
   bool DumpData() {
     std::clog << "TestPGenPmc::DumpData :" << std::endl;
-
-    typedef std::vector<hsa_ven_amd_aqlprofile_info_data_t> callback_data_t;
 
     callback_data_t data;
     api_->hsa_ven_amd_aqlprofile_iterate_data(&profile_, TestPGenPmcCallback, &data);

@@ -9,33 +9,25 @@ namespace aql_profile {
 // Gfx8 factory class
 class Gfx8Factory : public Pm4Factory {
  public:
-  Gfx8Factory() : Pm4Factory(BlockInfoMap(block_table_, sizeof(block_table_))) {}
+  Gfx8Factory() : Pm4Factory(BlockInfoMap(block_table_, sizeof(block_table_))) { Init(); }
   Gfx8Factory(const GpuBlockInfo** table, const uint32_t& size)
-      : Pm4Factory(BlockInfoMap(table, size)) {}
-  pm4_builder::CmdBuilder* GetCmdBuilder();
-  pm4_builder::PmcBuilder* GetPmcBuilder();
-  pm4_builder::SqttBuilder* GetSqttBuilder();
+      : Pm4Factory(BlockInfoMap(table, size)) { Init(); }
 
  protected:
+  void Init();
   static const GpuBlockInfo* block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER];
 };
 
-pm4_builder::CmdBuilder* Gfx8Factory::GetCmdBuilder() {
-  auto p = new pm4_builder::Gfx8CmdBuilder;
-  if (p == NULL) throw aql_profile_exc_msg("CmdBuilder allocation failed");
-  return p;
-}
+// Gfx8 factory init
+void Gfx8Factory::Init() {
+  Pm4Factory::cmd_builder_ = new pm4_builder::Gfx8CmdBuilder;
+  if (Pm4Factory::cmd_builder_ == NULL) throw aql_profile_exc_msg("CmdBuilder allocation failed");
 
-pm4_builder::PmcBuilder* Gfx8Factory::GetPmcBuilder() {
-  auto p = new pm4_builder::GpuPmcBuilder<pm4_builder::Gfx8CmdBuilder, gfx8_cntx_prim>;
-  if (p == NULL) throw aql_profile_exc_msg("PmcBuilder allocation failed");
-  return p;
-}
+  Pm4Factory::pmc_builder_ = new pm4_builder::GpuPmcBuilder<pm4_builder::Gfx8CmdBuilder, gfx8_cntx_prim>;
+  if (Pm4Factory::pmc_builder_ == NULL) throw aql_profile_exc_msg("PmcBuilder allocation failed");
 
-pm4_builder::SqttBuilder* Gfx8Factory::GetSqttBuilder() {
-  auto p = new pm4_builder::GpuSqttBuilder<pm4_builder::Gfx8CmdBuilder, gfx8_cntx_prim>;
-  if (p == NULL) throw aql_profile_exc_msg("SqttBuilder allocation failed");
-  return p;
+  Pm4Factory::sqtt_builder_ = new pm4_builder::GpuSqttBuilder<pm4_builder::Gfx8CmdBuilder, gfx8_cntx_prim>;
+  if (Pm4Factory::sqtt_builder_ == NULL) throw aql_profile_exc_msg("SqttBuilder allocation failed");
 }
 
 // GFX8 block table

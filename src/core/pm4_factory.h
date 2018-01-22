@@ -15,12 +15,9 @@
 #include "core/aql_profile.h"
 #include "core/aql_profile_exception.h"
 #include "def/gpu_block_info.h"
-
-namespace pm4_builder {
-class CmdBuilder;
-class PmcBuilder;
-class SqttBuilder;
-}
+#include "pm4/cmd_builder.h"
+#include "pm4/pmc_builder.h"
+#include "pm4/sqtt_builder.h"
 
 namespace aql_profile {
 
@@ -79,11 +76,11 @@ class Pm4Factory {
   static void Destroy();
 
   // Return PM4 command builder
-  virtual pm4_builder::CmdBuilder* GetCmdBuilder() = 0;
+  pm4_builder::CmdBuilder* GetCmdBuilder() { return cmd_builder_; }
   // Return PMC PM4 packets builder
-  virtual pm4_builder::PmcBuilder* GetPmcBuilder() = 0;
+  pm4_builder::PmcBuilder* GetPmcBuilder() { return pmc_builder_; }
   // Return SQTT PM4 packets builder
-  virtual pm4_builder::SqttBuilder* GetSqttBuilder() = 0;
+  pm4_builder::SqttBuilder* GetSqttBuilder() { return sqtt_builder_; }
 
   // Return Shader Engines number
   const uint32_t GetShaderEnginesNumber() { return 4; }
@@ -110,8 +107,25 @@ class Pm4Factory {
   uint32_t FindBlock(const char* name) const { return block_map_.Find(name); }
 
  protected:
-  explicit Pm4Factory(const BlockInfoMap& map) : block_map_(map) {}
-  virtual ~Pm4Factory() {}
+  explicit Pm4Factory(const BlockInfoMap& map) :
+    cmd_builder_(NULL),
+    pmc_builder_(NULL),
+    sqtt_builder_(NULL),
+    block_map_(map)
+  {}
+
+  virtual ~Pm4Factory() {
+    delete cmd_builder_;
+    delete pmc_builder_;
+    delete sqtt_builder_;
+  }
+
+  // PM4 command builder
+  pm4_builder::CmdBuilder* cmd_builder_;
+  // PMC PM4 packets builder
+  pm4_builder::PmcBuilder* pmc_builder_;
+  // SQTT PM4 packets builder
+  pm4_builder::SqttBuilder* sqtt_builder_;
 
  private:
   // PM4 factory instance map type
@@ -245,7 +259,7 @@ inline gpu_id_t Pm4Factory::GetGpuId(const hsa_agent_t agent) {
         throw aql_profile_exc_msg(oss.str());
       }
     }
-  } else if (strncmp(agent_name, "gfx9", 4) == 0) {
+  } else if (strncmp(agent_name, "gfx900", 6) == 0) {
     gpu_id = GFX9_GPU_ID;
   } else {
     throw aql_profile_exc_val<std::string>("GFXIP is not supported", agent_name);
