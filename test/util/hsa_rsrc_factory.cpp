@@ -31,6 +31,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/mman.h>
 
 #include <cassert>
 #include <fstream>
@@ -88,6 +89,7 @@ static hsa_status_t GetHsaAgentsCallback(hsa_agent_t agent, void* data) {
   agent_info->dev_id = agent;
   agent_info->dev_type = HSA_DEVICE_TYPE_GPU;
   hsa_agent_get_info(agent, HSA_AGENT_INFO_NAME, agent_info->name);
+  agent_info->is_apu = (strncmp(agent_info->name, "gfx902", 6) == 0);
   agent_info->max_wave_size = 0;
   hsa_agent_get_info(agent, HSA_AGENT_INFO_WAVEFRONT_SIZE, &agent_info->max_wave_size);
   agent_info->max_queue_size = 0;
@@ -135,34 +137,31 @@ HsaRsrcFactory::~HsaRsrcFactory() {
 }
 
 hsa_status_t HsaRsrcFactory::LoadAqlProfileLib(aqlprofile_pfn_t* api) {
-    void* handle = dlopen(kAqlProfileLib, RTLD_NOW);
-    if (handle == NULL) {
-      fprintf(stderr, "Loading '%s' failed, %s\n", kAqlProfileLib, dlerror());
-      return HSA_STATUS_ERROR;
-    }
-    dlerror(); /* Clear any existing error */
+  void* handle = dlopen(kAqlProfileLib, RTLD_NOW);
+  if (handle == NULL) {
+    fprintf(stderr, "Loading '%s' failed, %s\n", kAqlProfileLib, dlerror());
+    return HSA_STATUS_ERROR;
+  }
+  dlerror(); /* Clear any existing error */
 
-    api->hsa_ven_amd_aqlprofile_error_string =
-      (decltype(::hsa_ven_amd_aqlprofile_error_string)*)
-        dlsym(handle, "hsa_ven_amd_aqlprofile_error_string");
-    api->hsa_ven_amd_aqlprofile_validate_event =
-      (decltype(::hsa_ven_amd_aqlprofile_validate_event)*)
-        dlsym(handle, "hsa_ven_amd_aqlprofile_validate_event");
-    api->hsa_ven_amd_aqlprofile_start =
-      (decltype(::hsa_ven_amd_aqlprofile_start)*)
-        dlsym(handle, "hsa_ven_amd_aqlprofile_start");
-    api->hsa_ven_amd_aqlprofile_stop =
-      (decltype(::hsa_ven_amd_aqlprofile_stop)*)
-        dlsym(handle, "hsa_ven_amd_aqlprofile_stop");
-    api->hsa_ven_amd_aqlprofile_legacy_get_pm4 =
-      (decltype(::hsa_ven_amd_aqlprofile_legacy_get_pm4)*)
-        dlsym(handle, "hsa_ven_amd_aqlprofile_legacy_get_pm4");
-    api->hsa_ven_amd_aqlprofile_get_info =
-      (decltype(::hsa_ven_amd_aqlprofile_get_info)*)
-        dlsym(handle, "hsa_ven_amd_aqlprofile_get_info");
-    api->hsa_ven_amd_aqlprofile_iterate_data =
-      (decltype(::hsa_ven_amd_aqlprofile_iterate_data)*)
-        dlsym(handle, "hsa_ven_amd_aqlprofile_iterate_data");
+  api->hsa_ven_amd_aqlprofile_error_string =
+      (decltype(::hsa_ven_amd_aqlprofile_error_string)*)dlsym(
+          handle, "hsa_ven_amd_aqlprofile_error_string");
+  api->hsa_ven_amd_aqlprofile_validate_event =
+      (decltype(::hsa_ven_amd_aqlprofile_validate_event)*)dlsym(
+          handle, "hsa_ven_amd_aqlprofile_validate_event");
+  api->hsa_ven_amd_aqlprofile_start =
+      (decltype(::hsa_ven_amd_aqlprofile_start)*)dlsym(handle, "hsa_ven_amd_aqlprofile_start");
+  api->hsa_ven_amd_aqlprofile_stop =
+      (decltype(::hsa_ven_amd_aqlprofile_stop)*)dlsym(handle, "hsa_ven_amd_aqlprofile_stop");
+  api->hsa_ven_amd_aqlprofile_legacy_get_pm4 =
+      (decltype(::hsa_ven_amd_aqlprofile_legacy_get_pm4)*)dlsym(
+          handle, "hsa_ven_amd_aqlprofile_legacy_get_pm4");
+  api->hsa_ven_amd_aqlprofile_get_info = (decltype(::hsa_ven_amd_aqlprofile_get_info)*)dlsym(
+      handle, "hsa_ven_amd_aqlprofile_get_info");
+  api->hsa_ven_amd_aqlprofile_iterate_data =
+      (decltype(::hsa_ven_amd_aqlprofile_iterate_data)*)dlsym(
+          handle, "hsa_ven_amd_aqlprofile_iterate_data");
 
   return HSA_STATUS_SUCCESS;
 }
@@ -262,7 +261,7 @@ bool HsaRsrcFactory::CreateSignal(uint32_t value, hsa_signal_t* signal) {
 // @return uint8_t* Pointer to buffer, null if allocation fails.
 //
 uint8_t* HsaRsrcFactory::AllocateLocalMemory(const AgentInfo* agent_info, size_t size) {
-  hsa_status_t status;
+  hsa_status_t status = HSA_STATUS_ERROR;
   uint8_t* buffer = NULL;
   size = (size + MEM_PAGE_MASK) & ~MEM_PAGE_MASK;
 
@@ -274,13 +273,14 @@ uint8_t* HsaRsrcFactory::AllocateLocalMemory(const AgentInfo* agent_info, size_t
     }
   } else {
     // Allocate in system memory if local memory is not available
-    status = hsa_memory_allocate(agent_info->kernarg_region, size, (void**)&buffer);
+    status =
+        hsa_memory_allocate(agent_info->kernarg_region, size, reinterpret_cast<void**>(&buffer));
   }
 
   return (status == HSA_STATUS_SUCCESS) ? buffer : NULL;
 }
 
-// Allocate memory tp pass kernel parameters.
+// Allocate memory to pass kernel parameters.
 //
 // @param agent_info Agent from whose memory region to allocate
 //
@@ -289,11 +289,37 @@ uint8_t* HsaRsrcFactory::AllocateLocalMemory(const AgentInfo* agent_info, size_t
 // @return uint8_t* Pointer to buffer, null if allocation fails.
 //
 uint8_t* HsaRsrcFactory::AllocateSysMemory(const AgentInfo* agent_info, size_t size) {
-  hsa_status_t status;
+  hsa_status_t status = HSA_STATUS_ERROR;
   size = (size + MEM_PAGE_MASK) & ~MEM_PAGE_MASK;
 
   uint8_t* buffer = NULL;
-  status = hsa_memory_allocate(agent_info->kernarg_region, size, (void**)&buffer);
+  status = hsa_memory_allocate(agent_info->kernarg_region, size, reinterpret_cast<void**>(&buffer));
+
+  return (status == HSA_STATUS_SUCCESS) ? buffer : NULL;
+}
+
+// Allocate memory for command buffer.
+//
+// @param agent_info Agent from whose memory region to allocate
+//
+// @param size Size of memory in terms of bytes
+//
+// @return uint8_t* Pointer to buffer, null if allocation fails.
+//
+uint8_t* HsaRsrcFactory::AllocateCmdMemory(const AgentInfo* agent_info, size_t size) {
+  hsa_status_t status = HSA_STATUS_ERROR;
+  size = (size + MEM_PAGE_MASK) & ~MEM_PAGE_MASK;
+
+  uint8_t* buffer = NULL;
+  if (agent_info->is_apu) {
+    buffer = reinterpret_cast<uint8_t*>(
+        mmap(NULL, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_SHARED | MAP_ANONYMOUS, 0, 0));
+    status = HSA_STATUS_SUCCESS;
+  } else {
+    status =
+        hsa_memory_allocate(agent_info->kernarg_region, size, reinterpret_cast<void**>(&buffer));
+  }
+
   return (status == HSA_STATUS_SUCCESS) ? buffer : NULL;
 }
 

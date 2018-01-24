@@ -82,7 +82,8 @@ class TestPGenSqtt : public TestPGen {
     // AllocateSystem(command_buffer_alignment, command_buffer_size,
     //                MODE_HOST_ACC|MODE_DEV_ACC|MODE_EXEC_DATA)
     profile_.command_buffer.ptr =
-        GetRsrcFactory()->AllocateSysMemory(GetAgentInfo(), command_buffer_size);
+        GetRsrcFactory()->AllocateCmdMemory(GetAgentInfo(), command_buffer_size);
+    TEST_ASSERT(profile_.command_buffer.ptr != NULL);
     profile_.command_buffer.size = command_buffer_size;
     TEST_ASSERT((reinterpret_cast<uintptr_t>(profile_.command_buffer.ptr) &
                  (command_buffer_alignment - 1)) == 0);
@@ -92,6 +93,7 @@ class TestPGenSqtt : public TestPGen {
     //               MODE_DEV_ACC)
     profile_.output_buffer.ptr =
         GetRsrcFactory()->AllocateLocalMemory(GetAgentInfo(), output_buffer_size);
+    TEST_ASSERT(profile_.output_buffer.ptr != NULL);
     profile_.output_buffer.size = output_buffer_size;
     TEST_ASSERT((reinterpret_cast<uintptr_t>(profile_.output_buffer.ptr) &
                  (output_buffer_alignment - 1)) == 0);

@@ -62,6 +62,9 @@ struct AgentInfo {
   // Agent type - Cpu = 0, Gpu = 1 or Dsp = 2
   uint32_t dev_type;
 
+  // APU flag
+  bool is_apu;
+
   // Name of Agent whose length is less than 64
   char name[64];
 
@@ -172,7 +175,7 @@ class HsaRsrcFactory {
   //
   uint8_t* AllocateLocalMemory(const AgentInfo* agent_info, size_t size);
 
-  // Allocate memory tp pass kernel parameters.
+  // Allocate memory to pass kernel parameters.
   //
   // @param agent_info Agent from whose memory region to allocate
   //
@@ -181,6 +184,16 @@ class HsaRsrcFactory {
   // @return uint8_t* Pointer to buffer, null if allocation fails.
   //
   uint8_t* AllocateSysMemory(const AgentInfo* agent_info, size_t size);
+
+  // Allocate memory for command buffer.
+  //
+  // @param agent_info Agent from whose memory region to allocate
+  //
+  // @param size Size of memory in terms of bytes
+  //
+  // @return uint8_t* Pointer to buffer, null if allocation fails.
+  //
+  uint8_t* AllocateCmdMemory(const AgentInfo* agent_info, size_t size);
 
   // Transfer data method
   bool TransferData(void* dest_buff, void* src_buff, uint32_t length, bool host_to_dev);

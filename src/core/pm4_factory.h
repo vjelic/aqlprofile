@@ -107,12 +107,8 @@ class Pm4Factory {
   uint32_t FindBlock(const char* name) const { return block_map_.Find(name); }
 
  protected:
-  explicit Pm4Factory(const BlockInfoMap& map) :
-    cmd_builder_(NULL),
-    pmc_builder_(NULL),
-    sqtt_builder_(NULL),
-    block_map_(map)
-  {}
+  explicit Pm4Factory(const BlockInfoMap& map)
+      : cmd_builder_(NULL), pmc_builder_(NULL), sqtt_builder_(NULL), block_map_(map) {}
 
   virtual ~Pm4Factory() {
     delete cmd_builder_;
@@ -259,7 +255,7 @@ inline gpu_id_t Pm4Factory::GetGpuId(const hsa_agent_t agent) {
         throw aql_profile_exc_msg(oss.str());
       }
     }
-  } else if (strncmp(agent_name, "gfx900", 6) == 0) {
+  } else if ((strncmp(agent_name, "gfx900", 6) == 0) || (strncmp(agent_name, "gfx902", 6) == 0)) {
     gpu_id = GFX9_GPU_ID;
   } else {
     throw aql_profile_exc_val<std::string>("GFXIP is not supported", agent_name);

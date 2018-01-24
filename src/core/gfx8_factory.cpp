@@ -11,7 +11,9 @@ class Gfx8Factory : public Pm4Factory {
  public:
   Gfx8Factory() : Pm4Factory(BlockInfoMap(block_table_, sizeof(block_table_))) { Init(); }
   Gfx8Factory(const GpuBlockInfo** table, const uint32_t& size)
-      : Pm4Factory(BlockInfoMap(table, size)) { Init(); }
+      : Pm4Factory(BlockInfoMap(table, size)) {
+    Init();
+  }
 
  protected:
   void Init();
@@ -23,10 +25,12 @@ void Gfx8Factory::Init() {
   Pm4Factory::cmd_builder_ = new pm4_builder::Gfx8CmdBuilder;
   if (Pm4Factory::cmd_builder_ == NULL) throw aql_profile_exc_msg("CmdBuilder allocation failed");
 
-  Pm4Factory::pmc_builder_ = new pm4_builder::GpuPmcBuilder<pm4_builder::Gfx8CmdBuilder, gfx8_cntx_prim>;
+  Pm4Factory::pmc_builder_ =
+      new pm4_builder::GpuPmcBuilder<pm4_builder::Gfx8CmdBuilder, gfx8_cntx_prim>;
   if (Pm4Factory::pmc_builder_ == NULL) throw aql_profile_exc_msg("PmcBuilder allocation failed");
 
-  Pm4Factory::sqtt_builder_ = new pm4_builder::GpuSqttBuilder<pm4_builder::Gfx8CmdBuilder, gfx8_cntx_prim>;
+  Pm4Factory::sqtt_builder_ =
+      new pm4_builder::GpuSqttBuilder<pm4_builder::Gfx8CmdBuilder, gfx8_cntx_prim>;
   if (Pm4Factory::sqtt_builder_ == NULL) throw aql_profile_exc_msg("SqttBuilder allocation failed");
 }
 

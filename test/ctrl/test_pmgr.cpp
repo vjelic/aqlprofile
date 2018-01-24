@@ -128,7 +128,7 @@ bool TestPMgr::Initialize(int argc, char** argv) {
   hsa_status_t status = HSA_STATUS_ERROR;
   status = hsa_signal_create(1, 0, NULL, &post_signal_);
   TEST_ASSERT(status == HSA_STATUS_SUCCESS);
-  api_ = HsaRsrcFactory::Instance().AqlProfileApi();;
+  api_ = HsaRsrcFactory::Instance().AqlProfileApi();
 
   return true;
 }
