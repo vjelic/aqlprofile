@@ -10,6 +10,10 @@
 #include "pm4/pmc_builder.h"
 #include "pm4/sqtt_builder.h"
 
+#ifndef AQL_PROFILE_READ_API_ENABLE
+#define AQL_PROFILE_READ_API_ENABLE 0
+#endif
+
 #define PUBLIC_API __attribute__((visibility("default")))
 #define DESTRUCTOR_API __attribute__((destructor))
 #define ERR_CHECK(cond, err, msg)                                                                  \
@@ -28,6 +32,7 @@ namespace aql_profile {
 class CommandBufferMgr {
  public:
   struct info_t {
+    uint32_t rdcmds_size;
     uint32_t precmds_size;
     uint32_t postcmds_size;
   };
@@ -46,6 +51,18 @@ class CommandBufferMgr {
     if (buffer_.size == 0)
       throw aql_profile_exc_msg("CommandBufferMgr::SetPrefix(): buffer size set to zero");
     return (buffer_.size != 0) ? reinterpret_cast<char*>(buffer_.ptr) : NULL;
+  }
+
+  bool SetRdSize(const uint32_t& rd_data_size) {
+    const uint32_t size = Align(rd_data_size);
+    const bool suc = (size <= buffer_.size);
+    if (suc) {
+      info_->rdcmds_size = rd_data_size;
+      buffer_.size -= size;
+    }
+    if (!suc)
+      throw aql_profile_exc_msg("CommandBufferMgr::SetRdSize(): size set out of the buffer");
+    return suc;
   }
 
   bool SetPreSize(const uint32_t& pre_data_size) {
@@ -82,6 +99,13 @@ class CommandBufferMgr {
 
   uint32_t GetSize() const { return GetEndOffset(); }
 
+  descriptor_t GetRdDescr() const {
+    descriptor_t descr;
+    descr.ptr = reinterpret_cast<char*>(buffer_.ptr) + GetRdOffset();
+    descr.size = info_->rdcmds_size;
+    return descr;
+  }
+
   descriptor_t GetPreDescr() const {
     descriptor_t descr;
     descr.ptr = reinterpret_cast<char*>(buffer_.ptr) + GetPreOffset();
@@ -108,7 +132,8 @@ class CommandBufferMgr {
     if (info_slot_) *info_ = *info_slot_;
   }
 
-  uint32_t GetPreOffset() const { return prefix_size_; }
+  uint32_t GetRdOffset() const { return prefix_size_; }
+  uint32_t GetPreOffset() const { return GetRdOffset() + Align(info_->rdcmds_size); }
   uint32_t GetPostOffset() const { return GetPreOffset() + Align(info_->precmds_size); }
   uint32_t GetEndOffset() const { return GetPostOffset() + Align(info_->postcmds_size); }
 
@@ -242,14 +267,40 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
       pm4_builder::PmcBuilder* pmc_builder = pm4_factory->GetPmcBuilder();
       const pm4_builder::counters_vector countersVec = CountersVec(profile, pm4_factory);
 
+#if AQL_PROFILE_READ_API_ENABLE
+      // Generate read commands
+      {
+        const uint32_t data_size =
+            pmc_builder->Read(&commands, countersVec, profile->output_buffer.ptr);
+        ERR_CHECK(data_size == 0, HSA_STATUS_ERROR, "PMC Builder Read(): data size set to zero");
+        if (profile->output_buffer.size < data_size) {
+          profile->output_buffer.size = data_size;
+        }
+        assert(data_size <= profile->output_buffer.size);
+        if (data_size > profile->output_buffer.size) {
+          ERR_LOGGING << "data size assertion failed, data_size(" << data_size << "), buffer size("
+                      << profile->output_buffer.size << ")";
+          return HSA_STATUS_ERROR;
+        }
+        cmd_buffer_mgr.SetRdSize(commands.Size());
+      }
+
+      // Copy generated read commands
+      if (profile->command_buffer.ptr != NULL) {
+        const aql_profile::descriptor_t rd_descr = cmd_buffer_mgr.GetRdDescr();
+        memcpy(rd_descr.ptr, commands.Data(), rd_descr.size);
+        commands.Clear();
+      }
+#endif  // AQL_PROFILE_READ_API_ENABLE
+
       // Generate start commands
-      pmc_builder->Begin(&commands, countersVec);
+      pmc_builder->Start(&commands, countersVec);
       cmd_buffer_mgr.SetPreSize(commands.Size());
 
       // Generate stop commands
       const uint32_t data_size =
-          pmc_builder->End(&commands, countersVec, profile->output_buffer.ptr);
-      ERR_CHECK(data_size == 0, HSA_STATUS_ERROR, "PMC Builder end(): data size set to zero");
+          pmc_builder->Stop(&commands, countersVec, profile->output_buffer.ptr);
+      ERR_CHECK(data_size == 0, HSA_STATUS_ERROR, "PMC Builder Stop(): data size set to zero");
       if (profile->output_buffer.size < data_size) {
         profile->output_buffer.size = data_size;
       }
@@ -370,6 +421,26 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_stop(const hsa_ven_amd_aqlprofile
 
   return HSA_STATUS_SUCCESS;
 }
+
+#if AQL_PROFILE_READ_API_ENABLE
+// Method to populate the provided AQL packet with profiling stop commands
+PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_read(const hsa_ven_amd_aqlprofile_profile_t* profile,
+                                                    aql_profile::packet_t* aql_read_packet) {
+  try {
+    // Populate read aql packet
+    aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile);
+    pm4_builder::CmdBuilder* cmd_writer = pm4_factory->GetCmdBuilder();
+    aql_profile::CommandBufferMgr cmd_buffer_mgr(profile);
+    const aql_profile::descriptor_t rd_descr = cmd_buffer_mgr.GetRdDescr();
+    aql_profile::PopulateAql(rd_descr.ptr, rd_descr.size, cmd_writer, aql_read_packet);
+  } catch (std::exception& e) {
+    ERR_LOGGING << e.what();
+    return HSA_STATUS_ERROR;
+  }
+
+  return HSA_STATUS_SUCCESS;
+}
+#endif  // AQL_PROFILE_READ_API_ENABLE
 
 // Legacy devices, converting of the profiling AQL packet to PM4 packet blob
 PUBLIC_API hsa_status_t

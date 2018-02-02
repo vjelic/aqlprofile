@@ -36,11 +36,15 @@ class PmcBuilder {
  public:
   virtual ~PmcBuilder() {}
   // Generate start profiling commands.
-  virtual void Begin(CmdBuffer* cmd_buffer, const counters_vector& counters_vec) = 0;
+  virtual void Start(CmdBuffer* cmd_buffer, const counters_vector& counters_vec) = 0;
   // Generate stop profiling commands.
   // Return actual required data buffer size.
-  virtual uint32_t End(CmdBuffer* cmd_buffer, const counters_vector& counters_vec,
-                       void* data_buffer) = 0;
+  virtual uint32_t Stop(CmdBuffer* cmd_buffer, const counters_vector& counters_vec,
+                        void* data_buffer) = 0;
+  // Generate read profiling commands.
+  // Return actual required data buffer size.
+  virtual uint32_t Read(CmdBuffer* cmd_buffer, const counters_vector& counters_vec,
+                        void* data_buffer) = 0;
 
  protected:
   // Shader Engines number on the GPU
@@ -52,7 +56,7 @@ template <typename Builder, typename Primitives>
 class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives {
  public:
   // Build PMC start PM4 comands
-  void Begin(CmdBuffer* cmd_buffer, const counters_vector& counters_vec) {
+  void Start(CmdBuffer* cmd_buffer, const counters_vector& counters_vec) {
     // Reset Grbm to its default state - broadcast
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
                                         Primitives::grbm_broadcast_value());
@@ -203,7 +207,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
   }
 
   // Build PMC stop PM4 comands
-  uint32_t End(CmdBuffer* cmd_buffer, const counters_vector& counters_vec, void* data_buffer) {
+  uint32_t Stop(CmdBuffer* cmd_buffer, const counters_vector& counters_vec, void* data_buffer) {
     // Issue barrier command to wait for dispatch to complete
     Builder::BuildWriteWaitIdlePacket(cmd_buffer);
     // Stop and freeze counters
@@ -315,6 +319,91 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
     // was disabled during Perf Cntrs collection session
     if (Primitives::GFXIP_LEVEL == 9)
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_PERFMON_CLK_CNTL_ADDR, 0);
+    // Return amount of data to read
+    return read_counter * sizeof(uint32_t);
+  }
+
+  // Build PMC read PM4 comands
+  uint32_t Read(CmdBuffer* cmd_buffer, const counters_vector& counters_vec, void* data_buffer) {
+    // Reset Grbm to its default state - broadcast
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
+                                        Primitives::grbm_broadcast_value());
+    // Iterate through the list of blocks to create PM4 packets to read counter values
+    std::map<block_des_t, uint32_t, lt_block_des> index_map;
+    uint32_t read_counter = 0;
+    for (const auto& counter_des : counters_vec) {
+      const auto* block_info = counter_des.block_info;
+      const auto& block_des = counter_des.block_des;
+      const auto& reg_info = block_info->counter_reg_info[counter_des.index];
+
+      if (block_info->attr & CounterBlockMcSeqAttr) {
+        Builder::BuildWritePConfigRegPacket(cmd_buffer, reg_info.control_addr,
+                                            Primitives::mc_config_value(counter_des));
+        uint32_t* data = reinterpret_cast<uint32_t*>(data_buffer) + read_counter;
+        *reinterpret_cast<uint64_t*>(data) = 0;
+        Builder::BuildCopyCounterDataPacket(cmd_buffer, reg_info.register_addr_lo,
+                                            reg_info.register_addr_hi, data,
+                                            Primitives::mc_channel_mask(counter_des));
+        read_counter += 2;
+      } else if (block_info->attr & CounterBlockMcSeqHbmAttr) {
+        // Select the MCD tile to read from.
+        // MC_CONFIG_MCD = (1 << <MCD>) | (MCD << 8)
+        Builder::BuildWritePConfigRegPacket(
+            cmd_buffer, Primitives::MC_CONFIG_MCD_ADDR,
+            Primitives::mc_config_mcd_hbm_sample_value(counter_des));
+        // Select which perf counter to read for the channel
+        // MC_SEQ_PERFCOUNTER_RSLT_CNTL_M<CHANNEL>::PERF_COUNTER_SELECT = <COUNTERID>
+        Builder::BuildWritePConfigRegPacket(
+            cmd_buffer, Primitives::mc_seq_perfcounter_rslt_cntl_addr(counter_des),
+            Primitives::mc_seq_perfcounter_rslt_cntl_value(counter_des));
+        // Read the channel counter registers
+        // MC_SEQ_PERFCOUNTER_LO_M<CHANNEL> and MC_SEQ_PERFCOUNTER_HI_M<CHANNEL>
+        uint32_t* data = reinterpret_cast<uint32_t*>(data_buffer) + read_counter;
+        Builder::BuildCopyCounterDataPacket(
+            cmd_buffer, Primitives::mc_hbm_register_lo_addr(counter_des),
+            Primitives::mc_hbm_register_hi_addr(counter_des), data, 3);
+        read_counter += 2;
+      } else if (block_info->attr & CounterBlockMcAttr) {
+        if (block_info->instance_count > 1) {
+          Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
+                                              Primitives::grbm_inst_index_value(block_des.index));
+        }
+        Builder::BuildWritePConfigRegPacket(cmd_buffer, reg_info.control_addr,
+                                            Primitives::mc_config_value(counter_des));
+        uint32_t* data = reinterpret_cast<uint32_t*>(data_buffer) + read_counter;
+        Builder::BuildCopyCounterDataPacket(cmd_buffer, reg_info.register_addr_lo,
+                                            reg_info.register_addr_hi, data, 3);
+        read_counter += 2;
+      } else {
+        const uint32_t se_end_index = (block_info->attr & CounterBlockSeAttr) ? se_number_ : 1;
+        for (uint32_t se_index = 0; se_index < se_end_index; ++se_index) {
+          uint32_t grbm_value = Primitives::grbm_broadcast_value();
+          if ((block_info->instance_count > 1) && (block_info->attr & CounterBlockSeAttr)) {
+            grbm_value = Primitives::grbm_inst_se_index_value(block_des.index, se_index);
+          } else if (block_info->instance_count > 1) {
+            grbm_value = Primitives::grbm_inst_index_value(block_des.index);
+          } else if (block_info->attr & CounterBlockSeAttr) {
+            grbm_value = Primitives::grbm_se_index_value(se_index);
+          }
+          Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
+                                              grbm_value);
+          Builder::BuildCopyCounterDataPacket(
+              cmd_buffer, reg_info.register_addr_lo, reg_info.register_addr_hi,
+              reinterpret_cast<uint32_t*>(data_buffer) + read_counter, 3);
+          read_counter += 2;
+        }
+      }
+    }
+    // Reset MC config to broadcast MCD tiles
+    if (counters_vec.get_attr() & CounterBlockMcSeqAttr)
+      Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::MC_CONFIG_MCD_ADDR,
+                                          Primitives::mc_broadcast_mcd_value());
+    if (counters_vec.get_attr() & CounterBlockMcSeqHbmAttr)
+      Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::MC_CONFIG_MCD_ADDR,
+                                          Primitives::mc_hbm_broadcast_mcd_value());
+    // Reset Grbm to its default state - broadcast
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
+                                        Primitives::grbm_broadcast_value());
     // Return amount of data to read
     return read_counter * sizeof(uint32_t);
   }

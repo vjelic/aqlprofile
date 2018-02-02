@@ -50,6 +50,9 @@ class CmdBuffer {
   /// @brief Return address of the start of accumulated commands.
   const void* Data() const { return &data_[0]; }
 
+  /// @brief Clear buffer.
+  const void Clear() { return data_.clear(); }
+
  private:
   /// @brief Increase Gpu command buffer by specified size
   /// @param size Size in bytes by which command buffer should be resized.
