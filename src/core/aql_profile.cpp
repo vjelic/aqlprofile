@@ -422,10 +422,10 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_stop(const hsa_ven_amd_aqlprofile
   return HSA_STATUS_SUCCESS;
 }
 
-#if AQL_PROFILE_READ_API_ENABLE
 // Method to populate the provided AQL packet with profiling stop commands
 PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_read(const hsa_ven_amd_aqlprofile_profile_t* profile,
                                                     aql_profile::packet_t* aql_read_packet) {
+#if AQL_PROFILE_READ_API_ENABLE
   try {
     // Populate read aql packet
     aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile);
@@ -439,8 +439,11 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_read(const hsa_ven_amd_aqlprofile
   }
 
   return HSA_STATUS_SUCCESS;
-}
+#else
+  ERR_LOGGING << "read API disabled";
+  return HSA_STATUS_ERROR;
 #endif  // AQL_PROFILE_READ_API_ENABLE
+}
 
 // Legacy devices, converting of the profiling AQL packet to PM4 packet blob
 PUBLIC_API hsa_status_t
