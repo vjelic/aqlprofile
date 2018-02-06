@@ -124,11 +124,11 @@ class TestPGenSqtt : public TestPGen {
 
       void* sys_buf = GetRsrcFactory()->AllocateSysMemory(GetAgentInfo(), it->sqtt_data.size);
       TEST_ASSERT(sys_buf != NULL);
-      if (sys_buf == NULL) return HSA_STATUS_ERROR;
+      if (sys_buf == NULL) return false;
 
       hsa_status_t status = hsa_memory_copy(sys_buf, it->sqtt_data.ptr, it->sqtt_data.size);
       TEST_ASSERT(status == HSA_STATUS_SUCCESS);
-      if (status != HSA_STATUS_SUCCESS) return status;
+      if (status != HSA_STATUS_SUCCESS) return false;
 
       std::string file_name;
       file_name.append("sqtt_dump_");
