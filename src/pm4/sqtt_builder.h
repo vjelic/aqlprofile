@@ -104,6 +104,7 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
     // to 4KB per thread trace specification
     uint64_t base_addr = reinterpret_cast<uint64_t>(config->data_buffer_ptr);
     const uint32_t base_step = config->data_buffer_size / config->se_number;
+    const uint32_t sqtt_size = Primitives::sqtt_size_value(base_step);
     for (unsigned se_index = 0; se_index < config->se_number; ++se_index, base_addr += base_step) {
       // Program Grbm to direct writes to one SE
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
@@ -113,7 +114,7 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
                                           Primitives::sqtt_base_value(base_addr));
       // Program the size of thread trace buffer
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_SIZE_ADDR,
-                                          Primitives::sqtt_size_value(config->data_buffer_size));
+                                          sqtt_size);
       // Program the thread trace ctrl register
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_CTRL_ADDR,
                                           Primitives::sqtt_ctrl_value());
