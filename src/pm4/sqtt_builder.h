@@ -9,8 +9,10 @@ class CmdBuilder;
 struct ThreadTraceConfig;
 
 enum {
+  // Mask to check if memory error was received
+  TT_CONTROL_UTC_ERR_MASK = 0x10000000,
   // Mask to check if SQTT buffer is wrapped
-  TT_CONTROL_WRAP_MASK = 0x80000000,
+  TT_CONTROL_FULL_MASK = 0x80000000,
   // Move them as static variables later on
   TT_WRITE_PTR_MASK = 0x3FFFFFFF,
   // Size of block in bytesper increment in WPTR
@@ -109,6 +111,8 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
       // Program Grbm to direct writes to one SE
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
                                           Primitives::grbm_se_sh_index_value(se_index, 0));
+      // Set SQTT STATUS to 0
+      Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_STATUS_ADDR, 0);
       // Program base address of buffer to use for thread trace
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_BASE_ADDR,
                                           Primitives::sqtt_base_value(base_addr));

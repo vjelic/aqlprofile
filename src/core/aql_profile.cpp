@@ -341,7 +341,7 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
             case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_MASK:
               if ((p->value & 0x00C0D0) != 0)
                 throw aql_profile::aql_profile_exc_val<uint32_t>(
-                    "ThreadTraceConfig: Mask should have bits [4,6,7] set to Zero, Mask", p->value);
+                    "ThreadTraceConfig: Mask should have bits [4,6,7,14,15] set to Zero, Mask", p->value);
               sqtt_config.mask = p->value;
               break;
             case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_TOKEN_MASK:
@@ -352,11 +352,6 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
               sqtt_config.tokenMask = p->value;
               break;
             case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_TOKEN_MASK2:
-              if ((p->value & 0xFFFF0000) != 0)
-                throw aql_profile::aql_profile_exc_val<uint32_t>(
-                    "ThreadTraceConfig: TokenMask2 should have bits [31:16] set to Zero, "
-                    "TokenMask2",
-                    p->value);
               sqtt_config.tokenMask2 = p->value;
               break;
             default:
@@ -571,10 +566,16 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
       for (unsigned i = 0; i < se_number; ++i) {
         const uint32_t status_ind =
             (pm4_builder::TT_STATUS_IDX_MAX * i) + pm4_builder::TT_STATUS_IDX_STATUS;
-        if (control_ptr[status_ind] & pm4_builder::TT_CONTROL_WRAP_MASK) {
-          ERR_LOGGING << "SQTT data buffer wrapped, SE(" << i << ")";
+        if (control_ptr[status_ind] & pm4_builder::TT_CONTROL_UTC_ERR_MASK) {
+          ERR_LOGGING << "SQTT memory error received, SE(" << i << ")";
           return HSA_STATUS_ERROR;
         }
+#if 0
+        if (control_ptr[status_ind] & pm4_builder::TT_CONTROL_FULL_MASK) {
+          ERR2_LOGGING << "SQTT data buffer full, SE(" << i << ")";
+          return HSA_STATUS_ERROR;
+        }
+#endif
       }
 
       // SQTT output buffer and capacity per ShaderEngine
@@ -588,6 +589,11 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
             (pm4_builder::TT_STATUS_IDX_MAX * i) + pm4_builder::TT_STATUS_IDX_WPTR;
         const uint32_t sample_size = (control_ptr[wptr_ind] & pm4_builder::TT_WRITE_PTR_MASK) *
             pm4_builder::TT_WRITE_PTR_BLK;
+        if (sample_size > sample_capacity) {
+          ERR_LOGGING << "SQTT data out of bounds, sample_id(" << i << ") size(" << sample_size
+                      << "/" << sample_capacity << ")";
+          return HSA_STATUS_ERROR;
+        }
 
         hsa_ven_amd_aqlprofile_info_data_t sample_info;
         sample_info.sample_id = i;

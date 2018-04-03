@@ -131,6 +131,10 @@ class Logger {
   (aql_profile::Logger::Instance() << aql_profile::Logger::endl                                    \
                                    << "Error: " << __FUNCTION__                                    \
                                    << "(): " << aql_profile::Logger::begm)
+#define ERR2_LOGGING                                                                               \
+  (aql_profile::Logger::Instance() << aql_profile::Logger::endl                                    \
+                                   << "Error: " << __FUNCTION__                                    \
+                                   << "(): ")
 #define INFO_LOGGING                                                                               \
   (aql_profile::Logger::Instance() << aql_profile::Logger::endl                                    \
                                    << "Info: " << __FUNCTION__                                     \
