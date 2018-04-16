@@ -148,7 +148,7 @@ class Logger {
 #ifdef DEBUG
 #define DBG_LOGGING                                                                                \
   (aql_profile::Logger::Instance() << aql_profile::Logger::endl                                    \
-                                   << "Debug: in " << __FUNCTION__ <<                              \
+                                   << "Debug: in " << __FUNCTION__                                 \
                                    << " at " << __FILE__ << " line " << __LINE__                   \
                                    << aql_profile::Logger::begm)
 #endif

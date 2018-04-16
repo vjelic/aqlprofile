@@ -32,32 +32,32 @@ namespace aql_profile {
 class CommandBufferMgr {
  public:
   struct info_t {
+    uint32_t prefix_size;
     uint32_t rdcmds_size;
     uint32_t precmds_size;
     uint32_t postcmds_size;
   };
 
-  explicit CommandBufferMgr(const profile_t* profile) { Init(profile->command_buffer); }
+  CommandBufferMgr(void* ptr, const uint32_t& size) { Init(descriptor_t{ptr, size}, false); }
+  explicit CommandBufferMgr(const profile_t* profile) { Init(profile->command_buffer, true); }
 
-  CommandBufferMgr(void* ptr, const uint32_t& size) { Init(descriptor_t{ptr, size}); }
-
-  void* SetPrefix(const uint32_t& data_size) {
-    const uint32_t size = Align(data_size);
-    if (size > prefix_size_) {
-      const uint32_t delta = size - prefix_size_;
-      prefix_size_ = size;
-      buffer_.size -= (delta < buffer_.size) ? delta : buffer_.size;
-    }
+  char* GetPrefix() { return reinterpret_cast<char*>(buffer_.ptr); }
+  char* GetPrefix1() { return reinterpret_cast<char*>(buffer_.ptr) + sizeof(info_t); }
+  char* AddPrefix(const uint32_t& delta) {
+    const uint32_t size = Align(delta);
+    char* ptr = (buffer_.ptr != NULL) ? GetPrefix() + info_.prefix_size : NULL;
+    info_.prefix_size += delta;
+    buffer_.size -= (size < buffer_.size) ? size : buffer_.size;
     if (buffer_.size == 0)
-      throw aql_profile_exc_msg("CommandBufferMgr::SetPrefix(): buffer size set to zero");
-    return (buffer_.size != 0) ? reinterpret_cast<char*>(buffer_.ptr) : NULL;
+      throw aql_profile_exc_msg("CommandBufferMgr::AddPrefix(): buffer size set to zero");
+    return (buffer_.size != 0) ? ptr : NULL;
   }
 
   bool SetRdSize(const uint32_t& rd_data_size) {
     const uint32_t size = Align(rd_data_size);
     const bool suc = (size <= buffer_.size);
     if (suc) {
-      info_->rdcmds_size = rd_data_size;
+      info_.rdcmds_size = rd_data_size;
       buffer_.size -= size;
     }
     if (!suc)
@@ -69,7 +69,7 @@ class CommandBufferMgr {
     const uint32_t size = Align(pre_data_size);
     const bool suc = (size <= buffer_.size);
     if (suc) {
-      info_->precmds_size = pre_data_size;
+      info_.precmds_size = pre_data_size;
       buffer_.size -= size;
     }
     if (!suc)
@@ -78,13 +78,13 @@ class CommandBufferMgr {
   }
 
   bool Finalize(const uint32_t& data_size) {
-    bool suc = (data_size > info_->precmds_size);
+    bool suc = (data_size > info_.precmds_size);
     if (suc) {
-      const uint32_t post_data_size = data_size - info_->precmds_size;
+      const uint32_t post_data_size = data_size - info_.precmds_size;
       const uint32_t size = Align(post_data_size);
       suc = (size <= buffer_.size);
       if (suc) {
-        info_->postcmds_size = post_data_size;
+        info_.postcmds_size = post_data_size;
         buffer_.size -= size;
       }
       if (!suc)
@@ -92,7 +92,7 @@ class CommandBufferMgr {
     }
     if (!suc) throw aql_profile_exc_msg("CommandBufferMgr::Finalize(): postcmd size is zero");
 
-    if (info_slot_) *info_slot_ = *info_;
+    if (info_slot_) *info_slot_ = info_;
 
     return suc;
   }
@@ -102,40 +102,48 @@ class CommandBufferMgr {
   descriptor_t GetRdDescr() const {
     descriptor_t descr;
     descr.ptr = reinterpret_cast<char*>(buffer_.ptr) + GetRdOffset();
-    descr.size = info_->rdcmds_size;
+    descr.size = info_.rdcmds_size;
     return descr;
   }
 
   descriptor_t GetPreDescr() const {
     descriptor_t descr;
     descr.ptr = reinterpret_cast<char*>(buffer_.ptr) + GetPreOffset();
-    descr.size = info_->precmds_size;
+    descr.size = info_.precmds_size;
     return descr;
   }
 
   descriptor_t GetPostDescr() const {
     descriptor_t descr;
     descr.ptr = reinterpret_cast<char*>(buffer_.ptr) + GetPostOffset();
-    descr.size = info_->postcmds_size;
+    descr.size = info_.postcmds_size;
     return descr;
   }
 
  private:
-  void Init(const descriptor_t& buffer) {
+  void Init(const descriptor_t& buffer, const bool& import) {
     buffer_ = buffer;
-    prefix_size_ = 0;
+    info_ = {};
     info_slot_ = NULL;
-    info_ = &info_val_;
-    *info_ = {};
-    if (buffer_.ptr == NULL) buffer_.size = UINT_MAX;
-    info_slot_ = reinterpret_cast<info_t*>(SetPrefix(sizeof(info_t)));
-    if (info_slot_) *info_ = *info_slot_;
+
+    uint32_t prefix_size = sizeof(info_t);
+    if (buffer_.ptr != NULL) {
+      info_slot_ = reinterpret_cast<info_t*>(GetPrefix());
+      if (import) {
+        prefix_size = info_slot_->prefix_size;
+        info_ = *info_slot_;
+        info_.prefix_size = 0;
+      }
+    } else {
+      buffer_.size = UINT_MAX;
+    }
+    AddPrefix(prefix_size);
   }
 
-  uint32_t GetRdOffset() const { return prefix_size_; }
-  uint32_t GetPreOffset() const { return GetRdOffset() + Align(info_->rdcmds_size); }
-  uint32_t GetPostOffset() const { return GetPreOffset() + Align(info_->precmds_size); }
-  uint32_t GetEndOffset() const { return GetPostOffset() + Align(info_->postcmds_size); }
+  uint32_t GetRdOffset() const { return Align(info_.prefix_size); }
+  uint32_t GetPreOffset() const { return GetRdOffset() + Align(info_.rdcmds_size); }
+  uint32_t GetPostOffset() const { return GetPreOffset() + Align(info_.precmds_size); }
+  uint32_t GetEndOffset() const { return GetPostOffset() + Align(info_.postcmds_size); }
 
   static uint32_t Align(const uint32_t& size) { return (size + align_mask_) & ~align_mask_; }
 
@@ -143,10 +151,8 @@ class CommandBufferMgr {
   static const uint32_t align_mask_ = align_size_ - 1;
 
   descriptor_t buffer_;
-  uint32_t prefix_size_;
-  info_t* info_;
+  info_t info_;
   info_t* info_slot_;
-  info_t info_val_;
 };
 
 
@@ -311,21 +317,18 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
         return HSA_STATUS_ERROR;
       }
     } else if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_SQTT) {
-      const uint32_t se_number = pm4_factory->GetShaderEnginesNumber();
-      const uint32_t control_size =
-          pm4_builder::TT_STATUS_IDX_MAX * sizeof(pm4_builder::ControlType) * se_number;
-      void* control_ptr = cmd_buffer_mgr.SetPrefix(control_size);
-
       pm4_builder::ThreadTraceConfig sqtt_config{};
-      sqtt_config.se_number = se_number;
-      sqtt_config.control_buffer_ptr = control_ptr;
-      sqtt_config.data_buffer_ptr = profile->output_buffer.ptr;
-      sqtt_config.data_buffer_size = profile->output_buffer.size;
+
+      const uint32_t se_number = pm4_factory->GetShaderEnginesNumber();
+      uint32_t se_mask = (1 << se_number) - 1;
 
       if (profile->parameters) {
         for (const hsa_ven_amd_aqlprofile_parameter_t* p = profile->parameters;
              p < (profile->parameters + profile->parameter_count); ++p) {
           switch (p->parameter_name) {
+            case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_SE_MASK:
+              se_mask = p->value;
+              break;
             case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_COMPUTE_UNIT_TARGET:
               if (p->value > 15)
                 throw aql_profile::aql_profile_exc_val<uint32_t>(
@@ -339,9 +342,9 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
               sqtt_config.vmIdMask = p->value;
               break;
             case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_MASK:
-              if ((p->value & 0x00C0D0) != 0)
+              if ((p->value & 0x50) != 0)
                 throw aql_profile::aql_profile_exc_val<uint32_t>(
-                    "ThreadTraceConfig: Mask should have bits [4,6,7,14,15] set to Zero, Mask", p->value);
+                    "ThreadTraceConfig: Mask should have bits [4,6] set to Zero, Mask", p->value);
               sqtt_config.mask = p->value;
               break;
             case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_TOKEN_MASK:
@@ -358,6 +361,38 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
               ERR_LOGGING << "Bad SQTT parameter name (" << p->parameter_name << ")";
               return HSA_STATUS_ERROR_INVALID_ARGUMENT;
           }
+        }
+      }
+
+      uint32_t tnumber = 0;
+      uint32_t tvector = 0;
+      for (unsigned i = 0; i < se_number; ++i, se_mask >>= 1) {
+        if (se_mask & 1) {
+          const uint32_t pos = (pm4_builder::SE_VECTOR_SHIFT * tnumber);
+          const uint32_t val = i << pos;
+          tvector |= val;
+          ++tnumber;
+        }
+      }
+
+      const uint32_t control_size =
+          pm4_builder::TT_STATUS_IDX_MAX * sizeof(pm4_builder::ControlType) * tnumber;
+      char* prefix_ptr = cmd_buffer_mgr.AddPrefix(control_size + sizeof(uint32_t));
+      pm4_builder::ControlType* const control_ptr =
+          reinterpret_cast<pm4_builder::ControlType*>(prefix_ptr + sizeof(uint32_t));
+
+      sqtt_config.se_number = tnumber;
+      sqtt_config.se_vector = tvector;
+      sqtt_config.control_buffer_ptr = control_ptr;
+      sqtt_config.data_buffer_ptr = profile->output_buffer.ptr;
+      sqtt_config.data_buffer_size = profile->output_buffer.size;
+
+      if (prefix_ptr != NULL) {
+        *reinterpret_cast<uint32_t*>(prefix_ptr) = tnumber;
+        for (unsigned i = 0; i < tnumber; ++i, tvector >>= pm4_builder::SE_VECTOR_SHIFT) {
+          const uint32_t se_id_ind =
+              (pm4_builder::TT_STATUS_IDX_MAX * i) + pm4_builder::TT_STATUS_IDX_ID;
+          control_ptr[se_id_ind] = tvector & pm4_builder::SE_VECTOR_MASK;
         }
       }
 
@@ -557,13 +592,13 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
     } else if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_SQTT) {
       // Control buffer was allocated as the CmdBuffer prefix partition
       aql_profile::CommandBufferMgr cmd_buffer_mgr(profile);
-      const uint32_t control_size =
-          pm4_builder::TT_STATUS_IDX_MAX * sizeof(pm4_builder::ControlType) * se_number;
+      const char* const prefix_ptr = cmd_buffer_mgr.GetPrefix1();
+      const uint32_t tnumber = *reinterpret_cast<const uint32_t*>(prefix_ptr);
       const pm4_builder::ControlType* const control_ptr =
-          reinterpret_cast<pm4_builder::ControlType*>(cmd_buffer_mgr.SetPrefix(control_size));
+          reinterpret_cast<const pm4_builder::ControlType*>(prefix_ptr + sizeof(uint32_t));
 
       // Check if SQTT buffer was wrapped
-      for (unsigned i = 0; i < se_number; ++i) {
+      for (unsigned i = 0; i < tnumber; ++i) {
         const uint32_t status_ind =
             (pm4_builder::TT_STATUS_IDX_MAX * i) + pm4_builder::TT_STATUS_IDX_STATUS;
         if (control_ptr[status_ind] & pm4_builder::TT_CONTROL_UTC_ERR_MASK) {
@@ -580,9 +615,13 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
 
       // SQTT output buffer and capacity per ShaderEngine
       void* sample_ptr = profile->output_buffer.ptr;
-      const uint32_t sample_capacity = profile->output_buffer.size / se_number;
+      const uint32_t sample_capacity =
+          (profile->output_buffer.size / tnumber) & ~(pm4_factory->GetSQTTBufferAlignment() - 1);
       // The samples sizes are returned in the control buffer
-      for (unsigned i = 0; i < se_number; ++i) {
+      for (unsigned i = 0; i < tnumber; ++i) {
+        const uint32_t se_id_ind =
+            (pm4_builder::TT_STATUS_IDX_MAX * i) + pm4_builder::TT_STATUS_IDX_ID;
+        const uint32_t se_id = control_ptr[se_id_ind];
         // WPTR specifies the index in thread trace buffer where next token will be
         // written by hardware. The index is incremented by size of 32 bytes.
         const uint32_t wptr_ind =
@@ -596,7 +635,7 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
         }
 
         hsa_ven_amd_aqlprofile_info_data_t sample_info;
-        sample_info.sample_id = i;
+        sample_info.sample_id = se_id;
         sample_info.sqtt_data.ptr = sample_ptr;
         sample_info.sqtt_data.size = sample_size;
         status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_SQTT_DATA, &sample_info, data);

@@ -84,6 +84,8 @@ class Pm4Factory {
 
   // Return Shader Engines number
   const uint32_t GetShaderEnginesNumber() { return 4; }
+  // Return SQTT buffer alignment
+  const uint32_t GetSQTTBufferAlignment() { return 0x1000; }
 
   // Return block info foor a given event
   const GpuBlockInfo* GetBlockInfo(const event_t* event) const {

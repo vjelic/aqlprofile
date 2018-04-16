@@ -2,11 +2,21 @@
 #define SRC_PM4_SQTT_BUILDER_H_
 
 #include <stdint.h>
+#include <iostream>
 
 namespace pm4_builder {
 class CmdBuffer;
 class CmdBuilder;
 struct ThreadTraceConfig;
+
+enum {
+  // SE number
+  SE_NUM_MAX = 4,
+  // SE-mask item mask
+  SE_VECTOR_MASK = SE_NUM_MAX - 1,
+  // SE-mask item shift
+  SE_VECTOR_SHIFT = 2  // LOG2(SE_NUM_MAX)
+};
 
 enum {
   // Mask to check if memory error was received
@@ -16,7 +26,7 @@ enum {
   // Move them as static variables later on
   TT_WRITE_PTR_MASK = 0x3FFFFFFF,
   // Size of block in bytesper increment in WPTR
-  TT_WRITE_PTR_BLK = 32,
+  TT_WRITE_PTR_BLK = 32
 };
 
 // Thread traces status register indices to determine
@@ -25,7 +35,8 @@ enum {
   TT_STATUS_IDX_STATUS = 0,
   TT_STATUS_IDX_CNTR = 1,
   TT_STATUS_IDX_WPTR = 2,
-  TT_STATUS_IDX_MAX = 3
+  TT_STATUS_IDX_ID = 3,
+  TT_STATUS_IDX_MAX = 4
 };
 
 typedef uint32_t ControlType;
@@ -42,8 +53,10 @@ struct ThreadTraceConfig {
   void* data_buffer_ptr;
   uint32_t data_buffer_size;
 
-  // number of Shader Engines on the device
+  // SE number for tracing
   uint32_t se_number;
+  // SE mask for tracing
+  uint32_t se_vector;
 };
 
 // Encapsulates the various Api and structures that are used to enable
@@ -104,10 +117,15 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
     // Iterate through the list of SE's and program the register
     // for carrying address of thread trace buffer which is aligned
     // to 4KB per thread trace specification
+    const uint32_t se_number = config->se_number;
+    uint32_t se_vector = config->se_vector;
     uint64_t base_addr = reinterpret_cast<uint64_t>(config->data_buffer_ptr);
-    const uint32_t base_step = config->data_buffer_size / config->se_number;
-    const uint32_t sqtt_size = Primitives::sqtt_size_value(base_step);
-    for (unsigned se_index = 0; se_index < config->se_number; ++se_index, base_addr += base_step) {
+    const uint32_t base_step_nal = config->data_buffer_size / se_number;
+    const uint32_t sqtt_size = Primitives::sqtt_size_value(base_step_nal);
+    const uint32_t base_step = sqtt_size << Primitives::TT_BUFF_ALIGN_SHIFT;
+    for (unsigned se_count = se_number; se_count > 0;
+         --se_count, se_vector >>= SE_VECTOR_SHIFT, base_addr += base_step) {
+      const unsigned se_index = se_vector & SE_VECTOR_MASK;
       // Program Grbm to direct writes to one SE
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
                                           Primitives::grbm_se_sh_index_value(se_index, 0));
@@ -148,7 +166,10 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
     Builder::BuildWriteWaitIdlePacket(cmd_buffer);
     // Iterate through the list of SE's and read the Status, Counter and
     // Write Pointer registers of Thread Trace subsystem
-    for (unsigned se_index = 0; se_index < config->se_number; se_index++) {
+    const uint32_t se_number = config->se_number;
+    uint32_t se_vector = config->se_vector;
+    for (unsigned se_count = se_number; se_count > 0; --se_count, se_vector >>= SE_VECTOR_SHIFT) {
+      const unsigned se_index = se_vector & SE_VECTOR_MASK;
       // Program Grbm to direct writes to one SE
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
                                           Primitives::grbm_se_sh_index_value(se_index, 0));
