@@ -257,7 +257,10 @@ inline gpu_id_t Pm4Factory::GetGpuId(const hsa_agent_t agent) {
         throw aql_profile_exc_msg(oss.str());
       }
     }
-  } else if ((strncmp(agent_name, "gfx900", 6) == 0) || (strncmp(agent_name, "gfx902", 6) == 0)) {
+  } else if ((strncmp(agent_name, "gfx900", 6) == 0) ||
+             (strncmp(agent_name, "gfx902", 6) == 0) ||
+             (strncmp(agent_name, "gfx906", 6) == 0))
+  {
     gpu_id = GFX9_GPU_ID;
   } else {
     throw aql_profile_exc_val<std::string>("GFXIP is not supported", agent_name);
