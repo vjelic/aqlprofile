@@ -65,7 +65,7 @@ struct ThreadTraceConfig {
 class SqttBuilder {
  public:
   // Destructor of the thread trace service handle
-  virtual ~SqttBuilder(){};
+  virtual ~SqttBuilder() {}
   // Builds Pm4 command stream to program hardware registers that
   // enable a thread trace session, including the issue of an event
   // to begin thread session
@@ -214,6 +214,6 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
   }
 };
 
-}  // pm4_builder
+}  // namespace pm4_builder
 
 #endif  // SRC_PM4_SQTT_BUILDER_H_

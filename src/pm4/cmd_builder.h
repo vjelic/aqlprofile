@@ -138,6 +138,6 @@ inline uint32_t PtrLow32(const void* p) { return reinterpret_cast<uintptr_t>(p);
 /// @brief Returns the upper 32-bits of an address
 inline uint32_t PtrHigh32(const void* p) { return reinterpret_cast<uintptr_t>(p) >> 32; }
 
-}  // pm4_builder
+}  // namespace pm4_builder
 
 #endif  // SRC_PM4_CMD_BUILDER_H_
