@@ -28,8 +28,8 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 
 #include "ctrl/run_kernel.h"
-#include "ctrl/test_pgen_pmc.h"
-#include "ctrl/test_pgen_sqtt.h"
+#include "pgen/test_pgen_pmc.h"
+#include "pgen/test_pgen_sqtt.h"
 #include "simple_convolution/simple_convolution.h"
 
 const int argv_pmc_size = 32;
@@ -68,6 +68,7 @@ int main(int argc, char* argv[]) {
     std::cerr.rdbuf(NULL);
   }
 
+  TestHsa::HsaInstantiate();
   // Run simple convolution test
   if (pmc_enable) {
     if (argc > 1) {
@@ -124,6 +125,7 @@ int main(int argc, char* argv[]) {
   } else {
     ret_val = RunKernel<SimpleConvolution, TestAql>(argc, argv);
   }
+  TestHsa::HsaShutdown();
 
   return (ret_val) ? 0 : 1;
 }

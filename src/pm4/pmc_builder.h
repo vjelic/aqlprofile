@@ -319,7 +319,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
     // was disabled during Perf Cntrs collection session
     if (Primitives::GFXIP_LEVEL == 9)
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_PERFMON_CLK_CNTL_ADDR, 0);
-    // Issue a CSPartialFlush cmd including cache flush
+    // Issue barrier command to wait for data copy commands to complete
     Builder::BuildWriteWaitIdlePacket(cmd_buffer);
     // Return amount of data to read
     return read_counter * sizeof(uint32_t);

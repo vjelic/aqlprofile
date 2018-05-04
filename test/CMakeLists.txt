@@ -17,9 +17,9 @@ file( GLOB UTIL_SRC "${TEST_DIR}/util/*.cpp" )
 
 ## Test control sources
 set ( CTRL_SRC
-  ${TEST_DIR}/ctrl/test.cpp
-  ${TEST_DIR}/ctrl/test_pmgr.cpp
+  ${TEST_DIR}/app/test.cpp
   ${TEST_DIR}/ctrl/test_hsa.cpp
+  ${TEST_DIR}/pgen/test_pmgr.cpp
 )
 
 ## Test kernels sources

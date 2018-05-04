@@ -25,16 +25,21 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#ifndef TEST_CTRL_TEST_ASSERT_H_
-#define TEST_CTRL_TEST_ASSERT_H_
+#ifndef TEST_CTRL_TEST_PGEN_H_
+#define TEST_CTRL_TEST_PGEN_H_
 
-#define TEST_ASSERT(cond)                                                                          \
-  {                                                                                                \
-    if (!(cond)) {                                                                                 \
-      std::cerr << "ASSERT FAILED(" << #cond << ") at \"" << __FILE__ << "\" line " << __LINE__    \
-                << std::endl;                                                                      \
-      exit(-1);                                                                                    \
-    }                                                                                              \
-  }
+#include "pgen/test_pmgr.h"
 
-#endif  // TEST_CTRL_TEST_ASSERT_H_
+// SimpleConvolution: Class implements OpenCL SimpleConvolution sample
+class TestPGen : public TestPMgr {
+ protected:
+  typedef hsa_ext_amd_aql_pm4_packet_t packet_t;
+
+  packet_t* PrePacket() { return reinterpret_cast<packet_t*>(&pre_packet_); }
+  packet_t* PostPacket() { return reinterpret_cast<packet_t*>(&post_packet_); }
+
+ public:
+  explicit TestPGen(TestAql* t) : TestPMgr(t) {}
+};
+
+#endif  // TEST_CTRL_TEST_PGEN_H_

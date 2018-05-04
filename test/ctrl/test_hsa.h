@@ -36,15 +36,22 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 // Class implements HSA test
 class TestHsa : public TestAql {
  public:
+  // Instantiate HSA resources
+  static HsaRsrcFactory* HsaInstantiate(const uint32_t agent_ind = agent_id_);
+  static void HsaShutdown();
+  static void SetQueue(hsa_queue_t* queue) { hsa_queue_ = queue; }
+  static uint32_t HsaAgentId() { return agent_id_; }
+
   // Constructor
   explicit TestHsa(TestKernel* test) : test_(test), name_(test->Name()) {
     total_time_taken_ = 0;
     setup_time_taken_ = 0;
     dispatch_time_taken_ = 0;
+    hsa_exec_ = {};
   }
 
   // Get methods for Agent Info, HAS queue, HSA Resourcse Manager
-  AgentInfo* GetAgentInfo() { return agent_info_; }
+  const AgentInfo* GetAgentInfo() { return agent_info_; }
   hsa_queue_t* GetQueue() { return hsa_queue_; }
   HsaRsrcFactory* GetRsrcFactory() { return hsa_rsrc_; }
 
@@ -103,14 +110,20 @@ class TestHsa : public TestAql {
   // Instance of Hsa Resources Factory
   static HsaRsrcFactory* hsa_rsrc_;
 
+  // GPU id
+  static uint32_t agent_id_;
+
   // Handle to an Hsa Gpu Agent
-  static AgentInfo* agent_info_;
+  static const AgentInfo* agent_info_;
 
   // Handle to an Hsa Queue
   static hsa_queue_t* hsa_queue_;
 
   // Test kernel name
   std::string name_;
+
+  // Kernel executable
+  hsa_executable_t hsa_exec_;
 };
 
 #endif  // TEST_CTRL_TEST_HSA_H_

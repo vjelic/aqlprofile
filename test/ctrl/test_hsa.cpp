@@ -29,14 +29,52 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <atomic>
 
-#include "ctrl/test_assert.h"
+#include "util/test_assert.h"
 #include "util/helper_funcs.h"
 #include "util/hsa_rsrc_factory.h"
 
 HsaRsrcFactory* TestHsa::hsa_rsrc_ = NULL;
-AgentInfo* TestHsa::agent_info_ = NULL;
+const AgentInfo* TestHsa::agent_info_ = NULL;
 hsa_queue_t* TestHsa::hsa_queue_ = NULL;
+uint32_t TestHsa::agent_id_ = 0;
 
+HsaRsrcFactory* TestHsa::HsaInstantiate(const uint32_t agent_ind) {
+  // Instantiate an instance of Hsa Resources Factory
+  if (hsa_rsrc_ == NULL) {
+    agent_id_ = agent_ind;
+
+    hsa_rsrc_ = HsaRsrcFactory::Create();
+
+    // Print properties of the agents
+    hsa_rsrc_->PrintGpuAgents("> GPU agents");
+
+    // Create an instance of Gpu agent
+    if (!hsa_rsrc_->GetGpuAgentInfo(agent_ind, &agent_info_)) {
+      agent_info_ = NULL;
+      std::cerr << "> error: agent[" << agent_ind << "] is not found" << std::endl;
+      return NULL;
+    }
+    std::clog << "> Using agent[" << agent_ind << "] : " << agent_info_->name << std::endl;
+
+    // Create an instance of Aql Queue
+    if (hsa_queue_ == NULL) {
+      uint32_t num_pkts = 128;
+      if (hsa_rsrc_->CreateQueue(agent_info_, num_pkts, &hsa_queue_) == false) {
+        hsa_queue_ = NULL;
+        TEST_ASSERT(false);
+      }
+    }
+  }
+  return hsa_rsrc_;
+}
+
+void TestHsa::HsaShutdown() {
+  if (hsa_queue_ != NULL) {
+    hsa_queue_destroy(hsa_queue_);
+    hsa_queue_ = NULL;
+  }
+  if (hsa_rsrc_) hsa_rsrc_->Destroy();
+}
 
 bool TestHsa::Initialize(int arg_cnt, char** arg_list) {
   std::clog << "TestHsa::Initialize :" << std::endl;
@@ -45,25 +83,9 @@ bool TestHsa::Initialize(int arg_cnt, char** arg_list) {
   setup_timer_idx_ = hsa_timer_.CreateTimer();
   dispatch_timer_idx_ = hsa_timer_.CreateTimer();
 
-  // Instantiate an instance of Hsa Resources Factory
-  if (hsa_rsrc_ == NULL) {
-    hsa_rsrc_ = HsaRsrcFactory::Create();
-
-    // Print properties of the agents
-    hsa_rsrc_->PrintGpuAgents("> GPU agents");
-
-    // Create an instance of Gpu agent
-    const char* p = getenv("AQLPROFILE_AGENT_IND");
-    const uint32_t agent_ind = (p == NULL) ? 0 : atol(p);
-    if (!hsa_rsrc_->GetGpuAgentInfo(agent_ind, &agent_info_)) {
-      std::cerr << "> error: agent[" << agent_ind << "] is not found" << std::endl;
-      return false;
-    }
-    std::clog << "> Using agent[" << agent_ind << "] : " << agent_info_->name << std::endl;
-
-    // Create an instance of Aql Queue
-    uint32_t num_pkts = 128;
-    hsa_rsrc_->CreateQueue(agent_info_, num_pkts, &hsa_queue_);
+  if (HsaInstantiate(agent_id_) == NULL) {
+    TEST_ASSERT(false);
+    return false;
   }
 
   // Obtain handle of signal
@@ -90,25 +112,55 @@ bool TestHsa::Setup() {
   // Start the timer object
   hsa_timer_.StartTimer(setup_timer_idx_);
 
+  // Load and Finalize Kernel Code Descriptor
+  const char* brig_path = brig_path_obj_.c_str();
+  bool suc = hsa_rsrc_->LoadAndFinalize(agent_info_, brig_path, name_.c_str(), &hsa_exec_,
+                                        &kernel_code_desc_);
+  if (suc == false) {
+    std::cerr << "Error in loading and finalizing Kernel" << std::endl;
+    return false;
+  }
+
   mem_map_t& mem_map = test_->GetMemMap();
   for (mem_it_t it = mem_map.begin(); it != mem_map.end(); ++it) {
     mem_descr_t& des = it->second;
-    void* ptr = (des.local) ? hsa_rsrc_->AllocateLocalMemory(agent_info_, des.size)
-                            : hsa_rsrc_->AllocateSysMemory(agent_info_, des.size);
-    des.ptr = ptr;
-    TEST_ASSERT(ptr != NULL);
-    if (ptr == NULL) return false;
+    switch (des.id) {
+      case TestKernel::LOCAL_DES_ID:
+        des.ptr = hsa_rsrc_->AllocateLocalMemory(agent_info_, des.size);
+        break;
+      case TestKernel::KERNARG_DES_ID: {
+        // Check the kernel args size
+        const size_t kernarg_size = des.size;
+        size_t size_info = 0;
+        hsa_executable_symbol_get_info(
+            kernel_code_desc_, HSA_EXECUTABLE_SYMBOL_INFO_KERNEL_KERNARG_SEGMENT_SIZE, &size_info);
+        const bool kernarg_missmatch = (kernarg_size > size_info);
+        if (kernarg_missmatch) {
+          std::cout << "kernarg_size = " << kernarg_size << ", size_info = " << size_info
+                    << std::flush << std::endl;
+          TEST_ASSERT(!kernarg_missmatch);
+          break;
+        }
+        // ALlocate kernarg memory
+        des.size = size_info;
+        des.ptr = hsa_rsrc_->AllocateKernArgMemory(agent_info_, size_info);
+        if (des.ptr) memset(des.ptr, 0, size_info);
+        break;
+      }
+      case TestKernel::SYS_DES_ID:
+        des.ptr = hsa_rsrc_->AllocateSysMemory(agent_info_, des.size);
+        if (des.ptr) memset(des.ptr, 0, des.size);
+        break;
+      case TestKernel::NULL_DES_ID:
+        des.ptr = NULL;
+        break;
+      default:
+        break;
+    }
+    TEST_ASSERT(des.ptr != NULL);
+    if (des.ptr == NULL) return false;
   }
   test_->Init();
-
-  // Load and Finalize Kernel Code Descriptor
-  char* brig_path = (char*)brig_path_obj_.c_str();
-  const bool ret_val =
-      hsa_rsrc_->LoadAndFinalize(agent_info_, brig_path, strdup(name_.c_str()), &kernel_code_desc_);
-  if (ret_val == false) {
-    std::cerr << "Error in loading and finalizing Kernel" << std::endl;
-    return ret_val;
-  }
 
   // Stop the timer object
   hsa_timer_.StopTimer(setup_timer_idx_);
@@ -125,7 +177,6 @@ bool TestHsa::Run() {
   const uint32_t work_grid_size = test_->GetGridSize();
   uint32_t group_segment_size = 0;
   uint32_t private_segment_size = 0;
-  const size_t kernarg_segment_size = test_->GetKernargSize();
   uint64_t code_handle = 0;
 
   // Retrieve the amount of group memory needed
@@ -137,12 +188,6 @@ bool TestHsa::Run() {
                                  HSA_EXECUTABLE_SYMBOL_INFO_KERNEL_PRIVATE_SEGMENT_SIZE,
                                  &private_segment_size);
 
-  // Check the kernel args size
-  size_t size_info = 0;
-  hsa_executable_symbol_get_info(
-      kernel_code_desc_, HSA_EXECUTABLE_SYMBOL_INFO_KERNEL_KERNARG_SEGMENT_SIZE, &size_info);
-  TEST_ASSERT(kernarg_segment_size == size_info);
-  if (kernarg_segment_size != size_info) return false;
 
   // Retrieve handle of the code block
   hsa_executable_symbol_get_info(kernel_code_desc_, HSA_EXECUTABLE_SYMBOL_INFO_KERNEL_OBJECT,
@@ -169,59 +214,62 @@ bool TestHsa::Run() {
   aql.group_segment_size = group_segment_size;
   aql.private_segment_size = private_segment_size;
   // Initialize Aql packet with handle of signal
+  hsa_signal_store_relaxed(hsa_signal_, 1);
   aql.completion_signal = hsa_signal_;
-
-  // Compute the write index of queue and copy Aql packet into it
-  const uint64_t que_idx = hsa_queue_load_write_index_relaxed(hsa_queue_);
-  const uint32_t mask = hsa_queue_->size - 1;
 
   std::clog << "> Executing kernel: \"" << name_ << "\"" << std::endl;
 
   // Start the timer object
   hsa_timer_.StartTimer(dispatch_timer_idx_);
 
-  // Disable packet so that submission to HW is complete
-  const auto header = aql.header;
-  aql.header = HSA_PACKET_TYPE_INVALID << HSA_PACKET_HEADER_TYPE;
-
-  // Copy Aql packet into queue buffer
-  ((hsa_kernel_dispatch_packet_t*)(hsa_queue_->base_address))[que_idx & mask] = aql;
-
-  // After AQL packet is fully copied into queue buffer
-  // update packet header from invalid state to valid state
-  std::atomic_thread_fence(std::memory_order_release);
-  ((hsa_kernel_dispatch_packet_t*)(hsa_queue_->base_address))[que_idx & mask].header = header;
-
-  // Increment the write index and ring the doorbell to dispatch the kernel.
-  hsa_queue_store_write_index_relaxed(hsa_queue_, (que_idx + 1));
-  hsa_signal_store_relaxed(hsa_queue_->doorbell_signal, que_idx);
+  // Submit AQL packet to the queue
+  const uint64_t que_idx = hsa_rsrc_->Submit(hsa_queue_, &aql);
 
   std::clog << "> Waiting on kernel dispatch signal, que_idx=" << que_idx << std::endl;
 
   // Wait on the dispatch signal until the kernel is finished.
   // Update wait condition to HSA_WAIT_STATE_ACTIVE for Polling
-  hsa_signal_wait_acquire(hsa_signal_, HSA_SIGNAL_CONDITION_LT, 1, (uint64_t)-1,
-                          HSA_WAIT_STATE_BLOCKED);
+  if (hsa_signal_wait_scacquire(hsa_signal_, HSA_SIGNAL_CONDITION_LT, 1, UINT64_MAX,
+                                HSA_WAIT_STATE_BLOCKED) != 0) {
+    TEST_ASSERT("signal_wait failed");
+  }
+
+  std::clog << "> DONE, que_idx=" << que_idx << std::endl;
 
   // Stop the timer object
   hsa_timer_.StopTimer(dispatch_timer_idx_);
   dispatch_time_taken_ = hsa_timer_.ReadTimer(dispatch_timer_idx_);
   total_time_taken_ += dispatch_time_taken_;
 
-  // Copy kernel buffers from local memory into system memory
-  hsa_rsrc_->TransferData(test_->GetOutputPtr(), test_->GetLocalPtr(), test_->GetOutputSize(),
-                          false);
-  test_->PrintOutput();
-
   return true;
 }
 
 bool TestHsa::VerifyResults() {
-  // Compare the results and see if they match
-  const void* const refout_ptr = test_->GetRefoutPtr();
-  const int32_t cmp_val =
-      (refout_ptr != NULL) ? memcmp(test_->GetOutputPtr(), refout_ptr, test_->GetOutputSize()) : 0;
-  return (cmp_val == 0);
+  bool cmp = false;
+  void* output = NULL;
+  const uint32_t size = test_->GetOutputSize();
+  bool suc = false;
+
+  // Copy local kernel output buffers from local memory into host memory
+  if (test_->IsOutputLocal()) {
+    output = hsa_rsrc_->AllocateSysMemory(agent_info_, size);
+    suc = hsa_rsrc_->Memcpy(agent_info_, output, test_->GetOutputPtr(), size);
+    if (!suc) std::clog << "> VerifyResults: Memcpy failed" << std::endl << std::flush;
+  } else {
+    output = test_->GetOutputPtr();
+    suc = true;
+  }
+
+  if ((output != NULL) && suc) {
+    // Print the test output
+    test_->PrintOutput(output);
+    // Compare the results and see if they match
+    cmp = (memcmp(output, test_->GetRefOut(), size) == 0);
+  }
+
+  if (test_->IsOutputLocal() && (output != NULL)) hsa_rsrc_->FreeMemory(output);
+
+  return cmp;
 }
 
 void TestHsa::PrintTime() {
@@ -233,4 +281,8 @@ void TestHsa::PrintTime() {
             << std::endl;
 }
 
-bool TestHsa::Cleanup() { return true; }
+bool TestHsa::Cleanup() {
+  hsa_executable_destroy(hsa_exec_);
+  hsa_signal_destroy(hsa_signal_);
+  return true;
+}

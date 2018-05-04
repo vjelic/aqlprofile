@@ -28,10 +28,10 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef TEST_CTRL_RUN_KERNEL_H_
 #define TEST_CTRL_RUN_KERNEL_H_
 
-#include "ctrl/test_assert.h"
 #include "ctrl/test_hsa.h"
+#include "util/test_assert.h"
 
-template <class Kernel, class Test> bool RunKernel(int argc, char* argv[]) {
+template <class Kernel, class Test> bool RunKernel(int argc, char* argv[], int count = 1) {
   bool ret_val = false;
 
   // Create test kernel object
@@ -57,20 +57,23 @@ template <class Kernel, class Test> bool RunKernel(int argc, char* argv[]) {
     return false;
   }
 
-  // Run test kernel
-  ret_val = test_aql->Run();
-  if (ret_val == false) {
-    std::cerr << "Error in running the test kernel" << std::endl;
-    TEST_ASSERT(ret_val);
-    return false;
-  }
+  // Kernel dspatch iterations
+  for (int i = 0; i < count; ++i) {
+    // Run test kernel
+    ret_val = test_aql->Run();
+    if (ret_val == false) {
+      std::cerr << "Error in running the test kernel" << std::endl;
+      TEST_ASSERT(ret_val);
+      return false;
+    }
 
-  // Verify the results of the execution
-  ret_val = test_aql->VerifyResults();
-  if (ret_val) {
-    std::clog << "Test : Passed" << std::endl;
-  } else {
-    std::clog << "Test : Failed" << std::endl;
+    // Verify the results of the execution
+    ret_val = test_aql->VerifyResults();
+    if (ret_val) {
+      std::clog << "Test : Passed" << std::endl;
+    } else {
+      std::clog << "Test : Failed" << std::endl;
+    }
   }
 
   // Print time taken by sample

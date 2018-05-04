@@ -25,36 +25,14 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#include "ctrl/test_pmgr.h"
+#include "pgen/test_pmgr.h"
 
 #include <atomic>
 
-#include "ctrl/test_assert.h"
+#include "util/test_assert.h"
 
 bool TestPMgr::AddPacketGfx9(const packet_t* packet) {
-  packet_t aql_packet = *packet;
-
-  // Compute the write index of queue and copy Aql packet into it
-  uint64_t que_idx = hsa_queue_load_write_index_relaxed(GetQueue());
-  const uint32_t mask = GetQueue()->size - 1;
-  packet_t* slot = (reinterpret_cast<packet_t*>(GetQueue()->base_address)) + (que_idx & mask);
-
-  // Disable packet so that submission to HW is complete
-  const auto header = HSA_PACKET_TYPE_VENDOR_SPECIFIC << HSA_PACKET_HEADER_TYPE;
-  aql_packet.header &= (~((1ul << HSA_PACKET_HEADER_WIDTH_TYPE) - 1)) << HSA_PACKET_HEADER_TYPE;
-  aql_packet.header |= HSA_PACKET_TYPE_INVALID << HSA_PACKET_HEADER_TYPE;
-
-  // Copy Aql packet into queue buffer
-  *slot = aql_packet;
-  // After AQL packet is fully copied into queue buffer
-  // update packet header from invalid state to valid state
-  auto header_atomic_ptr = reinterpret_cast<std::atomic<uint16_t>*>(&slot->header);
-  header_atomic_ptr->store(header, std::memory_order_release);
-
-  // Increment the write index and ring the doorbell to dispatch the kernel.
-  hsa_queue_store_write_index_relaxed(GetQueue(), (que_idx + 1));
-  hsa_signal_store_relaxed(GetQueue()->doorbell_signal, que_idx);
-
+  GetRsrcFactory()->Submit(GetQueue(), packet);
   return true;
 }
 
@@ -63,29 +41,7 @@ bool TestPMgr::AddPacketGfx8(const packet_t* packet) {
   const hsa_ext_amd_aql_pm4_packet_t* aql_packet = (const hsa_ext_amd_aql_pm4_packet_t*)packet;
   slot_pm4_t data;
   api_->hsa_ven_amd_aqlprofile_legacy_get_pm4(aql_packet, reinterpret_cast<void*>(data.words));
-
-  // Compute the write index of queue and copy Aql packet into it
-  uint64_t que_idx = hsa_queue_load_write_index_relaxed(GetQueue());
-  const uint32_t mask = GetQueue()->size - 1;
-
-  // Copy Aql/Pm4 blob into queue buffer
-  packet_t* ptr = (reinterpret_cast<packet_t*>(GetQueue()->base_address)) + (que_idx & mask);
-  slot_pm4_t* slot = reinterpret_cast<slot_pm4_t*>(ptr);
-  for (unsigned i = 1; i < SLOT_PM4_SIZE_DW; ++i) {
-    slot->words[i] = data.words[i];
-  }
-  // To maintain global order to ensure the prior copy of the packet contents is made visible
-  // before the header is updated.
-  // With in-order CP it will wait until the first packet in the blob will be valid
-  std::atomic<uint32_t>* header_atomic_ptr =
-      reinterpret_cast<std::atomic<uint32_t>*>(&slot->words[0]);
-  header_atomic_ptr->store(data.words[0], std::memory_order_release);
-
-  // Increment the write index and ring the doorbell to dispatch the kernel.
-  que_idx += SLOT_PM4_SIZE_AQLP - 1;
-  hsa_queue_store_write_index_relaxed(GetQueue(), (que_idx + 1));
-  hsa_signal_store_relaxed(GetQueue()->doorbell_signal, que_idx);
-
+  GetRsrcFactory()->Submit(GetQueue(), &data, HSA_VEN_AMD_AQLPROFILE_LEGACY_PM4_PACKET_SIZE);
   return true;
 }
 
