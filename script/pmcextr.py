@@ -7,7 +7,7 @@ blocks_list = [ "CPC", "CPF", "GDS", "GRBM", "SPI", "SQ", "SX", "TA", "TCA", "TC
 REC_MAX_LEN = 1024
 
 def open_xml(name, nms):
-  f = open(nms + "_metrics.xml", 'w')
+  f = open(name, 'w')
   f.write("<" + nms + ">\n");
   return f
 
@@ -82,9 +82,13 @@ if not os.path.isfile(raifile):
 
 nms = sys.argv[2]
 
+base = re.sub(r'(\.[^\.]+)$', '', raifile)
+m = re.search(r'([^\/]*)$', base)
+out_name = nms + '_' + m.group(1) + '.xml'
+
 inp = open(raifile, 'r')
-out = open_xml("counters_out.xml", nms);
+out = open_xml(out_name, nms)
 parse_rai(inp, out, blocks_list)
 close_xml(out, nms);
+print "generated '" + out_name + "'"
 #############################################################
-
