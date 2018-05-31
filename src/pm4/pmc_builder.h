@@ -60,6 +60,8 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
     // Reset Grbm to its default state - broadcast
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
                                         Primitives::grbm_broadcast_value());
+    // Issue barrier command
+    Builder::BuildWriteWaitIdlePacket(cmd_buffer);
     // Disable RLC Perfmon Clock Gating
     // On Vega this is needed to collect Perf Cntrs
     if (Primitives::GFXIP_LEVEL == 9)
@@ -208,6 +210,9 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
 
   // Build PMC stop PM4 comands
   uint32_t Stop(CmdBuffer* cmd_buffer, const counters_vector& counters_vec, void* data_buffer) {
+    // Reset Grbm to its default state - broadcast
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
+                                        Primitives::grbm_broadcast_value());
     // Issue barrier command to wait for dispatch to complete
     Builder::BuildWriteWaitIdlePacket(cmd_buffer);
     // Stop and freeze counters
