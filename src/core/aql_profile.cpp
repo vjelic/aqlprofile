@@ -10,11 +10,8 @@
 #include "pm4/pmc_builder.h"
 #include "pm4/sqtt_builder.h"
 
-#ifndef AQL_PROFILE_READ_API_ENABLE
-#define AQL_PROFILE_READ_API_ENABLE 0
-#endif
-
 #define PUBLIC_API __attribute__((visibility("default")))
+#define CONSTRUCTOR_API __attribute__((constructor))
 #define DESTRUCTOR_API __attribute__((destructor))
 #define ERR_CHECK(cond, err, msg)                                                                  \
   {                                                                                                \
@@ -226,6 +223,11 @@ Logger::mutex_t Logger::mutex_;
 Logger* Logger::instance_ = NULL;
 Pm4Factory::mutex_t Pm4Factory::mutex_;
 Pm4Factory::instances_t* Pm4Factory::instances_ = NULL;
+bool read_api_enabled = false;
+
+CONSTRUCTOR_API void constructor() {
+  read_api_enabled = (getenv("AQLPROFILE_READ_API") != NULL);
+}
 
 DESTRUCTOR_API void destructor() {
   Logger::Destroy();
@@ -273,31 +275,18 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
       pm4_builder::PmcBuilder* pmc_builder = pm4_factory->GetPmcBuilder();
       const pm4_builder::counters_vector countersVec = CountersVec(profile, pm4_factory);
 
-#if AQL_PROFILE_READ_API_ENABLE
-      // Generate read commands
-      {
-        const uint32_t data_size =
-            pmc_builder->Read(&commands, countersVec, profile->output_buffer.ptr);
-        ERR_CHECK(data_size == 0, HSA_STATUS_ERROR, "PMC Builder Read(): data size set to zero");
-        if (profile->output_buffer.size < data_size) {
-          profile->output_buffer.size = data_size;
-        }
-        assert(data_size <= profile->output_buffer.size);
-        if (data_size > profile->output_buffer.size) {
-          ERR_LOGGING << "data size assertion failed, data_size(" << data_size << "), buffer size("
-                      << profile->output_buffer.size << ")";
-          return HSA_STATUS_ERROR;
-        }
+      if (aql_profile::read_api_enabled) {
+        // Generate read commands
+        pmc_builder->Read(&commands, countersVec, profile->output_buffer.ptr);
         cmd_buffer_mgr.SetRdSize(commands.Size());
-      }
 
-      // Copy generated read commands
-      if (profile->command_buffer.ptr != NULL) {
-        const aql_profile::descriptor_t rd_descr = cmd_buffer_mgr.GetRdDescr();
-        memcpy(rd_descr.ptr, commands.Data(), rd_descr.size);
-        commands.Clear();
+        // Copy generated read commands
+        if (profile->command_buffer.ptr != NULL) {
+          const aql_profile::descriptor_t rd_descr = cmd_buffer_mgr.GetRdDescr();
+          memcpy(rd_descr.ptr, commands.Data(), rd_descr.size);
+          commands.Clear();
+        }
       }
-#endif  // AQL_PROFILE_READ_API_ENABLE
 
       // Generate start commands
       pmc_builder->Start(&commands, countersVec);
@@ -452,27 +441,26 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_stop(const hsa_ven_amd_aqlprofile
   return HSA_STATUS_SUCCESS;
 }
 
-// Method to populate the provided AQL packet with profiling stop commands
+// Method to populate the provided AQL packet with profiling read commands
 PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_read(const hsa_ven_amd_aqlprofile_profile_t* profile,
                                                     aql_profile::packet_t* aql_read_packet) {
-#if AQL_PROFILE_READ_API_ENABLE
-  try {
-    // Populate read aql packet
-    aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile);
-    pm4_builder::CmdBuilder* cmd_writer = pm4_factory->GetCmdBuilder();
-    aql_profile::CommandBufferMgr cmd_buffer_mgr(profile);
-    const aql_profile::descriptor_t rd_descr = cmd_buffer_mgr.GetRdDescr();
-    aql_profile::PopulateAql(rd_descr.ptr, rd_descr.size, cmd_writer, aql_read_packet);
-  } catch (std::exception& e) {
-    ERR_LOGGING << e.what();
+  if (aql_profile::read_api_enabled) {
+    try {
+      // Populate read aql packet
+      aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile);
+      pm4_builder::CmdBuilder* cmd_writer = pm4_factory->GetCmdBuilder();
+      aql_profile::CommandBufferMgr cmd_buffer_mgr(profile);
+      const aql_profile::descriptor_t rd_descr = cmd_buffer_mgr.GetRdDescr();
+      aql_profile::PopulateAql(rd_descr.ptr, rd_descr.size, cmd_writer, aql_read_packet);
+    } catch (std::exception& e) {
+      ERR_LOGGING << e.what();
+      return HSA_STATUS_ERROR;
+    }
+  } else {
+    ERR_LOGGING << "Read API disabled";
     return HSA_STATUS_ERROR;
   }
-
   return HSA_STATUS_SUCCESS;
-#else
-  ERR_LOGGING << "read API disabled";
-  return HSA_STATUS_ERROR;
-#endif  // AQL_PROFILE_READ_API_ENABLE
 }
 
 // Legacy devices, converting of the profiling AQL packet to PM4 packet blob
