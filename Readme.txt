@@ -41,3 +41,7 @@ $ export HSA_VEN_AMD_AQLPROFILE_LOG=1
 To enable verbose tracing:
 
 $ export AQLPROFILE_TRACE=1
+
+To recompile kernel object:
+
+$ /opt/rocm/opencl/bin/x86_64/clang -cl-std=CL2.0 -cl-std=CL2.0 -include /opt/rocm/opencl/include/opencl-c.h -Xclang -mlink-bitcode-file -Xclang /opt/rocm/opencl/lib/x86_64/bitcode/opencl.amdgcn.bc -Xclang -mlink-bitcode-file -Xclang /opt/rocm/opencl/lib/x86_64/bitcode/ockl.amdgcn.bc -target amdgcn-amd-amdhsa -mcpu=gfx906 vector_add_kernel.cl -o vector_add_kernel.so
