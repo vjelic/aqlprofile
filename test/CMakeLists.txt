@@ -1,4 +1,4 @@
-cmake_minimum_required ( VERSION 3.5.0 )
+cmake_minimum_required ( VERSION 2.8.12 )
 set ( CMAKE_VERBOSE_MAKEFILE TRUE CACHE BOOL "Verbose Output" FORCE )
 
 set ( EXE_NAME "ctrl" )
@@ -29,7 +29,7 @@ set ( KERN_SRC ${TEST_DIR}/${TEST_NAME}/${TEST_NAME}.cpp )
 ## Building test executable
 add_executable ( ${EXE_NAME} ${KERN_SRC} ${CTRL_SRC} ${UTIL_SRC} )
 target_include_directories ( ${EXE_NAME} PRIVATE ${TEST_DIR} ${API_PATH} )
-target_link_libraries( ${EXE_NAME} PRIVATE ${HSA_RUNTIME_LIB} ${HSA_KMT_LIB} c stdc++ dl pthread rt atomic )
+target_link_libraries( ${EXE_NAME} PRIVATE ${HSA_RUNTIME_LIB} ${HSA_KMT_LIB} c stdc++ dl pthread rt )
 
 ## Deploying test files
 execute_process ( COMMAND sh -xc "cp --remove-destination ${TEST_DIR}/${TEST_NAME}/*.hsaco ${TEST_BINARY_DIR}" )
