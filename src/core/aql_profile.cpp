@@ -223,10 +223,13 @@ Logger::mutex_t Logger::mutex_;
 Logger* Logger::instance_ = NULL;
 Pm4Factory::mutex_t Pm4Factory::mutex_;
 Pm4Factory::instances_t* Pm4Factory::instances_ = NULL;
-bool read_api_enabled = false;
+bool read_api_enabled = true;
 
 CONSTRUCTOR_API void constructor() {
-  read_api_enabled = (getenv("AQLPROFILE_READ_API") != NULL);
+  const char* read_api_enabled_str = getenv("AQLPROFILE_READ_API");
+  if (read_api_enabled_str != NULL) {
+    if (atoi(read_api_enabled_str) == 0) read_api_enabled = false;
+  }
 }
 
 DESTRUCTOR_API void destructor() {
