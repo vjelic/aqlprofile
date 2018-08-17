@@ -133,7 +133,9 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
       Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_STATUS_ADDR, 0);
       // Program base address of buffer to use for thread trace
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_BASE_ADDR,
-                                          Primitives::sqtt_base_value(base_addr));
+                                          Primitives::sqtt_base_value_lo(base_addr));
+      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_BASE2_ADDR,
+                                          Primitives::sqtt_base_value_hi(base_addr));
       // Program the size of thread trace buffer
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_SIZE_ADDR,
                                           sqtt_size);

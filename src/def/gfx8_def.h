@@ -249,6 +249,7 @@ enum VGT_EVENT_TYPE {
 #define mmTD_PERFCOUNTER1_SELECT__CI__VI 0xDB02
 #define mmRLC_PERFMON_CLK_CNTL__VI 0xDCBF
 #define mmSQ_THREAD_TRACE_BASE__VI 0xC330
+#define mmSQ_THREAD_TRACE_BASE2__VI 0xC337
 #define mmSQ_THREAD_TRACE_CTRL__VI 0xC335
 #define mmSQ_THREAD_TRACE_HIWATER__VI 0xC33B
 #define mmSQ_THREAD_TRACE_MASK__VI 0xC332
@@ -901,6 +902,23 @@ union SQ_THREAD_TRACE_BASE {
   float f32All;
 };
 
+union SQ_THREAD_TRACE_BASE2__CI__VI {
+  struct {
+#if defined(LITTLEENDIAN_CPU)
+    unsigned int ADDR_HI : 4;
+    unsigned int ATC : 1;
+    unsigned int : 27;
+#elif defined(BIGENDIAN_CPU)
+    unsigned int : 27;
+    unsigned int ATC : 1;
+    unsigned int ADDR_HI : 4;
+#endif
+  } bitfields, bits;
+  unsigned int u32All;
+  signed int i32All;
+  float f32All;
+};
+
 union SQ_THREAD_TRACE_CTRL {
   struct {
 #if defined(LITTLEENDIAN_CPU)
@@ -1294,6 +1312,7 @@ typedef union SQ_PERFCOUNTER0_SELECT__CI__VI regSQ_PERFCOUNTER0_SELECT__CI__VI;
 typedef union SQ_PERFCOUNTER_CTRL regSQ_PERFCOUNTER_CTRL;
 typedef union SQ_PERFCOUNTER_MASK__CI__VI regSQ_PERFCOUNTER_MASK__CI__VI;
 typedef union SQ_THREAD_TRACE_BASE regSQ_THREAD_TRACE_BASE;
+typedef union SQ_THREAD_TRACE_BASE2__CI__VI regSQ_THREAD_TRACE_BASE2__CI__VI;
 typedef union SQ_THREAD_TRACE_CTRL regSQ_THREAD_TRACE_CTRL;
 typedef union SQ_THREAD_TRACE_MASK regSQ_THREAD_TRACE_MASK;
 typedef union SQ_THREAD_TRACE_MODE regSQ_THREAD_TRACE_MODE;
@@ -1773,6 +1792,7 @@ class gfx8_cntx_prim {
   static const uint32_t SQ_THREAD_TRACE_TOKEN_MASK2_ADDR = mmSQ_THREAD_TRACE_TOKEN_MASK2__VI;
   static const uint32_t SQ_THREAD_TRACE_MODE_ADDR = mmSQ_THREAD_TRACE_MODE__VI;
   static const uint32_t SQ_THREAD_TRACE_BASE_ADDR = mmSQ_THREAD_TRACE_BASE__VI;
+  static const uint32_t SQ_THREAD_TRACE_BASE2_ADDR = mmSQ_THREAD_TRACE_BASE2__VI;
   static const uint32_t SQ_THREAD_TRACE_SIZE_ADDR = mmSQ_THREAD_TRACE_SIZE__VI;
   static const uint32_t SQ_THREAD_TRACE_CTRL_ADDR = mmSQ_THREAD_TRACE_CTRL__VI;
   static const uint32_t SQ_THREAD_TRACE_HIWATER_ADDR = mmSQ_THREAD_TRACE_HIWATER__VI;
@@ -1788,7 +1808,8 @@ class gfx8_cntx_prim {
   static const uint32_t COPY_DATA_SEL_SRC_SYS_PERF_COUNTER_PRM = COPY_DATA_SEL_SRC_SYS_PERF_COUNTER;
   static const uint32_t COPY_DATA_SEL_COUNT_1DW_PRM = COPY_DATA_SEL_COUNT_1DW;
 
-  static uint32_t Low32(const uint64_t& v) { return (v & 0xFFFFFFFFul); }
+  static uint32_t Low32(const uint64_t& v) { return (uint32_t)v; }
+  static uint32_t High32(const uint64_t& v) { return (uint32_t)(v >> 32); }
 
   // GRBM broadcasting mode
   static uint32_t grbm_broadcast_value() {
@@ -2237,9 +2258,14 @@ class gfx8_cntx_prim {
   }
 
   // Base address of buffer to use for thread trace
-  static uint32_t sqtt_base_value(const uint64_t& base_addr) {
+  static uint32_t sqtt_base_value_lo(const uint64_t& base_addr) {
     regSQ_THREAD_TRACE_BASE base{};
     base.bits.ADDR = Low32(base_addr >> TT_BUFF_ALIGN_SHIFT);
+    return base.u32All;
+  }
+  static uint32_t sqtt_base_value_hi(const uint64_t& base_addr) {
+    regSQ_THREAD_TRACE_BASE2__CI__VI base{};
+    base.bits.ADDR_HI = High32(base_addr >> TT_BUFF_ALIGN_SHIFT);
     return base.u32All;
   }
 

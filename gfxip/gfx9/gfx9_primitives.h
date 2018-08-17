@@ -34,6 +34,7 @@ class gfx9_cntx_prim {
   static const uint32_t SQ_THREAD_TRACE_TOKEN_MASK2_ADDR = mmSQ_THREAD_TRACE_TOKEN_MASK2;
   static const uint32_t SQ_THREAD_TRACE_MODE_ADDR = mmSQ_THREAD_TRACE_MODE;
   static const uint32_t SQ_THREAD_TRACE_BASE_ADDR = mmSQ_THREAD_TRACE_BASE;
+  static const uint32_t SQ_THREAD_TRACE_BASE2_ADDR = mmSQ_THREAD_TRACE_BASE2;
   static const uint32_t SQ_THREAD_TRACE_SIZE_ADDR = mmSQ_THREAD_TRACE_SIZE;
   static const uint32_t SQ_THREAD_TRACE_CTRL_ADDR = mmSQ_THREAD_TRACE_CTRL;
   static const uint32_t SQ_THREAD_TRACE_HIWATER_ADDR = mmSQ_THREAD_TRACE_HIWATER;
@@ -49,7 +50,8 @@ class gfx9_cntx_prim {
   static const uint32_t COPY_DATA_SEL_SRC_SYS_PERF_COUNTER_PRM = COPY_DATA_SEL_SRC_SYS_PERF_COUNTER;
   static const uint32_t COPY_DATA_SEL_COUNT_1DW_PRM = COPY_DATA_SEL_COUNT_1DW;
 
-  static uint32_t Low32(const uint64_t& v) { return (v & 0xFFFFFFFFul); }
+  static uint32_t Low32(const uint64_t& v) { return (uint32_t)v; }
+  static uint32_t High32(const uint64_t& v) { return (uint32_t)(v >> 32); }
 
   // GRBM broadcasting mode
   static uint32_t grbm_broadcast_value() {
@@ -327,9 +329,14 @@ class gfx9_cntx_prim {
   }
 
   // Base address of buffer to use for thread trace
-  static uint32_t sqtt_base_value(const uint64_t& base_addr) {
+  static uint32_t sqtt_base_value_lo(const uint64_t& base_addr) {
     regSQ_THREAD_TRACE_BASE base{};
     base.bits.ADDR = Low32(base_addr >> TT_BUFF_ALIGN_SHIFT);
+    return base.u32All;
+  }
+  static uint32_t sqtt_base_value_hi(const uint64_t& base_addr) {
+    regSQ_THREAD_TRACE_BASE2 base{};
+    base.bits.ADDR_HI = High32(base_addr >> TT_BUFF_ALIGN_SHIFT);
     return base.u32All;
   }
 

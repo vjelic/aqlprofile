@@ -121,6 +121,7 @@ enum SX_PERFCOUNTER_VALS {
 #define mmSPI_PERFCOUNTER4_SELECT 0xD988
 #define mmSPI_PERFCOUNTER5_SELECT 0xD989
 #define mmSQ_THREAD_TRACE_BASE 0xC330
+#define mmSQ_THREAD_TRACE_BASE2 0xC337
 #define mmSQ_THREAD_TRACE_SIZE 0xC331
 #define mmSQ_THREAD_TRACE_MASK 0xC332
 #define mmSQ_THREAD_TRACE_MODE 0xC336
@@ -302,6 +303,7 @@ typedef union RPB_PERFCOUNTER0_CFG regRPB_PERFCOUNTER0_CFG;
 typedef union GDS_PERFCOUNTER0_SELECT regGDS_PERFCOUNTER0_SELECT;
 typedef union SPI_PERFCOUNTER0_SELECT regSPI_PERFCOUNTER0_SELECT;
 typedef union SQ_THREAD_TRACE_BASE regSQ_THREAD_TRACE_BASE;
+typedef union SQ_THREAD_TRACE_BASE2 regSQ_THREAD_TRACE_BASE2;
 typedef union SQ_THREAD_TRACE_SIZE regSQ_THREAD_TRACE_SIZE;
 typedef union SQ_THREAD_TRACE_MASK regSQ_THREAD_TRACE_MASK;
 typedef union SQ_THREAD_TRACE_MODE regSQ_THREAD_TRACE_MODE;
@@ -426,6 +428,21 @@ union SQ_THREAD_TRACE_BASE {
     unsigned int ADDR : 32;
 #elif defined(BIGENDIAN_CPU)
     unsigned int ADDR : 32;
+#endif
+  } bitfields, bits;
+  unsigned int u32All;
+  signed int i32All;
+  float f32All;
+};
+
+union SQ_THREAD_TRACE_BASE2 {
+  struct {
+#if defined(LITTLEENDIAN_CPU)
+    unsigned int ADDR_HI : 4;
+    unsigned int : 28;
+#elif defined(BIGENDIAN_CPU)
+    unsigned int : 28;
+    unsigned int ADDR_HI : 4;
 #endif
   } bitfields, bits;
   unsigned int u32All;
@@ -1490,6 +1507,7 @@ class gfx9_cntx_prim {
   static const uint32_t SQ_THREAD_TRACE_TOKEN_MASK2_ADDR = mmSQ_THREAD_TRACE_TOKEN_MASK2;
   static const uint32_t SQ_THREAD_TRACE_MODE_ADDR = mmSQ_THREAD_TRACE_MODE;
   static const uint32_t SQ_THREAD_TRACE_BASE_ADDR = mmSQ_THREAD_TRACE_BASE;
+  static const uint32_t SQ_THREAD_TRACE_BASE2_ADDR = mmSQ_THREAD_TRACE_BASE2;
   static const uint32_t SQ_THREAD_TRACE_SIZE_ADDR = mmSQ_THREAD_TRACE_SIZE;
   static const uint32_t SQ_THREAD_TRACE_CTRL_ADDR = mmSQ_THREAD_TRACE_CTRL;
   static const uint32_t SQ_THREAD_TRACE_HIWATER_ADDR = mmSQ_THREAD_TRACE_HIWATER;
@@ -1505,7 +1523,8 @@ class gfx9_cntx_prim {
   static const uint32_t COPY_DATA_SEL_SRC_SYS_PERF_COUNTER_PRM = COPY_DATA_SEL_SRC_SYS_PERF_COUNTER;
   static const uint32_t COPY_DATA_SEL_COUNT_1DW_PRM = COPY_DATA_SEL_COUNT_1DW;
 
-  static uint32_t Low32(const uint64_t& v) { return (v & 0xFFFFFFFFul); }
+  static uint32_t Low32(const uint64_t& v) { return (uint32_t)v; }
+  static uint32_t High32(const uint64_t& v) { return (uint32_t)(v >> 32); }
 
   // GRBM broadcasting mode
   static uint32_t grbm_broadcast_value() {
@@ -1775,9 +1794,14 @@ class gfx9_cntx_prim {
   }
 
   // Base address of buffer to use for thread trace
-  static uint32_t sqtt_base_value(const uint64_t& base_addr) {
+  static uint32_t sqtt_base_value_lo(const uint64_t& base_addr) {
     regSQ_THREAD_TRACE_BASE base{};
     base.bits.ADDR = Low32(base_addr >> TT_BUFF_ALIGN_SHIFT);
+    return base.u32All;
+  }
+  static uint32_t sqtt_base_value_hi(const uint64_t& base_addr) {
+    regSQ_THREAD_TRACE_BASE2 base{};
+    base.bits.ADDR_HI = High32(base_addr >> TT_BUFF_ALIGN_SHIFT);
     return base.u32All;
   }
 
