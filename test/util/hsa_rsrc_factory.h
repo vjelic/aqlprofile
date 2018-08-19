@@ -121,7 +121,7 @@ struct AgentInfo {
 // HSA timer class
 // Provides current HSA timestampa and system-clock/ns conversion API
 class HsaTimer {
-  public:
+ public:
   typedef uint64_t timestamp_t;
   static const timestamp_t TIMESTAMP_MAX = UINT64_MAX;
   typedef long double freq_t;
@@ -134,8 +134,12 @@ class HsaTimer {
   }
 
   // Methids for system-clock/ns conversion
-  timestamp_t sysclock_to_ns(const timestamp_t& sysclock) const { return timestamp_t((freq_t)sysclock * sysclock_factor_); }
-  timestamp_t ns_to_sysclock(const timestamp_t& time) const { return timestamp_t((freq_t)time / sysclock_factor_); }
+  timestamp_t sysclock_to_ns(const timestamp_t& sysclock) const {
+    return timestamp_t((freq_t)sysclock * sysclock_factor_);
+  }
+  timestamp_t ns_to_sysclock(const timestamp_t& time) const {
+    return timestamp_t((freq_t)time / sysclock_factor_);
+  }
 
   // Return timestamp in 'ns'
   timestamp_t timestamp_ns() const {
@@ -145,7 +149,7 @@ class HsaTimer {
     return sysclock_to_ns(sysclock);
   }
 
-  private:
+ private:
   // Timestamp frequency factor
   freq_t sysclock_factor_;
 };
