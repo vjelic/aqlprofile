@@ -529,6 +529,30 @@ hsa_ven_amd_aqlprofile_get_info(const hsa_ven_amd_aqlprofile_profile_t* profile,
         }
         break;
       }
+      case HSA_VEN_AMD_AQLPROFILE_INFO_ENABLE_CMD: {
+        aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile);
+        pm4_builder::PmcBuilder* pmc_builder = pm4_factory->GetPmcBuilder();
+        pm4_builder::CmdBuilder* cmd_writer = pm4_factory->GetCmdBuilder();
+        pm4_builder::CmdBuffer commands;
+        pmc_builder->Enable(&commands);
+
+        if (profile->command_buffer.size < commands.Size()) {
+          const_cast<hsa_ven_amd_aqlprofile_profile_t*>(profile)->command_buffer.size = commands.Size();
+        } else if (profile->command_buffer.ptr != NULL) {
+          if (profile->command_buffer.size != commands.Size()) {
+            ERR_LOGGING << "get_info, wrong profile cmd size";
+            status = HSA_STATUS_ERROR;
+            break;
+          }
+          memcpy(profile->command_buffer.ptr, commands.Data(), profile->command_buffer.size);
+          aql_profile::PopulateAql(
+            profile->command_buffer.ptr,
+            profile->command_buffer.size,
+            cmd_writer,
+            reinterpret_cast<aql_profile::packet_t*>(value));
+        }
+        break;
+      }
       default:
         status = HSA_STATUS_ERROR_INVALID_ARGUMENT;
         ERR_LOGGING << "Invalid attribute (" << attribute << ")";
