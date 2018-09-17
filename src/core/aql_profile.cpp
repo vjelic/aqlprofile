@@ -241,6 +241,10 @@ DESTRUCTOR_API void destructor() {
 
 extern "C" {
 
+// Return library major/minor version
+PUBLIC_API uint32_t hsa_ven_amd_aqlprofile_version_major() { return HSA_AQLPROFILE_VERSION_MAJOR; }
+PUBLIC_API uint32_t hsa_ven_amd_aqlprofile_version_minor() { return HSA_AQLPROFILE_VERSION_MINOR; }
+
 // Returns the last error message
 PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_error_string(const char** str) {
   *str = aql_profile::Logger::LastMessage().c_str();
