@@ -156,6 +156,7 @@ class HsaTimer {
 
 class HsaRsrcFactory {
  public:
+  static const size_t CMD_SLOT_SIZE_B = 0x40;
   typedef std::recursive_mutex mutex_t;
   typedef HsaTimer::timestamp_t timestamp_t;
 
@@ -274,7 +275,7 @@ class HsaRsrcFactory {
   static uint64_t Submit(hsa_queue_t* queue, const void* packet, size_t size_bytes);
 
   // Return AqlProfile API table
-  typedef hsa_ven_amd_aqlprofile_1_00_pfn_t aqlprofile_pfn_t;
+  typedef hsa_ven_amd_aqlprofile_pfn_t aqlprofile_pfn_t;
   const aqlprofile_pfn_t* AqlProfileApi() const { return &aqlprofile_api_; }
 
   // Return Loader API table
