@@ -128,13 +128,15 @@ HsaRsrcFactory::HsaRsrcFactory(bool initialize_hsa) : initialize_hsa_(initialize
 #ifdef ROCP_LD_AQLPROFILE
   status = LoadAqlProfileLib(&aqlprofile_api_);
 #else
-  status = hsa_system_get_major_extension_table(HSA_EXTENSION_AMD_AQLPROFILE, hsa_ven_amd_aqlprofile_VERSION_MAJOR, sizeof(aqlprofile_api_), &aqlprofile_api_);
+  status = hsa_system_get_major_extension_table(HSA_EXTENSION_AMD_AQLPROFILE,
+    hsa_ven_amd_aqlprofile_VERSION_MAJOR, sizeof(aqlprofile_api_), &aqlprofile_api_);
 #endif
   CHECK_STATUS("aqlprofile API table load failed", status);
 
   // Get Loader API table
   loader_api_ = {0};
-  status = hsa_system_get_major_extension_table(HSA_EXTENSION_AMD_LOADER, 1, sizeof(loader_api_), &loader_api_);
+  status = hsa_system_get_major_extension_table(HSA_EXTENSION_AMD_LOADER,
+    1, sizeof(loader_api_), &loader_api_);
   CHECK_STATUS("loader API table query failed", status);
 
   // Instantiate HSA timer

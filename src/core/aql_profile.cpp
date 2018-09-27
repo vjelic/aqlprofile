@@ -305,13 +305,13 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
       ERR_CHECK(data_size == 0, HSA_STATUS_ERROR, "PMC Builder Stop(): data size set to zero");
       if (profile->output_buffer.size < data_size) {
         profile->output_buffer.size = data_size;
+        if (profile->output_buffer.ptr != NULL) {
+          ERR_LOGGING << "Bad profile output_buffer size ("
+            << profile->output_buffer.size << "), required size(" << data_size << ")";
+          return HSA_STATUS_ERROR_INVALID_ARGUMENT;
+        }
       }
       assert(data_size <= profile->output_buffer.size);
-      if (data_size > profile->output_buffer.size) {
-        ERR_LOGGING << "data size assertion failed, data_size(" << data_size << "), buffer size("
-                    << profile->output_buffer.size << ")";
-        return HSA_STATUS_ERROR;
-      }
     } else if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_SQTT) {
       pm4_builder::ThreadTraceConfig sqtt_config{};
 
@@ -408,6 +408,11 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
     const uint32_t cmd_size = cmd_buffer_mgr.GetSize();
     if (profile->command_buffer.size < cmd_size) {
       profile->command_buffer.size = cmd_size;
+      if (profile->command_buffer.ptr != NULL) {
+        ERR_LOGGING << "Bad profile command_buffer size ("
+          << profile->command_buffer.size << "), required size(" << cmd_size << ")";
+        return HSA_STATUS_ERROR_INVALID_ARGUMENT;
+      }
     }
     assert(cmd_size <= profile->command_buffer.size);
 
@@ -595,6 +600,11 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
           sample_info.sample_id = i;
           sample_info.pmc_data.event = *p;
           sample_info.pmc_data.result = samples[sample_index];
+#if DEBUG_TRACE == 2
+          printf("DATA: sample index(%u) id(%u) bloc id(%u) index(%u) counter id(%u) res(%lu)\n",
+            sample_index, i, p->block_name, p->block_index, p->counter_id,
+            samples[sample_index]);
+#endif
           status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_PMC_DATA, &sample_info, data);
           if (status == HSA_STATUS_INFO_BREAK) {
             status = HSA_STATUS_SUCCESS;

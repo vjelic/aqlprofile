@@ -111,6 +111,11 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       const auto* block_info = counter_des.block_info;
       const auto& block_des = counter_des.block_des;
       const auto& reg_info = block_info->counter_reg_info[counter_des.index];
+#if DEBUG_TRACE == 2
+      printf("block id(%u) index(%u) counter id (%u) index(%u) sel-addr(0x%x)\n",
+        block_des.id, block_des.index, counter_des.id, counter_des.index,
+        reg_info.select_addr);
+#endif
 
       // Set GRBM index to access proper block instance
       const uint32_t grbm_value = (block_info->instance_count > 1) ?

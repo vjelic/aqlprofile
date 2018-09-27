@@ -47,7 +47,10 @@ hsa_status_t TestPGenPmcCallback(hsa_ven_amd_aqlprofile_info_type_t info_type,
 // Class implements PMC profiling
 class TestPGenPmc : public TestPGen {
  public:
-  explicit TestPGenPmc(TestAql* t) : TestPGen(t) { std::clog << "Test: PGen PMC" << std::endl; }
+  explicit TestPGenPmc(TestAql* t) : TestPGen(t) {
+    std::clog << "Test: PGen PMC" << std::endl;
+    profile_ = hsa_ven_amd_aqlprofile_profile_t{};
+  }
 
   bool Initialize(int arg_cnt, char** arg_list) {
     std::vector<hsa_ven_amd_aqlprofile_event_t> event_vec;
@@ -110,19 +113,17 @@ class TestPGenPmc : public TestPGen {
 
     // Profile buffers attributes
     command_buffer_alignment = buffer_alignment_;
-    status = api_->hsa_ven_amd_aqlprofile_get_info(
-        &profile_, HSA_VEN_AMD_AQLPROFILE_INFO_COMMAND_BUFFER_SIZE, &command_buffer_size);
+    output_buffer_alignment = buffer_alignment_;
+    status = api_->hsa_ven_amd_aqlprofile_start(&profile_, NULL);
     if (status != HSA_STATUS_SUCCESS) {
-      const char* str = "";
+      const char* str;
       api_->hsa_ven_amd_aqlprofile_error_string(&str);
       std::cerr << "aqlprofile err: " << str << std::endl;
     }
     TEST_ASSERT(status == HSA_STATUS_SUCCESS);
-
-    output_buffer_alignment = buffer_alignment_;
-    status = api_->hsa_ven_amd_aqlprofile_get_info(
-        &profile_, HSA_VEN_AMD_AQLPROFILE_INFO_PMC_DATA_SIZE, &output_buffer_size);
-    TEST_ASSERT(status == HSA_STATUS_SUCCESS);
+    if (status != HSA_STATUS_SUCCESS) return false;
+    command_buffer_size = profile_.command_buffer.size;
+    output_buffer_size = profile_.output_buffer.size;
 
     // Application is allocating the command buffer
     // Allocate(command_buffer_alignment, command_buffer_size,
@@ -130,7 +131,6 @@ class TestPGenPmc : public TestPGen {
     profile_.command_buffer.ptr =
         GetRsrcFactory()->AllocateCmdMemory(GetAgentInfo(), command_buffer_size);
     TEST_ASSERT(profile_.command_buffer.ptr != NULL);
-    profile_.command_buffer.size = command_buffer_size;
     TEST_ASSERT((reinterpret_cast<uintptr_t>(profile_.command_buffer.ptr) &
                  (command_buffer_alignment - 1)) == 0);
 
@@ -140,7 +140,6 @@ class TestPGenPmc : public TestPGen {
     profile_.output_buffer.ptr =
         GetRsrcFactory()->AllocateSysMemory(GetAgentInfo(), output_buffer_size);
     TEST_ASSERT(profile_.output_buffer.ptr != NULL);
-    profile_.output_buffer.size = output_buffer_size;
     memset(profile_.output_buffer.ptr, 0x77, output_buffer_size);
     TEST_ASSERT((reinterpret_cast<uintptr_t>(profile_.output_buffer.ptr) &
                  (output_buffer_alignment - 1)) == 0);

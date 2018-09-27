@@ -49,7 +49,10 @@ hsa_status_t TestPGenSqttCallback(hsa_ven_amd_aqlprofile_info_type_t info_type,
 // Class implements SQTT profiling
 class TestPGenSqtt : public TestPGen {
  public:
-  explicit TestPGenSqtt(TestAql* t) : TestPGen(t) { std::clog << "Test: PGen SQTT" << std::endl; }
+  explicit TestPGenSqtt(TestAql* t) : TestPGen(t) {
+    std::clog << "Test: PGen SQTT" << std::endl;
+    profile_ = hsa_ven_amd_aqlprofile_profile_t{};
+  }
 
   bool Initialize(int arg_cnt, char** arg_list) {
     if (!TestPMgr::Initialize(arg_cnt, arg_list)) return false;
