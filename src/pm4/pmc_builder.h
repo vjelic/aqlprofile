@@ -253,7 +253,6 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
                                          Primitives::mc_seq_hbm_stop_value());
     }
     // Iterate through the list of blocks to create PM4 packets to read counter values
-    std::map<block_des_t, uint32_t, lt_block_des> index_map;
     uint32_t read_counter = 0;
     for (const auto& counter_des : counters_vec) {
       const auto* block_info = counter_des.block_info;
