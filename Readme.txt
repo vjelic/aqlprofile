@@ -25,7 +25,8 @@ To build with the current installed ROCM:
 $ cd .../hsa-amd-aqlprofile
 $ mkdir build
 $ cd build
-$ cmake -DCMAKE_PREFIX_PATH=/opt/rocm ..
+$ export CMAKE_PREFIX_PATH=/opt/rocm/inlcude/hsa
+$ cmake ..
 $ make
 
 To run the test:
