@@ -1,7 +1,7 @@
-#!/bin/sh -x
+#!/bin/sh
 BIN_DIR=`dirname $0`
 
-head_len=3
+head_len=4
 tail_len=1
 
 if [ "$#" != "2" ] ; then
@@ -19,6 +19,8 @@ header_tail=${header_temp}_tail
 
 head -n $head_len $header > $header_head
 tail -n $tail_len $header > $header_tail
+
+rm -f defcut_py_state
 
 while [ 1 ] ; do
   make > log.txt 2>&1
