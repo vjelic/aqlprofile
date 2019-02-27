@@ -8,7 +8,7 @@ The library source tree:
  - src  - AMD AQL profile library sources
    - core - AQL API sources
    - pm4 - cmd/pmc/sqtt pm4 builders
-   - def - GFXIP definition headers
+   - def - Generated GFXIP definition headers
  - test - library test suite
    - ctrl - Test controll
    - util - Test utils
@@ -28,6 +28,15 @@ $ cd build
 $ export CMAKE_PREFIX_PATH=/opt/rocm/inlcude/hsa
 $ cmake ..
 $ make
+
+To regenerate src/def headers:
+
+Need to use 'clang' compiler:
+$ export CXX=/usr/bin/clang++
+$ export CC=/usr/bin/clang
+
+'mygen' make target to regenerate the headers from full set of gfxip headers
+$ make mygen
 
 To run the test:
 
