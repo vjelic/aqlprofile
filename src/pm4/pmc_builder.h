@@ -106,12 +106,18 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
                                          Primitives::MC_SEQ_PERFCOUNTER_RSLT_CNTL_M3_ADDR,
                                          Primitives::mc_seq_hbm_reset_value());
     }
+    // Enable SQ Counter Control enable perfomance counter in graphics pipeline if implied
+    Primitives::validate_counters(counters_vec.get_attr());
+    if (counters_vec.get_attr() & CounterBlockTcAttr) {
+      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_PERFCOUNTER_CTRL_ADDR,
+                                          Primitives::sq_control_enable_value());
+    }
     // Programming perf counters
     for (const auto& counter_des : counters_vec) {
       const auto* block_info = counter_des.block_info;
       const auto& block_des = counter_des.block_des;
       const auto& reg_info = block_info->counter_reg_info[counter_des.index];
-#if DEBUG_TRACE == 2
+#if DEBUG_TRACE == 1
       printf("block id(%u) index(%u) counter id (%u) index(%u) sel-addr(0x%x)\n",
         block_des.id, block_des.index, counter_des.id, counter_des.index,
         reg_info.select_addr);

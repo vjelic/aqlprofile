@@ -24,6 +24,7 @@ enum CounterBlockAttr {
   CounterBlockCpmonAttr = 0x7f,
   // SRBM Block
   CounterBlockSrbmAttr = 0x80,
+  CounterBlockTcAttr = 0x100,
 };
 
 // Register address corresponding to each counter

@@ -27,6 +27,7 @@ class gfx9_cntx_prim {
   static const uint32_t MC_PERFCOUNTER_RSLT_CNTL__ENABLE_ANY_MASK_PRM = 0x01000000L;
   static const uint32_t MC_PERFCOUNTER_RSLT_CNTL__CLEAR_ALL_MASK_PRM = 0x02000000L;
 
+  static const uint32_t SQ_PERFCOUNTER_CTRL_ADDR = mmSQ_PERFCOUNTER_CTRL;
   static const uint32_t SQ_PERFCOUNTER_MASK_ADDR = mmSQ_PERFCOUNTER_MASK;
   static const uint32_t SQ_THREAD_TRACE_MASK_ADDR = mmSQ_THREAD_TRACE_MASK;
   static const uint32_t SQ_THREAD_TRACE_PERF_MASK_ADDR = mmSQ_THREAD_TRACE_PERF_MASK;
@@ -168,6 +169,28 @@ class gfx9_cntx_prim {
     } else if (block_id == SqCsCounterBlockId) {
       sq_cntr_ctrl.bits.CS_EN = 0x1;
     }
+    return sq_cntr_ctrl.u32All;
+  }
+
+  // SQ validate counter attributes
+  static void validate_counters(uint32_t counters_vec_attr) {
+#if SQ_CONFLICT_CHECK == 1
+    const uint32_t mask = CounterBlockSqAttr | CounterBlockTcAttr;
+    const bool conflict = ((counters_vec_attr & mask) == mask);
+    if (conflict) abort();
+#endif
+  }
+
+  // SQ Counter Control enable perfomance counter in graphics pipeline stages
+  static uint32_t sq_control_enable_value() {
+    regSQ_PERFCOUNTER_CTRL sq_cntr_ctrl{};
+    sq_cntr_ctrl.bits.PS_EN = 0x1;
+    sq_cntr_ctrl.bits.VS_EN = 0x1;
+    sq_cntr_ctrl.bits.GS_EN = 0x1;
+    sq_cntr_ctrl.bits.ES_EN = 0x1;
+    sq_cntr_ctrl.bits.HS_EN = 0x1;
+    sq_cntr_ctrl.bits.LS_EN = 0x1;
+    sq_cntr_ctrl.bits.CS_EN = 0x1;
     return sq_cntr_ctrl.u32All;
   }
 
