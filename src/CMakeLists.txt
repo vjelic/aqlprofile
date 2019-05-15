@@ -28,6 +28,11 @@ set ( GFX9_TEMPL "${SCRIPT_DIR}/gfx9_def.h" )
 set ( GFX9_DEF "${GFXIP_DIR}/gfx9_def.h" )
 set ( GFX9_HEADER "${DEF_DIR}/gfx9_def.h" )
 include_directories ( ${ROOT_DIR} )
+add_custom_target( mygenreset
+  COMMAND sh -xc "cp ${BINFO_TEMPL} ${BINFO_HEADER}"
+  COMMAND sh -xc "cp ${GFX8_TEMPL} ${GFX8_HEADER}"
+  COMMAND sh -xc "cp ${GFX9_TEMPL} ${GFX9_HEADER}"
+)
 add_custom_target( mygen
   COMMAND sh -xc "cp ${BINFO_TEMPL} ${BINFO_HEADER}"
   COMMAND sh -xc "sed '/gfx8_def/ s/.*//' ${GFX8_TEMPL} >${GFX8_HEADER}"
