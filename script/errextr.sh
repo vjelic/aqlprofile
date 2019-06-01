@@ -37,7 +37,6 @@ while [ 1 ] ; do
   
   time $BIN_DIR/defcut.py list.txt $fpath > $header_defs
   cat $header_head > $header
-  echo "//#include \"$fpath\"" >> $header
   cat $header_defs >> $header
   cat $header_tail >> $header
 done

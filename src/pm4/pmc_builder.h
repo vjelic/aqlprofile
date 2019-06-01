@@ -7,29 +7,12 @@
 #include <map>
 #include <string>
 
+#include "pm4/cmd_config.h"
 #include "def/gpu_block_info.h"
 
 namespace pm4_builder {
 class CmdBuffer;
 class CmdBuilder;
-
-// Counters vector class
-class counters_vector : public std::vector<counter_des_t> {
- public:
-  typedef std::vector<counter_des_t> Parent;
-
-  counters_vector() : Parent(), attr_(0) {}
-
-  void push_back(const counter_des_t& des) {
-    Parent::push_back(des);
-    attr_ |= des.block_info->attr;
-  }
-
-  uint32_t get_attr() const { return attr_; }
-
- private:
-  uint32_t attr_;
-};
 
 // PMC PM4 commands builder virtual interface
 class PmcBuilder {

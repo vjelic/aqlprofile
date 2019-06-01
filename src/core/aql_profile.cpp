@@ -8,6 +8,7 @@
 #include "core/pm4_factory.h"
 #include "pm4/cmd_builder.h"
 #include "pm4/pmc_builder.h"
+#include "pm4/spm_builder.h"
 #include "pm4/sqtt_builder.h"
 
 #define PUBLIC_API __attribute__((visibility("default")))
@@ -202,16 +203,16 @@ hsa_status_t DefaultPmcdataCallback(hsa_ven_amd_aqlprofile_info_type_t info_type
   return status;
 }
 
-hsa_status_t DefaultSqttdataCallback(hsa_ven_amd_aqlprofile_info_type_t info_type,
+hsa_status_t DefaultTracedataCallback(hsa_ven_amd_aqlprofile_info_type_t info_type,
                                      hsa_ven_amd_aqlprofile_info_data_t* info_data,
                                      void* callback_data) {
   hsa_status_t status = HSA_STATUS_SUCCESS;
   hsa_ven_amd_aqlprofile_info_data_t* passed_data =
       reinterpret_cast<hsa_ven_amd_aqlprofile_info_data_t*>(callback_data);
 
-  if (info_type == HSA_VEN_AMD_AQLPROFILE_INFO_SQTT_DATA) {
+  if (info_type == HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA) {
     if (info_data->sample_id == passed_data->sample_id) {
-      passed_data->sqtt_data = info_data->sqtt_data;
+      passed_data->trace_data = info_data->trace_data;
       status = HSA_STATUS_INFO_BREAK;
     }
   }
@@ -274,13 +275,14 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_validate_event(
 PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_profile_t* profile,
                                                      aql_profile::packet_t* aql_start_packet) {
   try {
-    aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile);
     pm4_builder::CmdBuffer commands;
     aql_profile::CommandBufferMgr cmd_buffer_mgr(profile->command_buffer.ptr, UINT_MAX);
 
+    aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile);
+    const pm4_builder::counters_vector countersVec = CountersVec(profile, pm4_factory);
+
     if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_PMC) {
       pm4_builder::PmcBuilder* pmc_builder = pm4_factory->GetPmcBuilder();
-      const pm4_builder::counters_vector countersVec = CountersVec(profile, pm4_factory);
 
       if (aql_profile::read_api_enabled) {
         // Generate read commands
@@ -312,8 +314,8 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
         }
       }
       assert(data_size <= profile->output_buffer.size);
-    } else if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_SQTT) {
-      pm4_builder::ThreadTraceConfig sqtt_config{};
+    } else if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_TRACE) {
+      pm4_builder::TraceConfig trace_config{};
 
       const uint32_t se_number = pm4_factory->GetShaderEnginesNumber();
       uint32_t se_mask = (1 << se_number) - 1;
@@ -329,32 +331,35 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
               if (p->value > 15)
                 throw aql_profile::aql_profile_exc_val<uint32_t>(
                     "ThreadTraceConfig: CuId must be between 0 and 15, TargetCu", p->value);
-              sqtt_config.targetCu = p->value;
+              trace_config.targetCu = p->value;
               break;
             case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_VM_ID_MASK:
               if (p->value > 2)
                 throw aql_profile::aql_profile_exc_val<uint32_t>(
                     "ThreadTraceConfig: VmId must be between 0 and 2, VmIdMask", p->value);
-              sqtt_config.vmIdMask = p->value;
+              trace_config.vmIdMask = p->value;
               break;
             case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_MASK:
               if ((p->value & 0x50) != 0)
                 throw aql_profile::aql_profile_exc_val<uint32_t>(
                     "ThreadTraceConfig: Mask should have bits [4,6] set to Zero, Mask", p->value);
-              sqtt_config.mask = p->value;
+              trace_config.mask = p->value;
               break;
             case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_TOKEN_MASK:
               if ((p->value & 0xFF000000) != 0)
                 throw aql_profile::aql_profile_exc_val<uint32_t>(
                     "ThreadTraceConfig: TokenMask should have bits [31:25] set to Zero, TokenMask",
                     p->value);
-              sqtt_config.tokenMask = p->value;
+              trace_config.tokenMask = p->value;
               break;
             case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_TOKEN_MASK2:
-              sqtt_config.tokenMask2 = p->value;
+              trace_config.tokenMask2 = p->value;
+              break;
+            case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_SAMPLE_RATE:
+              trace_config.sampleRate = p->value;
               break;
             default:
-              ERR_LOGGING << "Bad SQTT parameter name (" << p->parameter_name << ")";
+              ERR_LOGGING << "Bad trace parameter name (" << p->parameter_name << ")";
               return HSA_STATUS_ERROR_INVALID_ARGUMENT;
           }
         }
@@ -377,11 +382,11 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
       pm4_builder::ControlType* const control_ptr =
           reinterpret_cast<pm4_builder::ControlType*>(prefix_ptr + sizeof(uint32_t));
 
-      sqtt_config.se_number = tnumber;
-      sqtt_config.se_vector = tvector;
-      sqtt_config.control_buffer_ptr = control_ptr;
-      sqtt_config.data_buffer_ptr = profile->output_buffer.ptr;
-      sqtt_config.data_buffer_size = profile->output_buffer.size;
+      trace_config.se_number = tnumber;
+      trace_config.se_vector = tvector;
+      trace_config.control_buffer_ptr = control_ptr;
+      trace_config.data_buffer_ptr = profile->output_buffer.ptr;
+      trace_config.data_buffer_size = profile->output_buffer.size;
 
       if (prefix_ptr != NULL) {
         *reinterpret_cast<uint32_t*>(prefix_ptr) = tnumber;
@@ -392,13 +397,23 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
         }
       }
 
-      pm4_builder::SqttBuilder* sqtt_builder = pm4_factory->GetSqttBuilder();
+      if (countersVec.size() == 0) {
+        pm4_builder::SqttBuilder* sqtt_builder = pm4_factory->GetSqttBuilder();
 
-      // Generate start commands
-      sqtt_builder->Begin(&commands, &sqtt_config);
-      cmd_buffer_mgr.SetPreSize(commands.Size());
-      // Generate stop commands
-      sqtt_builder->End(&commands, &sqtt_config);
+        // Generate start commands
+        sqtt_builder->Begin(&commands, &trace_config);
+        cmd_buffer_mgr.SetPreSize(commands.Size());
+        // Generate stop commands
+        sqtt_builder->End(&commands, &trace_config);
+      } else {
+        pm4_builder::SpmBuilder* spm_builder = pm4_factory->GetSpmBuilder();
+
+        // Generate start commands
+        spm_builder->Begin(&commands, &trace_config, countersVec);
+        cmd_buffer_mgr.SetPreSize(commands.Size());
+        // Generate stop commands
+        spm_builder->End(&commands, &trace_config);
+      }
     } else {
       ERR_LOGGING << "Bad profile type (" << profile->type << ")";
       return HSA_STATUS_ERROR_INVALID_ARGUMENT;
@@ -514,8 +529,8 @@ hsa_ven_amd_aqlprofile_get_info(const hsa_ven_amd_aqlprofile_profile_t* profile,
         status = hsa_ven_amd_aqlprofile_iterate_data(profile, aql_profile::DefaultPmcdataCallback,
                                                      value);
         break;
-      case HSA_VEN_AMD_AQLPROFILE_INFO_SQTT_DATA:
-        status = hsa_ven_amd_aqlprofile_iterate_data(profile, aql_profile::DefaultSqttdataCallback,
+      case HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA:
+        status = hsa_ven_amd_aqlprofile_iterate_data(profile, aql_profile::DefaultTracedataCallback,
                                                      value);
         break;
       case HSA_VEN_AMD_AQLPROFILE_INFO_BLOCK_COUNTERS:
@@ -618,7 +633,8 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
           ++sample_index;
         }
       }
-    } else if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_SQTT) {
+    } else if ((profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_TRACE) &&
+               (profile->event_count == 0)) {
       // Control buffer was allocated as the CmdBuffer prefix partition
       aql_profile::CommandBufferMgr cmd_buffer_mgr(profile);
       const char* const prefix_ptr = cmd_buffer_mgr.GetPrefix1();
@@ -665,9 +681,9 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
 
         hsa_ven_amd_aqlprofile_info_data_t sample_info;
         sample_info.sample_id = se_id;
-        sample_info.sqtt_data.ptr = sample_ptr;
-        sample_info.sqtt_data.size = sample_size;
-        status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_SQTT_DATA, &sample_info, data);
+        sample_info.trace_data.ptr = sample_ptr;
+        sample_info.trace_data.size = sample_size;
+        status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, &sample_info, data);
         if (status == HSA_STATUS_INFO_BREAK) {
           status = HSA_STATUS_SUCCESS;
           break;

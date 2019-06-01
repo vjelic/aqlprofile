@@ -70,7 +70,7 @@ class TestPGenSqtt : public TestPGen {
     // Initialization of the profile
     memset(&profile_, 0, sizeof(profile_));
     profile_.agent = agent;
-    profile_.type = HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_SQTT;
+    profile_.type = HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_TRACE;
 
     // Profile buffers attributes
     command_buffer_alignment = buffer_alignment_;
@@ -122,14 +122,14 @@ class TestPGenSqtt : public TestPGen {
     api_->hsa_ven_amd_aqlprofile_iterate_data(&profile_, TestPGenSqttCallback, &data);
     for (callback_data_t::iterator it = data.begin(); it != data.end(); ++it) {
       std::cout << "sample(" << std::dec << it->sample_id << ") size(" << std::dec
-                << it->sqtt_data.size << ") ptr(" << std::hex << it->sqtt_data.ptr << ")"
+                << it->trace_data.size << ") ptr(" << std::hex << it->trace_data.ptr << ")"
                 << std::endl;
 
-      void* sys_buf = GetRsrcFactory()->AllocateSysMemory(GetAgentInfo(), it->sqtt_data.size);
+      void* sys_buf = GetRsrcFactory()->AllocateSysMemory(GetAgentInfo(), it->trace_data.size);
       TEST_ASSERT(sys_buf != NULL);
       if (sys_buf == NULL) return false;
 
-      hsa_status_t status = hsa_memory_copy(sys_buf, it->sqtt_data.ptr, it->sqtt_data.size);
+      hsa_status_t status = hsa_memory_copy(sys_buf, it->trace_data.ptr, it->trace_data.size);
       TEST_ASSERT(status == HSA_STATUS_SUCCESS);
       if (status != HSA_STATUS_SUCCESS) return false;
 
@@ -141,9 +141,9 @@ class TestPGenSqtt : public TestPGen {
       out_file.open(file_name);
 
       // Write the buffer in terms of shorts (16 bits)
-      short* sqtt_data = (short*)sys_buf;
-      for (unsigned i = 0; i < (it->sqtt_data.size / sizeof(short)); ++i) {
-        out_file << std::setw(4) << std::setfill('0') << std::hex << sqtt_data[i] << "\n";
+      uint16_t* trace_data = (uint16_t*)sys_buf;
+      for (unsigned i = 0; i < (it->trace_data.size / sizeof(uint16_t)); ++i) {
+        out_file << std::setw(4) << std::setfill('0') << std::hex << trace_data[i] << "\n";
       }
 
       out_file.close();

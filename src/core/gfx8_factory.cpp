@@ -29,6 +29,10 @@ void Gfx8Factory::Init() {
       new pm4_builder::GpuPmcBuilder<pm4_builder::Gfx8CmdBuilder, gfx8_cntx_prim>;
   if (Pm4Factory::pmc_builder_ == NULL) throw aql_profile_exc_msg("PmcBuilder allocation failed");
 
+  Pm4Factory::spm_builder_ =
+      new pm4_builder::GpuSpmBuilder<pm4_builder::Gfx8CmdBuilder, gfx8_cntx_prim>;
+  if (Pm4Factory::spm_builder_ == NULL) throw aql_profile_exc_msg("SpmBuilder allocation failed");
+
   Pm4Factory::sqtt_builder_ =
       new pm4_builder::GpuSqttBuilder<pm4_builder::Gfx8CmdBuilder, gfx8_cntx_prim>;
   if (Pm4Factory::sqtt_builder_ == NULL) throw aql_profile_exc_msg("SqttBuilder allocation failed");

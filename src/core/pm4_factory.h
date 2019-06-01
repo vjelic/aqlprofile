@@ -17,6 +17,7 @@
 #include "def/gpu_block_info.h"
 #include "pm4/cmd_builder.h"
 #include "pm4/pmc_builder.h"
+#include "pm4/spm_builder.h"
 #include "pm4/sqtt_builder.h"
 
 namespace aql_profile {
@@ -79,6 +80,8 @@ class Pm4Factory {
   pm4_builder::CmdBuilder* GetCmdBuilder() { return cmd_builder_; }
   // Return PMC PM4 packets builder
   pm4_builder::PmcBuilder* GetPmcBuilder() { return pmc_builder_; }
+  // Return SPM PM4 packets builder
+  pm4_builder::SpmBuilder* GetSpmBuilder() { return spm_builder_; }
   // Return SQTT PM4 packets builder
   pm4_builder::SqttBuilder* GetSqttBuilder() { return sqtt_builder_; }
 
@@ -109,12 +112,18 @@ class Pm4Factory {
   uint32_t FindBlock(const char* name) const { return block_map_.Find(name); }
 
  protected:
-  explicit Pm4Factory(const BlockInfoMap& map)
-      : cmd_builder_(NULL), pmc_builder_(NULL), sqtt_builder_(NULL), block_map_(map) {}
+  explicit Pm4Factory(const BlockInfoMap& map) :
+    cmd_builder_(NULL),
+    pmc_builder_(NULL),
+    spm_builder_(NULL),
+    sqtt_builder_(NULL),
+    block_map_(map)
+  {}
 
   virtual ~Pm4Factory() {
     delete cmd_builder_;
     delete pmc_builder_;
+    delete spm_builder_;
     delete sqtt_builder_;
   }
 
@@ -122,6 +131,8 @@ class Pm4Factory {
   pm4_builder::CmdBuilder* cmd_builder_;
   // PMC PM4 packets builder
   pm4_builder::PmcBuilder* pmc_builder_;
+  // SPM PM4 packets builder
+  pm4_builder::SpmBuilder* spm_builder_;
   // SQTT PM4 packets builder
   pm4_builder::SqttBuilder* sqtt_builder_;
 

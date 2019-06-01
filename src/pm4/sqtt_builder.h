@@ -4,10 +4,11 @@
 #include <stdint.h>
 #include <iostream>
 
+#include "pm4/cmd_config.h"
+
 namespace pm4_builder {
 class CmdBuffer;
 class CmdBuilder;
-struct ThreadTraceConfig;
 
 enum {
   // SE number
@@ -40,24 +41,7 @@ enum {
 };
 
 typedef uint32_t ControlType;
-
-// SqttBuilder config
-struct ThreadTraceConfig {
-  uint32_t targetCu;
-  uint32_t vmIdMask;
-  uint32_t mask;
-  uint32_t tokenMask;
-  uint32_t tokenMask2;
-
-  void* control_buffer_ptr;
-  void* data_buffer_ptr;
-  uint32_t data_buffer_size;
-
-  // SE number for tracing
-  uint32_t se_number;
-  // SE mask for tracing
-  uint32_t se_vector;
-};
+typedef TraceConfig ThreadTraceConfig;
 
 // Encapsulates the various Api and structures that are used to enable
 // a thread trace session and collect its data. Implementations of this

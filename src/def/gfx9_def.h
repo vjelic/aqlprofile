@@ -2,7 +2,6 @@
 #ifndef SRC_DEF_GFX9_DEF_H_
 #define SRC_DEF_GFX9_DEF_H_
 #include "def/gpu_block_info.h"
-//#include "/home/chun/proj/aqlprofile_bugfix/gfxip/gfx9_def.h"
 // include gfxip/gfx9/gfx9_enum.h
 
 enum GDS_PERFCOUNT_SELECT {
@@ -103,6 +102,15 @@ enum SX_PERFCOUNTER_VALS {
 #define mmGDS_PERFCOUNTER2_SELECT 0xDA82
 #define mmGDS_PERFCOUNTER3_SELECT 0xDA83
 #define mmRLC_PERFMON_CLK_CNTL 0xDCBF
+#define mmRLC_SPM_PERFMON_CNTL 0xDC80
+#define mmRLC_SPM_PERFMON_RING_BASE_LO 0xDC81
+#define mmRLC_SPM_PERFMON_RING_BASE_HI 0xDC82
+#define mmRLC_SPM_PERFMON_RING_SIZE 0xDC83
+#define mmRLC_SPM_PERFMON_SEGMENT_SIZE 0xDC84
+#define mmRLC_SPM_SE_MUXSEL_ADDR 0xDC85
+#define mmRLC_SPM_SE_MUXSEL_DATA 0xDC86
+#define mmRLC_SPM_GLOBAL_MUXSEL_ADDR 0xDC9B
+#define mmRLC_SPM_GLOBAL_MUXSEL_DATA 0xDC9C
 #define mmSPI_PERFCOUNTER0_HI 0xD180
 #define mmSPI_PERFCOUNTER0_LO 0xD181
 #define mmSPI_PERFCOUNTER1_HI 0xD182
@@ -302,6 +310,8 @@ enum SX_PERFCOUNTER_VALS {
 typedef union ATC_PERFCOUNTER0_CFG regATC_PERFCOUNTER0_CFG;
 typedef union RPB_PERFCOUNTER0_CFG regRPB_PERFCOUNTER0_CFG;
 typedef union GDS_PERFCOUNTER0_SELECT regGDS_PERFCOUNTER0_SELECT;
+typedef union RLC_SPM_PERFMON_CNTL regRLC_SPM_PERFMON_CNTL;
+typedef union RLC_SPM_PERFMON_SEGMENT_SIZE regRLC_SPM_PERFMON_SEGMENT_SIZE;
 typedef union SPI_PERFCOUNTER0_SELECT regSPI_PERFCOUNTER0_SELECT;
 typedef union SQ_THREAD_TRACE_BASE regSQ_THREAD_TRACE_BASE;
 typedef union SQ_THREAD_TRACE_BASE2 regSQ_THREAD_TRACE_BASE2;
@@ -400,6 +410,79 @@ union GDS_PERFCOUNTER0_SELECT {
   unsigned int u32All;
   signed int i32All;
   float f32All;
+};
+
+union RLC_SPM_PERFMON_CNTL {
+  struct {
+#if defined(LITTLEENDIAN_CPU)
+    unsigned int RESERVED1 : 12;
+    unsigned int PERFMON_RING_MODE : 2;
+    unsigned int RESERVED : 2;
+    unsigned int PERFMON_SAMPLE_INTERVAL : 16;
+#elif defined(BIGENDIAN_CPU)
+    unsigned int PERFMON_SAMPLE_INTERVAL : 16;
+    unsigned int RESERVED : 2;
+    unsigned int PERFMON_RING_MODE : 2;
+    unsigned int RESERVED1 : 12;
+#endif
+  } bitfields, bits;
+  unsigned int u32All;
+  signed int i32All;
+  float f32All;
+};
+
+union RLC_SPM_PERFMON_SEGMENT_SIZE {
+  struct {
+#if defined(LITTLEENDIAN_CPU)
+    unsigned int PERFMON_SEGMENT_SIZE : 8;
+    unsigned int RESERVED1 : 3;
+    unsigned int GLOBAL_NUM_LINE : 5;
+    unsigned int SE0_NUM_LINE : 5;
+    unsigned int SE1_NUM_LINE : 5;
+    unsigned int SE2_NUM_LINE : 5;
+    unsigned int RESERVED : 1;
+#elif defined(BIGENDIAN_CPU)
+    unsigned int RESERVED : 1;
+    unsigned int SE2_NUM_LINE : 5;
+    unsigned int SE1_NUM_LINE : 5;
+    unsigned int SE0_NUM_LINE : 5;
+    unsigned int GLOBAL_NUM_LINE : 5;
+    unsigned int RESERVED1 : 3;
+    unsigned int PERFMON_SEGMENT_SIZE : 8;
+#endif
+  } bitfields, bits;
+  unsigned int u32All;
+  signed int i32All;
+  float f32All;
+};
+
+union RLC_SPM_MUXSEL_DATA {
+  struct {
+  #if defined(LITTLEENDIAN_CPU)
+    struct {
+      unsigned int counter : 6;
+      unsigned int block : 5;
+      unsigned int instance : 5;
+    } lo;
+    struct {
+      unsigned int counter : 6;
+      unsigned int block : 5;
+      unsigned int instance : 5;
+    } hi;
+  #elif defined(BIGENDIAN_CPU)
+    struct {
+      unsigned int instance : 5;
+      unsigned int block : 5;
+      unsigned int counter : 6;
+    } hi;
+    struct {
+      unsigned int instance : 5;
+      unsigned int block : 5;
+      unsigned int counter : 6;
+    } lo;
+  #endif
+  } bits;
+  unsigned int u32All;
 };
 
 union SPI_PERFCOUNTER0_SELECT {
@@ -1542,6 +1625,16 @@ class gfx9_cntx_prim {
       mmSQ_THREAD_TRACE_STATUS - UCONFIG_SPACE_START;
   static const uint32_t TT_BUFF_ALIGN_SHIFT = 12;
 
+  static const uint32_t RLC_SPM_PERFMON_CNTL__ADDR = mmRLC_SPM_PERFMON_CNTL;
+  static const uint32_t RLC_SPM_PERFMON_RING_BASE_LO__ADDR = mmRLC_SPM_PERFMON_RING_BASE_LO;
+  static const uint32_t RLC_SPM_PERFMON_RING_BASE_HI__ADDR = mmRLC_SPM_PERFMON_RING_BASE_HI;
+  static const uint32_t RLC_SPM_PERFMON_RING_SIZE__ADDR = mmRLC_SPM_PERFMON_RING_SIZE;
+  static const uint32_t RLC_SPM_PERFMON_SEGMENT_SIZE__ADDR = mmRLC_SPM_PERFMON_SEGMENT_SIZE;
+  static const uint32_t RLC_SPM_GLOBAL_MUXSEL_ADDR__ADDR = mmRLC_SPM_GLOBAL_MUXSEL_ADDR;
+  static const uint32_t RLC_SPM_GLOBAL_MUXSEL_DATA__ADDR = mmRLC_SPM_GLOBAL_MUXSEL_DATA;
+  static const uint32_t RLC_SPM_SE_MUXSEL_ADDR__ADDR = mmRLC_SPM_SE_MUXSEL_ADDR;
+  static const uint32_t RLC_SPM_SE_MUXSEL_DATA__ADDR = mmRLC_SPM_SE_MUXSEL_DATA;
+
   static const uint32_t COPY_DATA_SEL_REG_PRM = COPY_DATA_SEL_REG;
   static const uint32_t COPY_DATA_SEL_SRC_SYS_PERF_COUNTER_PRM = COPY_DATA_SEL_SRC_SYS_PERF_COUNTER;
   static const uint32_t COPY_DATA_SEL_COUNT_1DW_PRM = COPY_DATA_SEL_COUNT_1DW;
@@ -1612,7 +1705,6 @@ class gfx9_cntx_prim {
   static uint32_t cp_perfmon_cntl_stop_value() {
     regCP_PERFMON_CNTL cp_perfmon_cntl{};
     cp_perfmon_cntl.bits.PERFMON_STATE = 2;
-    cp_perfmon_cntl.bits.PERFMON_SAMPLE_ENABLE = 1;
     return cp_perfmon_cntl.u32All;
   }
 
@@ -1755,6 +1847,47 @@ class gfx9_cntx_prim {
   static uint32_t srbm_reset_value() { return 0; }
   static uint32_t srbm_start_value() { return 0; }
   static uint32_t srbm_stop_value() { return 0; }
+
+  // SPM trace routines
+  static uint32_t cp_perfmon_cntl_spm_start_value() {
+    regCP_PERFMON_CNTL cp_perfmon_cntl{};
+    //cp_perfmon_cntl.bits.PERFMON_SAMPLE_ENABLE = 1;
+    cp_perfmon_cntl.bits.SPM_PERFMON_STATE = 1;
+    return cp_perfmon_cntl.u32All;
+  }
+  static uint32_t cp_perfmon_cntl_spm_stop_value() {
+    regCP_PERFMON_CNTL cp_perfmon_cntl{};
+    cp_perfmon_cntl.bits.SPM_PERFMON_STATE = 2;
+    return cp_perfmon_cntl.u32All;
+  }
+  static uint32_t rlc_spm_muxsel_data(const counter_des_t& counter_des_lo, const counter_des_t& counter_des_hi) {
+    RLC_SPM_MUXSEL_DATA data{};
+    data.bits.lo.counter = counter_des_lo.index;
+    data.bits.lo.block = counter_des_lo.block_des.id;
+    data.bits.lo.instance = counter_des_lo.block_des.index;
+    data.bits.hi.counter = counter_des_hi.index;
+    data.bits.hi.block = counter_des_hi.block_des.id;
+    data.bits.hi.instance = counter_des_hi.block_des.index;
+    return data.u32All;
+  }
+  static uint32_t rlc_spm_perfmon_cntl_value(const uint32_t& sampling_rate) {
+    regRLC_SPM_PERFMON_CNTL value{};
+    value.bits.PERFMON_SAMPLE_INTERVAL = sampling_rate;
+    value.bits.PERFMON_RING_MODE = 0;
+    return value.u32All;
+  }
+  static uint32_t rlc_spm_perfmon_segment_size_value(const uint32_t& global_count, const uint32_t& se_count) {
+    const uint32_t global_nlines = ((global_count * 16) + 0xff) >> 8;
+    const uint32_t se_nlines = ((se_count * 16) + 0xff) >> 8;
+    const uint32_t segment_size = (global_nlines + (4 * se_nlines)) * 0x100;
+    regRLC_SPM_PERFMON_SEGMENT_SIZE value{};
+    value.bits.GLOBAL_NUM_LINE = global_nlines;
+    value.bits.SE0_NUM_LINE = se_nlines;
+    value.bits.SE1_NUM_LINE = se_nlines;
+    value.bits.SE2_NUM_LINE = se_nlines;
+    value.bits.PERFMON_SEGMENT_SIZE = segment_size;
+    return value.u32All;
+  }
 
   // Enable Thread Trace for all VM Id's
   // Enable all of the SIMD's of the compute unit

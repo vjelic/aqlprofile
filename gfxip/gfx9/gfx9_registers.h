@@ -120662,6 +120662,35 @@ union RLC_SPM_SE_MUXSEL_ADDR {
 };
 
 
+union RLC_SPM_MUXSEL_DATA {
+  struct {
+  #if defined(LITTLEENDIAN_CPU)
+    struct {
+      unsigned int counter : 6;
+      unsigned int block : 5;
+      unsigned int instance : 5;
+    } lo;
+    struct {
+      unsigned int counter : 6;
+      unsigned int block : 5;
+      unsigned int instance : 5;
+    } hi;
+  #elif defined(BIGENDIAN_CPU)
+    struct {
+      unsigned int instance : 5;
+      unsigned int block : 5;
+      unsigned int counter : 6;
+    } hi;
+    struct {
+      unsigned int instance : 5;
+      unsigned int block : 5;
+      unsigned int counter : 6;
+    } lo;
+  #endif
+  } bits;
+  unsigned int u32All;
+};
+
 union RLC_SPM_SE_MUXSEL_DATA {
   struct {
 #if defined(LITTLEENDIAN_CPU)
@@ -120670,6 +120699,7 @@ union RLC_SPM_SE_MUXSEL_DATA {
     unsigned int PERFMON_SEL_DATA : 32;
 #endif
   } bitfields, bits;
+  RLC_SPM_MUXSEL_DATA data;
   unsigned int u32All;
   signed int i32All;
   float f32All;
@@ -120986,6 +121016,7 @@ union RLC_SPM_GLOBAL_MUXSEL_DATA {
     unsigned int PERFMON_SEL_DATA : 32;
 #endif
   } bitfields, bits;
+  RLC_SPM_MUXSEL_DATA data;
   unsigned int u32All;
   signed int i32All;
   float f32All;
