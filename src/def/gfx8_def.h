@@ -127,6 +127,7 @@ enum VGT_EVENT_TYPE {
 #define mmRLC_SPM_PERFMON_SEGMENT_SIZE__CI__VI 0xDC84
 #define mmRLC_SPM_SE_MUXSEL_ADDR__CI__VI 0xDC85
 #define mmRLC_SPM_SE_MUXSEL_DATA__CI__VI 0xDC86
+#define mmRLC_SPM_SQG_PERFMON_SAMPLE_DELAY__CI__VI 0xDC98
 #define mmSPI_PERFCOUNTER0_HI__CI__VI 0xD180
 #define mmSPI_PERFCOUNTER0_LO__CI__VI 0xD181
 #define mmSPI_PERFCOUNTER0_SELECT__CI__VI 0xD980
@@ -1896,6 +1897,9 @@ class gfx8_cntx_prim {
   static const uint32_t RLC_SPM_SE_MUXSEL_ADDR__ADDR = mmRLC_SPM_SE_MUXSEL_ADDR__CI__VI;
   static const uint32_t RLC_SPM_SE_MUXSEL_DATA__ADDR = mmRLC_SPM_SE_MUXSEL_DATA__CI__VI;
 
+  static const uint32_t SQ_BLOCK_ID = SqCounterBlockId;
+  static const uint32_t SQ_BLOCK_SPM_ID = 9;
+
   static const uint32_t COPY_DATA_SEL_REG_PRM = COPY_DATA_SEL_REG;
   static const uint32_t COPY_DATA_SEL_SRC_SYS_PERF_COUNTER_PRM = COPY_DATA_SEL_SRC_SYS_PERF_COUNTER;
   static const uint32_t COPY_DATA_SEL_COUNT_1DW_PRM = COPY_DATA_SEL_COUNT_1DW;
@@ -1966,6 +1970,7 @@ class gfx8_cntx_prim {
   static uint32_t cp_perfmon_cntl_stop_value() {
     regCP_PERFMON_CNTL cp_perfmon_cntl{};
     cp_perfmon_cntl.bits.PERFMON_STATE = 2;
+    cp_perfmon_cntl.bits.PERFMON_SAMPLE_ENABLE = 1;
     return cp_perfmon_cntl.u32All;
   }
 
@@ -1985,6 +1990,15 @@ class gfx8_cntx_prim {
     sq_cntr_sel.bits.SQC_BANK_MASK = 0xF;
     sq_cntr_sel.bits.SQC_CLIENT_MASK = 0xF;
     sq_cntr_sel.bits.PERF_SEL = counter_des.id;
+    return sq_cntr_sel.u32All;
+  }
+  static uint32_t sq_spm_select_value(const counter_des_t& counter_des) {
+    regSQ_PERFCOUNTER0_SELECT__CI__VI sq_cntr_sel{};
+    sq_cntr_sel.bits.SIMD_MASK = 0xF;
+    sq_cntr_sel.bits.SQC_BANK_MASK = 0xF;
+    sq_cntr_sel.bits.SQC_CLIENT_MASK = 0xF;
+    sq_cntr_sel.bits.PERF_SEL = counter_des.id;
+    sq_cntr_sel.bits.SPM_MODE = 1;
     return sq_cntr_sel.u32All;
   }
 
@@ -2271,29 +2285,35 @@ class gfx8_cntx_prim {
   static uint32_t srbm_stop_value() {
     regSRBM_PERFMON_CNTL cntl{};
     cntl.bits.PERFMON_STATE = 2;
+    cntl.bits.PERFMON_SAMPLE_ENABLE = 1;
     return cntl.u32All;
   }
 
   // SPM trace routines
   static uint32_t cp_perfmon_cntl_spm_start_value() {
     regCP_PERFMON_CNTL cp_perfmon_cntl{};
-    //cp_perfmon_cntl.bits.PERFMON_SAMPLE_ENABLE = 1;
     cp_perfmon_cntl.bits.SPM_PERFMON_STATE__CI__VI = 1;
     return cp_perfmon_cntl.u32All;
   }
   static uint32_t cp_perfmon_cntl_spm_stop_value() {
     regCP_PERFMON_CNTL cp_perfmon_cntl{};
     cp_perfmon_cntl.bits.SPM_PERFMON_STATE__CI__VI = 2;
+    cp_perfmon_cntl.bits.PERFMON_SAMPLE_ENABLE = 1;
     return cp_perfmon_cntl.u32All;
   }
-  static uint32_t rlc_spm_muxsel_data(const counter_des_t& counter_des_lo, const counter_des_t& counter_des_hi) {
+  static uint32_t rlc_spm_muxsel_data(const uint32_t& value, const counter_des_t& counter_des,
+                                      const uint32_t& block, const uint32_t& hi) {
     RLC_SPM_MUXSEL_DATA data{};
-    data.bits.lo.counter = counter_des_lo.index;
-    data.bits.lo.block = counter_des_lo.block_des.id;
-    data.bits.lo.instance = counter_des_lo.block_des.index;
-    data.bits.hi.counter = counter_des_hi.index;
-    data.bits.hi.block = counter_des_hi.block_des.id;
-    data.bits.hi.instance = counter_des_hi.block_des.index;
+    data.u32All = value;
+    if (hi == 0) {
+      data.bits.lo.counter = counter_des.index;
+      data.bits.lo.block = block;
+      data.bits.lo.instance = counter_des.block_des.index;
+    } else {
+      data.bits.hi.counter = counter_des.index;
+      data.bits.hi.block = block;
+      data.bits.hi.instance = counter_des.block_des.index;
+    }
     return data.u32All;
   }
   static uint32_t rlc_spm_perfmon_cntl_value(const uint32_t& sampling_rate) {
@@ -2305,7 +2325,7 @@ class gfx8_cntx_prim {
   static uint32_t rlc_spm_perfmon_segment_size_value(const uint32_t& global_count, const uint32_t& se_count) {
     const uint32_t global_nlines = ((global_count * 16) + 0xff) >> 8;
     const uint32_t se_nlines = ((se_count * 16) + 0xff) >> 8;
-    const uint32_t segment_size = (global_nlines + (4 * se_nlines)) * 0x100;
+    const uint32_t segment_size = (global_nlines + (4 * se_nlines));
     regRLC_SPM_PERFMON_SEGMENT_SIZE__CI__VI value{};
     value.bits.GLOBAL_NUM_LINE = global_nlines;
     value.bits.SE0_NUM_LINE = se_nlines;
@@ -2467,6 +2487,13 @@ static const CounterRegInfo SqCounterRegAddr[] = {
     {mmSQ_PERFCOUNTER14_SELECT__CI__VI, mmSQ_PERFCOUNTER_CTRL__CI__VI, mmSQ_PERFCOUNTER14_LO__CI__VI, mmSQ_PERFCOUNTER14_HI__CI__VI},
     {mmSQ_PERFCOUNTER15_SELECT__CI__VI, mmSQ_PERFCOUNTER_CTRL__CI__VI, mmSQ_PERFCOUNTER15_LO__CI__VI, mmSQ_PERFCOUNTER15_HI__CI__VI}};
 
+static const BlockDelayInfo SqBlockDelayInfo[] = {
+    {mmRLC_SPM_SQG_PERFMON_SAMPLE_DELAY__CI__VI, 0x00000013},
+    {mmRLC_SPM_SQG_PERFMON_SAMPLE_DELAY__CI__VI, 0x0000000f},
+    {mmRLC_SPM_SQG_PERFMON_SAMPLE_DELAY__CI__VI, 0x00000015},
+    {mmRLC_SPM_SQG_PERFMON_SAMPLE_DELAY__CI__VI, 0x00000013},
+};
+
 static const CounterRegInfo CpfCounterRegAddr[] = {
     {mmCPF_PERFCOUNTER0_SELECT__CI__VI, 0, mmCPF_PERFCOUNTER0_LO__CI__VI, mmCPF_PERFCOUNTER0_HI__CI__VI},
     {mmCPF_PERFCOUNTER1_SELECT__CI__VI, 0, mmCPF_PERFCOUNTER1_LO__CI__VI, mmCPF_PERFCOUNTER1_HI__CI__VI}};
@@ -2573,7 +2600,7 @@ static const GpuBlockInfo CpfCounterBlockInfo = {"CPF", CpfCounterBlockId, 1, Cp
 static const GpuBlockInfo GrbmCounterBlockInfo = {"GRBM", GrbmCounterBlockId, 1, GrbmCounterBlockMaxEvent, GrbmCounterBlockNumCounters, GrbmCounterRegAddr, gfx8_cntx_prim::select_value<regGRBM_PERFCOUNTER0_SELECT>, CounterBlockDfltAttr};
 static const GpuBlockInfo GrbmSeCounterBlockInfo = {"GRBMSE", GrbmSeCounterBlockId, 1, GrbmSeCounterBlockMaxEvent, GrbmSeCounterBlockNumCounters, GrbmSeCounterRegAddr, gfx8_cntx_prim::select_value<regGRBM_SE0_PERFCOUNTER_SELECT>, CounterBlockDfltAttr};
 static const GpuBlockInfo SpiCounterBlockInfo = {"SPI", SpiCounterBlockId, 1, SpiCounterBlockMaxEvent, SpiCounterBlockNumCounters, SpiCounterRegAddr, gfx8_cntx_prim::select_value<regSPI_PERFCOUNTER0_SELECT>, CounterBlockSeAttr};
-static const GpuBlockInfo SqCounterBlockInfo = {"SQ", SqCounterBlockId, 1, SqCounterBlockMaxEvent, SqCounterBlockNumCounters, SqCounterRegAddr, gfx8_cntx_prim::sq_select_value, CounterBlockSeAttr|CounterBlockSqAttr};
+static const GpuBlockInfo SqCounterBlockInfo = {"SQ", SqCounterBlockId, 1, SqCounterBlockMaxEvent, SqCounterBlockNumCounters, SqCounterRegAddr, gfx8_cntx_prim::sq_select_value, CounterBlockSeAttr|CounterBlockSqAttr, SqBlockDelayInfo};
 static const GpuBlockInfo SqCsCounterBlockInfo = {"SQ_CS", SqCounterBlockId, 1, SqCounterBlockMaxEvent, SqCounterBlockNumCounters, SqCounterRegAddr, gfx8_cntx_prim::sq_select_value, CounterBlockSeAttr|CounterBlockSqAttr};
 static const GpuBlockInfo SxCounterBlockInfo = {"SX", SxCounterBlockId, 1, SxCounterBlockMaxEvent, SxCounterBlockNumCounters, SxCounterRegAddr, gfx8_cntx_prim::select_value<regSX_PERFCOUNTER0_SELECT>, CounterBlockSeAttr|CounterBlockCleanAttr};
 static const GpuBlockInfo TaCounterBlockInfo = {"TA", TaCounterBlockId, TaCounterBlockNumInstances, TaCounterBlockMaxEvent, TaCounterBlockNumCounters, TaCounterRegAddr, gfx8_cntx_prim::select_value<regTA_PERFCOUNTER0_SELECT>, CounterBlockSeAttr|CounterBlockTcAttr};

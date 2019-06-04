@@ -29,6 +29,13 @@ static const CounterRegInfo SqCounterRegAddr[] = {
     {mmSQ_PERFCOUNTER14_SELECT, mmSQ_PERFCOUNTER_CTRL, mmSQ_PERFCOUNTER14_LO, mmSQ_PERFCOUNTER14_HI},
     {mmSQ_PERFCOUNTER15_SELECT, mmSQ_PERFCOUNTER_CTRL, mmSQ_PERFCOUNTER15_LO, mmSQ_PERFCOUNTER15_HI}};
 
+static const BlockDelayInfo SqBlockDelayInfo[] = {
+    {mmRLC_SPM_SQG_PERFMON_SAMPLE_DELAY, 0x0000002c},
+    {mmRLC_SPM_SQG_PERFMON_SAMPLE_DELAY, 0x00000029},
+    {mmRLC_SPM_SQG_PERFMON_SAMPLE_DELAY, 0x0000002a},
+    {mmRLC_SPM_SQG_PERFMON_SAMPLE_DELAY, 0x00000027},
+};
+
 /*
  * IH
  */
@@ -276,7 +283,7 @@ static const GpuBlockInfo PaScCounterBlockInfo = {"PA_SC", PaScCounterBlockId, 1
 // Counter block SPI
 static const GpuBlockInfo SpiCounterBlockInfo = {"SPI", SpiCounterBlockId, 1, SpiCounterBlockMaxEvent, SpiCounterBlockNumCounters, SpiCounterRegAddr, gfx9_cntx_prim::select_value<regSPI_PERFCOUNTER0_SELECT>, CounterBlockSeAttr};
 // Counter block SQ
-static const GpuBlockInfo SqCounterBlockInfo = {"SQ", SqCounterBlockId, 1, SqCounterBlockMaxEvent, SqCounterBlockNumCounters, SqCounterRegAddr, gfx9_cntx_prim::sq_select_value, CounterBlockSeAttr|CounterBlockSqAttr};
+static const GpuBlockInfo SqCounterBlockInfo = {"SQ", SqCounterBlockId, 1, SqCounterBlockMaxEvent, SqCounterBlockNumCounters, SqCounterRegAddr, gfx9_cntx_prim::sq_select_value, CounterBlockSeAttr|CounterBlockSqAttr, SqBlockDelayInfo};
 static const GpuBlockInfo SqGsCounterBlockInfo = {"SQ_GS", SqCounterBlockId, 1, SqCounterBlockMaxEvent, SqCounterBlockNumCounters, SqCounterRegAddr, gfx9_cntx_prim::sq_select_value, CounterBlockSeAttr|CounterBlockSqAttr};
 static const GpuBlockInfo SqVsCounterBlockInfo = {"SQ_VS", SqCounterBlockId, 1, SqCounterBlockMaxEvent, SqCounterBlockNumCounters, SqCounterRegAddr, gfx9_cntx_prim::sq_select_value, CounterBlockSeAttr|CounterBlockSqAttr};
 static const GpuBlockInfo SqPsCounterBlockInfo = {"SQ_PS", SqCounterBlockId, 1, SqCounterBlockMaxEvent, SqCounterBlockNumCounters, SqCounterRegAddr, gfx9_cntx_prim::sq_select_value, CounterBlockSeAttr|CounterBlockSqAttr};

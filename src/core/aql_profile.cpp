@@ -633,68 +633,94 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
           ++sample_index;
         }
       }
-    } else if ((profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_TRACE) &&
-               (profile->event_count == 0)) {
+    } else if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_TRACE) {
+      if (profile->event_count == 0) {
+      // SQTT trace data
       // Control buffer was allocated as the CmdBuffer prefix partition
-      aql_profile::CommandBufferMgr cmd_buffer_mgr(profile);
-      const char* const prefix_ptr = cmd_buffer_mgr.GetPrefix1();
-      const uint32_t tnumber = *reinterpret_cast<const uint32_t*>(prefix_ptr);
-      const pm4_builder::ControlType* const control_ptr =
-          reinterpret_cast<const pm4_builder::ControlType*>(prefix_ptr + sizeof(uint32_t));
+        aql_profile::CommandBufferMgr cmd_buffer_mgr(profile);
+        const char* const prefix_ptr = cmd_buffer_mgr.GetPrefix1();
+        const uint32_t tnumber = *reinterpret_cast<const uint32_t*>(prefix_ptr);
+        const pm4_builder::ControlType* const control_ptr =
+            reinterpret_cast<const pm4_builder::ControlType*>(prefix_ptr + sizeof(uint32_t));
 
-      // Check if SQTT buffer was wrapped
-      for (unsigned i = 0; i < tnumber; ++i) {
-        const uint32_t status_ind =
-            (pm4_builder::TT_STATUS_IDX_MAX * i) + pm4_builder::TT_STATUS_IDX_STATUS;
-        if (control_ptr[status_ind] & pm4_builder::TT_CONTROL_UTC_ERR_MASK) {
-          ERR_LOGGING << "SQTT memory error received, SE(" << i << ")";
-          return HSA_STATUS_ERROR;
-        }
-#if 0
-        if (control_ptr[status_ind] & pm4_builder::TT_CONTROL_FULL_MASK) {
-          ERR2_LOGGING << "SQTT data buffer full, SE(" << i << ")";
-          return HSA_STATUS_ERROR;
-        }
-#endif
-      }
-
-      // SQTT output buffer and capacity per ShaderEngine
-      void* sample_ptr = profile->output_buffer.ptr;
-      const uint32_t sample_capacity =
-          (profile->output_buffer.size / tnumber) & ~(pm4_factory->GetSQTTBufferAlignment() - 1);
-      // The samples sizes are returned in the control buffer
-      for (unsigned i = 0; i < tnumber; ++i) {
-        const uint32_t se_id_ind =
-            (pm4_builder::TT_STATUS_IDX_MAX * i) + pm4_builder::TT_STATUS_IDX_ID;
-        const uint32_t se_id = control_ptr[se_id_ind];
-        // WPTR specifies the index in thread trace buffer where next token will be
-        // written by hardware. The index is incremented by size of 32 bytes.
-        const uint32_t wptr_ind =
-            (pm4_builder::TT_STATUS_IDX_MAX * i) + pm4_builder::TT_STATUS_IDX_WPTR;
-        const uint32_t sample_size = (control_ptr[wptr_ind] & pm4_builder::TT_WRITE_PTR_MASK) *
-            pm4_builder::TT_WRITE_PTR_BLK;
-        if (sample_size > sample_capacity) {
-          ERR_LOGGING << "SQTT data out of bounds, sample_id(" << i << ") size(" << sample_size
-                      << "/" << sample_capacity << ")";
-          return HSA_STATUS_ERROR;
+        // Check if SQTT buffer was wrapped
+        for (unsigned i = 0; i < tnumber; ++i) {
+          const uint32_t status_ind =
+              (pm4_builder::TT_STATUS_IDX_MAX * i) + pm4_builder::TT_STATUS_IDX_STATUS;
+          if (control_ptr[status_ind] & pm4_builder::TT_CONTROL_UTC_ERR_MASK) {
+            ERR_LOGGING << "SQTT memory error received, SE(" << i << ")";
+            return HSA_STATUS_ERROR;
+          }
+  #if 0
+          if (control_ptr[status_ind] & pm4_builder::TT_CONTROL_FULL_MASK) {
+            ERR2_LOGGING << "SQTT data buffer full, SE(" << i << ")";
+            return HSA_STATUS_ERROR;
+          }
+  #endif
         }
 
-        hsa_ven_amd_aqlprofile_info_data_t sample_info;
-        sample_info.sample_id = se_id;
-        sample_info.trace_data.ptr = sample_ptr;
-        sample_info.trace_data.size = sample_size;
-        status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, &sample_info, data);
-        if (status == HSA_STATUS_INFO_BREAK) {
-          status = HSA_STATUS_SUCCESS;
-          break;
-        }
-        if (status != HSA_STATUS_SUCCESS) {
-          ERR_LOGGING << "SQTT data callback error, sample_id(" << i << ") status(" << status
-                      << ")";
-          break;
-        }
+        // SQTT output buffer and capacity per ShaderEngine
+        void* sample_ptr = profile->output_buffer.ptr;
+        const uint32_t sample_capacity =
+            (profile->output_buffer.size / tnumber) & ~(pm4_factory->GetSQTTBufferAlignment() - 1);
+        // The samples sizes are returned in the control buffer
+        for (unsigned i = 0; i < tnumber; ++i) {
+          const uint32_t se_id_ind =
+              (pm4_builder::TT_STATUS_IDX_MAX * i) + pm4_builder::TT_STATUS_IDX_ID;
+          const uint32_t se_id = control_ptr[se_id_ind];
+          // WPTR specifies the index in thread trace buffer where next token will be
+          // written by hardware. The index is incremented by size of 32 bytes.
+          const uint32_t wptr_ind =
+              (pm4_builder::TT_STATUS_IDX_MAX * i) + pm4_builder::TT_STATUS_IDX_WPTR;
+          const uint32_t sample_size = (control_ptr[wptr_ind] & pm4_builder::TT_WRITE_PTR_MASK) *
+              pm4_builder::TT_WRITE_PTR_BLK;
+          if (sample_size > sample_capacity) {
+            ERR_LOGGING << "SQTT data out of bounds, sample_id(" << i << ") size(" << sample_size
+                        << "/" << sample_capacity << ")";
+            return HSA_STATUS_ERROR;
+          }
 
-        sample_ptr = reinterpret_cast<char*>(sample_ptr) + sample_capacity;
+          hsa_ven_amd_aqlprofile_info_data_t sample_info;
+          sample_info.sample_id = se_id;
+          sample_info.trace_data.ptr = sample_ptr;
+          sample_info.trace_data.size = sample_size;
+          status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, &sample_info, data);
+          if (status == HSA_STATUS_INFO_BREAK) {
+            status = HSA_STATUS_SUCCESS;
+            break;
+          }
+          if (status != HSA_STATUS_SUCCESS) {
+            ERR_LOGGING << "SQTT data callback error, sample_id(" << i << ") status(" << status
+                        << ")";
+            break;
+          }
+
+          sample_ptr = reinterpret_cast<char*>(sample_ptr) + sample_capacity;
+        }
+      } else {
+        // SPM trace data
+        const uint32_t tnumber = 1;
+        void* sample_ptr = profile->output_buffer.ptr;
+        const uint32_t sample_size = profile->output_buffer.size;
+        const uint32_t sample_capacity = (profile->output_buffer.size / tnumber);
+
+        for (unsigned i = 0; i < tnumber; ++i) {
+          hsa_ven_amd_aqlprofile_info_data_t sample_info;
+          sample_info.sample_id = i;
+          sample_info.trace_data.ptr = sample_ptr;
+          sample_info.trace_data.size = sample_size;
+          status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, &sample_info, data);
+          if (status == HSA_STATUS_INFO_BREAK) {
+            status = HSA_STATUS_SUCCESS;
+            break;
+          }
+          if (status != HSA_STATUS_SUCCESS) {
+            ERR_LOGGING << "SQTT data callback error, sample_id(" << i << ") status(" << status
+                        << ")";
+            break;
+          }
+          sample_ptr = reinterpret_cast<char*>(sample_ptr) + sample_capacity;
+        }
       }
     } else {
       ERR_LOGGING << "Bad profile type (" << profile->type << ")";

@@ -39,6 +39,11 @@ struct CounterRegInfo {
   uint32_t register_addr_hi;
 };
 
+struct BlockDelayInfo {
+  uint32_t reg;
+  uint32_t val;
+};
+
 struct counter_des_t;
 
 // GPU Block info definition
@@ -59,6 +64,8 @@ struct GpuBlockInfo {
   uint32_t (*select_value)(const counter_des_t&);
   // Block attributes mask
   uint32_t attr;
+  // Block delay info
+  const BlockDelayInfo* delay_info;
 };
 
 // Block descriptor
