@@ -24,7 +24,13 @@ enum CounterBlockAttr {
   CounterBlockCpmonAttr = 0x7f,
   // SRBM Block
   CounterBlockSrbmAttr = 0x80,
-  CounterBlockTcAttr = 0x100,
+  // SDMA block
+  CounterBlockSdma0Attr = 0x100,
+  CounterBlockSdma1Attr = 0x200,
+  CounterBlockSdmaAttr = CounterBlockSdma0Attr | CounterBlockSdma1Attr,
+  CounterBlockSdmaShift = 0x8,
+  // Text cache
+  CounterBlockTcAttr = 0x400,
 };
 
 // Register address corresponding to each counter
@@ -88,5 +94,6 @@ struct counter_des_t {
   block_des_t block_des;
   const GpuBlockInfo* block_info;
 };
+
 
 #endif  // SRC_DEF_GPU_BLOCK_INFO_H_

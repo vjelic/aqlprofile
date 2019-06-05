@@ -49,6 +49,9 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
 
   // Build PMC start PM4 comands
   void Start(CmdBuffer* cmd_buffer, const counters_vector& counters_vec) {
+    // sdma performance monitor control value accumulator
+    uint32_t sdma_select_accumulator[Primitives::SDMA_COUNTER_BLOCK_NUM_INSTANCES] = {};
+
     // Issue barrier command
     Builder::BuildWriteWaitIdlePacket(cmd_buffer);
     // Reset Grbm to its default state - broadcast
@@ -89,6 +92,14 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
                                          Primitives::MC_SEQ_PERFCOUNTER_RSLT_CNTL_M3_ADDR,
                                          Primitives::mc_seq_hbm_reset_value());
     }
+    // SDMA clear
+    const uint32_t sdma_mask = (counters_vec.get_attr() & CounterBlockSdmaAttr) >> CounterBlockSdmaShift;
+    for (uint32_t sdma_index = 0; sdma_index < Primitives::SDMA_COUNTER_BLOCK_NUM_INSTANCES; sdma_index++) {
+      if (sdma_mask & (1ul << sdma_index)) {
+        Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::sdma_ctrl_addr(sdma_index),
+                                            Primitives::sdma_disable_clear_value());
+      }
+    }
     // Enable SQ Counter Control enable perfomance counter in graphics pipeline if implied
     Primitives::validate_counters(counters_vec.get_attr());
     if (counters_vec.get_attr() & CounterBlockTcAttr) {
@@ -127,6 +138,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
                                              block_info->counter_reg_info[i].register_addr_hi, 0);
         }
       }
+
       // Setup counters
       if (block_info->select_value != NULL) {
         Builder::BuildWriteConfigRegPacket(cmd_buffer, reg_info.select_addr,
@@ -147,6 +159,10 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
             cmd_buffer, Primitives::mc_seq_perfcounter_cfg_addr(counter_des),
             Primitives::mc_seq_perfcounter_select_value(counter_des));
       }
+      if (block_info->attr & CounterBlockSdmaAttr) {
+        auto sdma_index = Primitives::sdma_get_instance_index(counter_des);
+        sdma_select_accumulator[sdma_index] |= Primitives::sdma_select_value(counter_des);
+      }
       // Start counters
       if (counters_vec.get_attr() & CounterBlockMcAttr) {
         Builder::BuildWritePConfigRegPacket(cmd_buffer, reg_info.control_addr,
@@ -166,6 +182,14 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
                                             Primitives::sq_control_value(counter_des));
       }
     }
+
+    for (uint32_t sdma_index = 0; sdma_index < Primitives::SDMA_COUNTER_BLOCK_NUM_INSTANCES; sdma_index++) {
+      if (sdma_mask & (1ul << sdma_index)) {
+        Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::sdma_ctrl_addr(sdma_index),
+                                           sdma_select_accumulator[sdma_index]);
+      }
+    }
+
     // Reset Grbm to its default state - broadcast
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
                                         Primitives::grbm_broadcast_value());
@@ -241,6 +265,14 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
                                          Primitives::MC_SEQ_PERFCOUNTER_RSLT_CNTL_M3_ADDR,
                                          Primitives::mc_seq_hbm_stop_value());
     }
+    // SDMA stop
+    const uint32_t sdma_mask = (counters_vec.get_attr() & CounterBlockSdmaAttr) >> CounterBlockSdmaShift;
+    for (uint32_t sdma_index = 0; sdma_index < Primitives::SDMA_COUNTER_BLOCK_NUM_INSTANCES; sdma_index++) {
+      if (sdma_mask & (1ul << sdma_index)) {
+        Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::sdma_ctrl_addr(sdma_index),
+                                            Primitives::sdma_stop_value());
+      }
+    }
     // Iterate through the list of blocks to create PM4 packets to read counter values
     uint32_t read_counter = 0;
     for (const auto& counter_des : counters_vec) {
@@ -288,6 +320,14 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
         uint32_t* data = reinterpret_cast<uint32_t*>(data_buffer) + read_counter;
         Builder::BuildCopyCounterDataPacket(cmd_buffer, reg_info.register_addr_lo,
                                             reg_info.register_addr_hi, data, 3);
+        read_counter += 2;
+      } else if (block_info->attr & CounterBlockSdmaAttr) {
+        uint32_t* data = reinterpret_cast<uint32_t*>(data_buffer) + read_counter;
+        if (data_buffer != 0) {
+          *reinterpret_cast<uint64_t*>(data) = 0;
+        }
+        Builder::BuildCopyCounterDataPacket(cmd_buffer, reg_info.register_addr_lo,
+                                            0x0, data, 0x1);
         read_counter += 2;
       } else {
         const uint32_t se_end_index = (block_info->attr & CounterBlockSeAttr) ? se_number_ : 1;

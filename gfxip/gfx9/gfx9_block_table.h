@@ -267,6 +267,13 @@ static const CounterRegInfo McVmL2CounterRegAddr[] = {
     {mmMC_VM_L2_PERFCOUNTER6_CFG, mmMC_VM_L2_PERFCOUNTER_RSLT_CNTL, mmMC_VM_L2_PERFCOUNTER_LO, mmMC_VM_L2_PERFCOUNTER_HI},
     {mmMC_VM_L2_PERFCOUNTER7_CFG, mmMC_VM_L2_PERFCOUNTER_RSLT_CNTL, mmMC_VM_L2_PERFCOUNTER_LO, mmMC_VM_L2_PERFCOUNTER_HI}};
 
+// SDMA
+static const CounterRegInfo SdmaCounterRegAddr[] = {
+    {mmSDMA0_PERFMON_CNTL, 0, mmSDMA0_PERFCOUNTER0_RESULT, 0},
+    {mmSDMA0_PERFMON_CNTL, 0, mmSDMA0_PERFCOUNTER1_RESULT, 0},
+    {mmSDMA1_PERFMON_CNTL, 0, mmSDMA1_PERFCOUNTER0_RESULT, 0},
+    {mmSDMA1_PERFMON_CNTL, 0, mmSDMA1_PERFCOUNTER1_RESULT, 0}};
+
 // Counter block info table
 // Counter block CB
 static const GpuBlockInfo CbCounterBlockInfo = {"CB", CbCounterBlockId, CbCounterBlockNumInstances, CbCounterBlockMaxEvent, CbCounterBlockNumCounters, CbCounterRegAddr, gfx9_cntx_prim::select_value<regCB_PERFCOUNTER0_SELECT>, CounterBlockSeAttr|CounterBlockCleanAttr};
@@ -323,7 +330,9 @@ static const GpuBlockInfo GceaCounterBlockInfo = {"GCEA", GceaCounterBlockId, Gc
 static const GpuBlockInfo McVmL2CounterBlockInfo = {"MC_VM_L2", McVmL2CounterBlockId, 1, McVmL2CounterBlockMaxEvent, McVmL2CounterBlockNumCounters, McVmL2CounterRegAddr, gfx9_cntx_prim::mc_select_value<regMC_VM_L2_PERFCOUNTER0_CFG>, CounterBlockMcAttr};
 // Counter block RPB
 static const GpuBlockInfo RpbCounterBlockInfo = {"RPB", RpbCounterBlockId, 1, RpbCounterBlockMaxEvent, RpbCounterBlockNumCounters, RpbCounterRegAddr, gfx9_cntx_prim::mc_select_value<regRPB_PERFCOUNTER0_CFG>, CounterBlockMcAttr};
-
+// Counter block SDMA
+static const GpuBlockInfo Sdma0CounterBlockInfo = {"SDMA0", Sdma0CounterBlockId, 1, SdmaCounterBlockMaxEvent, SdmaCounterBlockNumCounters, SdmaCounterRegAddr, NULL, CounterBlockSdma0Attr};
+static const GpuBlockInfo Sdma1CounterBlockInfo = {"SDMA1", Sdma1CounterBlockId, 1, SdmaCounterBlockMaxEvent, SdmaCounterBlockNumCounters, &SdmaCounterRegAddr[2], NULL, CounterBlockSdma1Attr};
 }  // namespace gfx9
 }  // namespace gfxip
 

@@ -34,21 +34,29 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ctrl/test_aql.h"
 
+enum Mode {
+  SETUP_MODE,
+  RUN_MODE,
+  UNKNOWN
+};
+
 // Class implements profiling manager
 class TestPMgr : public TestAql {
  public:
   typedef hsa_ext_amd_aql_pm4_packet_t packet_t;
   explicit TestPMgr(TestAql* t);
+  bool Setup();
   bool Run();
 
  protected:
   packet_t pre_packet_;
   packet_t post_packet_;
   hsa_signal_t dummy_signal_;
-  hsa_signal_t post_signal_;
+  hsa_signal_t packet_signal_;
 
   const hsa_ven_amd_aqlprofile_pfn_t* api_;
 
+  virtual int GetMode() { return UNKNOWN; }
   virtual bool BuildPackets() { return false; }
   virtual bool DumpData() { return false; }
   virtual bool Initialize(int argc, char** argv);
@@ -63,6 +71,8 @@ class TestPMgr : public TestAql {
   };
 
   bool AddPacket(const packet_t* packet);
+  bool AddWaitPacket(packet_t* packet, hsa_signal_t signal);
+
   bool AddPacketGfx8(const packet_t* packet);
   bool AddPacketGfx9(const packet_t* packet);
 };

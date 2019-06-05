@@ -113,6 +113,7 @@ class TestPGenSqtt : public TestPGen {
     return (status == HSA_STATUS_SUCCESS);
   }
 
+  int GetMode() { return RUN_MODE; }
   bool BuildPackets() { return true; }
 
   bool DumpData() {

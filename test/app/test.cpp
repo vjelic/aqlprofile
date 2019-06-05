@@ -57,6 +57,7 @@ char** pmc_argv(unsigned argc, const hsa_ven_amd_aqlprofile_event_t* events) {
 int main(int argc, char* argv[]) {
   bool ret_val = false;
   const bool pmc_enable = (getenv("AQLPROFILE_PMC") != NULL);
+  const bool sdma_enable = (getenv("AQLPROFILE_SDMA") != NULL);
   const bool sqtt_enable = (getenv("AQLPROFILE_SQTT") != NULL);
   const bool scan_enable = (getenv("AQLPROFILE_SCAN") != NULL);
   const bool trace_enable = (getenv("AQLPROFILE_TRACE") != NULL);
@@ -72,7 +73,7 @@ int main(int argc, char* argv[]) {
   // Run simple convolution test
   if (pmc_enable) {
     if (argc > 1) {
-      ret_val = RunKernel<SimpleConvolution, TestPGenPmc>(argc - 1, argv + 1);
+      ret_val = RunKernel<SimpleConvolution, TestPGenPmc<RUN_MODE> >(argc - 1, argv + 1);
     } else if (!scan_enable) {
       int events_count = 0;
       const hsa_ven_amd_aqlprofile_event_t events_arr1[] = {
@@ -86,7 +87,7 @@ int main(int argc, char* argv[]) {
           {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_CPC, 0, 8 /*ME1_STALL_WAIT_ON_RCIU_READ*/},
       };
       events_count = sizeof(events_arr1) / sizeof(hsa_ven_amd_aqlprofile_event_t);
-      ret_val = RunKernel<SimpleConvolution, TestPGenPmc>(events_count,
+      ret_val = RunKernel<SimpleConvolution, TestPGenPmc<RUN_MODE> >(events_count,
                                                           pmc_argv(events_count, events_arr1));
 #if 0
       const hsa_ven_amd_aqlprofile_event_t events_arr2[] = {
@@ -96,7 +97,7 @@ int main(int argc, char* argv[]) {
         {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MCXBAR, 0, 3 /**/},
       };
       events_count = sizeof(events_arr2) / sizeof(hsa_ven_amd_aqlprofile_event_t);
-      ret_val = RunKernel<SimpleConvolution, TestPGenPmc>(events_count, pmc_argv(events_count, events_arr2));
+      ret_val = RunKernel<SimpleConvolution, TestPGenPmc<RUN_MODE> >(events_count, pmc_argv(events_count, events_arr2));
 #endif
     } else {
       const int block_index_max = 0;  // 15;
@@ -109,7 +110,7 @@ int main(int argc, char* argv[]) {
             fprintf(stderr, " %d %d %d                 \r", i, j, k);
             fflush(stderr);
             hsa_ven_amd_aqlprofile_event_t event = {(hsa_ven_amd_aqlprofile_block_name_t)i, j, k};
-            if (!RunKernel<SimpleConvolution, TestPGenPmc>(1, pmc_argv(1, &event))) {
+            if (!RunKernel<SimpleConvolution, TestPGenPmc<RUN_MODE> >(1, pmc_argv(1, &event))) {
               if (k == 0) {
                 k = event_id_max + 1;
                 if (j == 0) j = block_index_max + 1;
@@ -120,6 +121,17 @@ int main(int argc, char* argv[]) {
         }
       }
     }
+  } else if (sdma_enable) {
+    int events_count = 0;
+    const hsa_ven_amd_aqlprofile_event_t events_sdma[] = {
+      {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SDMA0, 0, 17 /*MC_WR_COUNT*/},
+      {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SDMA0, 0, 19 /*MC_RD_COUNT*/},
+      {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SDMA1, 0, 17 /*MC_WR_COUNT*/},
+      {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SDMA1, 0, 19 /*MC_RD_COUNT*/},
+    };
+    events_count = sizeof(events_sdma) / sizeof(hsa_ven_amd_aqlprofile_event_t);
+    ret_val = RunKernel<SimpleConvolution, TestPGenPmc<SETUP_MODE> >(events_count,
+                                                                     pmc_argv(events_count, events_sdma));
   } else if (sqtt_enable) {
     ret_val = RunKernel<SimpleConvolution, TestPGenSqtt>(argc, argv);
   } else {

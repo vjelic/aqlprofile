@@ -48,6 +48,10 @@ class gfx8_cntx_prim {
       mmSQ_THREAD_TRACE_STATUS__VI - UCONFIG_SPACE_START__CI__VI;
   static const uint32_t TT_BUFF_ALIGN_SHIFT = 12;
 
+  static const uint32_t SDMA0_PERFMON_CTRL_ADDR = mmSDMA0_PERFMON_CNTL__CI;
+  static const uint32_t SDMA1_PERFMON_CTRL_ADDR = mmSDMA1_PERFMON_CNTL__CI;
+  static const uint32_t SDMA_COUNTER_BLOCK_NUM_INSTANCES = SdmaCounterBlockNumInstances;
+
   static const uint32_t RLC_SPM_PERFMON_CNTL__ADDR = mmRLC_SPM_PERFMON_CNTL__CI__VI;
   static const uint32_t RLC_SPM_PERFMON_RING_BASE_LO__ADDR = mmRLC_SPM_PERFMON_RING_BASE_LO__CI__VI;
   static const uint32_t RLC_SPM_PERFMON_RING_BASE_HI__ADDR = mmRLC_SPM_PERFMON_RING_BASE_HI__CI__VI;
@@ -448,6 +452,45 @@ class gfx8_cntx_prim {
     cntl.bits.PERFMON_STATE = 2;
     cntl.bits.PERFMON_SAMPLE_ENABLE = 1;
     return cntl.u32All;
+  }
+
+  // SDMA primitives
+  // SDMA Counter Select Register value
+  static uint32_t sdma_ctrl_addr(const uint32_t& sdma_index) {
+    return (sdma_index == 0) ? SDMA0_PERFMON_CTRL_ADDR : SDMA1_PERFMON_CTRL_ADDR;
+  }
+
+  static uint32_t sdma_disable_clear_value() {
+    regSDMA0_PERFMON_CNTL__CI__VI sdma_perfmon_cntl{};
+    sdma_perfmon_cntl.bits.PERF_CLEAR0  = 0x1;
+    sdma_perfmon_cntl.bits.PERF_CLEAR1  = 0x1;
+    return sdma_perfmon_cntl.u32All;
+  }
+
+  static uint32_t sdma_select_value(const counter_des_t& counter_des) {
+    regSDMA0_PERFMON_CNTL__CI__VI sdma_perfmon_cntl{};
+    if (counter_des.index) {
+      sdma_perfmon_cntl.bits.PERF_ENABLE0 = 0x1;
+      sdma_perfmon_cntl.bits.PERF_CLEAR0  = 0x0;
+      sdma_perfmon_cntl.bits.PERF_SEL0 = counter_des.id;
+    } else {
+      sdma_perfmon_cntl.bits.PERF_ENABLE1 = 0x1;
+      sdma_perfmon_cntl.bits.PERF_CLEAR1  = 0x0;
+      sdma_perfmon_cntl.bits.PERF_SEL1 = counter_des.id;
+    }
+    return sdma_perfmon_cntl.u32All;
+  }
+
+  static uint32_t sdma_stop_value() {
+    regSDMA0_PERFMON_CNTL__CI__VI sdma_perfmon_cntl{};
+    return sdma_perfmon_cntl.u32All;
+  }
+
+  static uint32_t sdma_get_instance_index(const counter_des_t& counter_des) {
+    if (counter_des.block_info->attr & CounterBlockSdma0Attr)
+      return 0;
+
+    return 1;
   }
 
   // SPM trace routines

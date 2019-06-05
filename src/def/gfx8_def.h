@@ -128,6 +128,11 @@ enum VGT_EVENT_TYPE {
 #define mmRLC_SPM_SE_MUXSEL_ADDR__CI__VI 0xDC85
 #define mmRLC_SPM_SE_MUXSEL_DATA__CI__VI 0xDC86
 #define mmRLC_SPM_SQG_PERFMON_SAMPLE_DELAY__CI__VI 0xDC98
+#define mmSDMA0_PERFCOUNTER0_RESULT__CI 0x3410
+#define mmSDMA0_PERFCOUNTER1_RESULT__CI 0x3411
+#define mmSDMA0_PERFMON_CNTL__CI 0x340F
+#define mmSDMA1_PERFCOUNTER1_RESULT__CI 0x3611
+#define mmSDMA1_PERFMON_CNTL__CI 0x360F
 #define mmSPI_PERFCOUNTER0_HI__CI__VI 0xD180
 #define mmSPI_PERFCOUNTER0_LO__CI__VI 0xD181
 #define mmSPI_PERFCOUNTER0_SELECT__CI__VI 0xD980
@@ -880,6 +885,31 @@ union RLC_SPM_PERFMON_SEGMENT_SIZE__CI__VI {
   float f32All;
 };
 
+union SDMA0_PERFMON_CNTL__CI__VI {
+  struct {
+#if defined(LITTLEENDIAN_CPU)
+    unsigned int PERF_ENABLE0 : 1;
+    unsigned int PERF_CLEAR0 : 1;
+    unsigned int PERF_SEL0 : 6;
+    unsigned int PERF_ENABLE1 : 1;
+    unsigned int PERF_CLEAR1 : 1;
+    unsigned int PERF_SEL1 : 6;
+    unsigned int : 16;
+#elif defined(BIGENDIAN_CPU)
+    unsigned int : 16;
+    unsigned int PERF_SEL1 : 6;
+    unsigned int PERF_CLEAR1 : 1;
+    unsigned int PERF_ENABLE1 : 1;
+    unsigned int PERF_SEL0 : 6;
+    unsigned int PERF_CLEAR0 : 1;
+    unsigned int PERF_ENABLE0 : 1;
+#endif
+  } bitfields, bits;
+  unsigned int u32All;
+  signed int i32All;
+  float f32All;
+};
+
 union SPI_PERFCOUNTER0_SELECT {
   struct {
 #if defined(LITTLEENDIAN_CPU)
@@ -1392,6 +1422,7 @@ typedef union MC_VM_L2_PERFCOUNTER0_CFG__CI__VI regMC_VM_L2_PERFCOUNTER0_CFG__CI
 typedef union MC_XBAR_PERFCOUNTER0_CFG__CI__VI regMC_XBAR_PERFCOUNTER0_CFG__CI__VI;
 typedef union RLC_SPM_PERFMON_CNTL__CI__VI regRLC_SPM_PERFMON_CNTL__CI__VI;
 typedef union RLC_SPM_PERFMON_SEGMENT_SIZE__CI__VI regRLC_SPM_PERFMON_SEGMENT_SIZE__CI__VI;
+typedef union SDMA0_PERFMON_CNTL__CI__VI regSDMA0_PERFMON_CNTL__CI__VI;
 typedef union SPI_PERFCOUNTER0_SELECT regSPI_PERFCOUNTER0_SELECT;
 typedef union SQ_PERFCOUNTER0_SELECT__CI__VI regSQ_PERFCOUNTER0_SELECT__CI__VI;
 typedef union SQ_PERFCOUNTER_CTRL regSQ_PERFCOUNTER_CTRL;
@@ -1791,12 +1822,15 @@ enum CounterBlockId {
   McSeqCounterBlockId,
   McVmL2CounterBlockId,
   McXbarCounterBlockId,
+  Sdma0CounterBlockId,
+  Sdma1CounterBlockId,
 };
 static const uint32_t TaCounterBlockNumInstances    = 16;
 static const uint32_t TdCounterBlockNumInstances    = 16;
 static const uint32_t TcpCounterBlockNumInstances   = 16;
 static const uint32_t TcaCounterBlockNumInstances   = 2;
 static const uint32_t TccCounterBlockNumInstances   = 16;
+static const uint32_t SdmaCounterBlockNumInstances  = 2;
 static const uint32_t McCounterBlockNumInstances    = 8;
 static const uint32_t McHbmCounterBlockNumInstances = 32;
 static const uint32_t CpcCounterBlockNumCounters    = 2;
@@ -1804,6 +1838,7 @@ static const uint32_t CpfCounterBlockNumCounters    = 2;
 static const uint32_t GdsCounterBlockNumCounters    = 4;
 static const uint32_t GrbmCounterBlockNumCounters   = 2;
 static const uint32_t GrbmSeCounterBlockNumCounters = 1;
+static const uint32_t SdmaCounterBlockNumCounters   = 2;
 static const uint32_t SpiCounterBlockNumCounters    = 6;
 static const uint32_t SqCounterBlockNumCounters     = 8;
 static const uint32_t SrbmCounterBlockNumCounters   = 2;
@@ -1832,6 +1867,7 @@ static const uint32_t TcpCounterBlockMaxEvent       = 179;
 static const uint32_t TccCounterBlockMaxEvent       = 191;
 static const uint32_t TcaCounterBlockMaxEvent       = 34;
 static const uint32_t GdsCounterBlockMaxEvent       = 120;
+static const uint32_t SdmaCounterBlockMaxEvent      = 61;
 static const uint32_t SxCounterBlockMaxEvent        = 32;
 static const uint32_t McArbCounterBlockMaxEvent     = 162;
 static const uint32_t McHubCounterBlockMaxEvent     = 208;
@@ -1886,6 +1922,10 @@ class gfx8_cntx_prim {
   static const uint32_t SQ_THREAD_TRACE_STATUS_OFFSET =
       mmSQ_THREAD_TRACE_STATUS__VI - UCONFIG_SPACE_START__CI__VI;
   static const uint32_t TT_BUFF_ALIGN_SHIFT = 12;
+
+  static const uint32_t SDMA0_PERFMON_CTRL_ADDR = mmSDMA0_PERFMON_CNTL__CI;
+  static const uint32_t SDMA1_PERFMON_CTRL_ADDR = mmSDMA1_PERFMON_CNTL__CI;
+  static const uint32_t SDMA_COUNTER_BLOCK_NUM_INSTANCES = SdmaCounterBlockNumInstances;
 
   static const uint32_t RLC_SPM_PERFMON_CNTL__ADDR = mmRLC_SPM_PERFMON_CNTL__CI__VI;
   static const uint32_t RLC_SPM_PERFMON_RING_BASE_LO__ADDR = mmRLC_SPM_PERFMON_RING_BASE_LO__CI__VI;
@@ -2289,6 +2329,45 @@ class gfx8_cntx_prim {
     return cntl.u32All;
   }
 
+  // SDMA primitives
+  // SDMA Counter Select Register value
+  static uint32_t sdma_ctrl_addr(const uint32_t& sdma_index) {
+    return (sdma_index == 0) ? SDMA0_PERFMON_CTRL_ADDR : SDMA1_PERFMON_CTRL_ADDR;
+  }
+
+  static uint32_t sdma_disable_clear_value() {
+    regSDMA0_PERFMON_CNTL__CI__VI sdma_perfmon_cntl{};
+    sdma_perfmon_cntl.bits.PERF_CLEAR0  = 0x1;
+    sdma_perfmon_cntl.bits.PERF_CLEAR1  = 0x1;
+    return sdma_perfmon_cntl.u32All;
+  }
+
+  static uint32_t sdma_select_value(const counter_des_t& counter_des) {
+    regSDMA0_PERFMON_CNTL__CI__VI sdma_perfmon_cntl{};
+    if (counter_des.index) {
+      sdma_perfmon_cntl.bits.PERF_ENABLE0 = 0x1;
+      sdma_perfmon_cntl.bits.PERF_CLEAR0  = 0x0;
+      sdma_perfmon_cntl.bits.PERF_SEL0 = counter_des.id;
+    } else {
+      sdma_perfmon_cntl.bits.PERF_ENABLE1 = 0x1;
+      sdma_perfmon_cntl.bits.PERF_CLEAR1  = 0x0;
+      sdma_perfmon_cntl.bits.PERF_SEL1 = counter_des.id;
+    }
+    return sdma_perfmon_cntl.u32All;
+  }
+
+  static uint32_t sdma_stop_value() {
+    regSDMA0_PERFMON_CNTL__CI__VI sdma_perfmon_cntl{};
+    return sdma_perfmon_cntl.u32All;
+  }
+
+  static uint32_t sdma_get_instance_index(const counter_des_t& counter_des) {
+    if (counter_des.block_info->attr & CounterBlockSdma0Attr)
+      return 0;
+
+    return 1;
+  }
+
   // SPM trace routines
   static uint32_t cp_perfmon_cntl_spm_start_value() {
     regCP_PERFMON_CNTL cp_perfmon_cntl{};
@@ -2595,6 +2674,12 @@ static const CounterRegInfo McXbarCounterRegAddr[] = {
     {mmMC_XBAR_PERFCOUNTER1_CFG__CI__VI, mmMC_XBAR_PERFCOUNTER_RSLT_CNTL__CI__VI, mmMC_XBAR_PERFCOUNTER_LO__CI__VI, mmMC_XBAR_PERFCOUNTER_HI__CI__VI},
     {mmMC_XBAR_PERFCOUNTER2_CFG__CI__VI, mmMC_XBAR_PERFCOUNTER_RSLT_CNTL__CI__VI, mmMC_XBAR_PERFCOUNTER_LO__CI__VI, mmMC_XBAR_PERFCOUNTER_HI__CI__VI},
     {mmMC_XBAR_PERFCOUNTER3_CFG__CI__VI, mmMC_XBAR_PERFCOUNTER_RSLT_CNTL__CI__VI, mmMC_XBAR_PERFCOUNTER_LO__CI__VI, mmMC_XBAR_PERFCOUNTER_HI__CI__VI}};
+
+static const CounterRegInfo SdmaCounterRegAddr[] = {
+    {mmSDMA0_PERFMON_CNTL__CI, 0, mmSDMA0_PERFCOUNTER0_RESULT__CI, 0},
+    {mmSDMA0_PERFMON_CNTL__CI, 0, mmSDMA0_PERFCOUNTER1_RESULT__CI, 0},
+    {mmSDMA1_PERFMON_CNTL__CI, 0, mmSDMA1_PERFCOUNTER1_RESULT__CI, 0},
+    {mmSDMA1_PERFMON_CNTL__CI, 0, mmSDMA1_PERFCOUNTER1_RESULT__CI, 0}};
 static const GpuBlockInfo CpcCounterBlockInfo = {"CPC", CpcCounterBlockId, 1, CpcCounterBlockMaxEvent, CpcCounterBlockNumCounters, CpcCounterRegAddr, gfx8_cntx_prim::select_value<regCPC_PERFCOUNTER0_SELECT__CI__VI>, CounterBlockDfltAttr};
 static const GpuBlockInfo CpfCounterBlockInfo = {"CPF", CpfCounterBlockId, 1, CpfCounterBlockMaxEvent, CpfCounterBlockNumCounters, CpfCounterRegAddr, gfx8_cntx_prim::select_value<regCPF_PERFCOUNTER0_SELECT__CI__VI>, CounterBlockDfltAttr};
 static const GpuBlockInfo GrbmCounterBlockInfo = {"GRBM", GrbmCounterBlockId, 1, GrbmCounterBlockMaxEvent, GrbmCounterBlockNumCounters, GrbmCounterRegAddr, gfx8_cntx_prim::select_value<regGRBM_PERFCOUNTER0_SELECT>, CounterBlockDfltAttr};
@@ -2617,4 +2702,6 @@ static const GpuBlockInfo McSeqCounterBlockInfo = {"MC_SEQ", McSeqCounterBlockId
 static const GpuBlockInfo McSeqHbmCounterBlockInfo = {"MC_SEQ", McSeqCounterBlockId, McHbmCounterBlockNumInstances, McSeqHbmCounterBlockMaxEvent, McSeqCounterBlockNumCounters, NULL, NULL, CounterBlockMcSeqHbmAttr};
 static const GpuBlockInfo McVmL2CounterBlockInfo = {"MC_VM_L2", McVmL2CounterBlockId, McCounterBlockNumInstances, McVmL2CounterBlockMaxEvent, McVmL2CounterBlockNumCounters, McVmL2CounterRegAddr, gfx8_cntx_prim::mc_select_value<regMC_VM_L2_PERFCOUNTER0_CFG__CI__VI>, CounterBlockMcAttr};
 static const GpuBlockInfo McXbarCounterBlockInfo = {"MC_XBAR", McXbarCounterBlockId, McCounterBlockNumInstances, McXbarCounterBlockMaxEvent, McXbarCounterBlockNumCounters, McXbarCounterRegAddr, gfx8_cntx_prim::mc_select_value<regMC_XBAR_PERFCOUNTER0_CFG__CI__VI>, CounterBlockMcAttr};
+static const GpuBlockInfo Sdma0CounterBlockInfo = {"SDMA0", Sdma0CounterBlockId, 1, SdmaCounterBlockMaxEvent, SdmaCounterBlockNumCounters, SdmaCounterRegAddr, NULL, CounterBlockSdma0Attr};
+static const GpuBlockInfo Sdma1CounterBlockInfo = {"SDMA1", Sdma1CounterBlockId, 1, SdmaCounterBlockMaxEvent, SdmaCounterBlockNumCounters, SdmaCounterRegAddr, NULL, CounterBlockSdma1Attr};
 #endif  // SRC_DEF_GFX8_DEF_H_

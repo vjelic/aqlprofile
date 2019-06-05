@@ -272,6 +272,12 @@ static const CounterRegInfo McXbarCounterRegAddr[] = {
     {mmMC_XBAR_PERFCOUNTER1_CFG__CI__VI, mmMC_XBAR_PERFCOUNTER_RSLT_CNTL__CI__VI, mmMC_XBAR_PERFCOUNTER_LO__CI__VI, mmMC_XBAR_PERFCOUNTER_HI__CI__VI},
     {mmMC_XBAR_PERFCOUNTER2_CFG__CI__VI, mmMC_XBAR_PERFCOUNTER_RSLT_CNTL__CI__VI, mmMC_XBAR_PERFCOUNTER_LO__CI__VI, mmMC_XBAR_PERFCOUNTER_HI__CI__VI},
     {mmMC_XBAR_PERFCOUNTER3_CFG__CI__VI, mmMC_XBAR_PERFCOUNTER_RSLT_CNTL__CI__VI, mmMC_XBAR_PERFCOUNTER_LO__CI__VI, mmMC_XBAR_PERFCOUNTER_HI__CI__VI}};
+// SDMA
+static const CounterRegInfo SdmaCounterRegAddr[] = {
+    {mmSDMA0_PERFMON_CNTL__CI, 0, mmSDMA0_PERFCOUNTER0_RESULT__CI, 0},
+    {mmSDMA0_PERFMON_CNTL__CI, 0, mmSDMA0_PERFCOUNTER1_RESULT__CI, 0},
+    {mmSDMA1_PERFMON_CNTL__CI, 0, mmSDMA1_PERFCOUNTER1_RESULT__CI, 0},
+    {mmSDMA1_PERFMON_CNTL__CI, 0, mmSDMA1_PERFCOUNTER1_RESULT__CI, 0}};
 
 // Counter block info table
 // Counter block CB
@@ -337,5 +343,8 @@ static const GpuBlockInfo McSeqHbmCounterBlockInfo = {"MC_SEQ", McSeqCounterBloc
 static const GpuBlockInfo McVmL2CounterBlockInfo = {"MC_VM_L2", McVmL2CounterBlockId, McCounterBlockNumInstances, McVmL2CounterBlockMaxEvent, McVmL2CounterBlockNumCounters, McVmL2CounterRegAddr, gfx8_cntx_prim::mc_select_value<regMC_VM_L2_PERFCOUNTER0_CFG__CI__VI>, CounterBlockMcAttr};
 // Counter block MC_XBAR
 static const GpuBlockInfo McXbarCounterBlockInfo = {"MC_XBAR", McXbarCounterBlockId, McCounterBlockNumInstances, McXbarCounterBlockMaxEvent, McXbarCounterBlockNumCounters, McXbarCounterRegAddr, gfx8_cntx_prim::mc_select_value<regMC_XBAR_PERFCOUNTER0_CFG__CI__VI>, CounterBlockMcAttr};
+// Counter block SDMA
+static const GpuBlockInfo Sdma0CounterBlockInfo = {"SDMA0", Sdma0CounterBlockId, 1, SdmaCounterBlockMaxEvent, SdmaCounterBlockNumCounters, SdmaCounterRegAddr, NULL, CounterBlockSdma0Attr};
+static const GpuBlockInfo Sdma1CounterBlockInfo = {"SDMA1", Sdma1CounterBlockId, 1, SdmaCounterBlockMaxEvent, SdmaCounterBlockNumCounters, SdmaCounterRegAddr, NULL, CounterBlockSdma1Attr};
 
 #endif  // _GFX8_BLOCKTABLE_H_

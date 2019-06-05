@@ -41,6 +41,9 @@ enum CounterBlockId {
   McVmL2CounterBlockId,
   McXbarCounterBlockId,
 
+  Sdma0CounterBlockId,
+  Sdma1CounterBlockId,
+
   // Counters retrieved by KFD
   IommuV2CounterBlockId,
   KernelDriverCounterBlockId,
@@ -72,6 +75,9 @@ static const uint32_t SdmaCounterBlockNumInstances  = 2;
 // MC instances
 static const uint32_t McCounterBlockNumInstances    = 8;
 static const uint32_t McHbmCounterBlockNumInstances = 32;
+// SDMA instances
+static const uint32_t SdmaBlockNumInstances         = 2;
+
 
 // Number of block counter registers
 static const uint32_t CbCounterBlockNumCounters     = 4;

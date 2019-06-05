@@ -50,26 +50,56 @@ bool TestPMgr::AddPacket(const packet_t* packet) {
   return (strncmp(agent_name, "gfx8", 4) == 0) ? AddPacketGfx8(packet) : AddPacketGfx9(packet);
 }
 
+bool TestPMgr::AddWaitPacket(packet_t* packet, hsa_signal_t signal) {
+  // Set packet completion signal
+  packet->completion_signal = signal;
+
+  // Submit Dispatch Aql packet
+  bool result = AddPacket(packet);
+
+  // Wait for Dispatch packet to complete
+  hsa_signal_wait_acquire(signal, HSA_SIGNAL_CONDITION_LT, 1, (uint64_t)-1,
+                          HSA_WAIT_STATE_BLOCKED);
+
+  hsa_signal_store_relaxed(signal, 1);
+
+  return result;
+}
+
+bool TestPMgr::Setup() {
+  // Build Aql Pkts
+  const int mode = GetMode();
+  if (mode == SETUP_MODE) {
+    // Submit Pre-Dispatch Aql packet
+    AddWaitPacket(&pre_packet_, packet_signal_);
+  }
+
+  Test()->Setup();
+
+  if (mode == SETUP_MODE) {
+    // Submit Post-Dispatch Aql packet
+    AddWaitPacket(&post_packet_, packet_signal_);
+
+    // Dumping profiling data
+    DumpData();
+  }
+
+  return true;
+}
+
 bool TestPMgr::Run() {
   // Build Aql Pkts
-  const bool active = BuildPackets();
-  if (active) {
+  const int mode = GetMode();
+  if (mode == RUN_MODE) {
     // Submit Pre-Dispatch Aql packet
-    AddPacket(&pre_packet_);
+    AddWaitPacket(&pre_packet_, packet_signal_);
   }
 
   Test()->Run();
 
-  if (active) {
-    // Set post packet completion signal
-    post_packet_.completion_signal = post_signal_;
-
+  if (mode == RUN_MODE) {
     // Submit Post-Dispatch Aql packet
-    AddPacket(&post_packet_);
-
-    // Wait for Post-Dispatch packet to complete
-    hsa_signal_wait_acquire(post_signal_, HSA_SIGNAL_CONDITION_LT, 1, (uint64_t)-1,
-                            HSA_WAIT_STATE_BLOCKED);
+    AddWaitPacket(&post_packet_, packet_signal_);
 
     // Dumping profiling data
     DumpData();
@@ -82,7 +112,7 @@ bool TestPMgr::Initialize(int argc, char** argv) {
   TestAql::Initialize(argc, argv);
 
   hsa_status_t status = HSA_STATUS_ERROR;
-  status = hsa_signal_create(1, 0, NULL, &post_signal_);
+  status = hsa_signal_create(1, 0, NULL, &packet_signal_);
   TEST_ASSERT(status == HSA_STATUS_SUCCESS);
   api_ = HsaRsrcFactory::Instance().AqlProfileApi();
 
@@ -93,5 +123,5 @@ TestPMgr::TestPMgr(TestAql* t) : TestAql(t), api_(NULL) {
   memset(&pre_packet_, 0, sizeof(pre_packet_));
   memset(&post_packet_, 0, sizeof(post_packet_));
   dummy_signal_.handle = 0;
-  post_signal_ = dummy_signal_;
+  packet_signal_ = dummy_signal_;
 }

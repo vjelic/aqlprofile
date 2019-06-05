@@ -45,6 +45,7 @@ hsa_status_t TestPGenPmcCallback(hsa_ven_amd_aqlprofile_info_type_t info_type,
 }
 
 // Class implements PMC profiling
+template<int MODE>
 class TestPGenPmc : public TestPGen {
  public:
   explicit TestPGenPmc(TestAql* t) : TestPGen(t) {
@@ -162,7 +163,8 @@ class TestPGenPmc : public TestPGen {
   }
 
  private:
-  bool BuildPackets() { return true; }
+  //  bool BuildPackets() { return true; }
+  int GetMode() { return MODE; }
 
   bool DumpData() {
     std::clog << "TestPGenPmc::DumpData :" << std::endl;

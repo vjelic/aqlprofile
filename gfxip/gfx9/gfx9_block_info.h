@@ -42,6 +42,10 @@ enum CounterBlockId {
   RpbCounterBlockId,
   RmiCounterBlockId,
 
+  // SDMA block
+  Sdma0CounterBlockId,
+  Sdma1CounterBlockId,
+
   // Counters retrieved by KFD
   IommuV2CounterBlockId,
   KernelDriverCounterBlockId,
