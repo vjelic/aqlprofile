@@ -41,6 +41,7 @@ class TestHsa : public TestAql {
   static void HsaShutdown();
   static void SetQueue(hsa_queue_t* queue) { hsa_queue_ = queue; }
   static uint32_t HsaAgentId() { return agent_id_; }
+  static std::string HsaAgentName() { return agent_info_->gfxip; }
 
   // Constructor
   explicit TestHsa(TestKernel* test) : test_(test), name_(test->Name()) {

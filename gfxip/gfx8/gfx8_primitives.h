@@ -48,8 +48,8 @@ class gfx8_cntx_prim {
       mmSQ_THREAD_TRACE_STATUS__VI - UCONFIG_SPACE_START__CI__VI;
   static const uint32_t TT_BUFF_ALIGN_SHIFT = 12;
 
-  static const uint32_t SDMA0_PERFMON_CTRL_ADDR = mmSDMA0_PERFMON_CNTL__CI;
-  static const uint32_t SDMA1_PERFMON_CTRL_ADDR = mmSDMA1_PERFMON_CNTL__CI;
+  static const uint32_t SDMA0_PERFMON_CTRL_ADDR = mmSDMA0_PERFMON_CNTL__VI;
+  static const uint32_t SDMA1_PERFMON_CTRL_ADDR = mmSDMA1_PERFMON_CNTL__VI;
   static const uint32_t SDMA_COUNTER_BLOCK_NUM_INSTANCES = SdmaCounterBlockNumInstances;
 
   static const uint32_t RLC_SPM_PERFMON_CNTL__ADDR = mmRLC_SPM_PERFMON_CNTL__CI__VI;
@@ -242,6 +242,9 @@ class gfx8_cntx_prim {
     return write_enable_mask;
   }
   static uint32_t mc_config_value(const counter_des_t& counter_des) {
+    return counter_des.index;
+  }
+  static uint32_t mc_seq_config_val(const counter_des_t& counter_des) {
     const uint32_t read_enable_mask = mc_tile_value(counter_des) << MC_CONFIG_MCD__MC_RD_ENABLE__SHIFT;
     return read_enable_mask;
   }

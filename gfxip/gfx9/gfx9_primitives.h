@@ -230,6 +230,10 @@ class gfx9_cntx_prim {
   static uint32_t mc_config_value(const counter_des_t& counter_des) {
     return counter_des.index;
   }
+  // The following function is unused in gfx9.
+  static uint32_t mc_seq_config_val(const counter_des_t& counter_des) {
+    return 0;
+  }
   static uint32_t mc_hbm_broadcast_mcd_value() { return 0; }
 
   // MC SQE registers values

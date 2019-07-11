@@ -34,6 +34,8 @@ enum CounterBlockId {
   CpgCounterBlockId,
   CpcCounterBlockId,
 
+  AtcCounterBlockId,
+  RpbCounterBlockId,
   McArbCounterBlockId,
   McHubCounterBlockId,
   McMcbvmCounterBlockId,
@@ -104,6 +106,8 @@ static const uint32_t TcpCounterBlockNumCounters    = 4;
 static const uint32_t TdCounterBlockNumCounters     = 2;
 static const uint32_t VgtCounterBlockNumCounters    = 4;
 static const uint32_t WdCounterBlockNumCounters     = 4;
+static const uint32_t AtcCounterBlockNumCounters    = 4;
+static const uint32_t RpbCounterBlockNumCounters    = 4;
 static const uint32_t McArbCounterBlockNumCounters  = 4;
 static const uint32_t McHubCounterBlockNumCounters  = 4;
 static const uint32_t McMcbvmCounterBlockNumCounters = 4;
@@ -136,6 +140,8 @@ static const uint32_t SxCounterBlockMaxEvent        = 32;
 static const uint32_t VgtCounterBlockMaxEvent       = 145;
 static const uint32_t IaCounterBlockMaxEvent        = 21;
 static const uint32_t WdCounterBlockMaxEvent        = 36;
+static const uint32_t AtcCounterBlockMaxEvent       = 38;
+static const uint32_t RpbCounterBlockMaxEvent       = 18;
 static const uint32_t McArbCounterBlockMaxEvent     = 162;
 static const uint32_t McHubCounterBlockMaxEvent     = 208;
 static const uint32_t McMcbvmCounterBlockMaxEvent   = 48;
