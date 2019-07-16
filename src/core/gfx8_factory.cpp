@@ -46,8 +46,8 @@ const GpuBlockInfo* Gfx8Factory::block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMB
     &TccCounterBlockInfo, &TcpCounterBlockInfo, &TdCounterBlockInfo,
     // MC blocks
     &McArbCounterBlockInfo, &McHubCounterBlockInfo, &McMcbvmCounterBlockInfo,
-    &McSeqCounterBlockInfo, &McVmL2CounterBlockInfo, &McXbarCounterBlockInfo, &AtcCounterBlockInfo /*GFX9 ATC*/,
-    NULL /*GFX9 ATC_L2*/, NULL /*GFX9 GCEA*/, &RpbCounterBlockInfo /*GFX9 RPB*/,
+    &McSeqCounterBlockInfo, &McVmL2CounterBlockInfo, &McXbarCounterBlockInfo, &AtcCounterBlockInfo,
+    NULL /*GFX9 ATC_L2*/, NULL /*GFX9 GCEA*/, &RpbCounterBlockInfo,
     // System blocks
     &Sdma0CounterBlockInfo, &Sdma1CounterBlockInfo,
 };
