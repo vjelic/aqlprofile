@@ -19,6 +19,22 @@ def write_xml(out, event_name, block, event_id, descr):
   out.write("  <metric\n" +
             "    name=\"" + event_name + "\" block=" + block + " event=" + event_id + " descr=\"" + descr + "\"\n" +
             "  ></metric>\n")
+
+def parse_event(rec_pattern, record, block, out):
+  m = rec_pattern.search(record)
+  # not a match, return
+  if not m: return False
+
+  event_name = (block + "_" + m.group(2)).upper()
+  event_id = int(m.group(4), 0)
+  descr = m.group(3);
+  descr = re.sub("\s+", " ", descr)
+  descr = re.sub("\s*,", ",", descr)
+  descr = re.sub("\s+$", "", descr)
+  descr = re.sub(",$", ".", descr)
+  write_xml(out, event_name, block, str(event_id), descr)
+
+  return True
 #############################################################
 
 def parse_rai(inp, out, blist):
@@ -28,8 +44,9 @@ def parse_rai(inp, out, blist):
     # TD_PERFCOUNTER0_SELECT   <GpuF0Reg:0x36c00> <GpuF1Reg:0x36c00>   32    {
     #   "TD_PERF_SEL_td_sp_traffic  :  Count the number of times this TD sends data to the SP. " = 0x2e,
     #   "SPI_PERF_VS_POS0_STALL  :  Number of clocks stalled due to pos buf space in SH0. " = 0x6,
+    #   "GRBM_PERF_SEL_CPAXI_BUSY  :  The CPAXI block is busy. " = 0x25 }  ;
     beg_pattern = re.compile("^" + block + "_PERFCOUNTER0_SELECT\s")
-    rec_pattern = re.compile("\"([A-Z]*_PERF_SEL_|SPI_PERF_)(\w*)\s*:?\s*(\w?[^\"]*)\s*\"\s*=\s*(\w*),")
+    rec_pattern = re.compile("\"([A-Z]*_PERF_SEL_|SPI_PERF_)(\w*)\s*:?\s*(\w?[^\"]*)\s*\"\s*=\s*(\w*)(,|\s*\}\s*;)")
   
     found = 0
     record = ""
@@ -45,19 +62,13 @@ def parse_rai(inp, out, blist):
   
   
       if found:
-        if end_pattern.search(record): break
+        if end_pattern.search(record):
+          # there might be a final event to extract
+          parse_event(rec_pattern, record, block, out)
+          break
         else:
-          m = rec_pattern.search(record)
-          if m:
-            event_name = (block + "_" + m.group(2)).upper()
-            event_id = int(m.group(4), 0)
-            descr = m.group(3);
-            descr = re.sub("\s+", " ", descr)
-            descr = re.sub("\s*,", ",", descr)
-            descr = re.sub("\s+$", "", descr)
-            descr = re.sub(",$", ".", descr)
-            write_xml(out, event_name, block, str(event_id), descr)
-          else:
+          match = parse_event(rec_pattern, record, block, out)
+          if not match:
             continue
       elif beg_pattern.match(record):
         found = 1
