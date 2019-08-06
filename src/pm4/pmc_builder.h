@@ -17,6 +17,7 @@ class CmdBuilder;
 // PMC PM4 commands builder virtual interface
 class PmcBuilder {
  public:
+  explicit PmcBuilder(uint32_t se_number) : se_number_(se_number) {}
   virtual ~PmcBuilder() {}
   // Generate enable profiling commands for a specific queue
   virtual void Enable(CmdBuffer* cmd_buffer) = 0;
@@ -30,16 +31,19 @@ class PmcBuilder {
   // Return actual required data buffer size.
   virtual uint32_t Read(CmdBuffer* cmd_buffer, const counters_vector& counters_vec,
                         void* data_buffer) = 0;
+  // Return Shader Engines number
+  uint32_t GetShaderEnginesNumber() { return se_number_; }
 
  protected:
   // Shader Engines number on the GPU
-  static constexpr uint32_t se_number_ = 4;
+  uint32_t se_number_;
 };
 
 // PMC PM4 commands builder template
 template <typename Builder, typename Primitives>
 class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives {
  public:
+  explicit GpuPmcBuilder(uint32_t se_number) : PmcBuilder(se_number) {}
   // Build PMC enable PM4 comands - enabel CP counting for a specific queue
   void Enable(CmdBuffer* cmd_buffer) {
     // Program Compute Perfcount Enable register to support perf counting

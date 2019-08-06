@@ -9,20 +9,20 @@ namespace aql_profile {
 // Gfx9 factory class
 class Gfx9Factory : public Pm4Factory {
  public:
-  Gfx9Factory() : Pm4Factory(BlockInfoMap(block_table_, sizeof(block_table_))) { Init(); }
+  explicit Gfx9Factory(uint32_t se_number) : Pm4Factory(BlockInfoMap(block_table_, sizeof(block_table_))) { Init(se_number); }
 
- private:
-  void Init();
+ protected:
+  void Init(uint32_t se_number);
   static const GpuBlockInfo* block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER];
 };
 
 // Gfx factory init
-void Gfx9Factory::Init() {
+void Gfx9Factory::Init(uint32_t se_number) {
   Pm4Factory::cmd_builder_ = new pm4_builder::Gfx9CmdBuilder;
   if (Pm4Factory::cmd_builder_ == NULL) throw aql_profile_exc_msg("CmdBuilder allocation failed");
 
   Pm4Factory::pmc_builder_ =
-      new pm4_builder::GpuPmcBuilder<pm4_builder::Gfx9CmdBuilder, gfx9_cntx_prim>;
+    new pm4_builder::GpuPmcBuilder<pm4_builder::Gfx9CmdBuilder, gfx9_cntx_prim>(se_number);
   if (Pm4Factory::pmc_builder_ == NULL) throw aql_profile_exc_msg("PmcBuilder allocation failed");
 
   Pm4Factory::spm_builder_ =
@@ -48,10 +48,62 @@ const GpuBlockInfo* Gfx9Factory::block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMB
     &Sdma0CounterBlockInfo, &Sdma1CounterBlockInfo,
 };
 
+// Fiji factory class
+class Mi100Factory : public Gfx9Factory {
+ public:
+  explicit Mi100Factory(uint32_t se_number) : Gfx9Factory(se_number) {
+    for (unsigned i = 0; i < HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER; ++i) {
+      block_table_[i] = new GpuBlockInfo{*Gfx9Factory::block_table_[i]};
+      // overerite block info for any update from gfx9 to mi100
+      auto block_info = const_cast<GpuBlockInfo*>(block_table_[i]);
+      switch (block_info->id) {
+      case SqCounterBlockId:
+        block_info->event_id_max = 303;
+        break;
+      case TcpCounterBlockId:
+        block_info->instance_count = 32;
+        block_info->event_id_max = 87;
+        break;
+      case TccCounterBlockId:
+        block_info->instance_count = 32;
+        block_info->event_id_max = 295;
+        break;
+      case TcaCounterBlockId:
+        block_info->instance_count = 32;
+        block_info->event_id_max = 58;
+        break;
+      case GceaCounterBlockId:
+        block_info->instance_count = 32;
+        block_info->event_id_max = 83;
+        break;
+      case McVmL2CounterBlockId:
+      case AtcL2CounterBlockId:
+      case AtcCounterBlockId:
+      case RpbCounterBlockId:
+        block_info->instance_count = 32;
+        break;
+      default:
+        break;
+      }
+    }
+  }
+
+ protected:
+  static const GpuBlockInfo* block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER];
+};
+
+const GpuBlockInfo* Mi100Factory::block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER] = {};
+
 // Pm4Factory create mathods
-Pm4Factory* Pm4Factory::Gfx9Create() {
-  auto p = new Gfx9Factory;
+Pm4Factory* Pm4Factory::Gfx9Create(uint32_t se_number) {
+  auto p = new Gfx9Factory(se_number);
   if (p == NULL) throw aql_profile_exc_msg("Gfx9Factory allocation failed");
+  return p;
+}
+
+Pm4Factory* Pm4Factory::Mi100Create(uint32_t se_number) {
+  auto p = new Mi100Factory(se_number);
+  if (p == NULL) throw aql_profile_exc_msg("FijiFactory allocation failed");
   return p;
 }
 

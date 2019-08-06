@@ -8,6 +8,7 @@ set ( LIB_SRC
   ${LIB_DIR}/core/gfx8_factory.cpp
   ${LIB_DIR}/core/gfx9_factory.cpp
   ${LIB_DIR}/core/legacy_pm4.cpp
+  ${LIB_DIR}/util/hsa_rsrc_factory.cpp
 )
 
 add_library ( ${TARGET_LIB} SHARED ${LIB_SRC} )

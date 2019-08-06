@@ -272,7 +272,20 @@ static const CounterRegInfo SdmaCounterRegAddr[] = {
     {mmSDMA0_PERFMON_CNTL, 0, mmSDMA0_PERFCOUNTER0_RESULT, 0},
     {mmSDMA0_PERFMON_CNTL, 0, mmSDMA0_PERFCOUNTER1_RESULT, 0},
     {mmSDMA1_PERFMON_CNTL, 0, mmSDMA1_PERFCOUNTER0_RESULT, 0},
-    {mmSDMA1_PERFMON_CNTL, 0, mmSDMA1_PERFCOUNTER1_RESULT, 0}};
+    {mmSDMA1_PERFMON_CNTL, 0, mmSDMA1_PERFCOUNTER1_RESULT, 0},
+    {mmSDMA2_PERFMON_CNTL, 0, mmSDMA2_PERFCOUNTER0_RESULT, 0},
+    {mmSDMA2_PERFMON_CNTL, 0, mmSDMA2_PERFCOUNTER1_RESULT, 0},
+    {mmSDMA3_PERFMON_CNTL, 0, mmSDMA3_PERFCOUNTER0_RESULT, 0},
+    {mmSDMA3_PERFMON_CNTL, 0, mmSDMA3_PERFCOUNTER1_RESULT, 0},
+    {mmSDMA4_PERFMON_CNTL, 0, mmSDMA4_PERFCOUNTER0_RESULT, 0},
+    {mmSDMA4_PERFMON_CNTL, 0, mmSDMA4_PERFCOUNTER1_RESULT, 0},
+    {mmSDMA5_PERFMON_CNTL, 0, mmSDMA5_PERFCOUNTER0_RESULT, 0},
+    {mmSDMA5_PERFMON_CNTL, 0, mmSDMA5_PERFCOUNTER1_RESULT, 0},
+    {mmSDMA6_PERFMON_CNTL, 0, mmSDMA6_PERFCOUNTER0_RESULT, 0},
+    {mmSDMA6_PERFMON_CNTL, 0, mmSDMA6_PERFCOUNTER1_RESULT, 0},
+    {mmSDMA7_PERFMON_CNTL, 0, mmSDMA7_PERFCOUNTER0_RESULT, 0},
+    {mmSDMA7_PERFMON_CNTL, 0, mmSDMA7_PERFCOUNTER1_RESULT, 0}
+};
 
 // Counter block info table
 // Counter block CB
@@ -333,6 +346,9 @@ static const GpuBlockInfo RpbCounterBlockInfo = {"RPB", RpbCounterBlockId, 1, Rp
 // Counter block SDMA
 static const GpuBlockInfo Sdma0CounterBlockInfo = {"SDMA0", Sdma0CounterBlockId, 1, SdmaCounterBlockMaxEvent, SdmaCounterBlockNumCounters, SdmaCounterRegAddr, NULL, CounterBlockSdma0Attr};
 static const GpuBlockInfo Sdma1CounterBlockInfo = {"SDMA1", Sdma1CounterBlockId, 1, SdmaCounterBlockMaxEvent, SdmaCounterBlockNumCounters, &SdmaCounterRegAddr[2], NULL, CounterBlockSdma1Attr};
+#if 0
+ static const GpuBlockInfo SdmaCounterBlockInfo = {"SDMA", Sdma0CounterBlockId, 8, SdmaCounterBlockMaxEvent, SdmaCounterBlockNumCounters, SdmaCounterRegAddr, NULL, CounterBlockSdma0Attr};
+#endif
 }  // namespace gfx9
 }  // namespace gfxip
 
