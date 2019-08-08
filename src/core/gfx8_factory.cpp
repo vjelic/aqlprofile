@@ -9,9 +9,14 @@ namespace aql_profile {
 // Gfx8 factory class
 class Gfx8Factory : public Pm4Factory {
  public:
-  explicit Gfx8Factory(uint32_t se_number) : Pm4Factory(BlockInfoMap(block_table_, sizeof(block_table_))) { Init(se_number); }
-  Gfx8Factory(const GpuBlockInfo** table, const uint32_t& size, uint32_t se_number)
-      : Pm4Factory(BlockInfoMap(table, size)) {
+  explicit Gfx8Factory(uint32_t se_number) :
+    Pm4Factory(BlockInfoMap(block_table_, sizeof(block_table_)))
+  {
+    Init(se_number);
+  }
+  Gfx8Factory(const GpuBlockInfo** table, const uint32_t& size, uint32_t se_number) :
+    Pm4Factory(BlockInfoMap(table, size))
+  {
     Init(se_number);
   }
 

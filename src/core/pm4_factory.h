@@ -189,6 +189,7 @@ inline Pm4Factory* Pm4Factory::Create(const hsa_agent_t agent) {
         break;
       case MI100_GPU_ID:
         it->second = Mi100Create(se_number);
+        break;
       default:
         throw aql_profile_exc_val<gpu_id_t>("GPU id error", gpu_id);
     }

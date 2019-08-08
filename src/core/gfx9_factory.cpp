@@ -9,7 +9,16 @@ namespace aql_profile {
 // Gfx9 factory class
 class Gfx9Factory : public Pm4Factory {
  public:
-  explicit Gfx9Factory(uint32_t se_number) : Pm4Factory(BlockInfoMap(block_table_, sizeof(block_table_))) { Init(se_number); }
+  explicit Gfx9Factory(uint32_t se_number) :
+    Pm4Factory(BlockInfoMap(block_table_, sizeof(block_table_)))
+  {
+    Init(se_number);
+  }
+  Gfx9Factory(const GpuBlockInfo** table, const uint32_t& size, uint32_t se_number) :
+    Pm4Factory(BlockInfoMap(table, size))
+  {
+    Init(se_number);
+  }
 
  protected:
   void Init(uint32_t se_number);
@@ -51,39 +60,32 @@ const GpuBlockInfo* Gfx9Factory::block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMB
 // Fiji factory class
 class Mi100Factory : public Gfx9Factory {
  public:
-  explicit Mi100Factory(uint32_t se_number) : Gfx9Factory(se_number) {
+  explicit Mi100Factory(uint32_t se_number) : Gfx9Factory(block_table_, sizeof(block_table_), se_number) {
     for (unsigned i = 0; i < HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER; ++i) {
-      block_table_[i] = new GpuBlockInfo{*Gfx9Factory::block_table_[i]};
+      const GpuBlockInfo* base_table_ptr = Gfx9Factory::block_table_[i];
+      if (base_table_ptr == NULL) continue;
+      GpuBlockInfo* block_info = new GpuBlockInfo(*base_table_ptr);
+      block_table_[i] = block_info;
+
       // overerite block info for any update from gfx9 to mi100
-      auto block_info = const_cast<GpuBlockInfo*>(block_table_[i]);
       switch (block_info->id) {
-      case SqCounterBlockId:
-        block_info->event_id_max = 303;
-        break;
-      case TcpCounterBlockId:
-        block_info->instance_count = 32;
-        block_info->event_id_max = 87;
-        break;
-      case TccCounterBlockId:
-        block_info->instance_count = 32;
-        block_info->event_id_max = 295;
-        break;
-      case TcaCounterBlockId:
-        block_info->instance_count = 32;
-        block_info->event_id_max = 58;
-        break;
-      case GceaCounterBlockId:
-        block_info->instance_count = 32;
-        block_info->event_id_max = 83;
-        break;
-      case McVmL2CounterBlockId:
-      case AtcL2CounterBlockId:
-      case AtcCounterBlockId:
-      case RpbCounterBlockId:
-        block_info->instance_count = 32;
-        break;
-      default:
-        break;
+        case SqCounterBlockId:
+          block_info->event_id_max = 303;
+          break;
+        case TcpCounterBlockId:
+          block_info->event_id_max = 87;
+          break;
+        case TccCounterBlockId:
+          block_info->instance_count = 32;
+          block_info->event_id_max = 295;
+          break;
+        case TcaCounterBlockId:
+          block_info->instance_count = 32;
+          block_info->event_id_max = 58;
+          break;
+        case GceaCounterBlockId:
+          block_info->instance_count = 32;
+          block_info->event_id_max = 83;
       }
     }
   }

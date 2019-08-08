@@ -12,11 +12,11 @@ class CmdBuilder;
 
 enum {
   // SE number
-  SE_NUM_MAX = 4,
+  SE_NUM_MAX = 8,
   // SE-mask item mask
   SE_VECTOR_MASK = SE_NUM_MAX - 1,
   // SE-mask item shift
-  SE_VECTOR_SHIFT = 2  // LOG2(SE_NUM_MAX)
+  SE_VECTOR_SHIFT = 3  // LOG2(SE_NUM_MAX)
 };
 
 enum {
