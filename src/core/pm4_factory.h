@@ -100,8 +100,10 @@ class Pm4Factory {
     if (event->block_index >= info->instance_count)
       throw event_exception(std::string("Bad block index, "), *event);
     // Checking that the counter event index is in proper range
+#if 0
     if (event->counter_id > info->event_id_max)
       throw event_exception(std::string("Bad event ID, "), *event);
+#endif
     return info;
   }
 
