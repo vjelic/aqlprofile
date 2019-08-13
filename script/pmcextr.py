@@ -2,7 +2,7 @@
 import os, sys, re
 
 #blocks_list = [ "CPC", "CPF", "GDS", "GRBM", "GRBMSE", "SPI", "SQ", "SQCS", "SRBM", "SX", "TA", "TCA", "TCC", "TCP", "TD" ]
-blocks_list = [ "CPC", "CPF", "GDS", "GRBM", "SPI", "SQ", "SX", "TA", "TCA", "TCC", "TCP", "TD", "GRBM_SE", "SDMA" ]
+blocks_list = [ "CPC", "CPF", "GDS", "GRBM", "SPI", "SQ", "SX", "TA", "TCA", "TCC", "TCP", "TD", "GRBM_SE" ]
 
 REC_MAX_LEN = 1024
 
@@ -25,9 +25,12 @@ def parse_event(rec_pattern, record, block, out):
   # not a match, return
   if not m: return False
 
-  # for SQ block, events start with 'SQ' or 'SQC'
-  if block == "SQ" and m.group(1).startswith('C'): block += 'C'
   event_name = (block + "_" + m.group(2)).upper()
+  # for SQ block, events start with 'SQ' or 'SQC'
+  # but given that SQC is a sublock of SQ, we choose to rename 'SQC' to 'SQ';
+  # however, this causes events #255/#373 sharing the same name and desc, so
+  # here we skip the outputting of both
+  if event_name == "SQ_DUMMY_LAST": return True
   event_id = int(m.group(4), 0)
   descr = m.group(3);
   descr = re.sub("\s+", " ", descr)

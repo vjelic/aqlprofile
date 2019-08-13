@@ -24,11 +24,12 @@ mv $blocks_xml $xml_file
 # parse GCEA block, and merge results into xml_file
 printf "\nParse [GCEA]   block, appended to '$xml_file'\n"
 $BDIR/pmc_mem_extr.py $gcea_file $gfxip > /dev/null 2>&1
-sed -i '$d' $xml_file               # delete last line </gfx9>
-tail -n+2 $gcea_xml >> $xml_file    # skip first line <gfx9>
+sed -i '$d' $xml_file                   # delete last line </gfx9>
+sed -i 's/TCC_EA0_/TCC_EA_/g' $xml_file # rename 'TCC_EA0' to 'TCC_EA'
+tail -n+2 $gcea_xml >> $xml_file        # skip first line <gfx9>
 
 # parse MCVML2 block, and merge results into xml_file
 printf "\nParse [MCVML2] block, appended to '$xml_file'\n"
 $BDIR/pmc_mem_extr.py $mcvml2_file $gfxip > /dev/null 2>&1
-sed -i '$d' $xml_file               # delete last line </gfx9>
-tail -n+2 $mcvml2_xml >> $xml_file  # skip first line <gfx9>
+sed -i '$d' $xml_file                   # delete last line </gfx9>
+tail -n+2 $mcvml2_xml >> $xml_file      # skip first line <gfx9>
