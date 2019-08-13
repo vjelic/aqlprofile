@@ -88,7 +88,7 @@ class Pm4Factory {
   pm4_builder::SqttBuilder* GetSqttBuilder() { return sqtt_builder_; }
 
   // Return Shader Engines number
-  const uint32_t GetShaderEnginesNumber() { return pmc_builder_->GetShaderEnginesNumber(); }
+  const uint32_t GetShaderEnginesNumber() { return agent_info_->se_num; }
   // Return SQTT buffer alignment
   const uint32_t GetSQTTBufferAlignment() { return 0x1000; }
 
@@ -121,6 +121,7 @@ class Pm4Factory {
     pmc_builder_(NULL),
     spm_builder_(NULL),
     sqtt_builder_(NULL),
+    agent_info_(NULL),
     block_map_(map)
   {}
 
@@ -139,19 +140,21 @@ class Pm4Factory {
   pm4_builder::SpmBuilder* spm_builder_;
   // SQTT PM4 packets builder
   pm4_builder::SqttBuilder* sqtt_builder_;
+  // agent info
+  const AgentInfo* agent_info_;
 
  private:
   // PM4 factory instance map type
   typedef std::map<gpu_id_t, Pm4Factory*> instances_t;
 
   // Create Fiji factory
-  static Pm4Factory* FijiCreate(uint32_t se_number);
+  static Pm4Factory* FijiCreate(const AgentInfo* agent_info);
   // Create GFX8 generic factory
-  static Pm4Factory* Gfx8Create(uint32_t se_number);
+  static Pm4Factory* Gfx8Create(const AgentInfo* agent_info);
   // Create GFX9 generic factory
-  static Pm4Factory* Gfx9Create(uint32_t se_number);
+  static Pm4Factory* Gfx9Create(const AgentInfo* agent_info);
   // Create MI100 factory
-  static Pm4Factory* Mi100Create(uint32_t se_number);
+  static Pm4Factory* Mi100Create(const AgentInfo* agent_info);
   // Return GPU id for a given agent
   static gpu_id_t GetGpuId(const hsa_agent_t agent);
 
@@ -167,7 +170,6 @@ class Pm4Factory {
 inline Pm4Factory* Pm4Factory::Create(const hsa_agent_t agent) {
   std::lock_guard<mutex_t> lck(mutex_);
   const AgentInfo* agent_info = HsaRsrcFactory::Instance().GetAgentInfo(agent);
-  const uint32_t se_number = agent_info->se_num;
   // Get GPU id for a given agent
   const gpu_id_t gpu_id = GetGpuId(agent);
   // Check if we have the instance already created
@@ -179,18 +181,19 @@ inline Pm4Factory* Pm4Factory::Create(const hsa_agent_t agent) {
     switch (gpu_id) {
       // Create Gfx8 generaic factory
       case GFX8_GPU_ID:
-        it->second = Gfx8Create(se_number);
+        it->second = Gfx8Create(agent_info);
         break;
       // Create Fiji specific factory
       case FIJI_GPU_ID:
-        it->second = FijiCreate(se_number);
+        it->second = FijiCreate(agent_info);
         break;
       // Create Gfx9 generic factory
       case GFX9_GPU_ID:
-        it->second = Gfx9Create(se_number);
+        it->second = Gfx9Create(agent_info);
         break;
+      // Create MI100 generic factory
       case MI100_GPU_ID:
-        it->second = Mi100Create(se_number);
+        it->second = Mi100Create(agent_info);
         break;
       default:
         throw aql_profile_exc_val<gpu_id_t>("GPU id error", gpu_id);

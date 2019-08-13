@@ -120,11 +120,10 @@ int main(int argc, char* argv[]) {
       ret_val = RunKernel<SimpleConvolution, TestPGenPmc<RUN_MODE> >(events_count,
                                                           pmc_argv(events_count, events_arr));
     } else {
-      const int block_index_max = 0;  // 15;
+      const int block_index_max = 16;
       const int event_id_max = 128;
       for (unsigned i = 0; i < HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER; ++i) {
-        i = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_MCVML2;
-        for (unsigned j = 0; j <= block_index_max; ++j) {
+        for (unsigned j = 0; j < block_index_max; ++j) {
           for (unsigned k = 0; k <= event_id_max; ++k) {
             fflush(stdout);
             fprintf(stderr, " %d %d %d                 \r", i, j, k);

@@ -6,11 +6,20 @@ export LD_LIBRARY_PATH=$PWD
 
 cd `dirname $RPATH`
 
+echo "Run with PMC SCAN"
+export AQLPROFILE_PMC=1
+unset AQLPROFILE_PMC_PRIV
+unset AQLPROFILE_SQTT
+unset AQLPROFILE_SDMA
+export AQLPROFILE_SCAN=1
+eval $tbin
+
 echo "Run with SDMA SETUP Mode"
 unset AQLPROFILE_PMC
 unset AQLPROFILE_PMC_PRIV
 unset AQLPROFILE_SQTT
 export AQLPROFILE_SDMA=1
+unset AQLPROFILE_SCAN
 eval $tbin
 
 echo "Run with PMC Privilge"
@@ -18,6 +27,7 @@ unset AQLPROFILE_PMC
 export AQLPROFILE_PMC_PRIV=1
 unset AQLPROFILE_SQTT
 unset AQLPROFILE_SDMA
+unset AQLPROFILE_SCAN
 eval $tbin
 
 exit 0

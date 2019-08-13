@@ -11,6 +11,7 @@ unset AQLPROFILE_PMC
 unset AQLPROFILE_PMC_PRIV
 unset AQLPROFILE_SQTT
 unset AQLPROFILE_SDMA
+unset AQLPROFILE_SCAN
 eval $tbin
 
 echo "Run with PMC"
@@ -18,6 +19,7 @@ export AQLPROFILE_PMC=1
 unset AQLPROFILE_PMC_PRIV
 unset AQLPROFILE_SQTT
 unset AQLPROFILE_SDMA
+unset AQLPROFILE_SCAN
 eval $tbin
 
 echo "Run with SQTT"
@@ -25,6 +27,7 @@ unset AQLPROFILE_PMC
 unset AQLPROFILE_PMC_PRIV
 export AQLPROFILE_SQTT=1
 unset AQLPROFILE_SDMA
+unset AQLPROFILE_SCAN
 eval $tbin
 
 exit 0

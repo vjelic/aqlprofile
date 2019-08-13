@@ -9,29 +9,29 @@ namespace aql_profile {
 // Gfx9 factory class
 class Gfx9Factory : public Pm4Factory {
  public:
-  explicit Gfx9Factory(uint32_t se_number) :
+  explicit Gfx9Factory(const AgentInfo* agent_info) :
     Pm4Factory(BlockInfoMap(block_table_, sizeof(block_table_)))
   {
-    Init(se_number);
+    Init(agent_info);
   }
-  Gfx9Factory(const GpuBlockInfo** table, const uint32_t& size, uint32_t se_number) :
+  Gfx9Factory(const GpuBlockInfo** table, const uint32_t& size, const AgentInfo* agent_info) :
     Pm4Factory(BlockInfoMap(table, size))
   {
-    Init(se_number);
+    Init(agent_info);
   }
 
  protected:
-  void Init(uint32_t se_number);
+  void Init(const AgentInfo* agent_info);
   static const GpuBlockInfo* block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER];
 };
 
 // Gfx factory init
-void Gfx9Factory::Init(uint32_t se_number) {
+void Gfx9Factory::Init(const AgentInfo* agent_info) {
   Pm4Factory::cmd_builder_ = new pm4_builder::Gfx9CmdBuilder;
   if (Pm4Factory::cmd_builder_ == NULL) throw aql_profile_exc_msg("CmdBuilder allocation failed");
 
   Pm4Factory::pmc_builder_ =
-    new pm4_builder::GpuPmcBuilder<pm4_builder::Gfx9CmdBuilder, gfx9_cntx_prim>(se_number);
+    new pm4_builder::GpuPmcBuilder<pm4_builder::Gfx9CmdBuilder, gfx9_cntx_prim>(agent_info);
   if (Pm4Factory::pmc_builder_ == NULL) throw aql_profile_exc_msg("PmcBuilder allocation failed");
 
   Pm4Factory::spm_builder_ =
@@ -41,6 +41,8 @@ void Gfx9Factory::Init(uint32_t se_number) {
   Pm4Factory::sqtt_builder_ =
       new pm4_builder::GpuSqttBuilder<pm4_builder::Gfx9CmdBuilder, gfx9_cntx_prim>;
   if (Pm4Factory::sqtt_builder_ == NULL) throw aql_profile_exc_msg("SqttBuilder allocation failed");
+
+  agent_info_ = agent_info;
 }
 
 // GFX9 block table
@@ -60,7 +62,7 @@ const GpuBlockInfo* Gfx9Factory::block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMB
 // Fiji factory class
 class Mi100Factory : public Gfx9Factory {
  public:
-  explicit Mi100Factory(uint32_t se_number) : Gfx9Factory(block_table_, sizeof(block_table_), se_number) {
+  explicit Mi100Factory(const AgentInfo* agent_info) : Gfx9Factory(block_table_, sizeof(block_table_), agent_info) {
     for (unsigned i = 0; i < HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER; ++i) {
       const GpuBlockInfo* base_table_ptr = Gfx9Factory::block_table_[i];
       if (base_table_ptr == NULL) continue;
@@ -97,14 +99,14 @@ class Mi100Factory : public Gfx9Factory {
 const GpuBlockInfo* Mi100Factory::block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER] = {};
 
 // Pm4Factory create mathods
-Pm4Factory* Pm4Factory::Gfx9Create(uint32_t se_number) {
-  auto p = new Gfx9Factory(se_number);
+Pm4Factory* Pm4Factory::Gfx9Create(const AgentInfo* agent_info) {
+  auto p = new Gfx9Factory(agent_info);
   if (p == NULL) throw aql_profile_exc_msg("Gfx9Factory allocation failed");
   return p;
 }
 
-Pm4Factory* Pm4Factory::Mi100Create(uint32_t se_number) {
-  auto p = new Mi100Factory(se_number);
+Pm4Factory* Pm4Factory::Mi100Create(const AgentInfo* agent_info) {
+  auto p = new Mi100Factory(agent_info);
   if (p == NULL) throw aql_profile_exc_msg("FijiFactory allocation failed");
   return p;
 }
