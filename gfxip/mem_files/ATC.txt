@@ -1,0 +1,30 @@
+# same events on VG10/VG20/MI100
+# events are copied from //mcip/pi/main/ats/src/meta/registers/ats.rdl
+# further info at: http://confluence.amd.com/display/BLTZ/ROCProfiler+Library?preview=/51298049/154149105/ATC_ATCL2_Perf_Counters.docx
+ATHUB:ATS Perf Events
+
+Note that when counting latency it is expected that there is always an end event before another start event is seen, and there is always one and only one start event for every end event. Behavior is undefined if these are violated. Latency counters do not begin until the start trigger has been triggered.
+Event 0 = A value of 0 means count cycles, otherwise selects event to count.
+event 1 = event start for statistical min sclks from ATC_RPB_req translation request to RPB_ATC_ret completion
+event 2 = event end for statistical min sclks from ATC_RPB_req translation request to RPB_ATC_ret completion
+event 3 = event start for statistical min sclks from ATC_RPB_req page request to RPB_ATC_ret page return
+event 4 = event end for statistical min sclks from ATC_RPB_req page request to RPB_ATC_ret page return
+event 5 = event start for statistical max sclks from ATC_RPB_req translation request to RPB_ATC_ret completion
+event 6 = event end for statistical max sclks from ATC_RPB_req translation request to RPB_ATC_ret completion
+event 7 = event start for statistical max sclks from ATC_RPB_req page request to RPB_ATC_ret page return
+event 8 = event end for statistical max sclks from ATC_RPB_req page request to RPB_ATC_ret page return
+event 9 = event start for max sclks from ATS_L2 invalidate request to L2_ATS invalidate ack
+event 10 = event end for max sclks from ATS_L2 invalidate request to L2_ATS invalidate ack
+event 11 = number of requests from L2
+event 12 = number of first time trans successes
+event 13 = number of pri requests
+event 14 = number of trans failures
+event 15 = number of pri requests not satisfied
+event 16 = number of invalidate requests w/PASID, to get a correct number
+event 17 = number of invalidate requests w/out PASID
+event 18 = number of PASID changes
+event 19 = number of times 1 translations returned
+event 20 = number of times 2-8 translations returned not blocked by invalidations
+event 21 = number of times 5-8 translations returned not blocked by invalidations
+event 22 = number of times size bit was set on non speculative transactions returned to L2 (>4K translation was returned)
+event 23 = number of invalidate requests that matched multiple vmids event

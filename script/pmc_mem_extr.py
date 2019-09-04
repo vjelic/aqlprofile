@@ -31,6 +31,19 @@ def parse_event(m, ngroups, pref, pattern_trim, pattern_norm, out, block, nth_ev
     # others, e.g., MCVML2
     event_name = event_suff
     block = event_name.split("_")[0]
+    # empty event_suff, indicating ATC/ATCL2
+    if ("ATC" in raifile) and (not event_suff):
+        # replace some special chars
+        p = re.compile('[,-/]')
+        event_descr = p.sub(' ', event_descr)
+        # format the event desc
+        event_name = '_'.join(event_descr.split()[:8])
+        block = "ATC"
+        line = m.group(0)
+        # ATCL2 event line starts with '#' and contains ':'
+        if line.startswith('#') and ':' in line: block = "ATCL2"
+        # add block suffix and change to uppercase
+        event_name = (block+'_'+event_name).upper()
 
   # first time, output block info
   if nth_event == 0:
@@ -52,9 +65,12 @@ def parse_rai_descr(inp, out, block='GCEA', pref='EA_PERF'):
   pattern_rec = re.compile(r'\s+(\d+)\s*\|\s*(\w*)\s*\|[^|]*\|\s*([^|]+)(\s\d+\s*\||$)')
   # pattern2: one event per line, see VG20_MI100_GCEA_PERFCOUNTER0_CFG.txt
   pattern2_rec = re.compile(r'^\s*(\d+)\s*\|\s*(\w*)\s*\|[^|]*\|\s*([^|]+)\s*$')
-  # pattern3: one event per line, see MC_VM_L2_PERFCOUNTER0_CFG.txt
+  # pattern3: one event per line, see MC_VM_L2_PERFCOUNTER0_CFG.txt, or ATC/ATCL2 in ATC.txt
   #   01 - MCVML2_PERF_SEL_BANK0_PTE_CACHE_REQ: number of bank0 pte cache requests
-  pattern3_rec = re.compile(r'^\s*(\d+)\s*-\s*(\w*)\s*:\s*(.*)$')
+  #event 1 = event start for statistical min sclks from ATC_RPB_req translation request to RPB_ATC_ret completion
+  # \# Event1 : number of L1 requests
+  pattern3_rec = re.compile(r'^#*[a-zA-Z\s]*(\d+)\s*-*\s*(\w*)\s*[:=]\s*(.*)$')
+
   pattern_trim = re.compile(r'\s\d+\s\|$');
   pattern_norm = re.compile(r'(\W|_+)');
   pos = 0

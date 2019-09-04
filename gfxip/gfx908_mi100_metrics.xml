@@ -5049,7 +5049,13 @@
   <metric
     name="GRBM_SE_RMI_BUSY" block=GRBM_SE event=15 descr="Any of the Render Backend Memory Interface (RMI) are busy in shader engine 0."
   ></metric>
-  # GCEA counters
+  #  counters
+  <metric
+    name="" block= event=20 descr="http://adcweb02.amd.com/orlvalid/regspec/web_regspec/vega20/regspec/vega20_chip/internal/registers/register_table/ea/gc_ea/gcea_perfcounter0_cfg.html"
+  ></metric>
+  <metric
+    name="" block= event=100 descr="http://adcweb02.amd.com/orlvalid/regspec/web_regspec/mi100/regspec/mi100_chip/internal/registers/register_table/ea/gc_ea/gcea_perfcounter0_cfg.html"
+  ></metric>
   <metric
     name="EA_PERF_Cycles" block=GCEA event=0 descr="Cycles"
   ></metric>
@@ -5299,7 +5305,126 @@
   <metric
     name="EA_PERF_sarb_GMI_read_write_switch" block=GCEA event=82 descr="GMI read/write switch"
   ></metric>
-  # MCVML2 counters
+  # ATC counters
+  <metric
+    name="ATC_A_VALUE_OF_0_MEANS_COUNT_CYCLES_OTHERWISE" block=ATC event=0 descr="A value of 0 means count cycles  otherwise selects event to count "
+  ></metric>
+  <metric
+    name="ATC_EVENT_START_FOR_STATISTICAL_MIN_SCLKS_FROM_ATC_RPB_REQ" block=ATC event=1 descr="event start for statistical min sclks from ATC_RPB_req translation request to RPB_ATC_ret completion"
+  ></metric>
+  <metric
+    name="ATC_EVENT_END_FOR_STATISTICAL_MIN_SCLKS_FROM_ATC_RPB_REQ" block=ATC event=2 descr="event end for statistical min sclks from ATC_RPB_req translation request to RPB_ATC_ret completion"
+  ></metric>
+  <metric
+    name="ATC_EVENT_START_FOR_STATISTICAL_MIN_SCLKS_FROM_ATC_RPB_REQ" block=ATC event=3 descr="event start for statistical min sclks from ATC_RPB_req page request to RPB_ATC_ret page return"
+  ></metric>
+  <metric
+    name="ATC_EVENT_END_FOR_STATISTICAL_MIN_SCLKS_FROM_ATC_RPB_REQ" block=ATC event=4 descr="event end for statistical min sclks from ATC_RPB_req page request to RPB_ATC_ret page return"
+  ></metric>
+  <metric
+    name="ATC_EVENT_START_FOR_STATISTICAL_MAX_SCLKS_FROM_ATC_RPB_REQ" block=ATC event=5 descr="event start for statistical max sclks from ATC_RPB_req translation request to RPB_ATC_ret completion"
+  ></metric>
+  <metric
+    name="ATC_EVENT_END_FOR_STATISTICAL_MAX_SCLKS_FROM_ATC_RPB_REQ" block=ATC event=6 descr="event end for statistical max sclks from ATC_RPB_req translation request to RPB_ATC_ret completion"
+  ></metric>
+  <metric
+    name="ATC_EVENT_START_FOR_STATISTICAL_MAX_SCLKS_FROM_ATC_RPB_REQ" block=ATC event=7 descr="event start for statistical max sclks from ATC_RPB_req page request to RPB_ATC_ret page return"
+  ></metric>
+  <metric
+    name="ATC_EVENT_END_FOR_STATISTICAL_MAX_SCLKS_FROM_ATC_RPB_REQ" block=ATC event=8 descr="event end for statistical max sclks from ATC_RPB_req page request to RPB_ATC_ret page return"
+  ></metric>
+  <metric
+    name="ATC_EVENT_START_FOR_MAX_SCLKS_FROM_ATS_L2_INVALIDATE" block=ATC event=9 descr="event start for max sclks from ATS_L2 invalidate request to L2_ATS invalidate ack"
+  ></metric>
+  <metric
+    name="ATC_EVENT_END_FOR_MAX_SCLKS_FROM_ATS_L2_INVALIDATE" block=ATC event=10 descr="event end for max sclks from ATS_L2 invalidate request to L2_ATS invalidate ack"
+  ></metric>
+  <metric
+    name="ATC_NUMBER_OF_REQUESTS_FROM_L2" block=ATC event=11 descr="number of requests from L2"
+  ></metric>
+  <metric
+    name="ATC_NUMBER_OF_FIRST_TIME_TRANS_SUCCESSES" block=ATC event=12 descr="number of first time trans successes"
+  ></metric>
+  <metric
+    name="ATC_NUMBER_OF_PRI_REQUESTS" block=ATC event=13 descr="number of pri requests"
+  ></metric>
+  <metric
+    name="ATC_NUMBER_OF_TRANS_FAILURES" block=ATC event=14 descr="number of trans failures"
+  ></metric>
+  <metric
+    name="ATC_NUMBER_OF_PRI_REQUESTS_NOT_SATISFIED" block=ATC event=15 descr="number of pri requests not satisfied"
+  ></metric>
+  <metric
+    name="ATC_NUMBER_OF_INVALIDATE_REQUESTS_W_PASID_TO_GET" block=ATC event=16 descr="number of invalidate requests w PASID  to get a correct number"
+  ></metric>
+  <metric
+    name="ATC_NUMBER_OF_INVALIDATE_REQUESTS_W_OUT_PASID" block=ATC event=17 descr="number of invalidate requests w out PASID"
+  ></metric>
+  <metric
+    name="ATC_NUMBER_OF_PASID_CHANGES" block=ATC event=18 descr="number of PASID changes"
+  ></metric>
+  <metric
+    name="ATC_NUMBER_OF_TIMES_1_TRANSLATIONS_RETURNED" block=ATC event=19 descr="number of times 1 translations returned"
+  ></metric>
+  <metric
+    name="ATC_NUMBER_OF_TIMES_2_8_TRANSLATIONS_RETURNED_NOT" block=ATC event=20 descr="number of times 2 8 translations returned not blocked by invalidations"
+  ></metric>
+  <metric
+    name="ATC_NUMBER_OF_TIMES_5_8_TRANSLATIONS_RETURNED_NOT" block=ATC event=21 descr="number of times 5 8 translations returned not blocked by invalidations"
+  ></metric>
+  <metric
+    name="ATC_NUMBER_OF_TIMES_SIZE_BIT_WAS_SET_ON" block=ATC event=22 descr="number of times size bit was set on non speculative transactions returned to L2 (>4K translation was returned)"
+  ></metric>
+  <metric
+    name="ATC_NUMBER_OF_INVALIDATE_REQUESTS_THAT_MATCHED_MULTIPLE_VMIDS" block=ATC event=23 descr="number of invalidate requests that matched multiple vmids event"
+  ></metric>
+  # ATCL2 counters
+  <metric
+    name="ATCL2_NUMBER_OF_L1_REQUESTS" block=ATCL2 event=1 descr="number of L1 requests"
+  ></metric>
+  <metric
+    name="ATCL2_NUMBER_OF_BANK0_REQUESTS" block=ATCL2 event=2 descr="number of bank0 requests"
+  ></metric>
+  <metric
+    name="ATCL2_NUMBER_OF_BANK0_HITS" block=ATCL2 event=3 descr="number of bank0 hits"
+  ></metric>
+  <metric
+    name="ATCL2_NUMBER_OF_BANK0_MISSES" block=ATCL2 event=4 descr="number of bank0 misses"
+  ></metric>
+  <metric
+    name="ATCL2_NUMBER_OF_ATS_REQUESTS" block=ATCL2 event=5 descr="number of ATS Requests"
+  ></metric>
+  <metric
+    name="ATCL2_NUMBER_OF_ATS_RESPONSES" block=ATCL2 event=6 descr="number of ATS Responses"
+  ></metric>
+  <metric
+    name="ATCL2_NUMBER_OF_INVALIDATE_REQUEST" block=ATCL2 event=7 descr="number of invalidate request"
+  ></metric>
+  <metric
+    name="ATCL2_NUMBER_OF_FLUSHTYPE_INVALIDATE_REQUEST" block=ATCL2 event=8 descr="number of flushtype invalidate request"
+  ></metric>
+  <metric
+    name="ATCL2_NUMBER_OF_L1_RT_CACHE_REQUESTS" block=ATCL2 event=9 descr="number of L1 RT cache requests"
+  ></metric>
+  <metric
+    name="ATCL2_NUMBER_OF_RT_CACHE_BANK0_REQUESTS" block=ATCL2 event=10 descr="number of RT cache bank0 requests"
+  ></metric>
+  <metric
+    name="ATCL2_NUMBER_OF_RT_CACHE_BANK0_HITS" block=ATCL2 event=11 descr="number of RT cache bank0 hits"
+  ></metric>
+  <metric
+    name="ATCL2_NUMBER_OF_RT_CACHE_BANK0_MISSES" block=ATCL2 event=12 descr="number of RT cache bank0 misses"
+  ></metric>
+  #  counters
+  <metric
+    name="" block= event=10 descr="http://adcweb02.amd.com/orlvalid/regspec/web_regspec/greenland/regspec/greenland_chip/internal/registers/register_table/utcl2/vml2pl/mc_vm_l2_perfcounter0_cfg.html"
+  ></metric>
+  <metric
+    name="" block= event=20 descr="http://adcweb02.amd.com/orlvalid/regspec/web_regspec/vega20/regspec/vega20_chip/internal/registers/register_table/utcl2/vml2pl/mc_vm_l2_perfcounter0_cfg.html"
+  ></metric>
+  <metric
+    name="" block= event=100 descr="http://adcweb02.amd.com/orlvalid/regspec/web_regspec/mi100/regspec/mi100_chip/internal/registers/register_table/utcl2/vml2pl/mc_vm_l2_perfcounter0_cfg.html"
+  ></metric>
   <metric
     name="MCVML2_PERF_SEL_CYCLES" block=MCVML2 event=0 descr="Cycles"
   ></metric>
