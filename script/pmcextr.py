@@ -1,8 +1,10 @@
 #!/usr/bin/python
 import os, sys, re
 
-#blocks_list = [ "CPC", "CPF", "GDS", "GRBM", "GRBMSE", "SPI", "SQ", "SQCS", "SRBM", "SX", "TA", "TCA", "TCC", "TCP", "TD" ]
-blocks_list = [ "CPC", "CPF", "GDS", "GRBM", "SPI", "SQ", "SX", "TA", "TCA", "TCC", "TCP", "TD", "GRBM_SE" ]
+from cfg_handler import CfgHandler
+import pmcextr_misc
+
+handler = CfgHandler()
 
 REC_MAX_LEN = 1024
 
@@ -14,11 +16,6 @@ def open_xml(name, nms):
 def close_xml(f, nms):
   f.write("</" + nms + ">\n");
   f.close()
-
-def write_xml(out, event_name, block, event_id, descr):
-  out.write("  <metric\n" +
-            "    name=\"" + event_name + "\" block=" + block + " event=" + event_id + " descr=\"" + descr + "\"\n" +
-            "  ></metric>\n")
 
 def parse_event(rec_pattern, record, block, out):
   m = rec_pattern.search(record)
@@ -32,17 +29,18 @@ def parse_event(rec_pattern, record, block, out):
   # here we skip the outputting of both
   if event_name == "SQ_DUMMY_LAST": return True
   event_id = int(m.group(4), 0)
+  if not handler.is_event_specified(event_name, event_id, block): return True
   descr = m.group(3);
   descr = re.sub("\s+", " ", descr)
   descr = re.sub("\s*,", ",", descr)
   descr = re.sub("\s+$", "", descr)
   descr = re.sub(",$", ".", descr)
-  write_xml(out, event_name, block, str(event_id), descr)
+  pmcextr_misc.write_xml(out, event_name, block, str(event_id), descr)
 
   return True
 #############################################################
 
-def parse_rai(inp, out, blist):
+def parse_rai(inp, out, blist, nrai_blocks):
   # event block ends with '};' on a single line
   end_pattern = re.compile("^};$")
 
@@ -76,7 +74,6 @@ def parse_rai(inp, out, blist):
         print "Error: bad record \"" + record + "\"\nfile '" + raifile + ", line (" + str(line_num) + ")"
         break;
 
-
       if found:
         if last_pattern.search(record):
           # final event for the block, extract and stop
@@ -88,34 +85,61 @@ def parse_rai(inp, out, blist):
             continue
       elif beg_pattern.match(record):
         found = 1
-        print line
+        print >>sys.stderr, "\tblock: " + block
         out.write("  # " + block + " counters\n")
 
       record = ""
 
     if not found:
-      print >>sys.stderr, "Error: block '" + block + " not found"
-      #break
+      if block in handler.list_blocks(): nrai_blocks.append(block)
+      else:
+        print >>sys.stderr, "Error: block '" + block + "' not found"
+        sys.exit(1)
 #############################################################
 
-if (len(sys.argv) != 3):
-  print >>sys.stderr, "Usage:", sys.argv[0], " <input .rai file> <gfxip in lower case, gfx8, gfx9, etc..>"
+if (len(sys.argv) < 3):
+  print >>sys.stderr, "Usage:", sys.argv[0], " <path to .rai and misc> <gfxip in lower case, gfx8, gfx9, etc..>"
   sys.exit(1)
 
-raifile = sys.argv[1]
-if not os.path.isfile(raifile):
-  print >>sys.stderr, "Error: input file '" + raifile + "' not found"
+gfxip = sys.argv[1]     # gfxip version, e.g., gfx906
+
+filepath = sys.argv[2]  # path to the .rai and misc files
+if not os.path.isdir(filepath):
+  print >>sys.stderr, "Error: path '" + filepath + "' not found"
   sys.exit(1)
 
-nms = sys.argv[2]
+# find out the regspec file
+raifile = handler.get_file(filepath, gfxip, ".rai")
+print >>sys.stderr, "read from: " + raifile
 
-base = re.sub(r'(\.[^\.]+)$', '', raifile)
-m = re.search(r'([^\/]*)$', base)
-out_name = nms + '_' + m.group(1) + '.xml'
+# parse the cfgfile, if there is one specified
+if len(sys.argv) > 3:
+  cfgfile = sys.argv[3]
+  handler.parse_cfgfile(gfxip, cfgfile)
 
+# blocks to be generated, including .rai and misc
+# 1) all blocks, if no cfgfile
+# 2) only designated ones, ow
+all_blocks = handler.list_blocks()
+
+# prepare output file
+out_name = filepath + '/' + gfxip + '_metrics.xml'
+out = open_xml(out_name, gfxip)
+
+# parse .rai file, and meanwhile record those blocks not covered in the file
 inp = open(raifile, 'r')
-out = open_xml(out_name, nms)
-parse_rai(inp, out, blocks_list)
-close_xml(out, nms);
-print "generated '" + out_name + "'"
+nrai_blocks = []
+parse_rai(inp, out, all_blocks, nrai_blocks)
+inp.close()
+
+# parse the misc blocks not in .rai
+for nrai_block in nrai_blocks:
+  miscfile = handler.get_file(filepath, gfxip, nrai_block)
+  print >>sys.stderr, "read from: " + miscfile
+  print >>sys.stderr, "\tblock: " + nrai_block
+  inp = open(miscfile, 'r')
+  pmcextr_misc.parse_nrai(handler, inp, out, nrai_block)
+  inp.close()
+close_xml(out, gfxip);
+print >>sys.stderr, "output to: " + out_name
 #############################################################

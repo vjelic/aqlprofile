@@ -1,22 +1,13 @@
 #!/usr/bin/python
 import os, sys, re
 
-def open_xml(name, nms):
-  f = open(name, 'w')
-  f.write("<" + nms + ">\n");
-  return f
-
-def close_xml(f, nms):
-  f.write("</" + nms + ">\n");
-  f.close()
-
 def write_xml(out, event_name, block, event_id, descr):
   out.write("  <metric\n" +
             "    name=\"" + event_name + "\" block=" + block + " event=" + event_id + " descr=\"" + descr + "\"\n" +
             "  ></metric>\n")
 
 # parse event from the matched string and output to xml
-def parse_event(m, ngroups, pref, pattern_trim, pattern_norm, out, block, nth_event):
+def parse_nrai_event(handler, m, ngroups, pref, pattern_trim, pattern_norm, out, block, nth_event):
   assert (ngroups >= 3),"must be at least 3 groups"
   event_ind =  int(m.group(1).strip())
   event_suff = m.group(2).strip()
@@ -30,20 +21,17 @@ def parse_event(m, ngroups, pref, pattern_trim, pattern_norm, out, block, nth_ev
   else:
     # others, e.g., MCVML2
     event_name = event_suff
-    block = event_name.split("_")[0]
     # empty event_suff, indicating ATC/ATCL2
-    if ("ATC" in raifile) and (not event_suff):
-        # replace some special chars
-        p = re.compile('[,-/]')
-        event_descr = p.sub(' ', event_descr)
-        # format the event desc
-        event_name = '_'.join(event_descr.split()[:8])
-        block = "ATC"
-        line = m.group(0)
-        # ATCL2 event line starts with '#' and contains ':'
-        if line.startswith('#') and ':' in line: block = "ATCL2"
-        # add block suffix and change to uppercase
-        event_name = (block+'_'+event_name).upper()
+    if "ATC" in block:
+      # replace some special chars
+      p = re.compile('[,-/]')
+      event_descr = p.sub(' ', event_descr)
+      # format the event desc
+      event_name = '_'.join(event_descr.split()[:8])
+      # add block suffix and change to uppercase
+      event_name = (block+'_'+event_name).upper()
+
+  if not handler.is_event_specified(event_name, event_ind, block): return event_ind
 
   # first time, output block info
   if nth_event == 0:
@@ -56,7 +44,7 @@ def parse_event(m, ngroups, pref, pattern_trim, pattern_norm, out, block, nth_ev
 
 #############################################################
 
-def parse_rai_descr(inp, out, block='GCEA', pref='EA_PERF'):
+def parse_nrai(handler, inp, out, block='GCEA', pref='GCEA_PERF'):
   # 4 | rdram | {3`b0, start0} | Transaction `start` from latency sampler 0 5 | rdram | {3`b0, end0 } | Transaction `end` from latency sampler 0 ...
   #  4 : EA_PERF_rdram_Transaction_start_from_latency_sampler_0 : "Transaction `start` from latency sampler 0"
   #  5 : EA_PERF_Transaction_end_from_latency_sampler_0 : "Transaction `end` from latency sampler 0"
@@ -87,7 +75,7 @@ def parse_rai_descr(inp, out, block='GCEA', pref='EA_PERF'):
         ngroups = len(m.groups())
         pos = m.end() - len(m.group(ngroups))
 
-        event_ind = parse_event(m, ngroups, pref, pattern_trim, pattern_norm, out, block, next_event)
+        event_ind = parse_nrai_event(handler, m, ngroups, pref, pattern_trim, pattern_norm, out, block, next_event)
 
         if event_ind != next_event:
           print >>sys.stderr, "Warn: event skipped(" + str(next_event) + ")"
@@ -95,41 +83,19 @@ def parse_rai_descr(inp, out, block='GCEA', pref='EA_PERF'):
       # matching pattern2
       elif m2:
         ngroups = len(m2.groups())
-        parse_event(m2, ngroups, pref, pattern_trim, pattern_norm, out, block, next_event)
+        parse_nrai_event(handler, m2, ngroups, pref, pattern_trim, pattern_norm, out, block, next_event)
         next_event += 1
 
         break
       # matching pattern3
       elif m3:
         ngroups = len(m3.groups())
-        parse_event(m3, ngroups, None, None, None, out, block, next_event)
+        parse_nrai_event(handler, m3, ngroups, None, None, None, out, block, next_event)
         next_event += 1
 
         break
       # matching none, skip over
       else:
-        print >>sys.stderr, "Skip line: \"" + line
+        print >>sys.stdout, "Skip line: \"" + line
         break
-#############################################################
-
-if (len(sys.argv) != 3):
-  print >>sys.stderr, "Usage:", sys.argv[0], " <input description file> <gfxip in lower case, gfx8, gfx9, etc..>"
-  sys.exit(1)
-
-raifile = sys.argv[1]
-if not os.path.isfile(raifile):
-  print >>sys.stderr, "Error: input file '" + raifile + "' not found"
-  sys.exit(1)
-
-nms = sys.argv[2]
-
-base = re.sub(r'(\.[^\.]+)$', '', raifile)
-m = re.search(r'([^\/]*)$', base)
-out_name = nms + '_' + m.group(1) + '.xml'
-
-inp = open(raifile, 'r')
-out = open_xml(out_name, nms)
-parse_rai_descr(inp, out)
-close_xml(out, nms);
-print "generated '" + out_name + "'"
 #############################################################
