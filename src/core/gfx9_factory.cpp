@@ -56,7 +56,7 @@ const GpuBlockInfo* Gfx9Factory::block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMB
     NULL /*MC_XBAR*/, &AtcCounterBlockInfo, &AtcL2CounterBlockInfo, &GceaCounterBlockInfo,
     &RpbCounterBlockInfo,
     // System blocks
-    &Sdma0CounterBlockInfo, &Sdma1CounterBlockInfo,
+    &SdmaCounterBlockInfo
 };
 
 // Fiji factory class
@@ -88,6 +88,10 @@ class Mi100Factory : public Gfx9Factory {
         case GceaCounterBlockId:
           block_info->instance_count = 32;
           block_info->event_id_max = 83;
+          break;
+        case SdmaCounterBlockId:
+          block_info->instance_count = gfx9_cntx_prim::SDMA_COUNTER_BLOCK_NUM_INSTANCES;
+          break;
       }
     }
   }

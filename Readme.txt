@@ -22,7 +22,7 @@ $ export CMAKE_DEBUG_TRACE=1 # 1 to enable debug tracing
 
 To build with the current installed ROCM:
 
-$ cd .../hsa-amd-aqlprofile
+$ cd ../aqlprofile
 $ mkdir build
 $ cd build
 $ export CMAKE_PREFIX_PATH=/opt/rocm/lib:/opt/rocm/include/hsa
@@ -38,9 +38,12 @@ $ export CC=/usr/bin/clang
 'mygen' make target to regenerate the headers from full set of gfxip headers
 $ make mygen
 
+To reset the generated headers	
+$ make mygenreset
+
 To run the test:
 
-$ cd .../hsa-amd-aqlprofile/build
+$ cd ../aqlprofile/build
 $ export LD_LIBRARY_PATH=$PWD
 $ run.sh
 

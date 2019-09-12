@@ -43,8 +43,7 @@ enum CounterBlockId {
   RmiCounterBlockId,
 
   // SDMA block
-  Sdma0CounterBlockId,
-  Sdma1CounterBlockId,
+  SdmaCounterBlockId,
 
   // Counters retrieved by KFD
   IommuV2CounterBlockId,
@@ -67,6 +66,8 @@ static const uint32_t TcaCounterBlockNumInstances   = 2;
 static const uint32_t TccCounterBlockNumInstances   = 16;
 static const uint32_t SdmaCounterBlockNumInstances  = 2;
 static const uint32_t RmiCounterBlockNumInstances   = 8;
+// MI100 has 8 SDMA instances
+static const uint32_t SdmaCounterBlockMaxInstances  = 8;
 static const uint32_t GceaCounterBlockNumInstances  = 16;
 
 // Number of block counter registers

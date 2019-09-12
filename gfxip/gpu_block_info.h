@@ -24,12 +24,11 @@ enum CounterBlockAttr {
   // SRBM Block
   CounterBlockSrbmAttr = 0x80,
   // SDMA block
-  CounterBlockSdma0Attr = 0x100,
-  CounterBlockSdma1Attr = 0x200,
-  CounterBlockSdmaAttr = CounterBlockSdma0Attr | CounterBlockSdma1Attr,
-  CounterBlockSdmaShift = 0x8,
-  // Text cache
+  CounterBlockSdmaAttr = 0x100,
+  // Texture cache
   CounterBlockTcAttr = 0x400,
+  // Explicitly indexed blocks
+  CounterBlockExplInstAttr = 0x800,
 };
 
 // Register address corresponding to each counter

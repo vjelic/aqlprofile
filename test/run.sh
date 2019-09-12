@@ -30,4 +30,8 @@ unset AQLPROFILE_SDMA
 unset AQLPROFILE_SCAN
 eval $tbin
 
+#valgrind --leak-check=full $tbin
+#valgrind --tool=massif $tbin
+#ms_print massif.out.<N>
+
 exit 0

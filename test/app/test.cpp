@@ -155,10 +155,10 @@ int main(int argc, char* argv[]) {
   } else if (sdma_enable) {
     int events_count = 0;
     const hsa_ven_amd_aqlprofile_event_t events_sdma[] = {
-      {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SDMA0, 0, 17 /*MC_WR_COUNT*/},
-      {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SDMA0, 0, 19 /*MC_RD_COUNT*/},
-      {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SDMA1, 0, 17 /*MC_WR_COUNT*/},
-      {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SDMA1, 0, 19 /*MC_RD_COUNT*/},
+      {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SDMA, 0, 17 /*MC_WR_COUNT*/},
+      {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SDMA, 0, 19 /*MC_RD_COUNT*/},
+      {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SDMA, 1, 17 /*MC_WR_COUNT*/},
+      {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SDMA, 1, 19 /*MC_RD_COUNT*/},
     };
     events_count = sizeof(events_sdma) / sizeof(hsa_ven_amd_aqlprofile_event_t);
     ret_val = RunKernel<SimpleConvolution, TestPGenPmc<SETUP_MODE> >(events_count,

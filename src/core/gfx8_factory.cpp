@@ -56,7 +56,7 @@ const GpuBlockInfo* Gfx8Factory::block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMB
     &McSeqCounterBlockInfo, &McVmL2CounterBlockInfo, &McXbarCounterBlockInfo, &AtcCounterBlockInfo,
     NULL /*GFX9 ATC_L2*/, NULL /*GFX9 GCEA*/, &RpbCounterBlockInfo,
     // System blocks
-    &Sdma0CounterBlockInfo, &Sdma1CounterBlockInfo,
+    &SdmaCounterBlockInfo
 };
 
 // Fiji factory class

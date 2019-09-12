@@ -43,8 +43,8 @@ enum CounterBlockId {
   McVmL2CounterBlockId,
   McXbarCounterBlockId,
 
-  Sdma0CounterBlockId,
-  Sdma1CounterBlockId,
+  // SDMA block
+  SdmaCounterBlockId,
 
   // Counters retrieved by KFD
   IommuV2CounterBlockId,
