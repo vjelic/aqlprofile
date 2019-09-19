@@ -518,6 +518,9 @@ bool HsaRsrcFactory::LoadAndFinalize(const AgentInfo* agent_info, const char* br
 
   close(file_handle);
 
+  status = hsa_code_object_reader_destroy(code_obj_rdr);
+  CHECK_STATUS("Error in destroying code object reader", status);
+
   // Update output parameter
   *code_desc = kernelSymbol;
   return true;

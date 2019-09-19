@@ -45,6 +45,7 @@ class TestPMgr : public TestAql {
  public:
   typedef hsa_ext_amd_aql_pm4_packet_t packet_t;
   explicit TestPMgr(TestAql* t);
+  ~TestPMgr();
   bool Setup();
   bool Run();
 

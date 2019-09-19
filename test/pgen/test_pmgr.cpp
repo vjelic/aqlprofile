@@ -125,3 +125,10 @@ TestPMgr::TestPMgr(TestAql* t) : TestAql(t), api_(NULL) {
   dummy_signal_.handle = 0;
   packet_signal_ = dummy_signal_;
 }
+
+TestPMgr::~TestPMgr() {
+  if (packet_signal_.handle != 0) {
+    hsa_status_t status = hsa_signal_destroy(packet_signal_);
+    TEST_ASSERT(status == HSA_STATUS_SUCCESS);
+  }
+}

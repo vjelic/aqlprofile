@@ -53,6 +53,8 @@ class TestPGenPmc : public TestPGen {
     profile_ = hsa_ven_amd_aqlprofile_profile_t{};
   }
 
+  ~TestPGenPmc() { delete [] profile_.events; }
+
   bool Initialize(int arg_cnt, char** arg_list) {
     std::vector<hsa_ven_amd_aqlprofile_event_t> event_vec;
 

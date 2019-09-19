@@ -36,16 +36,22 @@ template <class Kernel, class Test> bool RunKernel(int argc, char* argv[], int c
 
   // Create test kernel object
   Kernel test_kernel;
-  TestAql* test_aql = new TestHsa(&test_kernel);
-  test_aql = new Test(test_aql);
+  TestAql* test_hsa = new TestHsa(&test_kernel);
+  TEST_ASSERT(test_hsa != NULL);
+  if (test_hsa == NULL) return false;
+  TestAql* test_aql = new Test(test_hsa);
   TEST_ASSERT(test_aql != NULL);
-  if (test_aql == NULL) return 1;
+  if (test_aql == NULL) {
+    delete test_hsa;
+    return false;
+  }
 
   // Initialization of Hsa Runtime
   ret_val = test_aql->Initialize(argc, argv);
   if (ret_val == false) {
     std::cerr << "Error in the test initialization" << std::endl;
     // TEST_ASSERT(ret_val);
+    delete test_aql;
     return false;
   }
 
@@ -53,6 +59,7 @@ template <class Kernel, class Test> bool RunKernel(int argc, char* argv[], int c
   ret_val = test_aql->Setup();
   if (ret_val == false) {
     std::cerr << "Error in creating hsa resources" << std::endl;
+    delete test_aql;
     TEST_ASSERT(ret_val);
     return false;
   }
@@ -63,6 +70,8 @@ template <class Kernel, class Test> bool RunKernel(int argc, char* argv[], int c
     ret_val = test_aql->Run();
     if (ret_val == false) {
       std::cerr << "Error in running the test kernel" << std::endl;
+      test_aql->Cleanup();
+      delete test_aql;
       TEST_ASSERT(ret_val);
       return false;
     }

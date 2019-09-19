@@ -63,6 +63,18 @@ int main(int argc, char* argv[]) {
   const bool scan_enable = (getenv("AQLPROFILE_SCAN") != NULL);
   const bool trace_enable = (getenv("AQLPROFILE_TRACE") != NULL);
 
+  int scan_step = 1;
+  const char* step_env = getenv("AQLPROFILE_SCAN_STEP");
+  if (step_env!= NULL) {
+    int step = atoi(step_env);
+    if (step <= 0) {
+      std::cerr << "Error in setting environment variable AQLPROFILE_SCAN_STEP=" << step_env
+                << ", it should be greater than or equal to 1."<< std::endl;
+      return 1;
+    }
+    scan_step = step;
+  }
+
   if (!trace_enable) {
     std::clog.rdbuf(NULL);
   }
@@ -124,7 +136,7 @@ int main(int argc, char* argv[]) {
       const int event_id_max = 128;
       for (unsigned i = 0; i < HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER; ++i) {
         for (unsigned j = 0; j < block_index_max; ++j) {
-          for (unsigned k = 0; k <= event_id_max; ++k) {
+          for (unsigned k = 0; k <= event_id_max; k += scan_step) {
             fflush(stdout);
             fprintf(stderr, " %d %d %d                 \r", i, j, k);
             fflush(stderr);
