@@ -1,29 +1,97 @@
-# same events on vg10/vg20/mi100
-# copied from:
-#   vg10# http://adcweb02.amd.com/orlvalid/regspec/web_regspec/greenland/regspec/greenland_chip/internal/registers/register_table/utcl2/vml2pl/mc_vm_l2_perfcounter0_cfg.html
-#   vg20# http://adcweb02.amd.com/orlvalid/regspec/web_regspec/vega20/regspec/vega20_chip/internal/registers/register_table/utcl2/vml2pl/mc_vm_l2_perfcounter0_cfg.html
-#   mi100#http://adcweb02.amd.com/orlvalid/regspec/web_regspec/mi100/regspec/mi100_chip/internal/registers/register_table/utcl2/vml2pl/mc_vm_l2_perfcounter0_cfg.html
- A value of 0 means count cycles, otherwise selects event to count. When PERF_MODE is one of the latency counters this is the event that is used to indicate the start. Note that when counting latency it is expected that there is always an end event before another start event is seen, and there is always one and only one start event for every end event. Behavior is undefined if these are violated. Latency counters do not begin until the start trigger has been triggered. EVENTS NOT CORRECT NEED UPDATE VMC has 20 events. These events include event 1 = number of bank0 pte cache requests event 2 = number of bank0 pte cache hits event 3 = number of bank0 pte cache misses event 4 = number of bank1 pte cache requests event 5 = number of bank1 pte cache hits event 6 = number of bank1 pte cache misses event 7 = number of pde0 cache requests event 8 = number of pde0 cache hits event 9 = number of pde0 cache misses event 10 = number of faults event 11 = number of faults by client-id event 12 = number of bank0 4k pte cache hits event 13 = number of bank0 4k pte cache misses event 14 = number of bank0 bigk pte cache hits event 15 = number of bank0 bigk pte cache misses event 16 = number of bank1 4k pte cache hits event 17 = number of bank1 4k pte cache misses event 18 = number of bank1 bigk pte cache hits event 19 = number of bank1 bigk pte cache misses event 20 = number of l2 cache invalidations (if VM_INVALIDATE_REQUEST used one for every bit set)
+* same events on vg10/vg20/mi100
+* copied from:
+*   vg10: //mcip/pi/main/vml2/src/rtl/variant/greenland/gc_vml2_perf_events.txt
+*   vg20: //mcip/pi/main/vml2/src/rtl/variant/vega20/gc_vml2_perf_events.txt
+*   regspec is broken with only 20 events: http://adcweb02.amd.com/orlvalid/regspec/web_regspec/mi100/regspec/mi100_chip/internal/registers/register_table/utcl2/vml2pl/mc_vm_l2_perfcounter0_cfg.html
 
-MCVML2 8 (MC_VM_L2_PERFCOUNTER0_CFG & 1,2,3,4,5,6,7)
-     00 - MCVML2_PERF_SEL_CYCLES: Cycles
-     01 - MCVML2_PERF_SEL_BANK0_PTE_CACHE_REQ: number of bank0 pte cache requests
-     02 - MCVML2_PERF_SEL_BANK0_PTE_CACHE_HIT: number of bank0 pte cache hits
-     03 - MCVML2_PERF_SEL_BANK0_PTE_CACHE_MISS: number of bank0 pte cache misses
-     04 - MCVML2_PERF_SEL_BANK1_PTE_CACHE_REQ: number of bank1 pte cache requests
-     05 - MCVML2_PERF_SEL_BANK1_PTE_CACHE_HIT: number of bank1 pte cache hits
-     06 - MCVML2_PERF_SEL_BANK1_PTE_CACHE_MISS: number of bank1 pte cache misses
-     07 - MCVML2_PERF_SEL_PDE0_CACHE_REQ: number of pde0 cache requests
-     08 - MCVML2_PERF_SEL_PDE0_CACHE_HIT: number of pde0 cache hits
-     09 - MCVML2_PERF_SEL_PDE0_CACHE_MISS: number of pde0 cache misses
-     10 - MCVML2_PERF_SEL_FAULT: number of faults
-     11 - MCVML2_PERF_SEL_FAULT_BY_CLIENT: number of faults by client-id
-     12 - MCVML2_PERF_SEL_BANK0_4K_PTE_CACHE_HIT: number of bank0 4k pte cache hits
-     13 - MCVML2_PERF_SEL_BANK0_4K_PTE_CACHE_MISS: number of bank0 4k pte cache misses
-     14 - MCVML2_PERF_SEL_BANK0_BIGK_PTE_CACHE_HIT: number of bank0 bigk pte cache hits
-     15 - MCVML2_PERF_SEL_BANK0_BIGK_PTE_CACHE_MISS: number of bank0 bigk pte cache misses
-     16 - MCVML2_PERF_SEL_BANK1_4K_PTE_CACHE_HIT: number of bank1 4k pte cache hits
-     17 - MCVML2_PERF_SEL_BANK1_4K_PTE_CACHE_MISS: number of bank1 4k pte cache misses
-     18 - MCVML2_PERF_SEL_BANK1_BIGK_PTE_CACHE_HIT: number of bank1 bigk pte cache hits
-     19 - MCVML2_PERF_SEL_BANK1_BIGK_PTE_CACHE_MISS: number of bank1 bigk pte cache misses
-     20 - MCVML2_PERF_SEL_LS_CACHE_INV: number of l2 cache invalidations (if VM_INVALIDATE_REQUEST used one for every bit set)
+1   side0 bank0 pte cache bigk0 request
+2   side0 bank0 pte cache bigk0 hit
+3   side0 bank0 pte cache bigk0 miss
+4   side0 bank0 pte cache bigk0 update
+5   side0 bank0 pte cache 4k0 request
+6   side0 bank0 pte cache 4k0 hit
+7   side0 bank0 pte cache 4k0 miss
+8   side0 bank0 pte cache 4k0 update
+9   side0 bank0 aggregate request
+10  side0 bank0 aggregate hit
+11  side0 bank0 aggregate miss
+12  side0 bank0 aggregate update
+13  side0 bank1 pte cache bigk0 request
+14  side0 bank1 pte cache bigk0 hit
+15  side0 bank1 pte cache bigk0 miss
+16  side0 bank1 pte cache bigk0 update
+17  side0 bank1 pte cache 4k0 request
+18  side0 bank1 pte cache 4k0 hit
+19  side0 bank1 pte cache 4k0 miss
+20  side0 bank1 pte cache 4k0 update
+21  side0 bank1 aggregate request
+22  side0 bank1 aggregate hit
+23  side0 bank1 aggregate miss
+24  side0 bank1 aggregate update
+25  side0 bank2 pte cache bigk0 request
+26  side0 bank2 pte cache bigk0 hit
+27  side0 bank2 pte cache bigk0 miss
+28  side0 bank2 pte cache bigk0 update
+29  side0 bank2 pte cache 4k0 request
+30  side0 bank2 pte cache 4k0 hit
+31  side0 bank2 pte cache 4k0 miss
+32  side0 bank2 pte cache 4k0 update
+33  side0 bank2 aggregate request
+34  side0 bank2 aggregate hit
+35  side0 bank2 aggregate miss
+36  side0 bank2 aggregate update
+37  side0 bank3 pte cache bigk0 request
+38  side0 bank3 pte cache bigk0 hit
+39  side0 bank3 pte cache bigk0 miss
+40  side0 bank3 pte cache bigk0 update
+41  side0 bank3 pte cache 4k0 request
+42  side0 bank3 pte cache 4k0 hit
+43  side0 bank3 pte cache 4k0 miss
+44  side0 bank3 pte cache 4k0 update
+45  side0 bank3 aggregate request
+46  side0 bank3 aggregate hit
+47  side0 bank3 aggregate miss
+48  side0 bank3 aggregate update
+49  fault retry
+50  fault no retry
+51  fault interrupt
+52  walker pde0 cache request
+53  walker pde0 cache hit
+54  walker pde0 cache miss
+55  walker pde0 cache update
+56  walker pde0 cache pte
+57  walker pde1 cache request
+58  walker pde1 cache hit
+59  walker pde1 cache miss
+60  walker pde1 cache update
+61  walker pde1 cache pte
+62  walker pde2 cache request
+63  walker pde2 cache hit
+64  walker pde2 cache miss
+65  walker pde2 cache update
+66  walker pde2 cache pte
+67  walker log inval
+68  walker log trans
+69  walker log trans skipped
+70  walker rdif request physical system
+71  walker rdif request physical system start (latency)
+72  walker rdif request physical system stop (latency)
+73  walker rdif request other
+74  walker rdif request other start (latency)
+75  walker rdif request other stop (latency)
+76  walker qos request
+77  walker qos hit (fetch skipped)
+78  walker qos miss (fetch issued)
+79  walker level0 request
+80  walker level1 request
+81  walker level2 request
+82  walker level3 request
+83  walker level0 request start (latency)
+84  walker level0 request stop (latency)
+85  walker level1 request start (latency)
+86  walker level1 request stop (latency)
+87  walker level2 request start (latency)
+88  walker level2 request stop (latency)
+89  walker level3 request start (latency)
+90  walker level3 request stop (latency)
+

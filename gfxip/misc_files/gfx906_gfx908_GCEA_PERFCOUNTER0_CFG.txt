@@ -1,6 +1,6 @@
-# copied from
-#   vg20: http://adcweb02.amd.com/orlvalid/regspec/web_regspec/vega20/regspec/vega20_chip/internal/registers/register_table/ea/gc_ea/gcea_perfcounter0_cfg.html
-#   mi100: http://adcweb02.amd.com/orlvalid/regspec/web_regspec/mi100/regspec/mi100_chip/internal/registers/register_table/ea/gc_ea/gcea_perfcounter0_cfg.html
+* copied from
+*   vg20: http://adcweb02.amd.com/orlvalid/regspec/web_regspec/vega20/regspec/vega20_chip/internal/registers/register_table/ea/gc_ea/gcea_perfcounter0_cfg.html
+*   mi100: http://adcweb02.amd.com/orlvalid/regspec/web_regspec/mi100/regspec/mi100_chip/internal/registers/register_table/ea/gc_ea/gcea_perfcounter0_cfg.html
 A value of 0 means count cycles, otherwise selects event to count. When PERF_MODE is one of the latency counters this is the event that is used to indicate the start. Note that when counting latency it is expected that there is always an end event before another start event is seen, and there is always one and only one start event for every end event. Behavior is undefined if these are violated. Latency counters do not begin until the start trigger has been triggered.
 -----------------------------------------------------------------------------------------------
 Event# | Block | Signal3:0 | Description

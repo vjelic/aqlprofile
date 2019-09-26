@@ -1,6 +1,6 @@
-# same events on VG10/VG20/MI100
-# events are copied from //mcip/pi/main/ats/src/meta/registers/ats.rdl
-# further info at: http://confluence.amd.com/display/BLTZ/ROCProfiler+Library?preview=/51298049/154149105/ATC_ATCL2_Perf_Counters.docx
+* same events on VG10/VG20/MI100
+* events are copied from //mcip/pi/main/ats/src/meta/registers/ats.rdl
+* further info at: http://confluence.amd.com/display/BLTZ/ROCProfiler+Library?preview=/51298049/154149105/ATC_ATCL2_Perf_Counters.docx
 ATHUB:ATS Perf Events
 
 Note that when counting latency it is expected that there is always an end event before another start event is seen, and there is always one and only one start event for every end event. Behavior is undefined if these are violated. Latency counters do not begin until the start trigger has been triggered.

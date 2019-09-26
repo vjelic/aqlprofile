@@ -5,7 +5,7 @@ from collections import OrderedDict
 
 # blocks: 1) covered by .rai file; 2)missing in .rai, and are specified in misc files
 BLOCKS = [ "CPC", "CPF", "GDS", "GRBM", "SPI", "SQ", "SX", "TA", "TCA", "TCC", "TCP", "TD", "GRBM_SE",
-           "GCEA", "ATC", "ATCL2", "MCVML2"]
+           "GCEA", "ATCL2", "MCVML2", "ATC" ]
 
 class CfgHandler:
   '''A handler to deal with user-specified configurations'''
@@ -22,7 +22,7 @@ class CfgHandler:
     #       e.g., gfx8_ellesmere_chip_interface.rai
     #  misc: <path>/misc_files/*<gfxip>_*<block>_*,
     #       e.g., gfx906_gfx908_GCEA_PERFCOUNTER0_CFG.txt
-    if sym != ".rai": sym = sym + '_*'
+    if sym != ".rai": sym = sym + '_*[!~]'
     # first, try to find exact match
     files = glob.glob('*/*' + gfxip +'_*' + sym)
     # not found, then try to find pattern match (gfx9x: gfx9/gfx906/gfx908)

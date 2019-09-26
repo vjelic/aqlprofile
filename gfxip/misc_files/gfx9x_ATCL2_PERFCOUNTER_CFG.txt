@@ -1,6 +1,6 @@
-# same events on VG10/VG20/MI100
-# ATCL2 perf counters. Copied from //mcip/pi/main/atcl2/src/meta/registers/atcl2pfcntl.rdl
-# further info at: http://confluence.amd.com/display/BLTZ/ROCProfiler+Library?preview=/51298049/154149105/ATC_ATCL2_Perf_Counters.docx
+* same events on VG10/VG20/MI100
+* ATCL2 perf counters. Copied from //mcip/pi/main/atcl2/src/meta/registers/atcl2pfcntl.rdl
+* further info at: http://confluence.amd.com/display/BLTZ/ROCProfiler+Library?preview=/51298049/154149105/ATC_ATCL2_Perf_Counters.docx
 
 # Event1 : number of L1 requests
 # Event2 : number of bank0 requests
