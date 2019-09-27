@@ -22,10 +22,11 @@ $ export CMAKE_DEBUG_TRACE=1 # 1 to enable debug tracing
 
 To build with the current installed ROCM:
 
-$ cd ../aqlprofile
+$ export CMAKE_PREFIX_PATH=/opt/rocm/lib:/opt/rocm/include/hsa
+
+$ cd .../aqlprofile
 $ mkdir build
 $ cd build
-$ export CMAKE_PREFIX_PATH=/opt/rocm/lib:/opt/rocm/include/hsa
 $ cmake ..
 $ make
 
@@ -35,10 +36,10 @@ Need to use 'clang' compiler:
 $ export CXX=/usr/bin/clang++
 $ export CC=/usr/bin/clang
 
-'mygen' make target to regenerate the headers from full set of gfxip headers
+'mygen' make target to regenerate the headers from full set of gfxip headers:
 $ make mygen
 
-To reset the generated headers	
+To reset the generated headers:
 $ make mygenreset
 
 To run the test:
