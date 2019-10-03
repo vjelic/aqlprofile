@@ -25,7 +25,7 @@ def parse_nrai_event(handler, m, ngroups, pref, pattern_trim, pattern_norm, out,
     p = re.compile('[,-/]')
     event_descr = p.sub(' ', event_descr)
     # format the event desc
-    event_name = '_'.join(event_descr.split()[:8])
+    event_name = '_'.join(event_descr.split()[:9])
     # add block suffix and change to uppercase
     event_name = (block+'_'+event_name).upper()
     # get rid of '(' and ')'

@@ -5126,37 +5126,37 @@
   ></metric>
   # ATC counters
   <metric
-    name="ATC_A_VALUE_OF_0_MEANS_COUNT_CYCLES_OTHERWISE" block=ATC event=0 descr="A value of 0 means count cycles  otherwise selects event to count "
+    name="ATC_A_VALUE_OF_0_MEANS_COUNT_CYCLES_OTHERWISE_SELECTS" block=ATC event=0 descr="A value of 0 means count cycles  otherwise selects event to count "
   ></metric>
   <metric
-    name="ATC_EVENT_START_FOR_STATISTICAL_MIN_SCLKS_FROM_ATC_RPB_REQ" block=ATC event=1 descr="event start for statistical min sclks from ATC_RPB_req translation request to RPB_ATC_ret completion"
+    name="ATC_EVENT_START_FOR_STATISTICAL_MIN_SCLKS_FROM_ATC_RPB_REQ_TRANSLATION" block=ATC event=1 descr="event start for statistical min sclks from ATC_RPB_req translation request to RPB_ATC_ret completion"
   ></metric>
   <metric
-    name="ATC_EVENT_END_FOR_STATISTICAL_MIN_SCLKS_FROM_ATC_RPB_REQ" block=ATC event=2 descr="event end for statistical min sclks from ATC_RPB_req translation request to RPB_ATC_ret completion"
+    name="ATC_EVENT_END_FOR_STATISTICAL_MIN_SCLKS_FROM_ATC_RPB_REQ_TRANSLATION" block=ATC event=2 descr="event end for statistical min sclks from ATC_RPB_req translation request to RPB_ATC_ret completion"
   ></metric>
   <metric
-    name="ATC_EVENT_START_FOR_STATISTICAL_MIN_SCLKS_FROM_ATC_RPB_REQ" block=ATC event=3 descr="event start for statistical min sclks from ATC_RPB_req page request to RPB_ATC_ret page return"
+    name="ATC_EVENT_START_FOR_STATISTICAL_MIN_SCLKS_FROM_ATC_RPB_REQ_PAGE" block=ATC event=3 descr="event start for statistical min sclks from ATC_RPB_req page request to RPB_ATC_ret page return"
   ></metric>
   <metric
-    name="ATC_EVENT_END_FOR_STATISTICAL_MIN_SCLKS_FROM_ATC_RPB_REQ" block=ATC event=4 descr="event end for statistical min sclks from ATC_RPB_req page request to RPB_ATC_ret page return"
+    name="ATC_EVENT_END_FOR_STATISTICAL_MIN_SCLKS_FROM_ATC_RPB_REQ_PAGE" block=ATC event=4 descr="event end for statistical min sclks from ATC_RPB_req page request to RPB_ATC_ret page return"
   ></metric>
   <metric
-    name="ATC_EVENT_START_FOR_STATISTICAL_MAX_SCLKS_FROM_ATC_RPB_REQ" block=ATC event=5 descr="event start for statistical max sclks from ATC_RPB_req translation request to RPB_ATC_ret completion"
+    name="ATC_EVENT_START_FOR_STATISTICAL_MAX_SCLKS_FROM_ATC_RPB_REQ_TRANSLATION" block=ATC event=5 descr="event start for statistical max sclks from ATC_RPB_req translation request to RPB_ATC_ret completion"
   ></metric>
   <metric
-    name="ATC_EVENT_END_FOR_STATISTICAL_MAX_SCLKS_FROM_ATC_RPB_REQ" block=ATC event=6 descr="event end for statistical max sclks from ATC_RPB_req translation request to RPB_ATC_ret completion"
+    name="ATC_EVENT_END_FOR_STATISTICAL_MAX_SCLKS_FROM_ATC_RPB_REQ_TRANSLATION" block=ATC event=6 descr="event end for statistical max sclks from ATC_RPB_req translation request to RPB_ATC_ret completion"
   ></metric>
   <metric
-    name="ATC_EVENT_START_FOR_STATISTICAL_MAX_SCLKS_FROM_ATC_RPB_REQ" block=ATC event=7 descr="event start for statistical max sclks from ATC_RPB_req page request to RPB_ATC_ret page return"
+    name="ATC_EVENT_START_FOR_STATISTICAL_MAX_SCLKS_FROM_ATC_RPB_REQ_PAGE" block=ATC event=7 descr="event start for statistical max sclks from ATC_RPB_req page request to RPB_ATC_ret page return"
   ></metric>
   <metric
-    name="ATC_EVENT_END_FOR_STATISTICAL_MAX_SCLKS_FROM_ATC_RPB_REQ" block=ATC event=8 descr="event end for statistical max sclks from ATC_RPB_req page request to RPB_ATC_ret page return"
+    name="ATC_EVENT_END_FOR_STATISTICAL_MAX_SCLKS_FROM_ATC_RPB_REQ_PAGE" block=ATC event=8 descr="event end for statistical max sclks from ATC_RPB_req page request to RPB_ATC_ret page return"
   ></metric>
   <metric
-    name="ATC_EVENT_START_FOR_MAX_SCLKS_FROM_ATS_L2_INVALIDATE" block=ATC event=9 descr="event start for max sclks from ATS_L2 invalidate request to L2_ATS invalidate ack"
+    name="ATC_EVENT_START_FOR_MAX_SCLKS_FROM_ATS_L2_INVALIDATE_REQUEST" block=ATC event=9 descr="event start for max sclks from ATS_L2 invalidate request to L2_ATS invalidate ack"
   ></metric>
   <metric
-    name="ATC_EVENT_END_FOR_MAX_SCLKS_FROM_ATS_L2_INVALIDATE" block=ATC event=10 descr="event end for max sclks from ATS_L2 invalidate request to L2_ATS invalidate ack"
+    name="ATC_EVENT_END_FOR_MAX_SCLKS_FROM_ATS_L2_INVALIDATE_REQUEST" block=ATC event=10 descr="event end for max sclks from ATS_L2 invalidate request to L2_ATS invalidate ack"
   ></metric>
   <metric
     name="ATC_NUMBER_OF_REQUESTS_FROM_L2" block=ATC event=11 descr="number of requests from L2"
@@ -5174,7 +5174,7 @@
     name="ATC_NUMBER_OF_PRI_REQUESTS_NOT_SATISFIED" block=ATC event=15 descr="number of pri requests not satisfied"
   ></metric>
   <metric
-    name="ATC_NUMBER_OF_INVALIDATE_REQUESTS_W_PASID_TO_GET" block=ATC event=16 descr="number of invalidate requests w PASID  to get a correct number"
+    name="ATC_NUMBER_OF_INVALIDATE_REQUESTS_W_PASID_TO_GET_A" block=ATC event=16 descr="number of invalidate requests w PASID  to get a correct number"
   ></metric>
   <metric
     name="ATC_NUMBER_OF_INVALIDATE_REQUESTS_W_OUT_PASID" block=ATC event=17 descr="number of invalidate requests w out PASID"
@@ -5186,15 +5186,15 @@
     name="ATC_NUMBER_OF_TIMES_1_TRANSLATIONS_RETURNED" block=ATC event=19 descr="number of times 1 translations returned"
   ></metric>
   <metric
-    name="ATC_NUMBER_OF_TIMES_2_8_TRANSLATIONS_RETURNED_NOT" block=ATC event=20 descr="number of times 2 8 translations returned not blocked by invalidations"
+    name="ATC_NUMBER_OF_TIMES_2_8_TRANSLATIONS_RETURNED_NOT_BLOCKED" block=ATC event=20 descr="number of times 2 8 translations returned not blocked by invalidations"
   ></metric>
   <metric
-    name="ATC_NUMBER_OF_TIMES_5_8_TRANSLATIONS_RETURNED_NOT" block=ATC event=21 descr="number of times 5 8 translations returned not blocked by invalidations"
+    name="ATC_NUMBER_OF_TIMES_5_8_TRANSLATIONS_RETURNED_NOT_BLOCKED" block=ATC event=21 descr="number of times 5 8 translations returned not blocked by invalidations"
   ></metric>
   <metric
-    name="ATC_NUMBER_OF_TIMES_SIZE_BIT_WAS_SET_ON" block=ATC event=22 descr="number of times size bit was set on non speculative transactions returned to L2 (>4K translation was returned)"
+    name="ATC_NUMBER_OF_TIMES_SIZE_BIT_WAS_SET_ON_NON" block=ATC event=22 descr="number of times size bit was set on non speculative transactions returned to L2 (>4K translation was returned)"
   ></metric>
   <metric
-    name="ATC_NUMBER_OF_INVALIDATE_REQUESTS_THAT_MATCHED_MULTIPLE_VMIDS" block=ATC event=23 descr="number of invalidate requests that matched multiple vmids event"
+    name="ATC_NUMBER_OF_INVALIDATE_REQUESTS_THAT_MATCHED_MULTIPLE_VMIDS_EVENT" block=ATC event=23 descr="number of invalidate requests that matched multiple vmids event"
   ></metric>
 </gfx906>
