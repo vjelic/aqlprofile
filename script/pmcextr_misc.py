@@ -17,7 +17,7 @@ def parse_nrai_event(handler, m, ngroups, pref, pattern_trim, pattern_norm, out,
     event_name = '_'.join([pref, event_suff, event_descr])
     event_name = pattern_trim.sub('', event_name)
     event_name = pattern_norm.sub('_', event_name)
-    event_name = pattern_norm.sub('_', event_name)
+    event_name = pattern_norm.sub('_', event_name).upper()
   else:
     # others, e.g., ATCL2/MCVML2/ATC
     event_name = event_suff
@@ -37,6 +37,8 @@ def parse_nrai_event(handler, m, ngroups, pref, pattern_trim, pattern_norm, out,
   if nth_event == 0:
     out.write("  # " + block + " counters\n")
 
+  # merge multi adjacent spaces into one
+  event_descr = re.sub(' +', ' ', event_descr)
   write_xml(out, event_name, block, str(event_ind), event_descr)
   print str(event_ind) + ' : ' + event_name
 

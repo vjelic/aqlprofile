@@ -35,6 +35,8 @@ def parse_event(rec_pattern, record, block, out):
   descr = re.sub("\s*,", ",", descr)
   descr = re.sub("\s+$", "", descr)
   descr = re.sub(",$", ".", descr)
+  # merge multi adjacent spaces into one
+  descr = re.sub(' +', ' ', descr)
   pmcextr_misc.write_xml(out, event_name, block, str(event_id), descr)
 
   return True
