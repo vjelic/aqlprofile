@@ -1824,355 +1824,361 @@
     name="SQ_DUMMY_END" block=SQ event=183 descr="Just a placeholding enum to indicate the end of real SQ performance counter. Not a real performance counter."
   ></metric>
   <metric
-    name="SQ_ICACHE_INPUT_VALID_READY" block=SQ event=256 descr="Successful Transaction (per-SQ, nondeterministic, unwindowed)"
+    name="SQ_DUMMY_LAST" block=SQ event=255 descr="Just a placeholding enum to separate SQ from SQC counters. Not a real performance counter."
   ></metric>
   <metric
-    name="SQ_ICACHE_INPUT_VALID_READYB" block=SQ event=257 descr="Input stalled by SQC (per-SQ, nondeterministic, unwindowed)"
+    name="SQC_ICACHE_INPUT_VALID_READY" block=SQ event=256 descr="Successful Transaction (per-SQ, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_ICACHE_INPUT_VALIDB" block=SQ event=258 descr="SQC starved (per-SQ, nondeterministic, unwindowed)"
+    name="SQC_ICACHE_INPUT_VALID_READYB" block=SQ event=257 descr="Input stalled by SQC (per-SQ, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_DCACHE_INPUT_VALID_READY" block=SQ event=259 descr="Successful Transaction (per-SQ, nondeterministic, unwindowed)"
+    name="SQC_ICACHE_INPUT_VALIDB" block=SQ event=258 descr="SQC starved (per-SQ, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_DCACHE_INPUT_VALID_READYB" block=SQ event=260 descr="Input stalled by SQC (per-SQ, nondeterministic, unwindowed)"
+    name="SQC_DCACHE_INPUT_VALID_READY" block=SQ event=259 descr="Successful Transaction (per-SQ, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_DCACHE_INPUT_VALIDB" block=SQ event=261 descr="SQC starved (per-SQ, nondeterministic, unwindowed)"
+    name="SQC_DCACHE_INPUT_VALID_READYB" block=SQ event=260 descr="Input stalled by SQC (per-SQ, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_TC_REQ" block=SQ event=262 descr="Total number of TC requests that were issued by instruction and constant caches. (No-Masking, nondeterministic)"
+    name="SQC_DCACHE_INPUT_VALIDB" block=SQ event=261 descr="SQC starved (per-SQ, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_TC_INST_REQ" block=SQ event=263 descr="Number of insruction requests to the TC (No-Masking, nondeterministic)"
+    name="SQC_TC_REQ" block=SQ event=262 descr="Total number of TC requests that were issued by instruction and constant caches. (No-Masking, nondeterministic)"
   ></metric>
   <metric
-    name="SQ_TC_DATA_READ_REQ" block=SQ event=264 descr="Number of data read requests to the TC (No-Masking, nondeterministic)"
+    name="SQC_TC_INST_REQ" block=SQ event=263 descr="Number of insruction requests to the TC (No-Masking, nondeterministic)"
   ></metric>
   <metric
-    name="SQ_TC_DATA_WRITE_REQ" block=SQ event=265 descr="Number of data write requests to the TC (No-Masking, nondeterministic)"
+    name="SQC_TC_DATA_READ_REQ" block=SQ event=264 descr="Number of data read requests to the TC (No-Masking, nondeterministic)"
   ></metric>
   <metric
-    name="SQ_TC_DATA_ATOMIC_REQ" block=SQ event=266 descr="Number of data atomic requests to the TC (No-Masking, nondeterministic)"
+    name="SQC_TC_DATA_WRITE_REQ" block=SQ event=265 descr="Number of data write requests to the TC (No-Masking, nondeterministic)"
   ></metric>
   <metric
-    name="SQ_TC_STALL" block=SQ event=267 descr="Valid request stalled TC request interface (no-credits). (No-Masking, nondeterministic, unwindowed)"
+    name="SQC_TC_DATA_ATOMIC_REQ" block=SQ event=266 descr="Number of data atomic requests to the TC (No-Masking, nondeterministic)"
   ></metric>
   <metric
-    name="SQ_TC_STARVE" block=SQ event=268 descr="No requests sent to TC while credits available. (No-Masking, nondeterministic, unwindowed)"
+    name="SQC_TC_STALL" block=SQ event=267 descr="Valid request stalled TC request interface (no-credits). (No-Masking, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_ICACHE_BUSY_CYCLES" block=SQ event=269 descr="Clock cycles while cache is reporting that it is busy. (No-Masking, nondeterministic, unwindowed)"
+    name="SQC_TC_STARVE" block=SQ event=268 descr="No requests sent to TC while credits available. (No-Masking, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_ICACHE_REQ" block=SQ event=270 descr="Number of requests. (per-SQ, per-Bank)"
+    name="SQC_ICACHE_BUSY_CYCLES" block=SQ event=269 descr="Clock cycles while cache is reporting that it is busy. (No-Masking, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_ICACHE_HITS" block=SQ event=271 descr="Number of cache hits. (per-SQ, per-Bank, nondeterministic)"
+    name="SQC_ICACHE_REQ" block=SQ event=270 descr="Number of requests. (per-SQ, per-Bank)"
   ></metric>
   <metric
-    name="SQ_ICACHE_MISSES" block=SQ event=272 descr="Number of cache misses, includes uncached requests. (per-SQ, per-Bank, nondeterministic)"
+    name="SQC_ICACHE_HITS" block=SQ event=271 descr="Number of cache hits. (per-SQ, per-Bank, nondeterministic)"
   ></metric>
   <metric
-    name="SQ_ICACHE_MISSES_DUPLICATE" block=SQ event=273 descr="Number of misses that were duplicates (access to a non-resident, miss pending CL). (per-SQ, per-Bank, nondeterministic)"
+    name="SQC_ICACHE_MISSES" block=SQ event=272 descr="Number of cache misses, includes uncached requests. (per-SQ, per-Bank, nondeterministic)"
   ></metric>
   <metric
-    name="SQ_ICACHE_INVAL_INST" block=SQ event=274 descr="Number of cache invalidations caused by instructions (No-Masking)"
+    name="SQC_ICACHE_MISSES_DUPLICATE" block=SQ event=273 descr="Number of misses that were duplicates (access to a non-resident, miss pending CL). (per-SQ, per-Bank, nondeterministic)"
   ></metric>
   <metric
-    name="SQ_ICACHE_INVAL_ASYNC" block=SQ event=275 descr="Number of asynchronous invalidates (surface sync, register write, etc.) (No-Masking, unwindowed)"
+    name="SQC_ICACHE_INVAL_INST" block=SQ event=274 descr="Number of cache invalidations caused by instructions (No-Masking)"
   ></metric>
   <metric
-    name="SQ_ICACHE_INPUT_STALL_ARB_NO_GRANT" block=SQ event=276 descr="Number of arbitration stalls due to lost arbitration to other SQs. (per-SQ, nondeterministic, unwindowed)"
+    name="SQC_ICACHE_INVAL_ASYNC" block=SQ event=275 descr="Number of asynchronous invalidates (surface sync, register write, etc.) (No-Masking, unwindowed)"
   ></metric>
   <metric
-    name="SQ_ICACHE_INPUT_STALL_BANK_READYB" block=SQ event=277 descr="Number of arbitration stalls due to bank stalling. (per-SQ, nondeterministic, unwindowed)"
+    name="SQC_ICACHE_INPUT_STALL_ARB_NO_GRANT" block=SQ event=276 descr="Number of arbitration stalls due to lost arbitration to other SQs. (per-SQ, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_ICACHE_CACHE_STALLED" block=SQ event=278 descr="Number of cache stalls. (per-Bank, nondeterministic, unwindowed)"
+    name="SQC_ICACHE_INPUT_STALL_BANK_READYB" block=SQ event=277 descr="Number of arbitration stalls due to bank stalling. (per-SQ, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_ICACHE_CACHE_STALL_INFLIGHT_NONZERO" block=SQ event=279 descr="Number of cycles stalled because allocated line has nonzero inflight. (per-Bank, nondeterministic, unwindowed)"
+    name="SQC_ICACHE_CACHE_STALLED" block=SQ event=278 descr="Number of cache stalls. (per-Bank, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_ICACHE_CACHE_STALL_INFLIGHT_MAX" block=SQ event=280 descr="Number of cycles stalled on a hit CL but inflight counter is maxed out. (per-Bank, nondeterministic, unwindowed)"
+    name="SQC_ICACHE_CACHE_STALL_INFLIGHT_NONZERO" block=SQ event=279 descr="Number of cycles stalled because allocated line has nonzero inflight. (per-Bank, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_ICACHE_CACHE_STALL_OUTPUT" block=SQ event=281 descr="Number of cycles stalled at cache controller output. (per-Bank, nondeterministic, unwindowed)"
+    name="SQC_ICACHE_CACHE_STALL_INFLIGHT_MAX" block=SQ event=280 descr="Number of cycles stalled on a hit CL but inflight counter is maxed out. (per-Bank, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_ICACHE_CACHE_STALL_OUTPUT_MISS_FIFO" block=SQ event=282 descr="Number of cycles stalled because the miss FIFO is full. (per-Bank, nondeterministic, unwindowed)"
+    name="SQC_ICACHE_CACHE_STALL_OUTPUT" block=SQ event=281 descr="Number of cycles stalled at cache controller output. (per-Bank, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_ICACHE_CACHE_STALL_OUTPUT_HIT_FIFO" block=SQ event=283 descr="Number of cycles stalled because a hit FIFO is full. (per-Bank, nondeterministic, unwindowed)"
+    name="SQC_ICACHE_CACHE_STALL_OUTPUT_MISS_FIFO" block=SQ event=282 descr="Number of cycles stalled because the miss FIFO is full. (per-Bank, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_ICACHE_CACHE_STALL_OUTPUT_TC_IF" block=SQ event=284 descr="Number of cycles stalled because the TC request interface is stalled. (per-Bank, nondeterministic, unwindowed)"
+    name="SQC_ICACHE_CACHE_STALL_OUTPUT_HIT_FIFO" block=SQ event=283 descr="Number of cycles stalled because a hit FIFO is full. (per-Bank, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_ICACHE_STALL_OUTXBAR_ARB_NO_GRANT" block=SQ event=285 descr="Number of arbitration stalls due to lost arbitration for the output port. (per-Bank, nondeterministic, unwindowed)"
+    name="SQC_ICACHE_CACHE_STALL_OUTPUT_TC_IF" block=SQ event=284 descr="Number of cycles stalled because the TC request interface is stalled. (per-Bank, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_ICACHE_PREFETCH_1" block=SQ event=286 descr="Number of +1 prefetch requests granted. (per-SQ)"
+    name="SQC_ICACHE_STALL_OUTXBAR_ARB_NO_GRANT" block=SQ event=285 descr="Number of arbitration stalls due to lost arbitration for the output port. (per-Bank, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_ICACHE_PREFETCH_2" block=SQ event=287 descr="Number of +2 prefetch requests granted. (per-SQ)"
+    name="SQC_ICACHE_PREFETCH_1" block=SQ event=286 descr="Number of +1 prefetch requests granted. (per-SQ)"
   ></metric>
   <metric
-    name="SQ_ICACHE_PREFETCH_FILTERED" block=SQ event=288 descr="Number of prefetch requests filtered out. (per-SQ)"
+    name="SQC_ICACHE_PREFETCH_2" block=SQ event=287 descr="Number of +2 prefetch requests granted. (per-SQ)"
   ></metric>
   <metric
-    name="SQ_DCACHE_BUSY_CYCLES" block=SQ event=289 descr="Clock cycles while cache is reporting that it is busy. (No-Masking, nondeterministic, unwindowed)"
+    name="SQC_ICACHE_PREFETCH_FILTERED" block=SQ event=288 descr="Number of prefetch requests filtered out. (per-SQ)"
   ></metric>
   <metric
-    name="SQ_DCACHE_REQ" block=SQ event=290 descr="Number of requests (post-bank-serialization). (per-SQ, per-Bank)"
+    name="SQC_DCACHE_BUSY_CYCLES" block=SQ event=289 descr="Clock cycles while cache is reporting that it is busy. (No-Masking, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_DCACHE_HITS" block=SQ event=291 descr="Number of cache hits. (per-SQ, per-Bank, nondeterministic)"
+    name="SQC_DCACHE_REQ" block=SQ event=290 descr="Number of requests (post-bank-serialization). (per-SQ, per-Bank)"
   ></metric>
   <metric
-    name="SQ_DCACHE_MISSES" block=SQ event=292 descr="Number of cache misses, includes uncached requests. (per-SQ, per-Bank, nondeterministic)"
+    name="SQC_DCACHE_HITS" block=SQ event=291 descr="Number of cache hits. (per-SQ, per-Bank, nondeterministic)"
   ></metric>
   <metric
-    name="SQ_DCACHE_MISSES_DUPLICATE" block=SQ event=293 descr="Number of misses that were duplicates (access to a non-resident, miss pending CL). (per-SQ, per-Bank, nondeterministic)"
+    name="SQC_DCACHE_MISSES" block=SQ event=292 descr="Number of cache misses, includes uncached requests. (per-SQ, per-Bank, nondeterministic)"
   ></metric>
   <metric
-    name="SQ_DCACHE_HIT_LRU_READ" block=SQ event=294 descr="Number of HIT_LRU read requests. (per-SQ, per-Bank)"
+    name="SQC_DCACHE_MISSES_DUPLICATE" block=SQ event=293 descr="Number of misses that were duplicates (access to a non-resident, miss pending CL). (per-SQ, per-Bank, nondeterministic)"
   ></metric>
   <metric
-    name="SQ_DCACHE_MISS_EVICT_READ" block=SQ event=295 descr="Number of MISS_EVICT read requests. (per-SQ, per-Bank)"
+    name="SQC_DCACHE_HIT_LRU_READ" block=SQ event=294 descr="Number of HIT_LRU read requests. (per-SQ, per-Bank)"
   ></metric>
   <metric
-    name="SQ_DCACHE_WC_LRU_WRITE" block=SQ event=296 descr="Number of WC_LRU write requests. (per-SQ, per-Bank)"
+    name="SQC_DCACHE_MISS_EVICT_READ" block=SQ event=295 descr="Number of MISS_EVICT read requests. (per-SQ, per-Bank)"
   ></metric>
   <metric
-    name="SQ_DCACHE_WT_EVICT_WRITE" block=SQ event=297 descr="Number of WT_EVICT write requests. (per-SQ, per-Bank)"
+    name="SQC_DCACHE_WC_LRU_WRITE" block=SQ event=296 descr="Number of WC_LRU write requests. (per-SQ, per-Bank)"
   ></metric>
   <metric
-    name="SQ_DCACHE_ATOMIC" block=SQ event=298 descr="Number of atomic requests. (per-SQ, per-Bank)"
+    name="SQC_DCACHE_WT_EVICT_WRITE" block=SQ event=297 descr="Number of WT_EVICT write requests. (per-SQ, per-Bank)"
   ></metric>
   <metric
-    name="SQ_DCACHE_VOLATILE" block=SQ event=299 descr="Number of volatile cache requests. (per-SQ, per-Bank)"
+    name="SQC_DCACHE_ATOMIC" block=SQ event=298 descr="Number of atomic requests. (per-SQ, per-Bank)"
   ></metric>
   <metric
-    name="SQ_DCACHE_INVAL_INST" block=SQ event=300 descr="Number of cache invalidations caused by instructions (No-Masking)"
+    name="SQC_DCACHE_VOLATILE" block=SQ event=299 descr="Number of volatile cache requests. (per-SQ, per-Bank)"
   ></metric>
   <metric
-    name="SQ_DCACHE_INVAL_ASYNC" block=SQ event=301 descr="Number of asynchronous invalidates (surface sync, register write, etc.) (No-Masking, unwindowed)"
+    name="SQC_DCACHE_INVAL_INST" block=SQ event=300 descr="Number of cache invalidations caused by instructions (No-Masking)"
   ></metric>
   <metric
-    name="SQ_DCACHE_INVAL_VOLATILE_INST" block=SQ event=302 descr="Number of volatile cache invalidations caused by instructions (No-Masking)"
+    name="SQC_DCACHE_INVAL_ASYNC" block=SQ event=301 descr="Number of asynchronous invalidates (surface sync, register write, etc.) (No-Masking, unwindowed)"
   ></metric>
   <metric
-    name="SQ_DCACHE_INVAL_VOLATILE_ASYNC" block=SQ event=303 descr="Number of asynchronous volatile invalidates (surface sync, register write, etc.) (No-Masking, unwindowed)"
+    name="SQC_DCACHE_INVAL_VOLATILE_INST" block=SQ event=302 descr="Number of volatile cache invalidations caused by instructions (No-Masking)"
   ></metric>
   <metric
-    name="SQ_DCACHE_WB_INST" block=SQ event=304 descr="Number of cache write-backs caused by instructions (No-Masking)"
+    name="SQC_DCACHE_INVAL_VOLATILE_ASYNC" block=SQ event=303 descr="Number of asynchronous volatile invalidates (surface sync, register write, etc.) (No-Masking, unwindowed)"
   ></metric>
   <metric
-    name="SQ_DCACHE_WB_ASYNC" block=SQ event=305 descr="Number of asynchronous cache write-backs (surface sync, register write, etc.) (No-Masking, unwindowed)"
+    name="SQC_DCACHE_WB_INST" block=SQ event=304 descr="Number of cache write-backs caused by instructions (No-Masking)"
   ></metric>
   <metric
-    name="SQ_DCACHE_WB_VOLATILE_INST" block=SQ event=306 descr="Number of volatile cache write-backs caused by instructions (No-Masking)"
+    name="SQC_DCACHE_WB_ASYNC" block=SQ event=305 descr="Number of asynchronous cache write-backs (surface sync, register write, etc.) (No-Masking, unwindowed)"
   ></metric>
   <metric
-    name="SQ_DCACHE_WB_VOLATILE_ASYNC" block=SQ event=307 descr="Number of asynchronous volatile cache write-backs (surface sync, register write, etc.) (No-Masking, unwindowed)"
+    name="SQC_DCACHE_WB_VOLATILE_INST" block=SQ event=306 descr="Number of volatile cache write-backs caused by instructions (No-Masking)"
   ></metric>
   <metric
-    name="SQ_DCACHE_INPUT_STALL_ARB_NO_GRANT" block=SQ event=308 descr="Number of arbitration stalls due to lost arbitration to other SQs. (per-SQ, nondeterministic, unwindowed)"
+    name="SQC_DCACHE_WB_VOLATILE_ASYNC" block=SQ event=307 descr="Number of asynchronous volatile cache write-backs (surface sync, register write, etc.) (No-Masking, unwindowed)"
   ></metric>
   <metric
-    name="SQ_DCACHE_INPUT_STALL_BANK_READYB" block=SQ event=309 descr="Number of arbitration stalls due to bank stalling. (per-SQ, nondeterministic, unwindowed)"
+    name="SQC_DCACHE_INPUT_STALL_ARB_NO_GRANT" block=SQ event=308 descr="Number of arbitration stalls due to lost arbitration to other SQs. (per-SQ, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_DCACHE_CACHE_STALLED" block=SQ event=310 descr="Number of cache stalls. (per-Bank, nondeterministic, unwindowed)"
+    name="SQC_DCACHE_INPUT_STALL_BANK_READYB" block=SQ event=309 descr="Number of arbitration stalls due to bank stalling. (per-SQ, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_DCACHE_CACHE_STALL_INFLIGHT_MAX" block=SQ event=311 descr="Number of cycles stalled on a hit CL but inflight counter is maxed out. (per-Bank, nondeterministic, unwindowed)"
+    name="SQC_DCACHE_CACHE_STALLED" block=SQ event=310 descr="Number of cache stalls. (per-Bank, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_DCACHE_CACHE_STALL_OUTPUT" block=SQ event=312 descr="Number of cycles stalled at cache controller output. (per-Bank, nondeterministic, unwindowed)"
+    name="SQC_DCACHE_CACHE_STALL_INFLIGHT_MAX" block=SQ event=311 descr="Number of cycles stalled on a hit CL but inflight counter is maxed out. (per-Bank, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_DCACHE_CACHE_STALL_EVICT" block=SQ event=313 descr="Number of cycles stalled trying to do an evict. (per-Bank, nondeterministic, unwindowed)"
+    name="SQC_DCACHE_CACHE_STALL_OUTPUT" block=SQ event=312 descr="Number of cycles stalled at cache controller output. (per-Bank, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_DCACHE_CACHE_STALL_UNORDERED" block=SQ event=314 descr="Number of cycles stalled due to an unordered access conflict. (per-Bank, nondeterministic, unwindowed)"
+    name="SQC_DCACHE_CACHE_STALL_EVICT" block=SQ event=313 descr="Number of cycles stalled trying to do an evict. (per-Bank, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_DCACHE_CACHE_STALL_ALLOC_UNAVAILABLE" block=SQ event=315 descr="Number of cycles stalled due to not being able to allocate a line. (per-Bank, nondeterministic, unwindowed)"
+    name="SQC_DCACHE_CACHE_STALL_UNORDERED" block=SQ event=314 descr="Number of cycles stalled due to an unordered access conflict. (per-Bank, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_DCACHE_CACHE_STALL_FORCE_EVICT" block=SQ event=316 descr="Number of cycles stalled due to having to force an eviction. (per-Bank, nondeterministic, unwindowed)"
+    name="SQC_DCACHE_CACHE_STALL_ALLOC_UNAVAILABLE" block=SQ event=315 descr="Number of cycles stalled due to not being able to allocate a line. (per-Bank, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_DCACHE_CACHE_STALL_MULTI_FLUSH" block=SQ event=317 descr="Number of cycles stalled due to multiple flushes. (per-Bank, nondeterministic, unwindowed)"
+    name="SQC_DCACHE_CACHE_STALL_FORCE_EVICT" block=SQ event=316 descr="Number of cycles stalled due to having to force an eviction. (per-Bank, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_DCACHE_CACHE_STALL_FLUSH_DONE" block=SQ event=318 descr="Number of cycles stalled inserting flush done tokens into pipe. (per-Bank, nondeterministic, unwindowed)"
+    name="SQC_DCACHE_CACHE_STALL_MULTI_FLUSH" block=SQ event=317 descr="Number of cycles stalled due to multiple flushes. (per-Bank, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_DCACHE_CACHE_STALL_OUTPUT_MISS_FIFO" block=SQ event=319 descr="Number of cycles stalled because the miss FIFO is full. (per-Bank, nondeterministic, unwindowed)"
+    name="SQC_DCACHE_CACHE_STALL_FLUSH_DONE" block=SQ event=318 descr="Number of cycles stalled inserting flush done tokens into pipe. (per-Bank, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_DCACHE_CACHE_STALL_OUTPUT_HIT_FIFO" block=SQ event=320 descr="Number of cycles stalled because a hit FIFO is full. (per-Bank, nondeterministic, unwindowed)"
+    name="SQC_DCACHE_CACHE_STALL_OUTPUT_MISS_FIFO" block=SQ event=319 descr="Number of cycles stalled because the miss FIFO is full. (per-Bank, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_DCACHE_CACHE_STALL_OUTPUT_TC_IF" block=SQ event=321 descr="Number of cycles stalled because the TC request interface is stalled. (per-Bank, nondeterministic, unwindowed)"
+    name="SQC_DCACHE_CACHE_STALL_OUTPUT_HIT_FIFO" block=SQ event=320 descr="Number of cycles stalled because a hit FIFO is full. (per-Bank, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_DCACHE_STALL_OUTXBAR_ARB_NO_GRANT" block=SQ event=322 descr="Number of arbitration stalls due to lost arbitration for the output port. (per-Bank, nondeterministic, unwindowed)"
+    name="SQC_DCACHE_CACHE_STALL_OUTPUT_TC_IF" block=SQ event=321 descr="Number of cycles stalled because the TC request interface is stalled. (per-Bank, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_DCACHE_REQ_READ_1" block=SQ event=323 descr="Number of constant cache 1 dw read requests. (per-SQ)"
+    name="SQC_DCACHE_STALL_OUTXBAR_ARB_NO_GRANT" block=SQ event=322 descr="Number of arbitration stalls due to lost arbitration for the output port. (per-Bank, nondeterministic, unwindowed)"
   ></metric>
   <metric
-    name="SQ_DCACHE_REQ_READ_2" block=SQ event=324 descr="Number of constant cache 2 dw read requests. (per-SQ)"
+    name="SQC_DCACHE_REQ_READ_1" block=SQ event=323 descr="Number of constant cache 1 dw read requests. (per-SQ)"
   ></metric>
   <metric
-    name="SQ_DCACHE_REQ_READ_4" block=SQ event=325 descr="Number of constant cache 4 dw read requests. (per-SQ)"
+    name="SQC_DCACHE_REQ_READ_2" block=SQ event=324 descr="Number of constant cache 2 dw read requests. (per-SQ)"
   ></metric>
   <metric
-    name="SQ_DCACHE_REQ_READ_8" block=SQ event=326 descr="Number of constant cache 8 dw read requests. (per-SQ)"
+    name="SQC_DCACHE_REQ_READ_4" block=SQ event=325 descr="Number of constant cache 4 dw read requests. (per-SQ)"
   ></metric>
   <metric
-    name="SQ_DCACHE_REQ_READ_16" block=SQ event=327 descr="Number of constant cache 16 dw read requests. (per-SQ)"
+    name="SQC_DCACHE_REQ_READ_8" block=SQ event=326 descr="Number of constant cache 8 dw read requests. (per-SQ)"
   ></metric>
   <metric
-    name="SQ_DCACHE_REQ_TIME" block=SQ event=328 descr="Number of constant cache timestamp requests. (per-SQ)"
+    name="SQC_DCACHE_REQ_READ_16" block=SQ event=327 descr="Number of constant cache 16 dw read requests. (per-SQ)"
   ></metric>
   <metric
-    name="SQ_DCACHE_REQ_WRITE_1" block=SQ event=329 descr="Number of constant cache 1 dw write requests. (per-SQ)"
+    name="SQC_DCACHE_REQ_TIME" block=SQ event=328 descr="Number of constant cache timestamp requests. (per-SQ)"
   ></metric>
   <metric
-    name="SQ_DCACHE_REQ_WRITE_2" block=SQ event=330 descr="Number of constant cache 2 dw write requests. (per-SQ)"
+    name="SQC_DCACHE_REQ_WRITE_1" block=SQ event=329 descr="Number of constant cache 1 dw write requests. (per-SQ)"
   ></metric>
   <metric
-    name="SQ_DCACHE_REQ_WRITE_4" block=SQ event=331 descr="Number of constant cache 4 dw write requests. (per-SQ)"
+    name="SQC_DCACHE_REQ_WRITE_2" block=SQ event=330 descr="Number of constant cache 2 dw write requests. (per-SQ)"
   ></metric>
   <metric
-    name="SQ_DCACHE_REQ_ATC_PROBE" block=SQ event=332 descr="Number of constant cache atc probe requests. (per-SQ)"
+    name="SQC_DCACHE_REQ_WRITE_4" block=SQ event=331 descr="Number of constant cache 4 dw write requests. (per-SQ)"
   ></metric>
   <metric
-    name="SQ_SQ_DCACHE_REQS" block=SQ event=333 descr="Number of constant requests from SQ before any serialization (per-SQ)"
+    name="SQC_DCACHE_REQ_ATC_PROBE" block=SQ event=332 descr="Number of constant cache atc probe requests. (per-SQ)"
   ></metric>
   <metric
-    name="SQ_DCACHE_FLAT_REQ" block=SQ event=334 descr="Number of constant flat requests (per-SQ)"
+    name="SQC_SQ_DCACHE_REQS" block=SQ event=333 descr="Number of constant requests from SQ before any serialization (per-SQ)"
   ></metric>
   <metric
-    name="SQ_DCACHE_NONFLAT_REQ" block=SQ event=335 descr="Number of constant non-flat requests (per-SQ)"
+    name="SQC_DCACHE_FLAT_REQ" block=SQ event=334 descr="Number of constant flat requests (per-SQ)"
   ></metric>
   <metric
-    name="SQ_ICACHE_INFLIGHT_LEVEL" block=SQ event=336 descr="Level Counter: # total outstanding transactions in instruction cache (per-SQ, nondeterministic)"
+    name="SQC_DCACHE_NONFLAT_REQ" block=SQ event=335 descr="Number of constant non-flat requests (per-SQ)"
   ></metric>
   <metric
-    name="SQ_DCACHE_INFLIGHT_LEVEL" block=SQ event=337 descr="Level Counter: # total outstanding transactions in data cache (per-SQ, nondeterministic)"
+    name="SQC_ICACHE_INFLIGHT_LEVEL" block=SQ event=336 descr="Level Counter: # total outstanding transactions in instruction cache (per-SQ, nondeterministic)"
   ></metric>
   <metric
-    name="SQ_TC_INFLIGHT_LEVEL" block=SQ event=338 descr="Level Counter: total outstanding requests to TC (No-Masking, nondeterministic)"
+    name="SQC_DCACHE_INFLIGHT_LEVEL" block=SQ event=337 descr="Level Counter: # total outstanding transactions in data cache (per-SQ, nondeterministic)"
   ></metric>
   <metric
-    name="SQ_ICACHE_TC_INFLIGHT_LEVEL" block=SQ event=339 descr="Level Counter: # of outstanding instruction requests to TC (No-Masking, nondeterministic)"
+    name="SQC_TC_INFLIGHT_LEVEL" block=SQ event=338 descr="Level Counter: total outstanding requests to TC (No-Masking, nondeterministic)"
   ></metric>
   <metric
-    name="SQ_DCACHE_TC_INFLIGHT_LEVEL" block=SQ event=340 descr="Level Counter: # of outstanding data requests to TC (No-Masking, nondeterministic)"
+    name="SQC_ICACHE_TC_INFLIGHT_LEVEL" block=SQ event=339 descr="Level Counter: # of outstanding instruction requests to TC (No-Masking, nondeterministic)"
   ></metric>
   <metric
-    name="SQ_ICACHE_GATCL1_TRANSLATION_MISS" block=SQ event=341 descr="Total ICACHE gatcl1 translation misses"
+    name="SQC_DCACHE_TC_INFLIGHT_LEVEL" block=SQ event=340 descr="Level Counter: # of outstanding data requests to TC (No-Masking, nondeterministic)"
   ></metric>
   <metric
-    name="SQ_ICACHE_GATCL1_PERMISSION_MISS" block=SQ event=342 descr="Total ICACHE gatcl1 permission misses"
+    name="SQC_ICACHE_GATCL1_TRANSLATION_MISS" block=SQ event=341 descr="Total ICACHE gatcl1 translation misses"
   ></metric>
   <metric
-    name="SQ_ICACHE_GATCL1_TRANSLATION_HIT" block=SQ event=343 descr="Total ICACHE gatcl1 translation hits"
+    name="SQC_ICACHE_GATCL1_PERMISSION_MISS" block=SQ event=342 descr="Total ICACHE gatcl1 permission misses"
   ></metric>
   <metric
-    name="SQ_ICACHE_GATCL1_REQUEST" block=SQ event=344 descr="Total ICACHE CLIENT_ATCL1 NORMAL requestes"
+    name="SQC_ICACHE_GATCL1_TRANSLATION_HIT" block=SQ event=343 descr="Total ICACHE gatcl1 translation hits"
   ></metric>
   <metric
-    name="SQ_ICACHE_GATCL1_STALL_INFLIGHT_MAX" block=SQ event=345 descr="Total ICACHE gatcl1 stalls due to inflight counter saturation"
+    name="SQC_ICACHE_GATCL1_REQUEST" block=SQ event=344 descr="Total ICACHE CLIENT_ATCL1 NORMAL requestes"
   ></metric>
   <metric
-    name="SQ_ICACHE_GATCL1_STALL_LRU_INFLIGHT" block=SQ event=346 descr="Total ICACHE gatcl1 stalls due to LRU cache line with traffic inflight"
+    name="SQC_ICACHE_GATCL1_STALL_INFLIGHT_MAX" block=SQ event=345 descr="Total ICACHE gatcl1 stalls due to inflight counter saturation"
   ></metric>
   <metric
-    name="SQ_ICACHE_GATCL1_LFIFO_FULL" block=SQ event=347 descr="Total ICACHE gatcl1 atcl2 latency hiding fifo full cycles"
+    name="SQC_ICACHE_GATCL1_STALL_LRU_INFLIGHT" block=SQ event=346 descr="Total ICACHE gatcl1 stalls due to LRU cache line with traffic inflight"
   ></metric>
   <metric
-    name="SQ_ICACHE_GATCL1_STALL_LFIFO_NOT_RES" block=SQ event=348 descr="Total ICACHE gatcl1 stalls due to atcl2 latency hiding fifo output not resident"
+    name="SQC_ICACHE_GATCL1_LFIFO_FULL" block=SQ event=347 descr="Total ICACHE gatcl1 atcl2 latency hiding fifo full cycles"
   ></metric>
   <metric
-    name="SQ_ICACHE_GATCL1_STALL_ATCL2_REQ_OUT_OF_CREDITS" block=SQ event=349 descr="Total ICACHE gatcl1 stalls due to atcl2_req out of credits"
+    name="SQC_ICACHE_GATCL1_STALL_LFIFO_NOT_RES" block=SQ event=348 descr="Total ICACHE gatcl1 stalls due to atcl2 latency hiding fifo output not resident"
   ></metric>
   <metric
-    name="SQ_ICACHE_GATCL1_ATCL2_INFLIGHT" block=SQ event=350 descr="The sum of ICACHE inflight ATCL1_ATCL2 requests per cycle"
+    name="SQC_ICACHE_GATCL1_STALL_ATCL2_REQ_OUT_OF_CREDITS" block=SQ event=349 descr="Total ICACHE gatcl1 stalls due to atcl2_req out of credits"
   ></metric>
   <metric
-    name="SQ_ICACHE_GATCL1_STALL_MISSFIFO_FULL" block=SQ event=351 descr="Total ICACHE gatcl1 stalls due to full miss fifo"
+    name="SQC_ICACHE_GATCL1_ATCL2_INFLIGHT" block=SQ event=350 descr="The sum of ICACHE inflight ATCL1_ATCL2 requests per cycle"
   ></metric>
   <metric
-    name="SQ_DCACHE_GATCL1_TRANSLATION_MISS" block=SQ event=352 descr="Total DCACHE gatcl1 translation misses"
+    name="SQC_ICACHE_GATCL1_STALL_MISSFIFO_FULL" block=SQ event=351 descr="Total ICACHE gatcl1 stalls due to full miss fifo"
   ></metric>
   <metric
-    name="SQ_DCACHE_GATCL1_PERMISSION_MISS" block=SQ event=353 descr="Total DCACHE gatcl1 permission misses"
+    name="SQC_DCACHE_GATCL1_TRANSLATION_MISS" block=SQ event=352 descr="Total DCACHE gatcl1 translation misses"
   ></metric>
   <metric
-    name="SQ_DCACHE_GATCL1_TRANSLATION_HIT" block=SQ event=354 descr="Total DCACHE gatcl1 translation hits"
+    name="SQC_DCACHE_GATCL1_PERMISSION_MISS" block=SQ event=353 descr="Total DCACHE gatcl1 permission misses"
   ></metric>
   <metric
-    name="SQ_DCACHE_GATCL1_REQUEST" block=SQ event=355 descr="Total DCACHE CLIENT_ATCL1 NORMAL requestes"
+    name="SQC_DCACHE_GATCL1_TRANSLATION_HIT" block=SQ event=354 descr="Total DCACHE gatcl1 translation hits"
   ></metric>
   <metric
-    name="SQ_DCACHE_GATCL1_STALL_INFLIGHT_MAX" block=SQ event=356 descr="Total DCACHE gatcl1 stalls due to inflight counter saturation"
+    name="SQC_DCACHE_GATCL1_REQUEST" block=SQ event=355 descr="Total DCACHE CLIENT_ATCL1 NORMAL requestes"
   ></metric>
   <metric
-    name="SQ_DCACHE_GATCL1_STALL_LRU_INFLIGHT" block=SQ event=357 descr="Total DCACHE gatcl1 stalls due to LRU cache line with traffic inflight"
+    name="SQC_DCACHE_GATCL1_STALL_INFLIGHT_MAX" block=SQ event=356 descr="Total DCACHE gatcl1 stalls due to inflight counter saturation"
   ></metric>
   <metric
-    name="SQ_DCACHE_GATCL1_LFIFO_FULL" block=SQ event=358 descr="Total DCACHE gatcl1 atcl2 latency hiding fifo full cycles"
+    name="SQC_DCACHE_GATCL1_STALL_LRU_INFLIGHT" block=SQ event=357 descr="Total DCACHE gatcl1 stalls due to LRU cache line with traffic inflight"
   ></metric>
   <metric
-    name="SQ_DCACHE_GATCL1_STALL_LFIFO_NOT_RES" block=SQ event=359 descr="Total DCACHE gatcl1 stalls due to atcl2 latency hiding fifo output not resident"
+    name="SQC_DCACHE_GATCL1_LFIFO_FULL" block=SQ event=358 descr="Total DCACHE gatcl1 atcl2 latency hiding fifo full cycles"
   ></metric>
   <metric
-    name="SQ_DCACHE_GATCL1_STALL_ATCL2_REQ_OUT_OF_CREDITS" block=SQ event=360 descr="Total DCACHE gatcl1 stalls due to atcl2_req out of credits"
+    name="SQC_DCACHE_GATCL1_STALL_LFIFO_NOT_RES" block=SQ event=359 descr="Total DCACHE gatcl1 stalls due to atcl2 latency hiding fifo output not resident"
   ></metric>
   <metric
-    name="SQ_DCACHE_GATCL1_ATCL2_INFLIGHT" block=SQ event=361 descr="The sum of DCACHE inflight ATCL1_ATCL2 requests per cycle"
+    name="SQC_DCACHE_GATCL1_STALL_ATCL2_REQ_OUT_OF_CREDITS" block=SQ event=360 descr="Total DCACHE gatcl1 stalls due to atcl2_req out of credits"
   ></metric>
   <metric
-    name="SQ_DCACHE_GATCL1_STALL_MISSFIFO_FULL" block=SQ event=362 descr="Total DCACHE gatcl1 stalls due to full miss fifo"
+    name="SQC_DCACHE_GATCL1_ATCL2_INFLIGHT" block=SQ event=361 descr="The sum of DCACHE inflight ATCL1_ATCL2 requests per cycle"
   ></metric>
   <metric
-    name="SQ_DCACHE_GATCL1_STALL_MULTI_MISS" block=SQ event=363 descr="Total DCACHE gatcl1 stalls due to arbitrated multiple misses"
+    name="SQC_DCACHE_GATCL1_STALL_MISSFIFO_FULL" block=SQ event=362 descr="Total DCACHE gatcl1 stalls due to full miss fifo"
   ></metric>
   <metric
-    name="SQ_DCACHE_GATCL1_HIT_FIFO_FULL" block=SQ event=364 descr="Total DCACHE gatcl1 hit fifo full cycles"
+    name="SQC_DCACHE_GATCL1_STALL_MULTI_MISS" block=SQ event=363 descr="Total DCACHE gatcl1 stalls due to arbitrated multiple misses"
   ></metric>
   <metric
-    name="SQ_ICACHE_UTCL1_INFLIGHT_LEVEL" block=SQ event=365 descr="Level Counter: # total transactions that are outstanding in UTCL1 of instruction cache (nondeterministic)"
+    name="SQC_DCACHE_GATCL1_HIT_FIFO_FULL" block=SQ event=364 descr="Total DCACHE gatcl1 hit fifo full cycles"
   ></metric>
   <metric
-    name="SQ_ICACHE_UTCL1_ALL_REQ" block=SQ event=366 descr="Total number of requests (all types) going to UTCL1 of instruction cache"
+    name="SQC_ICACHE_UTCL1_INFLIGHT_LEVEL" block=SQ event=365 descr="Level Counter: # total transactions that are outstanding in UTCL1 of instruction cache (nondeterministic)"
   ></metric>
   <metric
-    name="SQ_ICACHE_UTCL2_INFLIGHT_LEVEL" block=SQ event=367 descr="Level Counter: # total transactions that are outstanding in UTCL2 and originating from instruction cache (nondeterministic)"
+    name="SQC_ICACHE_UTCL1_ALL_REQ" block=SQ event=366 descr="Total number of requests (all types) going to UTCL1 of instruction cache"
   ></metric>
   <metric
-    name="SQ_ICACHE_UTCL2_ALL_REQ" block=SQ event=368 descr="Total number of requests (all types) going to UTCL2 and originating from instruction cache"
+    name="SQC_ICACHE_UTCL2_INFLIGHT_LEVEL" block=SQ event=367 descr="Level Counter: # total transactions that are outstanding in UTCL2 and originating from instruction cache (nondeterministic)"
   ></metric>
   <metric
-    name="SQ_DCACHE_UTCL1_INFLIGHT_LEVEL" block=SQ event=369 descr="Level Counter: # total transactions that are outstanding in UTCL1 of data cache (per-SQ, nondeterministic)"
+    name="SQC_ICACHE_UTCL2_ALL_REQ" block=SQ event=368 descr="Total number of requests (all types) going to UTCL2 and originating from instruction cache"
   ></metric>
   <metric
-    name="SQ_DCACHE_UTCL1_ALL_REQ" block=SQ event=370 descr="Total number of requests (all types) going to UTCL1 of data cache"
+    name="SQC_DCACHE_UTCL1_INFLIGHT_LEVEL" block=SQ event=369 descr="Level Counter: # total transactions that are outstanding in UTCL1 of data cache (per-SQ, nondeterministic)"
   ></metric>
   <metric
-    name="SQ_DCACHE_UTCL2_INFLIGHT_LEVEL" block=SQ event=371 descr="Level Counter: # total transactions that are outstanding in UTCL2 and originating from data cache (per-SQ, nondeterministic)"
+    name="SQC_DCACHE_UTCL1_ALL_REQ" block=SQ event=370 descr="Total number of requests (all types) going to UTCL1 of data cache"
   ></metric>
   <metric
-    name="SQ_DCACHE_UTCL2_ALL_REQ" block=SQ event=372 descr="Total number of requests (all types) going to UTCL2 and originating from data cache"
+    name="SQC_DCACHE_UTCL2_INFLIGHT_LEVEL" block=SQ event=371 descr="Level Counter: # total transactions that are outstanding in UTCL2 and originating from data cache (per-SQ, nondeterministic)"
+  ></metric>
+  <metric
+    name="SQC_DCACHE_UTCL2_ALL_REQ" block=SQ event=372 descr="Total number of requests (all types) going to UTCL2 and originating from data cache"
+  ></metric>
+  <metric
+    name="SQC_DUMMY_LAST" block=SQ event=373 descr="Just a placeholding enum to indicate the last SQC performance counter. Not a real performance counter."
   ></metric>
   # SX counters
   <metric

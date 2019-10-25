@@ -22,12 +22,10 @@ def parse_event(rec_pattern, record, block, out):
   # not a match, return
   if not m: return False
 
-  event_name = (block + "_" + m.group(2)).upper()
+  blk_name = block
   # for SQ block, events start with 'SQ' or 'SQC'
-  # but given that SQC is a sublock of SQ, we choose to rename 'SQC' to 'SQ';
-  # however, this causes events #255/#373 sharing the same name and desc, so
-  # here we skip the outputting of both
-  if event_name == "SQ_DUMMY_LAST": return True
+  if block == "SQ" and m.group(1).startswith('C'): blk_name += 'C'
+  event_name = (blk_name + "_" + m.group(2)).upper()
   event_id = int(m.group(4), 0)
   if not handler.is_event_specified(event_name, event_id, block): return True
   descr = m.group(3);
