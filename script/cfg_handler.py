@@ -4,8 +4,9 @@ import os, glob
 from collections import OrderedDict
 
 # blocks: 1) covered by .rai file; 2)missing in .rai, and are specified in misc files
+# GCEA disabled
 BLOCKS = [ "CPC", "CPF", "GDS", "GRBM", "SPI", "SQ", "SX", "TA", "TCA", "TCC", "TCP", "TD", "GRBM_SE",
-           "GCEA", "ATCL2", "MCVML2", "ATC", "SDMA" ]
+           "ATCL2", "MCVML2", "ATC", "SDMA" ]
 
 class CfgHandler:
   '''A handler to deal with user-specified configurations'''
