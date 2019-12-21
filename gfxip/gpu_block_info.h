@@ -29,6 +29,9 @@ enum CounterBlockAttr {
   CounterBlockTcAttr = 0x400,
   // Explicitly indexed blocks
   CounterBlockExplInstAttr = 0x800,
+  // SPM blocks
+  CounterBlockSpmGlobalAttr = 0x1000,
+  CounterBlockSpmSeAttr = 0x2000
 };
 
 // Register address corresponding to each counter
@@ -70,6 +73,8 @@ struct GpuBlockInfo {
   uint32_t attr;
   // Block delay info
   const BlockDelayInfo* delay_info;
+  // SPM block id
+  uint32_t spm_block_id;
 };
 
 // Block descriptor

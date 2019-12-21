@@ -56,6 +56,34 @@ enum CounterBlockId {
   LastCounterBlockId = HwInfoCounterBlockId,
 };
 
+/*
+ * SPM global and shader engine block IDs
+ */
+enum SpmGlobalBlockId {
+  SPM_GLOBAL_BLOCK_NAME_CPG = 0,
+  SPM_GLOBAL_BLOCK_NAME_CPC = 1,
+  SPM_GLOBAL_BLOCK_NAME_CPF = 2,
+  SPM_GLOBAL_BLOCK_NAME_GDS = 3,
+  SPM_GLOBAL_BLOCK_NAME_TCC = 4,
+  SPM_GLOBAL_BLOCK_NAME_TCA = 5,
+  SPM_GLOBAL_BLOCK_NAME_IA  = 6,
+  SPM_GLOBAL_BLOCK_NAME_TCS = 7,
+};
+
+enum SpmSeBlockId {
+  SPM_SE_BLOCK_NAME_CB  = 0,
+  SPM_SE_BLOCK_NAME_DB  = 1,
+  SPM_SE_BLOCK_NAME_PA  = 2,
+  SPM_SE_BLOCK_NAME_SX  = 3,
+  SPM_SE_BLOCK_NAME_SC  = 4,
+  SPM_SE_BLOCK_NAME_TA  = 5,
+  SPM_SE_BLOCK_NAME_TD  = 6,
+  SPM_SE_BLOCK_NAME_TCP = 7,
+  SPM_SE_BLOCK_NAME_SPI = 8,
+  SPM_SE_BLOCK_NAME_SQG = 9,
+  SPM_SE_BLOCK_NAME_VGT = 10,
+};
+
 // Number of block instances
 static const uint32_t CbCounterBlockNumInstances    = 4;
 static const uint32_t DbCounterBlockNumInstances    = 4;

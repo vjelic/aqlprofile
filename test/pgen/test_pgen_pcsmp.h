@@ -33,6 +33,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "util/test_assert.h"
 #include "pgen/test_pgen.h"
+#include "pgen/test_pgen_sqtt.h"
 
 // PC sampling callback data
 struct pcsmp_callback_data_t {

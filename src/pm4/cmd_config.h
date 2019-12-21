@@ -31,6 +31,7 @@ struct TraceConfig {
   uint32_t tokenMask2;
   // Sampling rate
   uint32_t sampleRate;
+  bool sq_spm_32_bit;
 
   void* control_buffer_ptr;
   void* data_buffer_ptr;

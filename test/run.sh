@@ -83,6 +83,7 @@ unset AQLPROFILE_PMC_PRIV
 unset AQLPROFILE_SQTT
 unset AQLPROFILE_SDMA
 unset AQLPROFILE_SCAN
+unset AQLPROFILE_SPM
 eval_test "simple convolution kernel dry run" $tbin
 
 # Run with PMC
@@ -91,6 +92,7 @@ unset AQLPROFILE_PMC_PRIV
 unset AQLPROFILE_SQTT
 unset AQLPROFILE_SDMA
 unset AQLPROFILE_SCAN
+unset AQLPROFILE_SPM
 eval_test "PMC test" $tbin
 
 # Run with SQTT
@@ -99,6 +101,7 @@ unset AQLPROFILE_PMC_PRIV
 export AQLPROFILE_SQTT=1
 unset AQLPROFILE_SDMA
 unset AQLPROFILE_SCAN
+unset AQLPROFILE_SPM
 eval_test "SQTT test" $tbin
 
 # Run with PCSMP
@@ -108,6 +111,7 @@ unset AQLPROFILE_SQTT
 export AQLPROFILE_PCSMP=1
 unset AQLPROFILE_SDMA
 unset AQLPROFILE_SCAN
+unset AQLPROFILE_SPM
 eval_test "PCSMP test" $tbin
 
 #valgrind --leak-check=full $tbin

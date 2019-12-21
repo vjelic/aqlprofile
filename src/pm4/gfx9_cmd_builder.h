@@ -244,6 +244,35 @@ class Gfx9CmdBuilder : public CmdBuilder {
     return read_counter;
   }
 
+  void BuildWriteRegDataPacket(CmdBuffer* cmdbuf, uint32_t dst_reg_addr,
+                               uint32_t* data, uint32_t count, bool wait) {
+    PM4MEC_WRITE_DATA cmd_data{};
+
+    // Initialize the command header
+    cmd_data.header.u32All = PM4_TYPE3_HDR(IT_WRITE_DATA, count + 4);
+
+    // ordinal2
+    cmd_data.bitfields2.dst_sel = dst_sel__mec_write_data__mem_mapped_register;  // mem-mapped reg
+    cmd_data.bitfields2.addr_incr = addr_incr__mec_write_data__do_not_increment_address;  // not increment address
+    cmd_data.bitfields2.wr_confirm = (MEC_WRITE_DATA_wr_confirm_enum)wait;
+
+    // ordinal3
+    cmd_data.bitfields3a.dst_mmreg_addr = dst_reg_addr;  // mem-mapped reg
+
+    // ordinal4
+    cmd_data.dst_mem_addr_hi = 0;  // mem-mapped reg
+
+    // Append the built command into output Command Buffer
+    APPEND_COMMAND_WRAPPER(cmdbuf, cmd_data);
+
+    // appending data dwords
+    for (uint32_t i = 0; i < count; i++) {
+      APPEND_COMMAND_WRAPPER(cmdbuf, data[i]);
+    }
+    const uint32_t NOP_dw = PM4_TYPE3_HDR(IT_NOP, 0x3FFF+2);
+    if (count & 1) APPEND_COMMAND_WRAPPER(cmdbuf, NOP_dw);
+  }
+
   void BuildIndirectBufferCmd(CmdBuffer* cmdbuf, const void* cmd_addr, std::size_t cmd_size) {
     // Verify the address is 4-byte aligned
     assert(!(uintptr_t(cmd_addr) & 0x3) && "IndirectBuffer address must be 4 byte aligned");

@@ -6,6 +6,7 @@
 class gfx8_cntx_prim {
  public:
   static const uint32_t GFXIP_LEVEL = 8;
+  static const uint32_t NUMBER_OF_BLOCKS = LastCounterBlockId + 1;
   static const uint32_t GRBM_GFX_INDEX_ADDR = mmGRBM_GFX_INDEX__CI__VI;
   static const uint32_t COMPUTE_PERFCOUNT_ENABLE_ADDR = mmCOMPUTE_PERFCOUNT_ENABLE__CI__VI;
   static const uint32_t RLC_PERFMON_CLK_CNTL_ADDR = mmRLC_PERFMON_CLK_CNTL__VI;
@@ -51,6 +52,7 @@ class gfx8_cntx_prim {
   static const uint32_t SDMA_COUNTER_BLOCK_NUM_INSTANCES = SdmaCounterBlockNumInstances;
 
   static const uint32_t RLC_SPM_PERFMON_CNTL__ADDR = mmRLC_SPM_PERFMON_CNTL__CI__VI;
+  static const uint32_t RLC_SPM_MC_CNTL__ADDR = 0;
   static const uint32_t RLC_SPM_PERFMON_RING_BASE_LO__ADDR = mmRLC_SPM_PERFMON_RING_BASE_LO__CI__VI;
   static const uint32_t RLC_SPM_PERFMON_RING_BASE_HI__ADDR = mmRLC_SPM_PERFMON_RING_BASE_HI__CI__VI;
   static const uint32_t RLC_SPM_PERFMON_RING_SIZE__ADDR = mmRLC_SPM_PERFMON_RING_SIZE__CI__VI;
@@ -59,6 +61,17 @@ class gfx8_cntx_prim {
   static const uint32_t RLC_SPM_GLOBAL_MUXSEL_DATA__ADDR = mmRLC_SPM_GLOBAL_MUXSEL_DATA__CI__VI;
   static const uint32_t RLC_SPM_SE_MUXSEL_ADDR__ADDR = mmRLC_SPM_SE_MUXSEL_ADDR__CI__VI;
   static const uint32_t RLC_SPM_SE_MUXSEL_DATA__ADDR = mmRLC_SPM_SE_MUXSEL_DATA__CI__VI;
+  static const uint32_t RLC_SPM_COUNTERS_PER_LINE = 16;
+  static const uint32_t RLC_SPM_TIMESTAMP_SIZE16 = 4;
+
+  union mux_info_t {
+    uint16_t data;
+    struct {
+      uint16_t counter  : 6;
+      uint16_t block    : 5;
+      uint16_t instance : 5;
+    } gfx;
+  };
 
   static const uint32_t SQ_BLOCK_ID = SqCounterBlockId;
   static const uint32_t SQ_BLOCK_SPM_ID = 9;
@@ -69,6 +82,19 @@ class gfx8_cntx_prim {
 
   static uint32_t Low32(const uint64_t& v) { return (uint32_t)v; }
   static uint32_t High32(const uint64_t& v) { return (uint32_t)(v >> 32); }
+
+  // SPM delay functions for global instance
+  static uint32_t get_spm_global_delay(const counter_des_t& counter_des, const uint32_t& instance_index) {
+    const auto* block_info = counter_des.block_info;
+    return block_info->delay_info[instance_index].val - 1;
+  }
+
+  // SPM delay functions for se instance
+  static uint32_t get_spm_se_delay(const counter_des_t& counter_des, const uint32_t& se_index, const uint32_t& instance_index) {
+    const auto* block_info = counter_des.block_info;
+    int delay_index = se_index * block_info->instance_count + instance_index;
+    return block_info->delay_info[delay_index].val - 1;
+  }
 
   // GRBM broadcasting mode
   static uint32_t grbm_broadcast_value() {
@@ -111,6 +137,17 @@ class gfx8_cntx_prim {
   static uint32_t grbm_se_sh_index_value(const uint32_t& se_index, const uint32_t& sh_index) {
     regGRBM_GFX_INDEX grbm_gfx_index{};
     grbm_gfx_index.bitfields.INSTANCE_BROADCAST_WRITES = 1;
+    grbm_gfx_index.bitfields.SE_INDEX = se_index;
+    grbm_gfx_index.bitfields.SH_INDEX = sh_index;
+    return grbm_gfx_index.u32All;
+  }
+
+  // GRBM SH/SE/BlockInstance indexing
+  static uint32_t grbm_inst_se_sh_index_value(const uint32_t& instance_index,
+                                              const uint32_t& se_index,
+                                              const uint32_t& sh_index) {
+    regGRBM_GFX_INDEX grbm_gfx_index{};
+    grbm_gfx_index.bitfields.INSTANCE_INDEX = instance_index;
     grbm_gfx_index.bitfields.SE_INDEX = se_index;
     grbm_gfx_index.bitfields.SH_INDEX = sh_index;
     return grbm_gfx_index.u32All;
@@ -161,7 +198,7 @@ class gfx8_cntx_prim {
     sq_cntr_sel.bits.SQC_BANK_MASK = 0xF;
     sq_cntr_sel.bits.SQC_CLIENT_MASK = 0xF;
     sq_cntr_sel.bits.PERF_SEL = counter_des.id;
-    sq_cntr_sel.bits.SPM_MODE = 1;
+    sq_cntr_sel.bits.SPM_MODE = 3; // PERFMON_SPM_MODE_32BIT_CLAMP
     return sq_cntr_sel.u32All;
   }
 
@@ -437,6 +474,39 @@ class gfx8_cntx_prim {
     select.bits.PERFCOUNTER_SELECT = counter_des.id;
     return select.u32All;
   }
+  static uint32_t spm_select_value(const counter_des_t& counter_des) {
+    regTCC_PERFCOUNTER0_SELECT__CI__VI select{};
+    select.bits.PERF_SEL = counter_des.id;
+    select.bits.CNTR_MODE = 1; // PERFMON_SPM_MODE_16BIT_CLAMP
+    return select.u32All;
+  }
+  static uint32_t spm_even_select_value(const counter_des_t& counter_des) {
+    regTCC_PERFCOUNTER0_SELECT__CI__VI select{};
+    select.bits.PERF_SEL = counter_des.id;
+    select.bits.CNTR_MODE = 1; // PERFMON_SPM_MODE_16BIT_CLAMP
+    return select.u32All;
+  }
+  static uint32_t spm_odd_select_value(const counter_des_t& counter_des) {
+    regTCC_PERFCOUNTER0_SELECT__CI__VI select{};
+    select.bits.PERF_SEL1 = counter_des.id;
+    select.bits.CNTR_MODE = 1; // PERFMON_SPM_MODE_16BIT_CLAMP
+    return select.u32All;
+  }
+  static mux_info_t spm_mux_ram_value(const counter_des_t& counter_des) {
+    return spm_mux_ram_value(counter_des.index, counter_des.block_info->spm_block_id, counter_des.block_des.index);
+  }
+  static mux_info_t spm_mux_ram_value(uint16_t counter, uint16_t block, uint16_t instance) {
+    mux_info_t mxinfo{0};
+    mxinfo.gfx.counter = counter;
+    mxinfo.gfx.block = block;
+    mxinfo.gfx.instance = instance;
+    return mxinfo;
+  }
+  static uint32_t spm_mux_ram_idx_incr(uint32_t idx) {
+    uint32_t incr_idx = ++idx;
+    if (!(incr_idx % RLC_SPM_COUNTERS_PER_LINE)) incr_idx += RLC_SPM_COUNTERS_PER_LINE;
+    return incr_idx;
+  }
 
   // SRBM Registers values
   static uint32_t srbm_reset_value() {
@@ -484,6 +554,10 @@ class gfx8_cntx_prim {
   }
 
   // SPM trace routines
+  static uint32_t rlc_spm_mc_cntl_value() {
+    return 0;
+  }
+
   static uint32_t cp_perfmon_cntl_spm_start_value() {
     regCP_PERFMON_CNTL cp_perfmon_cntl{};
     cp_perfmon_cntl.bits.SPM_PERFMON_STATE__CI__VI = 1;
@@ -647,6 +721,11 @@ class gfx8_cntx_prim {
     regSQ_THREAD_TRACE_CTRL ctrl{};
     ctrl.bits.RESET_BUFFER = 1;
     return ctrl.u32All;
+  }
+
+  // SPM primitives
+  static uint16_t spm_timestamp_muxsel() {
+    return 0xF0F0;
   }
 };
 

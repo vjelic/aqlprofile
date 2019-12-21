@@ -235,6 +235,37 @@ class Gfx8CmdBuilder : public CmdBuilder {
     return read_counter;
   }
 
+  void BuildWriteRegDataPacket(CmdBuffer* cmdbuf, uint32_t dst_reg_addr,
+                               uint32_t* data, uint32_t count, bool wait) {
+    PM4CMDWRITEDATA cmd_data{};
+
+    // Initialize the command header
+    cmd_data.header.u32All = PM4_TYPE_3_HDR(IT_WRITE_DATA, count + 4, ShaderCompute, 0);
+
+    // ordinal2
+    cmd_data.dstSel = WRITE_DATA_DST_SEL_REGISTER;  // mem-mapped reg
+    cmd_data.wrOneAddr = 1;  // not increment address
+    cmd_data.wrConfirm = wait;  // wait for confirmation
+    cmd_data.atc__CI = atc_support_;
+    cmd_data.engineSel = WRITE_DATA_ENGINE_ME;  // engine select
+
+    // ordinal3
+    cmd_data.dstAddrLo = dst_reg_addr;  // mem-mapped reg
+
+    // ordinal4
+    cmd_data.dstAddrHi = 0;  // mem-mapped reg
+
+    // Append the built command into output Command Buffer
+    APPEND_COMMAND_WRAPPER(cmdbuf, cmd_data);
+
+    // appending data dwords
+    for (uint32_t i = 0; i < count; i++) {
+      APPEND_COMMAND_WRAPPER(cmdbuf, data[i]);
+    }
+    const uint32_t NOP_dw = PM4_TYPE_3_NOP_VI;
+    if (count & 1) APPEND_COMMAND_WRAPPER(cmdbuf, NOP_dw);
+  }
+
   void BuildIndirectBufferCmd(CmdBuffer* cmdbuf, const void* cmd_addr, std::size_t cmd_size) {
     PM4CMDINDIRECTBUFFER indirect_buffer;
     memset(&indirect_buffer, 0, sizeof(indirect_buffer));

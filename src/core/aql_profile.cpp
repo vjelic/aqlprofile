@@ -436,8 +436,10 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
       pm4_builder::ControlType* const control_ptr =
           reinterpret_cast<pm4_builder::ControlType*>(prefix_ptr + sizeof(uint32_t));
 
+      trace_config.sq_spm_32_bit = true;
       trace_config.se_number = tnumber;
       trace_config.se_vector = tvector;
+      trace_config.sampleRate = 10000;//tbd
       trace_config.control_buffer_ptr = control_ptr;
       trace_config.data_buffer_ptr = profile->output_buffer.ptr;
       trace_config.data_buffer_size = profile->output_buffer.size;

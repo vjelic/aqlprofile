@@ -3,7 +3,6 @@
 
 namespace gfxip {
 namespace gfx9 {
-
 /*
  * The following tables contain register addresses of the SQ counter registers
  */
@@ -30,10 +29,10 @@ static const CounterRegInfo SqCounterRegAddr[] = {
     {mmSQ_PERFCOUNTER15_SELECT, mmSQ_PERFCOUNTER_CTRL, mmSQ_PERFCOUNTER15_LO, mmSQ_PERFCOUNTER15_HI}};
 
 static const BlockDelayInfo SqBlockDelayInfo[] = {
-    {mmRLC_SPM_SQG_PERFMON_SAMPLE_DELAY, 0x0000002c},
-    {mmRLC_SPM_SQG_PERFMON_SAMPLE_DELAY, 0x00000029},
-    {mmRLC_SPM_SQG_PERFMON_SAMPLE_DELAY, 0x0000002a},
-    {mmRLC_SPM_SQG_PERFMON_SAMPLE_DELAY, 0x00000027},
+  {mmRLC_SPM_SQG_PERFMON_SAMPLE_DELAY, 0x0000002c},
+  {mmRLC_SPM_SQG_PERFMON_SAMPLE_DELAY, 0x00000029},
+  {mmRLC_SPM_SQG_PERFMON_SAMPLE_DELAY, 0x0000002a},
+  {mmRLC_SPM_SQG_PERFMON_SAMPLE_DELAY, 0x00000027},
 };
 
 /*
@@ -68,6 +67,12 @@ static const CounterRegInfo PaSuCounterRegAddr[] = {
     {mmPA_SU_PERFCOUNTER2_SELECT, 0, mmPA_SU_PERFCOUNTER2_LO, mmPA_SU_PERFCOUNTER2_HI},
     {mmPA_SU_PERFCOUNTER3_SELECT, 0, mmPA_SU_PERFCOUNTER3_LO, mmPA_SU_PERFCOUNTER3_HI}};
 
+static const BlockDelayInfo PaSuBlockDelayInfo[] = {
+    { mmRLC_SPM_PA_PERFMON_SAMPLE_DELAY, 0x00000022},
+    { mmRLC_SPM_PA_PERFMON_SAMPLE_DELAY, 0x00000022},
+    { mmRLC_SPM_PA_PERFMON_SAMPLE_DELAY, 0x00000020},
+    { mmRLC_SPM_PA_PERFMON_SAMPLE_DELAY, 0x00000020}};
+
 /*
  * PA_SC
  */
@@ -81,6 +86,15 @@ static const CounterRegInfo PaScCounterRegAddr[] = {
     {mmPA_SC_PERFCOUNTER6_SELECT, 0, mmPA_SC_PERFCOUNTER6_LO, mmPA_SC_PERFCOUNTER6_HI},
     {mmPA_SC_PERFCOUNTER7_SELECT, 0, mmPA_SC_PERFCOUNTER7_LO, mmPA_SC_PERFCOUNTER7_HI}};
 
+static const BlockDelayInfo PaScBlockDelayInfo[] = {
+    { mmRLC_SPM_SC_PERFMON_SAMPLE_DELAY, 0x00000026},
+    { mmRLC_SPM_SC_PERFMON_SAMPLE_DELAY, 0x00000026},
+    { mmRLC_SPM_SC_PERFMON_SAMPLE_DELAY, 0x00000022},
+    { mmRLC_SPM_SC_PERFMON_SAMPLE_DELAY, 0x00000022},
+    { mmRLC_SPM_SC_PERFMON_SAMPLE_DELAY, 0x00000023},
+    { mmRLC_SPM_SC_PERFMON_SAMPLE_DELAY, 0x00000023},
+    { mmRLC_SPM_SC_PERFMON_SAMPLE_DELAY, 0x00000021},
+    { mmRLC_SPM_SC_PERFMON_SAMPLE_DELAY, 0x00000021}};
 
 /*
  * SPI
@@ -93,6 +107,12 @@ static const CounterRegInfo SpiCounterRegAddr[] = {
     {mmSPI_PERFCOUNTER4_SELECT, 0, mmSPI_PERFCOUNTER4_LO, mmSPI_PERFCOUNTER4_HI},
     {mmSPI_PERFCOUNTER5_SELECT, 0, mmSPI_PERFCOUNTER5_LO, mmSPI_PERFCOUNTER5_HI}};
 
+static const BlockDelayInfo SpiBlockDelayInfo[] = {
+    { mmRLC_SPM_SPI_PERFMON_SAMPLE_DELAY, 0x0000002a},
+    { mmRLC_SPM_SPI_PERFMON_SAMPLE_DELAY, 0x0000002a},
+    { mmRLC_SPM_SPI_PERFMON_SAMPLE_DELAY, 0x00000027},
+    { mmRLC_SPM_SPI_PERFMON_SAMPLE_DELAY, 0x00000027}};
+
 /*
  * TCA
  */
@@ -101,6 +121,10 @@ static const CounterRegInfo TcaCounterRegAddr[] = {
     {mmTCA_PERFCOUNTER1_SELECT, 0, mmTCA_PERFCOUNTER1_LO, mmTCA_PERFCOUNTER1_HI},
     {mmTCA_PERFCOUNTER2_SELECT, 0, mmTCA_PERFCOUNTER2_LO, mmTCA_PERFCOUNTER2_HI},
     {mmTCA_PERFCOUNTER3_SELECT, 0, mmTCA_PERFCOUNTER3_LO, mmTCA_PERFCOUNTER3_HI}};
+
+static const BlockDelayInfo TcaBlockDelayInfo[] = {
+    { mmRLC_SPM_TCA_PERFMON_SAMPLE_DELAY, 0x00000018},
+    { mmRLC_SPM_TCA_PERFMON_SAMPLE_DELAY, 0x0000001c}};
 
 /*
  * TCC
@@ -111,6 +135,24 @@ static const CounterRegInfo TccCounterRegAddr[] = {
     {mmTCC_PERFCOUNTER2_SELECT, 0, mmTCC_PERFCOUNTER2_LO, mmTCC_PERFCOUNTER2_HI},
     {mmTCC_PERFCOUNTER3_SELECT, 0, mmTCC_PERFCOUNTER3_LO, mmTCC_PERFCOUNTER3_HI}};
 
+static const BlockDelayInfo TccBlockDelayInfo[] = {
+    { mmRLC_SPM_TCC_PERFMON_SAMPLE_DELAY, 0x0000000F},
+    { mmRLC_SPM_TCC_PERFMON_SAMPLE_DELAY, 0x00000015},
+    { mmRLC_SPM_TCC_PERFMON_SAMPLE_DELAY, 0x00000017},
+    { mmRLC_SPM_TCC_PERFMON_SAMPLE_DELAY, 0x0000001d},
+    { mmRLC_SPM_TCC_PERFMON_SAMPLE_DELAY, 0x0000001b},
+    { mmRLC_SPM_TCC_PERFMON_SAMPLE_DELAY, 0x00000017},
+    { mmRLC_SPM_TCC_PERFMON_SAMPLE_DELAY, 0x00000013},
+    { mmRLC_SPM_TCC_PERFMON_SAMPLE_DELAY, 0x0000000f},
+    { mmRLC_SPM_TCC_PERFMON_SAMPLE_DELAY, 0x00000014},
+    { mmRLC_SPM_TCC_PERFMON_SAMPLE_DELAY, 0x00000018},
+    { mmRLC_SPM_TCC_PERFMON_SAMPLE_DELAY, 0x0000001c},
+    { mmRLC_SPM_TCC_PERFMON_SAMPLE_DELAY, 0x00000020},
+    { mmRLC_SPM_TCC_PERFMON_SAMPLE_DELAY, 0x0000001d},
+    { mmRLC_SPM_TCC_PERFMON_SAMPLE_DELAY, 0x00000019},
+    { mmRLC_SPM_TCC_PERFMON_SAMPLE_DELAY, 0x00000015},
+    { mmRLC_SPM_TCC_PERFMON_SAMPLE_DELAY, 0x00000011}};
+
 /*
  * TCP
  */
@@ -119,6 +161,72 @@ static const CounterRegInfo TcpCounterRegAddr[] = {
     {mmTCP_PERFCOUNTER1_SELECT, 0, mmTCP_PERFCOUNTER1_LO, mmTCP_PERFCOUNTER1_HI},
     {mmTCP_PERFCOUNTER2_SELECT, 0, mmTCP_PERFCOUNTER2_LO, mmTCP_PERFCOUNTER2_HI},
     {mmTCP_PERFCOUNTER3_SELECT, 0, mmTCP_PERFCOUNTER3_LO, mmTCP_PERFCOUNTER3_HI}};
+
+static const BlockDelayInfo TcpBlockDelayInfo[] = {
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000030},  // se0
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x0000002e},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x0000002c},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x0000002a},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000028},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000026},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000024},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000022},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000020},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x0000001e},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x0000001c},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x0000001a},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000018},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000016},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000014},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000012},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x0000002c},  // se1
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x0000002a},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000028},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000026},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000024},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000022},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000020},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x0000001e},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x0000001c},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x0000001a},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000018},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000016},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000014},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000012},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000010},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x0000000e},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x0000002c},  // se2
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x0000002a},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000028},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000026},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000024},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000022},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000020},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x0000001e},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x0000001c},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x0000001a},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000018},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000016},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000014},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000012},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000010},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x0000000e},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x0000002c},  // se3
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000028},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000026},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000024},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000022},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000020},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x0000001e},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x0000001c},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x0000001a},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000018},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000016},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000014},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000012},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x00000010},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x0000000e},
+    { mmRLC_SPM_TCP_PERFMON_SAMPLE_DELAY, 0x0000000c}};
 
 /*
  * CB
@@ -129,6 +237,24 @@ static const CounterRegInfo CbCounterRegAddr[] = {
     {mmCB_PERFCOUNTER2_SELECT, 0, mmCB_PERFCOUNTER2_LO, mmCB_PERFCOUNTER2_HI},
     {mmCB_PERFCOUNTER3_SELECT, 0, mmCB_PERFCOUNTER3_LO, mmCB_PERFCOUNTER3_HI}};
 
+static const BlockDelayInfo CbBlockDelayInfo[] = {
+    { mmRLC_SPM_CB_PERFMON_SAMPLE_DELAY, 0x0000001d },
+    { mmRLC_SPM_CB_PERFMON_SAMPLE_DELAY, 0x00000008 },
+    { mmRLC_SPM_CB_PERFMON_SAMPLE_DELAY, 0x00000014 },
+    { mmRLC_SPM_CB_PERFMON_SAMPLE_DELAY, 0x00000011 },
+    { mmRLC_SPM_CB_PERFMON_SAMPLE_DELAY, 0x00000019 },
+    { mmRLC_SPM_CB_PERFMON_SAMPLE_DELAY, 0x00000004 },
+    { mmRLC_SPM_CB_PERFMON_SAMPLE_DELAY, 0x00000010 },
+    { mmRLC_SPM_CB_PERFMON_SAMPLE_DELAY, 0x0000000d },
+    { mmRLC_SPM_CB_PERFMON_SAMPLE_DELAY, 0x00000019 },
+    { mmRLC_SPM_CB_PERFMON_SAMPLE_DELAY, 0x00000005 },
+    { mmRLC_SPM_CB_PERFMON_SAMPLE_DELAY, 0x00000011 },
+    { mmRLC_SPM_CB_PERFMON_SAMPLE_DELAY, 0x0000000e },
+    { mmRLC_SPM_CB_PERFMON_SAMPLE_DELAY, 0x00000015 },
+    { mmRLC_SPM_CB_PERFMON_SAMPLE_DELAY, 0x00000000 },
+    { mmRLC_SPM_CB_PERFMON_SAMPLE_DELAY, 0x0000000c },
+    { mmRLC_SPM_CB_PERFMON_SAMPLE_DELAY, 0x00000009 }};
+
 /*
  * DB
  */
@@ -137,6 +263,24 @@ static const CounterRegInfo DbCounterRegAddr[] = {
     {mmDB_PERFCOUNTER1_SELECT, 0, mmDB_PERFCOUNTER1_LO, mmDB_PERFCOUNTER1_HI},
     {mmDB_PERFCOUNTER2_SELECT, 0, mmDB_PERFCOUNTER2_LO, mmDB_PERFCOUNTER2_HI},
     {mmDB_PERFCOUNTER3_SELECT, 0, mmDB_PERFCOUNTER3_LO, mmDB_PERFCOUNTER3_HI}};
+
+static const BlockDelayInfo DbBlockDelayInfo[] = {
+    { mmRLC_SPM_DB_PERFMON_SAMPLE_DELAY, 0x0000001b },
+    { mmRLC_SPM_DB_PERFMON_SAMPLE_DELAY, 0x0000000c },
+    { mmRLC_SPM_DB_PERFMON_SAMPLE_DELAY, 0x00000017 },
+    { mmRLC_SPM_DB_PERFMON_SAMPLE_DELAY, 0x00000010 },
+    { mmRLC_SPM_DB_PERFMON_SAMPLE_DELAY, 0x00000017 },
+    { mmRLC_SPM_DB_PERFMON_SAMPLE_DELAY, 0x00000008 },
+    { mmRLC_SPM_DB_PERFMON_SAMPLE_DELAY, 0x00000013 },
+    { mmRLC_SPM_DB_PERFMON_SAMPLE_DELAY, 0x0000000c },
+    { mmRLC_SPM_DB_PERFMON_SAMPLE_DELAY, 0x00000017 },
+    { mmRLC_SPM_DB_PERFMON_SAMPLE_DELAY, 0x00000009 },
+    { mmRLC_SPM_DB_PERFMON_SAMPLE_DELAY, 0x00000014 },
+    { mmRLC_SPM_DB_PERFMON_SAMPLE_DELAY, 0x0000000d },
+    { mmRLC_SPM_DB_PERFMON_SAMPLE_DELAY, 0x00000013 },
+    { mmRLC_SPM_DB_PERFMON_SAMPLE_DELAY, 0x00000008 },
+    { mmRLC_SPM_DB_PERFMON_SAMPLE_DELAY, 0x0000000f },
+    { mmRLC_SPM_DB_PERFMON_SAMPLE_DELAY, 0x00000008 }};
 
 /*
  * RLC
@@ -154,6 +298,12 @@ static const CounterRegInfo SxCounterRegAddr[] = {
     {mmSX_PERFCOUNTER2_SELECT, 0, mmSX_PERFCOUNTER2_LO, mmSX_PERFCOUNTER2_HI},
     {mmSX_PERFCOUNTER3_SELECT, 0, mmSX_PERFCOUNTER3_LO, mmSX_PERFCOUNTER3_HI}};
 
+static const BlockDelayInfo SxBlockDelayInfo[] = {
+    { mmRLC_SPM_SX_PERFMON_SAMPLE_DELAY, 0x00000006 },
+    { mmRLC_SPM_SX_PERFMON_SAMPLE_DELAY, 0x00000006 },
+    { mmRLC_SPM_SX_PERFMON_SAMPLE_DELAY, 0x00000008 },
+    { mmRLC_SPM_SX_PERFMON_SAMPLE_DELAY, 0x00000004 }};
+
 /*
  * TA
  */
@@ -161,12 +311,144 @@ static const CounterRegInfo TaCounterRegAddr[] = {
     {mmTA_PERFCOUNTER0_SELECT, 0, mmTA_PERFCOUNTER0_LO, mmTA_PERFCOUNTER0_HI},
     {mmTA_PERFCOUNTER1_SELECT, 0, mmTA_PERFCOUNTER1_LO, mmTA_PERFCOUNTER1_HI}};
 
+static const BlockDelayInfo TaBlockDelayInfo[] = {
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x0000002c },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x0000002a },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000028 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000026 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000024 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000022 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000020 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x0000001e },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x0000001c },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x0000001a },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000018 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000016 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000014 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000012 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000010 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x0000000e },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000028 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000026 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000025 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000023 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000021 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x0000001f },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x0000001d },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x0000001b },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000019 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000017 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000015 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000013 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000011 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x0000000f },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x0000000d },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x0000000b },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000028 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000026 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000024 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000022 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000020 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x0000001e },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x0000001c },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x0000001a },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000018 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000016 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000014 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000012 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000010 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x0000000e },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x0000000c },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x0000000a },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000027 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000025 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000023 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000021 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x0000001f },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x0000001d },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x0000001b },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000019 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000017 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000015 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000013 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000011 },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x0000000f },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x0000000d },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x0000000b },
+    { mmRLC_SPM_TA_PERFMON_SAMPLE_DELAY, 0x00000009 }};
+
 /*
  * TD
  */
 static const CounterRegInfo TdCounterRegAddr[] = {
     {mmTD_PERFCOUNTER0_SELECT, 0, mmTD_PERFCOUNTER0_LO, mmTD_PERFCOUNTER0_HI},
     {mmTD_PERFCOUNTER1_SELECT, 0, mmTD_PERFCOUNTER1_LO, mmTD_PERFCOUNTER1_HI}};
+
+static const BlockDelayInfo TdBlockDelayInfo[] = {
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x0000002c },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x0000002a },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000028 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000026 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000024 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000022 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000020 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x0000001e },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x0000001c },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x0000001a },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000018 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000016 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000014 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000012 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000010 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x0000000e },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000028 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000026 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000025 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000023 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000021 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x0000001f },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x0000001d },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x0000001b },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000019 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000017 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000015 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000013 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000011 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x0000000f },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x0000000d },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x0000000b },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000028 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000027 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000025 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000023 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000021 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x0000001f },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x0000001d },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x0000001b },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000019 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000017 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000015 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000013 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000011 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x0000000f },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x0000000d },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x0000000b },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000027 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000025 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000023 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000021 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x0000001f },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x0000001d },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x0000001b },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000019 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000017 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000015 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000013 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000011 },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x0000000f },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x0000000d },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x0000000b },
+    { mmRLC_SPM_TD_PERFMON_SAMPLE_DELAY, 0x00000009 }};
 
 /*
  * GDS
@@ -177,6 +459,10 @@ static const CounterRegInfo GdsCounterRegAddr[] = {
     {mmGDS_PERFCOUNTER2_SELECT, 0, mmGDS_PERFCOUNTER2_LO, mmGDS_PERFCOUNTER2_HI},
     {mmGDS_PERFCOUNTER3_SELECT, 0, mmGDS_PERFCOUNTER3_LO, mmGDS_PERFCOUNTER3_HI}};
 
+static const BlockDelayInfo GdsBlockDelayInfo[] = {
+    { mmRLC_SPM_GDS_PERFMON_SAMPLE_DELAY, 0x0000002d }
+};
+
 /*
  * VGT
  */
@@ -186,6 +472,12 @@ static const CounterRegInfo VgtCounterRegAddr[] = {
     {mmVGT_PERFCOUNTER2_SELECT, 0, mmVGT_PERFCOUNTER2_LO, mmVGT_PERFCOUNTER2_HI},
     {mmVGT_PERFCOUNTER3_SELECT, 0, mmVGT_PERFCOUNTER3_LO, mmVGT_PERFCOUNTER3_HI}};
 
+static const BlockDelayInfo VgtBlockDelayInfo[] = {
+    { mmRLC_SPM_VGT_PERFMON_SAMPLE_DELAY, 0x00000027 },
+    { mmRLC_SPM_VGT_PERFMON_SAMPLE_DELAY, 0x00000027 },
+    { mmRLC_SPM_VGT_PERFMON_SAMPLE_DELAY, 0x00000023 },
+    { mmRLC_SPM_VGT_PERFMON_SAMPLE_DELAY, 0x00000024 }};
+
 /*
  * IA
  */
@@ -194,6 +486,9 @@ static const CounterRegInfo IaCounterRegAddr[] = {
     {mmIA_PERFCOUNTER1_SELECT, 0, mmIA_PERFCOUNTER1_LO, mmIA_PERFCOUNTER1_HI},
     {mmIA_PERFCOUNTER2_SELECT, 0, mmIA_PERFCOUNTER2_LO, mmIA_PERFCOUNTER2_HI},
     {mmIA_PERFCOUNTER3_SELECT, 0, mmIA_PERFCOUNTER3_LO, mmIA_PERFCOUNTER3_HI}};
+
+static const BlockDelayInfo IaBlockDelayInfo[] = {
+    { mmRLC_SPM_IA_PERFMON_SAMPLE_DELAY, 0x00000032 }};
 
 /*
  * WD
@@ -211,6 +506,10 @@ static const CounterRegInfo CpcCounterRegAddr[] = {
     {mmCPC_PERFCOUNTER0_SELECT, 0, mmCPC_PERFCOUNTER0_LO, mmCPC_PERFCOUNTER0_HI},
     {mmCPC_PERFCOUNTER1_SELECT, 0, mmCPC_PERFCOUNTER1_LO, mmCPC_PERFCOUNTER1_HI}};
 
+static const BlockDelayInfo CpcBlockDelayInfo[] = {
+    { mmRLC_SPM_CPC_PERFMON_SAMPLE_DELAY, 0x0000002c}
+};
+
 /*
  * CPF
  */
@@ -218,12 +517,20 @@ static const CounterRegInfo CpfCounterRegAddr[] = {
     {mmCPF_PERFCOUNTER0_SELECT, 0, mmCPF_PERFCOUNTER0_LO, mmCPF_PERFCOUNTER0_HI},
     {mmCPF_PERFCOUNTER1_SELECT, 0, mmCPF_PERFCOUNTER1_LO, mmCPF_PERFCOUNTER1_HI}};
 
+static const BlockDelayInfo CpfBlockDelayInfo[] = {
+    { mmRLC_SPM_CPF_PERFMON_SAMPLE_DELAY, 0x00000032 }
+};
+
 /*
  * CPG
  */
 static const CounterRegInfo CpgCounterRegAddr[] = {
     {mmCPG_PERFCOUNTER0_SELECT, 0, mmCPG_PERFCOUNTER0_LO, mmCPG_PERFCOUNTER0_HI},
     {mmCPG_PERFCOUNTER1_SELECT, 0, mmCPG_PERFCOUNTER1_LO, mmCPG_PERFCOUNTER1_HI}};
+
+static const BlockDelayInfo CpgBlockDelayInfo[] = {
+    { mmRLC_SPM_CPG_PERFMON_SAMPLE_DELAY, 0x00000030 }
+};
 
 // RMI
 static const CounterRegInfo RmiCounterRegAddr[] = {
@@ -288,51 +595,53 @@ static const CounterRegInfo SdmaCounterRegAddr[] = {
 };
 
 // Counter block info table
+// SPM global blocks: CPG, CPC, CPF, GDS, TCC, TCA, IA, TCS
+// SPM shader engine blocks: CB, DB, SC, SX, TA, TD, TCP, VGT, SQG, SPI, PA
 // Counter block CB
-static const GpuBlockInfo CbCounterBlockInfo = {"CB", CbCounterBlockId, CbCounterBlockNumInstances, CbCounterBlockMaxEvent, CbCounterBlockNumCounters, CbCounterRegAddr, gfx9_cntx_prim::select_value<regCB_PERFCOUNTER0_SELECT>, CounterBlockSeAttr|CounterBlockCleanAttr};
+static const GpuBlockInfo CbCounterBlockInfo = {"CB", CbCounterBlockId, CbCounterBlockNumInstances, CbCounterBlockMaxEvent, CbCounterBlockNumCounters, CbCounterRegAddr, gfx9_cntx_prim::select_value<regCB_PERFCOUNTER0_SELECT>, CounterBlockSeAttr|CounterBlockCleanAttr, CbBlockDelayInfo, SPM_SE_BLOCK_NAME_CB};
 // Counter block DB
-static const GpuBlockInfo DbCounterBlockInfo = {"DB", DbCounterBlockId, DbCounterBlockNumInstances, DbCounterBlockMaxEvent, DbCounterBlockNumCounters, DbCounterRegAddr, gfx9_cntx_prim::select_value<regDB_PERFCOUNTER0_SELECT>, CounterBlockSeAttr|CounterBlockCleanAttr};
+static const GpuBlockInfo DbCounterBlockInfo = {"DB", DbCounterBlockId, DbCounterBlockNumInstances, DbCounterBlockMaxEvent, DbCounterBlockNumCounters, DbCounterRegAddr, gfx9_cntx_prim::select_value<regDB_PERFCOUNTER0_SELECT>, CounterBlockSeAttr|CounterBlockCleanAttr, DbBlockDelayInfo, SPM_SE_BLOCK_NAME_DB};
 // Counter block GRBM
 static const GpuBlockInfo GrbmCounterBlockInfo = {"GRBM", GrbmCounterBlockId, 1, GrbmCounterBlockMaxEvent, GrbmCounterBlockNumCounters, GrbmCounterRegAddr, gfx9_cntx_prim::select_value<regGRBM_PERFCOUNTER0_SELECT>, CounterBlockDfltAttr};
 // Counter block GRBMSE
 static const GpuBlockInfo GrbmSeCounterBlockInfo = {"GRBM_SE", GrbmSeCounterBlockId, 1, GrbmSeCounterBlockMaxEvent, GrbmSeCounterBlockNumCounters, GrbmSeCounterRegAddr, gfx9_cntx_prim::select_value<regGRBM_SE0_PERFCOUNTER_SELECT>, CounterBlockDfltAttr};
 // Counter block PA_SU
-static const GpuBlockInfo PaSuCounterBlockInfo = {"PA_SU", PaSuCounterBlockId, 1, PaSuCounterBlockMaxEvent, PaSuCounterBlockNumCounters, PaSuCounterRegAddr, gfx9_cntx_prim::select_value<regPA_SU_PERFCOUNTER0_SELECT>, CounterBlockSeAttr};
+static const GpuBlockInfo PaSuCounterBlockInfo = {"PA_SU", PaSuCounterBlockId, 1, PaSuCounterBlockMaxEvent, PaSuCounterBlockNumCounters, PaSuCounterRegAddr, gfx9_cntx_prim::select_value<regPA_SU_PERFCOUNTER0_SELECT>, CounterBlockSeAttr, PaSuBlockDelayInfo, SPM_SE_BLOCK_NAME_PA};
 // Counter block PA_SC
-static const GpuBlockInfo PaScCounterBlockInfo = {"PA_SC", PaScCounterBlockId, 1, PaScCounterBlockMaxEvent, PaScCounterBlockNumCounters, PaScCounterRegAddr, gfx9_cntx_prim::select_value<regPA_SC_PERFCOUNTER0_SELECT>, CounterBlockSeAttr};
+static const GpuBlockInfo PaScCounterBlockInfo = {"PA_SC", PaScCounterBlockId, 1, PaScCounterBlockMaxEvent, PaScCounterBlockNumCounters, PaScCounterRegAddr, gfx9_cntx_prim::select_value<regPA_SC_PERFCOUNTER0_SELECT>, CounterBlockSeAttr, PaScBlockDelayInfo, SPM_SE_BLOCK_NAME_SC};
 // Counter block SPI
-static const GpuBlockInfo SpiCounterBlockInfo = {"SPI", SpiCounterBlockId, 1, SpiCounterBlockMaxEvent, SpiCounterBlockNumCounters, SpiCounterRegAddr, gfx9_cntx_prim::select_value<regSPI_PERFCOUNTER0_SELECT>, CounterBlockSeAttr};
+static const GpuBlockInfo SpiCounterBlockInfo = {"SPI", SpiCounterBlockId, 1, SpiCounterBlockMaxEvent, SpiCounterBlockNumCounters, SpiCounterRegAddr, gfx9_cntx_prim::select_value<regSPI_PERFCOUNTER0_SELECT>, CounterBlockSeAttr, SpiBlockDelayInfo, SPM_SE_BLOCK_NAME_SPI};
 // Counter block SQ
-static const GpuBlockInfo SqCounterBlockInfo = {"SQ", SqCounterBlockId, 1, SqCounterBlockMaxEvent, SqCounterBlockNumCounters, SqCounterRegAddr, gfx9_cntx_prim::sq_select_value, CounterBlockSeAttr|CounterBlockSqAttr, SqBlockDelayInfo};
+static const GpuBlockInfo SqCounterBlockInfo = {"SQ", SqCounterBlockId, 1, SqCounterBlockMaxEvent, SqCounterBlockNumCounters, SqCounterRegAddr, gfx9_cntx_prim::sq_select_value, CounterBlockSeAttr|CounterBlockSqAttr, SqBlockDelayInfo, SPM_SE_BLOCK_NAME_SQG};
 static const GpuBlockInfo SqGsCounterBlockInfo = {"SQ_GS", SqCounterBlockId, 1, SqCounterBlockMaxEvent, SqCounterBlockNumCounters, SqCounterRegAddr, gfx9_cntx_prim::sq_select_value, CounterBlockSeAttr|CounterBlockSqAttr};
 static const GpuBlockInfo SqVsCounterBlockInfo = {"SQ_VS", SqCounterBlockId, 1, SqCounterBlockMaxEvent, SqCounterBlockNumCounters, SqCounterRegAddr, gfx9_cntx_prim::sq_select_value, CounterBlockSeAttr|CounterBlockSqAttr};
 static const GpuBlockInfo SqPsCounterBlockInfo = {"SQ_PS", SqCounterBlockId, 1, SqCounterBlockMaxEvent, SqCounterBlockNumCounters, SqCounterRegAddr, gfx9_cntx_prim::sq_select_value, CounterBlockSeAttr|CounterBlockSqAttr};
 static const GpuBlockInfo SqHsCounterBlockInfo = {"SQ_HS", SqCounterBlockId, 1, SqCounterBlockMaxEvent, SqCounterBlockNumCounters, SqCounterRegAddr, gfx9_cntx_prim::sq_select_value, CounterBlockSeAttr|CounterBlockSqAttr};
 static const GpuBlockInfo SqCsCounterBlockInfo = {"SQ_CS", SqCounterBlockId, 1, SqCounterBlockMaxEvent, SqCounterBlockNumCounters, SqCounterRegAddr, gfx9_cntx_prim::sq_select_value, CounterBlockSeAttr|CounterBlockSqAttr};
 // Counter block SX
-static const GpuBlockInfo SxCounterBlockInfo = {"SX", SxCounterBlockId, 1, SxCounterBlockMaxEvent, SxCounterBlockNumCounters, SxCounterRegAddr, gfx9_cntx_prim::select_value<regSX_PERFCOUNTER0_SELECT>, CounterBlockSeAttr|CounterBlockCleanAttr};
+static const GpuBlockInfo SxCounterBlockInfo = {"SX", SxCounterBlockId, 1, SxCounterBlockMaxEvent, SxCounterBlockNumCounters, SxCounterRegAddr, gfx9_cntx_prim::select_value<regSX_PERFCOUNTER0_SELECT>, CounterBlockSeAttr|CounterBlockCleanAttr, SxBlockDelayInfo, SPM_SE_BLOCK_NAME_SX};
 // Counter block TA
-static const GpuBlockInfo TaCounterBlockInfo = {"TA", TaCounterBlockId, TaCounterBlockNumInstances, TaCounterBlockMaxEvent, TaCounterBlockNumCounters, TaCounterRegAddr, gfx9_cntx_prim::select_value<regTA_PERFCOUNTER0_SELECT>, CounterBlockSeAttr|CounterBlockTcAttr};
+static const GpuBlockInfo TaCounterBlockInfo = {"TA", TaCounterBlockId, TaCounterBlockNumInstances, TaCounterBlockMaxEvent, TaCounterBlockNumCounters, TaCounterRegAddr, gfx9_cntx_prim::select_value<regTA_PERFCOUNTER0_SELECT>, CounterBlockSeAttr|CounterBlockTcAttr, TaBlockDelayInfo, SPM_SE_BLOCK_NAME_TA};
 // Counter block TCA
-static const GpuBlockInfo TcaCounterBlockInfo = {"TCA", TcaCounterBlockId, TcaCounterBlockNumInstances, TcaCounterBlockMaxEvent, TcaCounterBlockNumCounters, TcaCounterRegAddr, gfx9_cntx_prim::select_value<regTCA_PERFCOUNTER0_SELECT>, CounterBlockDfltAttr|CounterBlockTcAttr};
+static const GpuBlockInfo TcaCounterBlockInfo = {"TCA", TcaCounterBlockId, TcaCounterBlockNumInstances, TcaCounterBlockMaxEvent, TcaCounterBlockNumCounters, TcaCounterRegAddr, gfx9_cntx_prim::select_value<regTCA_PERFCOUNTER0_SELECT>, CounterBlockDfltAttr|CounterBlockTcAttr|CounterBlockSpmGlobalAttr, TcaBlockDelayInfo, SPM_GLOBAL_BLOCK_NAME_TCA};
 // Counter block TCC
-static const GpuBlockInfo TccCounterBlockInfo = {"TCC", TccCounterBlockId, TccCounterBlockNumInstances, TccCounterBlockMaxEvent, TccCounterBlockNumCounters, TccCounterRegAddr, gfx9_cntx_prim::select_value<regTCC_PERFCOUNTER0_SELECT>, CounterBlockDfltAttr|CounterBlockTcAttr};
+static const GpuBlockInfo TccCounterBlockInfo = {"TCC", TccCounterBlockId, TccCounterBlockNumInstances, TccCounterBlockMaxEvent, TccCounterBlockNumCounters, TccCounterRegAddr, gfx9_cntx_prim::select_value<regTCC_PERFCOUNTER0_SELECT>, CounterBlockDfltAttr|CounterBlockTcAttr|CounterBlockSpmGlobalAttr, TccBlockDelayInfo, SPM_GLOBAL_BLOCK_NAME_TCC};
 // Counter block TD
-static const GpuBlockInfo TdCounterBlockInfo = {"TD", TdCounterBlockId, TdCounterBlockNumInstances, TdCounterBlockMaxEvent, TdCounterBlockNumCounters, TdCounterRegAddr, gfx9_cntx_prim::select_value<regTD_PERFCOUNTER0_SELECT>, CounterBlockSeAttr|CounterBlockTcAttr};
+static const GpuBlockInfo TdCounterBlockInfo = {"TD", TdCounterBlockId, TdCounterBlockNumInstances, TdCounterBlockMaxEvent, TdCounterBlockNumCounters, TdCounterRegAddr, gfx9_cntx_prim::select_value<regTD_PERFCOUNTER0_SELECT>, CounterBlockSeAttr|CounterBlockTcAttr, TdBlockDelayInfo, SPM_SE_BLOCK_NAME_TD};
 // Counter block TCP
-static const GpuBlockInfo TcpCounterBlockInfo = {"TCP", TcpCounterBlockId, TcpCounterBlockNumInstances, TcpCounterBlockMaxEvent, TcpCounterBlockNumCounters, TcpCounterRegAddr, gfx9_cntx_prim::select_value<regTCP_PERFCOUNTER0_SELECT>, CounterBlockSeAttr|CounterBlockTcAttr};
+static const GpuBlockInfo TcpCounterBlockInfo = {"TCP", TcpCounterBlockId, TcpCounterBlockNumInstances, TcpCounterBlockMaxEvent, TcpCounterBlockNumCounters, TcpCounterRegAddr, gfx9_cntx_prim::select_value<regTCP_PERFCOUNTER0_SELECT>, CounterBlockSeAttr|CounterBlockTcAttr, TcpBlockDelayInfo, SPM_SE_BLOCK_NAME_TCP};
 // Counter block GDS
-static const GpuBlockInfo GdsCounterBlockInfo = {"GDS", GdsCounterBlockId, 1, GdsCounterBlockMaxEvent, GdsCounterBlockNumCounters, GdsCounterRegAddr, gfx9_cntx_prim::select_value<regGDS_PERFCOUNTER0_SELECT>, CounterBlockDfltAttr};
+static const GpuBlockInfo GdsCounterBlockInfo = {"GDS", GdsCounterBlockId, 1, GdsCounterBlockMaxEvent, GdsCounterBlockNumCounters, GdsCounterRegAddr, gfx9_cntx_prim::select_value<regGDS_PERFCOUNTER0_SELECT>, CounterBlockDfltAttr|CounterBlockSpmGlobalAttr, GdsBlockDelayInfo, SPM_GLOBAL_BLOCK_NAME_GDS};
 // Counter block VGT
-static const GpuBlockInfo VgtCounterBlockInfo = {"VGT", VgtCounterBlockId, 1, VgtCounterBlockMaxEvent, VgtCounterBlockNumCounters, VgtCounterRegAddr, gfx9_cntx_prim::select_value<regVGT_PERFCOUNTER0_SELECT>, CounterBlockSeAttr};
+ static const GpuBlockInfo VgtCounterBlockInfo = {"VGT", VgtCounterBlockId, 1, VgtCounterBlockMaxEvent, VgtCounterBlockNumCounters, VgtCounterRegAddr, gfx9_cntx_prim::select_value<regVGT_PERFCOUNTER0_SELECT>, CounterBlockSeAttr, VgtBlockDelayInfo, SPM_SE_BLOCK_NAME_VGT};
 // Counter block IA
-static const GpuBlockInfo IaCounterBlockInfo = {"IA", IaCounterBlockId, 1, IaCounterBlockMaxEvent, IaCounterBlockNumCounters, IaCounterRegAddr, gfx9_cntx_prim::select_value<regIA_PERFCOUNTER0_SELECT>, CounterBlockSeAttr};
+static const GpuBlockInfo IaCounterBlockInfo = {"IA", IaCounterBlockId, 1, IaCounterBlockMaxEvent, IaCounterBlockNumCounters, IaCounterRegAddr, gfx9_cntx_prim::select_value<regIA_PERFCOUNTER0_SELECT>, CounterBlockSeAttr|CounterBlockSpmGlobalAttr, IaBlockDelayInfo, SPM_GLOBAL_BLOCK_NAME_IA};
 // Counter block WD
 static const GpuBlockInfo WdCounterBlockInfo = {"WD", WdCounterBlockId, 1, WdCounterBlockMaxEvent, WdCounterBlockNumCounters, WdCounterRegAddr, gfx9_cntx_prim::select_value<regWD_PERFCOUNTER0_SELECT>, CounterBlockDfltAttr};
 // Counter block CPC
-static const GpuBlockInfo CpcCounterBlockInfo = {"CPC", CpcCounterBlockId, 1, CpcCounterBlockMaxEvent, CpcCounterBlockNumCounters, CpcCounterRegAddr, gfx9_cntx_prim::select_value<regCPC_PERFCOUNTER0_SELECT>, CounterBlockDfltAttr};
+static const GpuBlockInfo CpcCounterBlockInfo = {"CPC", CpcCounterBlockId, 1, CpcCounterBlockMaxEvent, CpcCounterBlockNumCounters, CpcCounterRegAddr, gfx9_cntx_prim::select_value<regCPC_PERFCOUNTER0_SELECT>, CounterBlockDfltAttr|CounterBlockSpmGlobalAttr, CpcBlockDelayInfo, SPM_GLOBAL_BLOCK_NAME_CPC};
 // Counter block CPF
-static const GpuBlockInfo CpfCounterBlockInfo = {"CPF", CpfCounterBlockId, 1, CpfCounterBlockMaxEvent, CpfCounterBlockNumCounters, CpfCounterRegAddr, gfx9_cntx_prim::select_value<regCPF_PERFCOUNTER0_SELECT>, CounterBlockDfltAttr};
+static const GpuBlockInfo CpfCounterBlockInfo = {"CPF", CpfCounterBlockId, 1, CpfCounterBlockMaxEvent, CpfCounterBlockNumCounters, CpfCounterRegAddr, gfx9_cntx_prim::select_value<regCPF_PERFCOUNTER0_SELECT>, CounterBlockDfltAttr|CounterBlockSpmGlobalAttr, CpfBlockDelayInfo, SPM_GLOBAL_BLOCK_NAME_CPF/*2*/};
 // Counter block MCVM L2
 static const GpuBlockInfo McVmL2CounterBlockInfo = {"MCVML2", McVmL2CounterBlockId, 1, McVmL2CounterBlockMaxEvent, McVmL2CounterBlockNumCounters, McVmL2CounterRegAddr, gfx9_cntx_prim::mc_select_value<regMC_VM_L2_PERFCOUNTER0_CFG>, CounterBlockMcAttr};
 // Counter block ATC L2
