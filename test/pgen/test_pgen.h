@@ -25,8 +25,8 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#ifndef TEST_CTRL_TEST_PGEN_H_
-#define TEST_CTRL_TEST_PGEN_H_
+#ifndef TEST_PGEN_TEST_PGEN_H_
+#define TEST_PGEN_TEST_PGEN_H_
 
 #include "pgen/test_pmgr.h"
 
@@ -42,4 +42,4 @@ class TestPGen : public TestPMgr {
   explicit TestPGen(TestAql* t) : TestPMgr(t) {}
 };
 
-#endif  // TEST_CTRL_TEST_PGEN_H_
+#endif  // TEST_PGEN_TEST_PGEN_H_

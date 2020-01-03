@@ -1,7 +1,8 @@
 #include "core/aql_profile.h"
 
-#include <string>
+#include <cstdint>
 #include <map>
+#include <string>
 #include <vector>
 
 #include "core/logger.h"
@@ -21,6 +22,15 @@
       return err;                                                                                  \
     }                                                                                              \
   }
+
+// PC sampling callback data
+struct pcsmp_callback_data_t {
+  const char* kernel_name;     // sampled kernel name
+  void* data_buffer;           // host buffer for tracing data
+  uint64_t id;                 // sample id
+  uint64_t cycle;              // sample cycle
+  uint64_t pc;                 // sample PC
+};
 
 namespace aql_profile {
 
@@ -634,8 +644,8 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
         }
       }
     } else if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_TRACE) {
-      if (profile->event_count == 0) {
-      // SQTT trace data
+      if (profile->event_count == 0 || profile->event_count == UINT32_MAX) {
+      // SQTT trace data, or SQTT pc sampling
       // Control buffer was allocated as the CmdBuffer prefix partition
         aql_profile::CommandBufferMgr cmd_buffer_mgr(profile);
         const char* const prefix_ptr = cmd_buffer_mgr.GetPrefix1();
@@ -680,11 +690,20 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
             return HSA_STATUS_ERROR;
           }
 
-          hsa_ven_amd_aqlprofile_info_data_t sample_info;
-          sample_info.sample_id = se_id;
-          sample_info.trace_data.ptr = sample_ptr;
-          sample_info.trace_data.size = sample_size;
-          status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, &sample_info, data);
+          if (profile->event_count == 0) {  // sqtt, without pc sampling
+            hsa_ven_amd_aqlprofile_info_data_t sample_info;
+            sample_info.sample_id = se_id;
+            sample_info.trace_data.ptr = sample_ptr;
+            sample_info.trace_data.size = sample_size;
+            status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, &sample_info, data);
+          } else {                          // pc sampling
+            const_cast<hsa_ven_amd_aqlprofile_profile_t*>(profile)->event_count = 0;
+            pcsmp_callback_data_t* pcsmp_data = reinterpret_cast<pcsmp_callback_data_t*>(data);
+            pcsmp_data->id = se_id;
+            pcsmp_data->cycle = 333;
+            pcsmp_data->pc = 0x33;
+            status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, NULL, data);
+          }
           if (status == HSA_STATUS_INFO_BREAK) {
             status = HSA_STATUS_SUCCESS;
             break;
@@ -697,7 +716,7 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
 
           sample_ptr = reinterpret_cast<char*>(sample_ptr) + sample_capacity;
         }
-      } else {
+      } else if (profile->event_count < UINT32_MAX) {
         // SPM trace data
         const uint32_t tnumber = 1;
         void* sample_ptr = profile->output_buffer.ptr;

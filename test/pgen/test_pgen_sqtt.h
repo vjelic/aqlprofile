@@ -25,8 +25,8 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#ifndef TEST_CTRL_TEST_PGEN_SQTT_H_
-#define TEST_CTRL_TEST_PGEN_SQTT_H_
+#ifndef TEST_PGEN_TEST_PGEN_SQTT_H_
+#define TEST_PGEN_TEST_PGEN_SQTT_H_
 
 #include <fstream>
 #include <iostream>
@@ -159,4 +159,4 @@ class TestPGenSqtt : public TestPGen {
   hsa_ven_amd_aqlprofile_profile_t profile_;
 };
 
-#endif  // TEST_CTRL_TEST_PGEN_SQTT_H_
+#endif  // TEST_PGEN_TEST_PGEN_SQTT_H_

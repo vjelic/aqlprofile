@@ -25,8 +25,8 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#ifndef TEST_CTRL_TEST_PMGR_H_
-#define TEST_CTRL_TEST_PMGR_H_
+#ifndef TEST_PGEN_TEST_PMGR_H_
+#define TEST_PGEN_TEST_PMGR_H_
 
 #include <hsa.h>
 #include <hsa_ven_amd_aqlprofile.h>
@@ -78,4 +78,4 @@ class TestPMgr : public TestAql {
   bool AddPacketGfx9(const packet_t* packet);
 };
 
-#endif  // TEST_CTRL_TEST_PMGR_H_
+#endif  // TEST_PGEN_TEST_PMGR_H_

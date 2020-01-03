@@ -30,6 +30,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ctrl/run_kernel.h"
 #include "pgen/test_pgen_pmc.h"
 #include "pgen/test_pgen_sqtt.h"
+#include "pgen/test_pgen_pcsmp.h"
 #include "simple_convolution/simple_convolution.h"
 
 const int argv_pmc_size = 32;
@@ -60,6 +61,7 @@ int main(int argc, char* argv[]) {
   const bool pmc_priv_enable = (getenv("AQLPROFILE_PMC_PRIV") != NULL);
   const bool sdma_enable = (getenv("AQLPROFILE_SDMA") != NULL);
   const bool sqtt_enable = (getenv("AQLPROFILE_SQTT") != NULL);
+  const bool pcsmp_enable = (getenv("AQLPROFILE_PCSMP") != NULL);
   const bool scan_enable = (getenv("AQLPROFILE_SCAN") != NULL);
   const bool trace_enable = (getenv("AQLPROFILE_TRACE") != NULL);
 
@@ -226,6 +228,8 @@ int main(int argc, char* argv[]) {
                                                                    pmc_argv(events_count, events_arr));
   } else if (sqtt_enable) {
     ret_val = RunKernel<SimpleConvolution, TestPGenSqtt>(argc, argv);
+  } else if (pcsmp_enable) {
+    ret_val = RunKernel<SimpleConvolution, TestPGenPcsmp>(argc, argv);
   } else {
     ret_val = RunKernel<SimpleConvolution, TestAql>(argc, argv);
   }

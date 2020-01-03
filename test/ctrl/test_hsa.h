@@ -28,6 +28,8 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef TEST_CTRL_TEST_HSA_H_
 #define TEST_CTRL_TEST_HSA_H_
 
+#include <string>
+
 #include "ctrl/test_aql.h"
 #include "ctrl/test_kernel.h"
 #include "util/hsa_rsrc_factory.h"
@@ -81,6 +83,10 @@ class TestHsa : public TestAql {
   // @return bool true on success and false on failure
   bool Cleanup();
 
+  // To get test name
+  // @return test name
+  const char* Name() { return name_.c_str(); }
+
  private:
   typedef TestKernel::mem_descr_t mem_descr_t;
   typedef TestKernel::mem_map_t mem_map_t;
@@ -121,7 +127,7 @@ class TestHsa : public TestAql {
   static hsa_queue_t* hsa_queue_;
 
   // Test kernel name
-  std::string name_;
+  const std::string name_;
 
   // Kernel executable
   hsa_executable_t hsa_exec_;
