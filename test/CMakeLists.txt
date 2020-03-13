@@ -31,6 +31,9 @@ add_executable ( ${EXE_NAME} ${KERN_SRC} ${CTRL_SRC} ${UTIL_SRC} )
 target_include_directories ( ${EXE_NAME} PRIVATE ${TEST_DIR} ${API_PATH} ${ROCM_ROOT_DIR}/include )
 target_link_libraries( ${EXE_NAME} PRIVATE ${HSA_RUNTIME_LIB} ${HSA_KMT_LIB} c stdc++ dl pthread rt )
 
+## Building test kernel
+add_custom_target( mytest COMMAND sh -xc "echo 'mytest dummy target'" )
+
 ## Deploying test files
 execute_process ( COMMAND sh -xc "cp --remove-destination ${TEST_DIR}/${TEST_NAME}/*.hsaco ${TEST_BINARY_DIR}" )
 execute_process ( COMMAND sh -xc "cp --remove-destination ${TEST_DIR}/run.sh ${TEST_DIR}/run_priv.sh ${TEST_BINARY_DIR}" )
