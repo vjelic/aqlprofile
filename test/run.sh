@@ -1,46 +1,120 @@
 #!/bin/sh
-RPATH=`realpath $0`
 
-tbin=./ctrl
+################################################################################
+# Copyright (c) 2018 Advanced Micro Devices, Inc. All rights reserved.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+################################################################################
+
+# cd to build directory
+BIN_DIR=`dirname $0`
+BIN_NAME=`basename $0`
+
+cd $BIN_DIR/test
+echo $BIN_NAME | grep "_v." >/dev/null 2>&1
+if [ $? = 0 ] ; then set -x; fi
+
+# enable tools load failure reporting
+export HSA_TOOLS_REPORT_LOAD_FAILURE=1
+# paths to ROC profiler and other libraries
 export LD_LIBRARY_PATH=$PWD
+# test binary
+tbin=./ctrl
 
-cd `dirname $RPATH`
+# test filter input
+test_filter=-1
+if [ -n "$1" ] ; then
+  test_filter=$1
+fi
 
-echo "Run simple convolution kernel"
+# test check routin
+test_status=0
+test_runnum=0
+test_number=0
+failed_tests="Failed tests:"
+
+xeval_test() {
+  test_number=$test_number
+}
+
+eval_test() {
+  label=$1
+  cmdline=$2
+  test_trace=$test_name.txt
+
+  if [ $test_filter = -1  -o $test_filter = $test_number ] ; then
+    echo "test $test_number: $test_name \"$label\""
+    echo "CMD: \"$cmdline\""
+    test_runnum=$((test_runnum + 1))
+    eval "$cmdline"
+    is_failed=$?
+    if [ $is_failed = 0 ] ; then
+      echo "$test_name: PASSED"
+    else
+      echo "$test_name: FAILED"
+      failed_tests="$failed_tests\n  $test_number: \"$label\""
+      test_status=$(($test_status + 1))
+    fi
+  fi
+
+  test_number=$((test_number + 1))
+}
+
+# Simple convolution kernel dry run
 unset AQLPROFILE_PMC
 unset AQLPROFILE_PMC_PRIV
 unset AQLPROFILE_SQTT
 unset AQLPROFILE_SDMA
 unset AQLPROFILE_SCAN
-eval $tbin
+eval_test "simple convolution kernel dry run" $tbin
 
-echo "Run with PMC"
+# Run with PMC
 export AQLPROFILE_PMC=1
 unset AQLPROFILE_PMC_PRIV
 unset AQLPROFILE_SQTT
 unset AQLPROFILE_SDMA
 unset AQLPROFILE_SCAN
-eval $tbin
+eval_test "PMC test" $tbin
 
-echo "Run with SQTT"
+# Run with SQTT
 unset AQLPROFILE_PMC
 unset AQLPROFILE_PMC_PRIV
 export AQLPROFILE_SQTT=1
 unset AQLPROFILE_SDMA
 unset AQLPROFILE_SCAN
-eval $tbin
+eval_test "SQTT test" $tbin
 
-echo "Run with PCSMP"
+# Run with PCSMP
 unset AQLPROFILE_PMC
 unset AQLPROFILE_PMC_PRIV
 unset AQLPROFILE_SQTT
 export AQLPROFILE_PCSMP=1
 unset AQLPROFILE_SDMA
 unset AQLPROFILE_SCAN
-eval $tbin
+eval_test "PCSMP test" $tbin
 
 #valgrind --leak-check=full $tbin
 #valgrind --tool=massif $tbin
 #ms_print massif.out.<N>
 
-exit 0
+echo "$test_number tests total / $test_runnum tests run / $test_status tests failed"
+if [ $test_status != 0 ] ; then
+  echo $failed_tests
+fi
+exit $test_status

@@ -38,5 +38,7 @@ add_custom_target( mytest
 
 ## Deploying test run scripts
 execute_process ( COMMAND sh -xc "cp --remove-destination ${TEST_DIR}/run.sh ${TEST_DIR}/run_priv.sh ${TEST_BINARY_DIR}" )
-execute_process ( COMMAND sh -xc "if [ ! -e run.sh ] ; then ln -s ${TEST_BINARY_DIR}/run.sh ; fi" )
-execute_process ( COMMAND sh -xc "if [ ! -e run_priv.sh ] ; then ln -s ${TEST_BINARY_DIR}/run_priv.sh ; fi" )
+execute_process ( COMMAND sh -xc "if [ ! -e run.sh ] ; then ln -s ${TEST_BINARY_DIR}/run.sh; fi" )
+execute_process ( COMMAND sh -xc "if [ ! -e run_v.sh ] ; then ln -s ${TEST_BINARY_DIR}/run.sh run_v.sh; fi" )
+execute_process ( COMMAND sh -xc "if [ ! -e run_priv.sh ] ; then ln -s ${TEST_BINARY_DIR}/run_priv.sh; fi" )
+execute_process ( COMMAND sh -xc "if [ ! -e run_priv_v.sh ] ; then ln -s ${TEST_BINARY_DIR}/run_priv.sh run_priv_v.sh; fi" )
