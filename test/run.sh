@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -x
 
 ################################################################################
 # Copyright (c) 2018 Advanced Micro Devices, Inc. All rights reserved.
@@ -22,13 +22,11 @@
 # THE SOFTWARE.
 ################################################################################
 
-# cd to build directory
-BIN_DIR=`dirname $0`
+# turn on verbose mode
 BIN_NAME=`basename $0`
-
-cd $BIN_DIR/test
 echo $BIN_NAME | grep "_v." >/dev/null 2>&1
 if [ $? = 0 ] ; then set -x; fi
+RPATH=`realpath $0`
 
 # enable tools load failure reporting
 export HSA_TOOLS_REPORT_LOAD_FAILURE=1
@@ -60,7 +58,6 @@ eval_test() {
 
   if [ $test_filter = -1  -o $test_filter = $test_number ] ; then
     echo "test $test_number: $test_name \"$label\""
-    echo "CMD: \"$cmdline\""
     test_runnum=$((test_runnum + 1))
     eval "$cmdline"
     is_failed=$?
@@ -75,6 +72,8 @@ eval_test() {
 
   test_number=$((test_number + 1))
 }
+
+cd `dirname $RPATH`
 
 # Simple convolution kernel dry run
 unset AQLPROFILE_PMC
