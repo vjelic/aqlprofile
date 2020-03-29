@@ -27,11 +27,13 @@ BIN_NAME=`basename $0`
 echo $BIN_NAME | grep "_v." >/dev/null 2>&1
 if [ $? = 0 ] ; then set -x; fi
 RPATH=`realpath $0`
+BIN_DIR=`dirname $0`
+cd $BIN_DIR
 
 # enable tools load failure reporting
 export HSA_TOOLS_REPORT_LOAD_FAILURE=1
 # paths to ROC profiler and other libraries
-export LD_LIBRARY_PATH=$PWD
+export LD_LIBRARY_PATH=$PWD:$LD_LIBRARY_PATH
 # test binary
 tbin=./ctrl
 
