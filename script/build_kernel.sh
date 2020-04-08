@@ -11,7 +11,7 @@ if [ -z "$TEST_NAME" ] ; then
   echo "  Will look for <test name>.cl and will build <test name>.$SO_EXT dynamic code object library"
   exit 1
 fi
-OBJ_NAME=$(echo "_$(basename $TEST_NAME).$SO_EXT" | sed -e 's/_./\U&\E/g' -e 's/_//g')
+OBJ_NAME=$(echo "_$(basename $TEST_NAME)" | sed -e 's/_./\U&\E/g' -e 's/_//g')
 
 if [ -z "$DST_DIR" ] ; then
   DST_DIR=$(dirname TEST_NAME)
@@ -34,7 +34,7 @@ OCL_VER="2.0"
 
 if [ -e $ROCM_DIR/llvm ] ; then
   LLVM_DIR=$ROCM_DIR/llvm
-  LIB_DIR=$ROCM_DIR/lib
+  LIB_DIR=$ROCM_DIR/lib/bitcode
 else
   LLVM_DIR=$ROCM_DIR/hcc
   LIB_DIR=$LLVM_DIR/lib
@@ -56,7 +56,7 @@ BITCODE_OPTS="\
 
 for GFXIP in $TGT_LIST ; do
   OBJ_PREF=$GFXIP
-  OBJ_FILE=${OBJ_PREF}_${OBJ_NAME}
+  OBJ_FILE="${OBJ_PREF}_${OBJ_NAME}.$SO_EXT"
   $BIN_DIR/clang -cl-std=CL$OCL_VER -include $INC_DIR/opencl-c.h $BITCODE_OPTS -target amdgcn-amd-amdhsa -mcpu=$GFXIP -mno-code-object-v3 $TEST_NAME.cl -o $DST_DIR/$OBJ_FILE
   echo "'$OBJ_FILE' generated"
 done
