@@ -26,7 +26,7 @@
 BIN_NAME=`basename $0`
 echo $BIN_NAME | grep "_v." >/dev/null 2>&1
 if [ $? = 0 ] ; then set -x; fi
-RPATH=`realpath $0`
+BIN_PATH=`realpath $0`
 BIN_DIR=`dirname $0`
 cd $BIN_DIR
 
@@ -75,7 +75,7 @@ eval_test() {
   test_number=$((test_number + 1))
 }
 
-cd `dirname $RPATH`
+cd `dirname $BIN_PATH`
 
 # Simple convolution kernel dry run
 unset AQLPROFILE_PMC
