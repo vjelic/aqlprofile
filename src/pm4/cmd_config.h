@@ -40,6 +40,9 @@ struct TraceConfig {
   uint32_t se_number;
   // SE mask for tracing
   uint32_t se_vector;
+
+  // concurrent kernels mode
+  uint32_t concurrent;
 };
 }  // namespace pm4_builder
 

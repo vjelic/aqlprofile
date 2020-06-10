@@ -68,7 +68,7 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
                                         Primitives::grbm_broadcast_value());
     // Issue a CSPartialFlush cmd including cache flush
-    Builder::BuildWriteWaitIdlePacket(cmd_buffer);
+    if (config->concurrent) Builder::BuildWriteWaitIdlePacket(cmd_buffer);
     // Program the thread trace mask - specifies SH, CU, SIMD and
     // VM Id masks to apply. Enabling SQ/SPI/REG_STALL_EN bits
     const uint32_t mask_value = (config->mask)
@@ -131,12 +131,12 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
                                         Primitives::grbm_broadcast_value());
     // Issue a CSPartialFlush cmd including cache flush
-    Builder::BuildWriteWaitIdlePacket(cmd_buffer);
+    if (config->concurrent) Builder::BuildWriteWaitIdlePacket(cmd_buffer);
     // Program the thread trace mode register, mode ON
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_MODE_ADDR,
                                         Primitives::sqtt_mode_on_value());
     // Issue a CSPartialFlush cmd including cache flush
-    Builder::BuildWriteWaitIdlePacket(cmd_buffer);
+    if (config->concurrent) Builder::BuildWriteWaitIdlePacket(cmd_buffer);
   }
 
   void End(CmdBuffer* cmd_buffer, const ThreadTraceConfig* config) {

@@ -368,6 +368,9 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
             case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_SAMPLE_RATE:
               trace_config.sampleRate = p->value;
               break;
+            case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_K_CONCURRENT:
+              trace_config.concurrent = p->value;
+              break;
             default:
               ERR_LOGGING << "Bad trace parameter name (" << p->parameter_name << ")";
               return HSA_STATUS_ERROR_INVALID_ARGUMENT;
