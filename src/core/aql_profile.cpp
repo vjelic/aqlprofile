@@ -187,6 +187,17 @@ static inline pm4_builder::counters_vector CountersVec(const profile_t* profile,
   return vec;
 }
 
+static inline bool IsConcurrent(const profile_t* profile) {
+  for (const hsa_ven_amd_aqlprofile_parameter_t* p = profile->parameters;
+          p < (profile->parameters + profile->parameter_count); ++p) {
+    if (p->parameter_name ==
+            HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_K_CONCURRENT)
+      return true;
+  }
+
+  return false;
+}
+
 static inline bool IsEventMatch(const event_t& event1, const event_t& event2) {
   return (event1.block_name == event2.block_name) && (event1.block_index == event2.block_index) &&
       (event1.counter_id == event2.counter_id);
@@ -608,6 +619,8 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
     aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile);
     const uint32_t se_number = pm4_factory->GetShaderEnginesNumber();
 
+    bool is_concurrent = aql_profile::IsConcurrent(profile);
+
     if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_PMC) {
       uint64_t* samples = reinterpret_cast<uint64_t*>(profile->output_buffer.ptr);
       const uint32_t sample_count = profile->output_buffer.size / sizeof(uint64_t);
@@ -627,7 +640,20 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
           hsa_ven_amd_aqlprofile_info_data_t sample_info;
           sample_info.sample_id = i;
           sample_info.pmc_data.event = *p;
-          sample_info.pmc_data.result = samples[sample_index];
+          uint64_t val = samples[sample_index];
+          // If in concurrent, get the value difference
+          //  1st half are from kernel end, and 2nd half are from kernel start
+          if (is_concurrent) {
+            uint64_t start_val = samples[sample_index + sample_count / 2];
+            if (val < start_val) {
+              ERR_LOGGING << "Bad values (end=" << val << " < start=" << start_val
+                  << ") of sample index (" << sample_index << ") bloc id ("
+                  << p->block_index << ") counter id (" << p->counter_id << ")";
+              return HSA_STATUS_ERROR;
+            }
+            val -= start_val;
+          }
+          sample_info.pmc_data.result = val;
 #if DEBUG_TRACE == 2
           printf("DATA: sample index(%u) id(%u) bloc id(%u) index(%u) counter id(%u) res(%lu)\n",
             sample_index, i, p->block_name, p->block_index, p->counter_id,

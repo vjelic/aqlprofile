@@ -399,8 +399,6 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
 
   // Build PMC read PM4 comands
   uint32_t Read(CmdBuffer* cmd_buffer, const counters_vector& counters_vec, void* data_buffer) {
-    // Issue barrier command to wait for dispatch to complete
-    Builder::BuildWriteWaitIdlePacket(cmd_buffer);
     // Generate read commands
     const uint32_t data_size = ReadPackets(cmd_buffer, counters_vec, data_buffer);
     // Start the counter list
@@ -410,8 +408,6 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
     if (counters_vec.get_attr() & CounterBlockSrbmAttr)
       Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::SRBM_PERFMON_CNTL_ADDR,
                                           Primitives::srbm_start_value());
-    // Issue barrier command to wait commands to complete
-    Builder::BuildWriteWaitIdlePacket(cmd_buffer);
     // Return amount of data to read
     return data_size;
   }
