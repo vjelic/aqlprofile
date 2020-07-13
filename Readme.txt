@@ -58,4 +58,7 @@ $ export AQLPROFILE_TRACE=1
 
 To recompile kernel object:
 
-$ /opt/rocm/opencl/bin/x86_64/clang -cl-std=CL2.0 -cl-std=CL2.0 -include /opt/rocm/opencl/include/opencl-c.h -Xclang -mlink-bitcode-file -Xclang /opt/rocm/opencl/lib/x86_64/bitcode/opencl.amdgcn.bc -Xclang -mlink-bitcode-file -Xclang /opt/rocm/opencl/lib/x86_64/bitcode/ockl.amdgcn.bc -target amdgcn-amd-amdhsa -mcpu=gfx906 vector_add_kernel.cl -o vector_add_kernel.so
+$ /opt/rocm/opencl/bin/clang -cl-std=CL2.0 -include /opt/rocm/opencl/include/opencl-c.h -nogpulib -Xclang -mlink-bitcode-file -Xclang /opt/rocm/amdgcn/bitcode/opencl.amdgcn.bc -Xclang -mlink-bitcode-file -Xclang /opt/rocm/amdgcn/bitcode/ockl.amdgcn.bc -target amdgcn-amd-amdhsa -mcpu=gfx906 vector_add_kernel.cl -o vector_add_kernel.so
+
+With newer device-libs layout, use this recompile command:
+$ /opt/rocm/opencl/bin/clang -cl-std=CL2.0 -include /opt/rocm/opencl/include/opencl-c.h --hip-device-lib-path=/opt/rocm/amdgcn/bitcode -target amdgcn-amd-amdhsa -mcpu=gfx906 vector_add_kernel.cl -o vector_add_kernel.so
