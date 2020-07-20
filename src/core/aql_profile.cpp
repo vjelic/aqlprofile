@@ -42,6 +42,8 @@ class CommandBufferMgr {
   struct info_t {
     uint32_t prefix_size;
     uint32_t rdcmds_size;
+    uint32_t rd2cmds_size;
+    uint32_t is_rd_fetch2;
     uint32_t precmds_size;
     uint32_t postcmds_size;
   };
@@ -70,6 +72,18 @@ class CommandBufferMgr {
     }
     if (!suc)
       throw aql_profile_exc_msg("CommandBufferMgr::SetRdSize(): size set out of the buffer");
+    return suc;
+  }
+
+  bool SetRd2Size(const uint32_t& rd_data_size) {
+    const uint32_t size = Align(rd_data_size);
+    const bool suc = SetRdSize(Align(size));
+    if (suc) {
+      info_.rd2cmds_size = rd_data_size;
+      info_.rdcmds_size = 2 * size;
+    }
+    if (!suc)
+      throw aql_profile_exc_msg("CommandBufferMgr::SetRd2Size(): size set out of the buffer");
     return suc;
   }
 
@@ -111,6 +125,18 @@ class CommandBufferMgr {
     descriptor_t descr;
     descr.ptr = reinterpret_cast<char*>(buffer_.ptr) + GetRdOffset();
     descr.size = info_.rdcmds_size;
+    return descr;
+  }
+
+  descriptor_t FetchRdDescr() {
+    descriptor_t descr;
+    if (info_.is_rd_fetch2 == 0) {
+      info_.is_rd_fetch2 = 1;
+      descr.ptr = reinterpret_cast<char*>(buffer_.ptr) + GetRdOffset();
+    } else {
+      descr.ptr = reinterpret_cast<char*>(buffer_.ptr) + GetRdOffset() + (info_.rdcmds_size / 2);
+    }
+    descr.size = info_.rd2cmds_size;
     return descr;
   }
 
@@ -306,6 +332,8 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
       pm4_builder::PmcBuilder* pmc_builder = pm4_factory->GetPmcBuilder();
 
       if (aql_profile::read_api_enabled) {
+        const bool is_concurrent = aql_profile::IsConcurrent(profile);
+
         // Generate read commands
         pmc_builder->Read(&commands, countersVec, profile->output_buffer.ptr);
         cmd_buffer_mgr.SetRdSize(commands.Size());
@@ -313,8 +341,21 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
         // Copy generated read commands
         if (profile->command_buffer.ptr != NULL) {
           const aql_profile::descriptor_t rd_descr = cmd_buffer_mgr.GetRdDescr();
-          memcpy(rd_descr.ptr, commands.Data(), rd_descr.size);
+          memcpy(rd_descr.ptr, commands.Data(), commands.Size());
           commands.Clear();
+        }
+
+        if (is_concurrent) {
+          // Generate read commands
+          pmc_builder->Read(&commands, countersVec, (char*)(profile->output_buffer.ptr) + (profile->output_buffer.size / 2));
+          cmd_buffer_mgr.SetRd2Size(commands.Size());
+
+          // Copy generated read commands
+          if (profile->command_buffer.ptr != NULL) {
+            const aql_profile::descriptor_t rd_descr = cmd_buffer_mgr.GetRdDescr();
+            memcpy((char*)rd_descr.ptr + (rd_descr.size / 2), commands.Data(), commands.Size());
+            commands.Clear();
+          }
         }
       }
 
@@ -497,11 +538,14 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_read(const hsa_ven_amd_aqlprofile
                                                     aql_profile::packet_t* aql_read_packet) {
   if (aql_profile::read_api_enabled) {
     try {
+      const bool is_concurrent = aql_profile::IsConcurrent(profile);
+
       // Populate read aql packet
       aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile);
       pm4_builder::CmdBuilder* cmd_writer = pm4_factory->GetCmdBuilder();
       aql_profile::CommandBufferMgr cmd_buffer_mgr(profile);
-      const aql_profile::descriptor_t rd_descr = cmd_buffer_mgr.GetRdDescr();
+      const aql_profile::descriptor_t rd_descr =
+        (is_concurrent == false) ? cmd_buffer_mgr.GetRdDescr() : cmd_buffer_mgr.FetchRdDescr();
       aql_profile::PopulateAql(rd_descr.ptr, rd_descr.size, cmd_writer, aql_read_packet);
     } catch (std::exception& e) {
       ERR_LOGGING << e.what();
@@ -618,8 +662,7 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
   try {
     aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile);
     const uint32_t se_number = pm4_factory->GetShaderEnginesNumber();
-
-    bool is_concurrent = aql_profile::IsConcurrent(profile);
+    const bool is_concurrent = aql_profile::IsConcurrent(profile);
 
     if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_PMC) {
       uint64_t* samples = reinterpret_cast<uint64_t*>(profile->output_buffer.ptr);
