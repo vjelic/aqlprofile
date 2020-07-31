@@ -72,11 +72,17 @@ class Pm4Factory {
   typedef std::mutex mutex_t;
 
   // Create factory for a given agent
-  static Pm4Factory* Create(const hsa_agent_t agent);
+  static Pm4Factory* Create(const hsa_agent_t agent, const bool concurrent = false);
   // Create factory for a given profile
-  static Pm4Factory* Create(const profile_t* profile) { return Create(profile->agent); }
+  static Pm4Factory* Create(const profile_t* profile) {
+    // First check and save the mode
+    return Create(profile->agent, CheckConcurrent(profile));
+  }
   // Destroy factory
   static void Destroy();
+
+  // Is pmc to be profiled concurrently?
+  bool IsConcurrent() { return concurrent_mode_; }
 
   // Return PM4 command builder
   pm4_builder::CmdBuilder* GetCmdBuilder() { return cmd_builder_; }
@@ -122,6 +128,7 @@ class Pm4Factory {
     spm_builder_(NULL),
     sqtt_builder_(NULL),
     agent_info_(NULL),
+    concurrent_mode_(concurrent_create_mode_),
     block_map_(map)
   {}
 
@@ -142,10 +149,19 @@ class Pm4Factory {
   pm4_builder::SqttBuilder* sqtt_builder_;
   // agent info
   const AgentInfo* agent_info_;
+  // Concurrent mode
+  static bool concurrent_create_mode_;
+  bool concurrent_mode_;
 
  private:
   // PM4 factory instance map type
-  typedef std::map<gpu_id_t, Pm4Factory*> instances_t;
+  typedef std::pair<gpu_id_t, int> instances_key_t;
+  struct instances_fncomp_t {
+    bool operator() (const instances_key_t& a, const instances_key_t& b) const {
+      return (a.first < b.first) || ((a.first == b.first) && (a.second < b.second));
+    }
+  };
+  typedef std::map<instances_key_t, Pm4Factory*, instances_fncomp_t> instances_t;
 
   // Create Fiji factory
   static Pm4Factory* FijiCreate(const AgentInfo* agent_info);
@@ -158,6 +174,8 @@ class Pm4Factory {
   // Return GPU id for a given agent
   static gpu_id_t GetGpuId(const hsa_agent_t agent);
 
+  static bool CheckConcurrent(const profile_t* profile);
+
   // Mutex for inter thread synchronization for the instances create/destroy
   static mutex_t mutex_;
   // Factory instances container
@@ -167,16 +185,18 @@ class Pm4Factory {
 };
 
 // Create PM4 factory
-inline Pm4Factory* Pm4Factory::Create(const hsa_agent_t agent) {
+inline Pm4Factory* Pm4Factory::Create(const hsa_agent_t agent, bool concurrent) {
   std::lock_guard<mutex_t> lck(mutex_);
   const AgentInfo* agent_info = HsaRsrcFactory::Instance().GetAgentInfo(agent);
   // Get GPU id for a given agent
   const gpu_id_t gpu_id = GetGpuId(agent);
   // Check if we have the instance already created
   if (instances_ == NULL) instances_ = new instances_t;
-  const auto ret = instances_->insert({gpu_id, NULL});
+  const auto ret = instances_->insert({instances_key_t{gpu_id, concurrent}, NULL});
   instances_t::iterator it = ret.first;
+
   // Create a factory implementation for the GPU id
+  concurrent_create_mode_ = concurrent;
   if (ret.second) {
     switch (gpu_id) {
       // Create Gfx8 generaic factory
@@ -213,6 +233,18 @@ inline void Pm4Factory::Destroy() {
     delete instances_;
     instances_ = NULL;
   }
+}
+
+// Check the setting of pmc profiling mode
+inline bool Pm4Factory::CheckConcurrent(const profile_t* profile) {
+  for (const hsa_ven_amd_aqlprofile_parameter_t* p = profile->parameters;
+          p < (profile->parameters + profile->parameter_count); ++p) {
+    if (p->parameter_name ==
+            HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_K_CONCURRENT)
+      return true;
+  }
+
+  return false;
 }
 
 // Return GPU id for a given agent

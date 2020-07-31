@@ -213,17 +213,6 @@ static inline pm4_builder::counters_vector CountersVec(const profile_t* profile,
   return vec;
 }
 
-static inline bool IsConcurrent(const profile_t* profile) {
-  for (const hsa_ven_amd_aqlprofile_parameter_t* p = profile->parameters;
-          p < (profile->parameters + profile->parameter_count); ++p) {
-    if (p->parameter_name ==
-            HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_K_CONCURRENT)
-      return true;
-  }
-
-  return false;
-}
-
 static inline bool IsEventMatch(const event_t& event1, const event_t& event2) {
   return (event1.block_name == event2.block_name) && (event1.block_index == event2.block_index) &&
       (event1.counter_id == event2.counter_id);
@@ -269,6 +258,7 @@ hsa_status_t DefaultTracedataCallback(hsa_ven_amd_aqlprofile_info_type_t info_ty
 
 Logger::mutex_t Logger::mutex_;
 Logger* Logger::instance_ = NULL;
+bool Pm4Factory::concurrent_create_mode_ = false;
 Pm4Factory::mutex_t Pm4Factory::mutex_;
 Pm4Factory::instances_t* Pm4Factory::instances_ = NULL;
 bool read_api_enabled = true;
@@ -326,14 +316,13 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
     aql_profile::CommandBufferMgr cmd_buffer_mgr(profile->command_buffer.ptr, UINT_MAX);
 
     aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile);
+    const bool is_concurrent = pm4_factory->IsConcurrent();
     const pm4_builder::counters_vector countersVec = CountersVec(profile, pm4_factory);
 
     if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_PMC) {
       pm4_builder::PmcBuilder* pmc_builder = pm4_factory->GetPmcBuilder();
 
       if (aql_profile::read_api_enabled) {
-        const bool is_concurrent = aql_profile::IsConcurrent(profile);
-
         // Generate read commands
         pmc_builder->Read(&commands, countersVec, profile->output_buffer.ptr);
         cmd_buffer_mgr.SetRdSize(commands.Size());
@@ -538,12 +527,12 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_read(const hsa_ven_amd_aqlprofile
                                                     aql_profile::packet_t* aql_read_packet) {
   if (aql_profile::read_api_enabled) {
     try {
-      const bool is_concurrent = aql_profile::IsConcurrent(profile);
-
       // Populate read aql packet
       aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile);
+      const bool is_concurrent = pm4_factory->IsConcurrent();
       pm4_builder::CmdBuilder* cmd_writer = pm4_factory->GetCmdBuilder();
       aql_profile::CommandBufferMgr cmd_buffer_mgr(profile);
+
       const aql_profile::descriptor_t rd_descr =
         (is_concurrent == false) ? cmd_buffer_mgr.GetRdDescr() : cmd_buffer_mgr.FetchRdDescr();
       aql_profile::PopulateAql(rd_descr.ptr, rd_descr.size, cmd_writer, aql_read_packet);
@@ -661,8 +650,8 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
 
   try {
     aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile);
+    const bool is_concurrent = pm4_factory->IsConcurrent();
     const uint32_t se_number = pm4_factory->GetShaderEnginesNumber();
-    const bool is_concurrent = aql_profile::IsConcurrent(profile);
 
     if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_PMC) {
       uint64_t* samples = reinterpret_cast<uint64_t*>(profile->output_buffer.ptr);

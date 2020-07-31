@@ -30,8 +30,14 @@ void Gfx8Factory::Init(const AgentInfo* agent_info) {
   Pm4Factory::cmd_builder_ = new pm4_builder::Gfx8CmdBuilder;
   if (Pm4Factory::cmd_builder_ == NULL) throw aql_profile_exc_msg("CmdBuilder allocation failed");
 
-  Pm4Factory::pmc_builder_ =
-    new pm4_builder::GpuPmcBuilder<pm4_builder::Gfx8CmdBuilder, gfx8_cntx_prim>(agent_info);
+  // Mark and set the mode
+  if (Pm4Factory::IsConcurrent()) {
+    Pm4Factory::pmc_builder_ =
+      new pm4_builder::GpuPmcBuilder<pm4_builder::Gfx8CmdBuilder, gfx8_cntx_prim, true>(agent_info);
+  } else {
+    Pm4Factory::pmc_builder_ =
+      new pm4_builder::GpuPmcBuilder<pm4_builder::Gfx8CmdBuilder, gfx8_cntx_prim, false>(agent_info);
+  }
   if (Pm4Factory::pmc_builder_ == NULL) throw aql_profile_exc_msg("PmcBuilder allocation failed");
 
   Pm4Factory::spm_builder_ =

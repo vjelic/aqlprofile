@@ -36,7 +36,7 @@ class PmcBuilder {
 };
 
 // PMC PM4 commands builder template
-template <typename Builder, typename Primitives>
+template <typename Builder, typename Primitives, bool concurrent>
 class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives {
  private:
   typedef uint32_t reg_addr_t;
@@ -66,7 +66,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
     // sdma performance monitor control value accumulator
     std::pair<reg_addr_t, uint32_t> sdma_select_accumulator[Primitives::SDMA_COUNTER_BLOCK_NUM_INSTANCES];
     // Issue barrier command
-    Builder::BuildWriteWaitIdlePacket(cmd_buffer);
+    if (!concurrent) Builder::BuildWriteWaitIdlePacket(cmd_buffer);
     // Reset Grbm to its default state - broadcast
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
                                         Primitives::grbm_broadcast_value());
@@ -245,7 +245,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
                                          Primitives::mc_seq_hbm_start_value());
     }
     // Issue barrier command to apply the commands to configure perfcounters
-    Builder::BuildWriteWaitIdlePacket(cmd_buffer);
+    if (!concurrent) Builder::BuildWriteWaitIdlePacket(cmd_buffer);
   }
 
   // Build PMC read PM4 packets
