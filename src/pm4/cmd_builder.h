@@ -12,8 +12,10 @@
 #include <sstream>
 
 #define APPEND_COMMAND_WRAPPER(cmdbuf, command)                                                    \
-  PrintPacket(command, __FUNCTION__);                                                              \
-  cmdbuf->Append(&command, sizeof(command));
+  do {                                                                                             \
+    PrintPacket(command, __FUNCTION__);                                                            \
+    cmdbuf->Append(&command, sizeof(command));                                                     \
+  } while(0);
 
 namespace pm4_builder {
 
