@@ -851,7 +851,7 @@ typedef struct _PM4CMDRELEASEMEM {
       unsigned int reserved2 : 6;
       unsigned int atc : 1;
       unsigned int cachePolicy : 2;
-      unsigned int volatile : 1;
+      unsigned int volatile__ : 1;
       unsigned int reserved3 : 4;
     };
     unsigned int ordinal2;
