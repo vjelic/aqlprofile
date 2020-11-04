@@ -4,6 +4,7 @@
 set ( TARGET_LIB "${TARGET_NAME}" )
 set ( LIB_SRC
   ${LIB_DIR}/core/aql_profile.cpp
+  ${LIB_DIR}/core/spm_data.cpp
   ${LIB_DIR}/core/populate_aql.cpp
   ${LIB_DIR}/core/gfx8_factory.cpp
   ${LIB_DIR}/core/gfx9_factory.cpp
@@ -12,7 +13,7 @@ set ( LIB_SRC
 )
 
 add_library ( ${TARGET_LIB} SHARED ${LIB_SRC} )
-target_include_directories ( ${TARGET_LIB} PRIVATE ${LIB_DIR} ${API_PATH} )
+target_include_directories ( ${TARGET_LIB} PRIVATE ${LIB_DIR} ${API_PATH} ${ROCM_ROOT_DIR}/include )
 target_link_libraries( ${TARGET_LIB} PRIVATE ${HSA_RUNTIME_LIB} ${HSA_KMT_LIB} c stdc++ )
 
 ## Generating definitions

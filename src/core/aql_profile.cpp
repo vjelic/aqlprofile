@@ -23,6 +23,10 @@
     }                                                                                              \
   }
 
+// Getting SPM data using driver API
+extern hsa_status_t spm_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* profile,
+                                    hsa_ven_amd_aqlprofile_data_callback_t callback, void* data);
+
 // PC sampling callback data
 struct pcsmp_callback_data_t {
   const char* kernel_name;     // sampled kernel name
@@ -259,6 +263,7 @@ hsa_status_t DefaultTracedataCallback(hsa_ven_amd_aqlprofile_info_type_t info_ty
 Logger::mutex_t Logger::mutex_;
 Logger* Logger::instance_ = NULL;
 bool Pm4Factory::concurrent_create_mode_ = false;
+bool Pm4Factory::spm_kfd_mode_ = false;
 Pm4Factory::mutex_t Pm4Factory::mutex_;
 Pm4Factory::instances_t* Pm4Factory::instances_ = NULL;
 bool read_api_enabled = true;
@@ -463,7 +468,7 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
         pm4_builder::SpmBuilder* spm_builder = pm4_factory->GetSpmBuilder();
 
         trace_config.spm_sq_32bit_mode = true;
-        trace_config.spm_kfd_mode = (getenv("AQLPROFILE_SPM_KFD_MODE") != NULL);
+        trace_config.spm_kfd_mode = pm4_factory->SpmKfdMode();
         trace_config.mi100 = (pm4_factory->GetGpuId() == aql_profile::MI100_GPU_ID);
 
 	// Generate start commands
@@ -789,27 +794,31 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
           sample_ptr = reinterpret_cast<char*>(sample_ptr) + sample_capacity;
         }
       } else {  // SPM trace data
-        const uint32_t tnumber = 1;
-        void* sample_ptr = profile->output_buffer.ptr;
-        const uint32_t sample_size = profile->output_buffer.size;
-        const uint32_t sample_capacity = (profile->output_buffer.size / tnumber);
+        if (pm4_factory->SpmKfdMode() == false) {
+          const uint32_t tnumber = 1;
+          void* sample_ptr = profile->output_buffer.ptr;
+          const uint32_t sample_size = profile->output_buffer.size;
+          const uint32_t sample_capacity = (profile->output_buffer.size / tnumber);
 
-        for (unsigned i = 0; i < tnumber; ++i) {
-          hsa_ven_amd_aqlprofile_info_data_t sample_info;
-          sample_info.sample_id = i;
-          sample_info.trace_data.ptr = sample_ptr;
-          sample_info.trace_data.size = sample_size;
-          status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, &sample_info, data);
-          if (status == HSA_STATUS_INFO_BREAK) {
-            status = HSA_STATUS_SUCCESS;
-            break;
+          for (unsigned i = 0; i < tnumber; ++i) {
+            hsa_ven_amd_aqlprofile_info_data_t sample_info;
+            sample_info.sample_id = i;
+            sample_info.trace_data.ptr = sample_ptr;
+            sample_info.trace_data.size = sample_size;
+            status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, &sample_info, data);
+            if (status == HSA_STATUS_INFO_BREAK) {
+              status = HSA_STATUS_SUCCESS;
+              break;
+            }
+            if (status != HSA_STATUS_SUCCESS) {
+              ERR_LOGGING << "SQTT data callback error, sample_id(" << i << ") status(" << status
+                          << ")";
+              break;
+            }
+            sample_ptr = reinterpret_cast<char*>(sample_ptr) + sample_capacity;
           }
-          if (status != HSA_STATUS_SUCCESS) {
-            ERR_LOGGING << "SQTT data callback error, sample_id(" << i << ") status(" << status
-                        << ")";
-            break;
-          }
-          sample_ptr = reinterpret_cast<char*>(sample_ptr) + sample_capacity;
+        } else {
+          status = spm_iterate_data(profile, callback, data);
         }
       }
     } else {

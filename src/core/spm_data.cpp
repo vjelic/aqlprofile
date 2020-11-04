@@ -1,0 +1,213 @@
+#include <dirent.h>
+#include <hsakmt.h>
+#include <pthread.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+#include <atomic>
+#include <iostream>
+#include <string>
+#include <thread>
+
+#include "core/aql_profile.h"
+#include "core/logger.h"
+#include "core/pm4_factory.h"
+
+#define PTHREAD_CALL(call)                                                                         \
+  do {                                                                                             \
+    int err = call;                                                                                \
+    if (err != 0) {                                                                                \
+      errno = err;                                                                                 \
+      perror(#call);                                                                               \
+      abort();                                                                                     \
+    }                                                                                              \
+  } while (0)
+
+namespace spm_kfd_namespace {
+
+int get_gpu_node_id(uint32_t gpu_ind) {
+  int gpu_node = -1;
+  uint32_t index = 0;
+
+  // find a valid gpu node from /sys/class/kfd/kfd/topology/nodes
+  std::string path = "/sys/class/kfd/kfd/topology/nodes";
+  DIR *dir;
+  struct dirent *ent;
+
+  if ((dir = opendir(path.c_str())) != NULL) {
+    while ((ent = readdir(dir)) != NULL) {
+      std::string dir = ent->d_name;
+
+      if (dir.find_first_not_of("0123456789") == std::string::npos) {
+        std::string file = path + "/" + ent->d_name + "/gpu_id";
+        std::ifstream infile(file);
+        int id;
+
+        infile >> id;
+        if ((id != 0) && (index == gpu_ind)) {
+          ++index;
+          gpu_node = atoi(ent->d_name);
+          break;
+        }
+      }
+    }
+    closedir(dir);
+  }
+
+  if (gpu_node == -1) {
+    printf("get_gpu_node_id`error: GPU[%d] not found\n", gpu_ind); fflush(stdout);
+    abort();
+  }
+
+  return gpu_node;
+}
+
+int get_gpu_node_id(hsa_agent_t agent) {
+  const uint32_t gpu_ind = HsaRsrcFactory::Instance().GetAgentInfo(agent)->dev_index;
+  return get_gpu_node_id(gpu_ind);
+}
+
+struct state_t {
+  bool thread_stop;
+  int node_id;
+  uint32_t buf_size;
+  uint32_t timeout;
+  uint32_t data_size;
+  void* kfd_buf;
+  void* prod_buf;
+  void* cons_buf;
+  bool data_loss;
+  bool ready;
+  pthread_mutex_t work_mutex;
+  pthread_cond_t work_cond;
+};
+
+void producer_fun(state_t* state) {
+  uint32_t timeout = 0;
+  HSAKMT_STATUS status = hsaKmtSPMSetDestBuffer(state->node_id,
+                                                state->buf_size,
+                                                &timeout,
+                                                &(state->data_size),
+                                                state->kfd_buf,
+                                                &(state->data_loss));
+  if (status != HSAKMT_STATUS_SUCCESS) {
+    printf("hsaKmtSPMSetDestBuffer init error\n"); fflush(stdout);
+    abort();
+  }
+
+  do {
+    timeout = state->timeout;
+    status = hsaKmtSPMSetDestBuffer(state->node_id,
+                                    state->buf_size,
+                                    &timeout,
+                                    &(state->data_size),
+                                    state->prod_buf,
+                                    &(state->data_loss));
+    if (status != HSAKMT_STATUS_SUCCESS) {
+      printf("hsaKmtSPMSetDestBuffer error\n"); fflush(stdout);
+      abort();
+    }
+
+    PTHREAD_CALL(pthread_mutex_lock(&(state->work_mutex)));
+    void* tmp = state->prod_buf;
+    state->prod_buf = state->cons_buf;
+    state->cons_buf = state->kfd_buf;
+    state->kfd_buf = tmp;
+    state->ready = true;
+    PTHREAD_CALL(pthread_cond_signal(&(state->work_cond)));
+    PTHREAD_CALL(pthread_mutex_unlock(&(state->work_mutex)));
+  } while (!state->thread_stop);
+
+  status = hsaKmtSPMSetDestBuffer(state->node_id,
+                                  0,
+                                  &timeout,
+                                  &(state->data_size),
+                                  NULL,
+                                  &(state->data_loss));
+  if (status != HSAKMT_STATUS_SUCCESS) {
+    printf("hsaKmtSPMSetDestBuffer stop error\n"); fflush(stdout);
+    abort();
+  }
+
+}
+
+void consumer_fun(state_t* state,
+                  hsa_ven_amd_aqlprofile_data_callback_t callback,
+                  void* data) {
+  const uint32_t sample_id = 0;
+  PTHREAD_CALL(pthread_mutex_lock(&(state->work_mutex)));
+  do {
+    while (state->ready == false) {
+      PTHREAD_CALL(pthread_cond_wait(&(state->work_cond), &(state->work_mutex)));
+    }
+    state->ready = false;
+
+    hsa_ven_amd_aqlprofile_info_data_t sample_info;
+    sample_info.sample_id = sample_id;
+    sample_info.trace_data.ptr = state->cons_buf;
+    sample_info.trace_data.size = state->data_size;
+
+    hsa_status_t status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, &sample_info, data);
+    if (status == HSA_STATUS_INFO_BREAK) {
+      status = HSA_STATUS_SUCCESS;
+      state->thread_stop = true;
+      break;
+    } else if (status != HSA_STATUS_SUCCESS) {
+      printf("SPM consumer callback failed\n");
+      abort();
+    }
+  } while (1);
+  PTHREAD_CALL(pthread_mutex_unlock(&(state->work_mutex)));
+}
+
+void mananger_fun(const hsa_ven_amd_aqlprofile_profile_t* profile,
+                  hsa_ven_amd_aqlprofile_data_callback_t callback,
+                  void* data) {
+  state_t obj{};
+  const int gpu_node_id = get_gpu_node_id(profile->agent);
+  char* buf_ptr = (char*)(profile->output_buffer.ptr);
+  // SPM data buffer size 256 byte aligned
+  const uint32_t buf_size = (profile->output_buffer.size / 3) & ~(uint32_t(256) - 1);
+
+  obj.timeout = 1000000;  // 1sec
+  obj.node_id = gpu_node_id;
+  obj.buf_size = buf_size;
+  obj.kfd_buf = buf_ptr;
+  obj.prod_buf = buf_ptr + buf_size;
+  obj.cons_buf = buf_ptr + 2 * buf_size;
+
+  PTHREAD_CALL(pthread_mutex_init(&(obj.work_mutex), NULL));
+  PTHREAD_CALL(pthread_cond_init(&(obj.work_cond), NULL));
+
+  HSAKMT_STATUS status = hsaKmtSPMAcquire(gpu_node_id);
+  if (status != HSAKMT_STATUS_SUCCESS) {
+    printf("hsaKmtSPMAcquire error\n"); fflush(stdout);
+    abort();
+  }
+
+  // spm threads
+  std::thread producer(producer_fun, &obj);
+  std::thread consumer(consumer_fun, &obj, callback, data);
+
+  producer.join();
+  consumer.join();
+
+  status = hsaKmtSPMRelease(gpu_node_id);
+  if (status != HSAKMT_STATUS_SUCCESS) {
+    printf("hsaKmtSPMRelease error\n"); fflush(stdout);
+    abort();
+  }
+}
+
+// Getting SPM data using driver API
+hsa_status_t spm_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* profile,
+                              hsa_ven_amd_aqlprofile_data_callback_t callback,
+                              void* data) {
+  // spm manager thread
+  std::thread t(mananger_fun, profile, callback, data);
+  t.detach();
+
+  return HSA_STATUS_SUCCESS;
+}
+
+}  // spm_kfd_namespace

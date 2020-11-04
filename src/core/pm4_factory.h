@@ -81,10 +81,12 @@ class Pm4Factory {
   // Destroy factory
   static void Destroy();
 
-  // Is pmc to be profiled concurrently?
-  bool IsConcurrent() { return concurrent_mode_; }
   // Return gpu id
   gpu_id_t GetGpuId() const { return gpu_id_; }
+  // Is pmc to be profiled concurrently?
+  bool IsConcurrent() { return concurrent_mode_; }
+  // Is getting SPM data using driver public API?
+  bool SpmKfdMode() { return spm_kfd_mode_; }
 
   // Return PM4 command builder
   pm4_builder::CmdBuilder* GetCmdBuilder() { return cmd_builder_; }
@@ -154,6 +156,7 @@ class Pm4Factory {
   gpu_id_t gpu_id_;
   // Concurrent mode
   static bool concurrent_create_mode_;
+  static bool spm_kfd_mode_;
   bool concurrent_mode_;
 
  private:
@@ -198,8 +201,10 @@ inline Pm4Factory* Pm4Factory::Create(const hsa_agent_t agent, bool concurrent) 
   const auto ret = instances_->insert({instances_key_t{gpu_id, concurrent}, NULL});
   instances_t::iterator it = ret.first;
 
-  // Create a factory implementation for the GPU id
   concurrent_create_mode_ = concurrent;
+  spm_kfd_mode_ = (getenv("ROCP_SPM_KFD_MODE") != NULL);
+
+  // Create a factory implementation for the GPU id
   if (ret.second) {
     switch (gpu_id) {
       // Create Gfx8 generaic factory
