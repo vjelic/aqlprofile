@@ -83,6 +83,8 @@ class Pm4Factory {
 
   // Is pmc to be profiled concurrently?
   bool IsConcurrent() { return concurrent_mode_; }
+  // Return gpu id
+  gpu_id_t GetGpuId() const { return gpu_id_; }
 
   // Return PM4 command builder
   pm4_builder::CmdBuilder* GetCmdBuilder() { return cmd_builder_; }
@@ -149,6 +151,7 @@ class Pm4Factory {
   pm4_builder::SqttBuilder* sqtt_builder_;
   // agent info
   const AgentInfo* agent_info_;
+  gpu_id_t gpu_id_;
   // Concurrent mode
   static bool concurrent_create_mode_;
   bool concurrent_mode_;
@@ -221,6 +224,7 @@ inline Pm4Factory* Pm4Factory::Create(const hsa_agent_t agent, bool concurrent) 
   }
 
   if (it->second == NULL) throw aql_profile_exc_msg("Pm4Factory::Create() failed");
+  it->second->gpu_id_ = gpu_id;
   return it->second;
 }
 

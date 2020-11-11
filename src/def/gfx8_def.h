@@ -2075,6 +2075,7 @@ class gfx8_cntx_prim {
   static const uint32_t RLC_SPM_PERFMON_RING_BASE_HI__ADDR = mmRLC_SPM_PERFMON_RING_BASE_HI__CI__VI;
   static const uint32_t RLC_SPM_PERFMON_RING_SIZE__ADDR = mmRLC_SPM_PERFMON_RING_SIZE__CI__VI;
   static const uint32_t RLC_SPM_PERFMON_SEGMENT_SIZE__ADDR = mmRLC_SPM_PERFMON_SEGMENT_SIZE__CI__VI;
+  static const uint32_t RLC_SPM_PERFMON_SEGMENT_SIZE_CORE1__ADDR = 0;
   static const uint32_t RLC_SPM_GLOBAL_MUXSEL_ADDR__ADDR = mmRLC_SPM_GLOBAL_MUXSEL_ADDR__CI__VI;
   static const uint32_t RLC_SPM_GLOBAL_MUXSEL_DATA__ADDR = mmRLC_SPM_GLOBAL_MUXSEL_DATA__CI__VI;
   static const uint32_t RLC_SPM_SE_MUXSEL_ADDR__ADDR = mmRLC_SPM_SE_MUXSEL_ADDR__CI__VI;
@@ -2619,6 +2620,9 @@ class gfx8_cntx_prim {
     value.bits.SE2_NUM_LINE = se_nlines;
     value.bits.PERFMON_SEGMENT_SIZE = segment_size;
     return value.u32All;
+  }
+  static uint32_t rlc_spm_perfmon_segment_size_core1_value(const uint32_t& se_count) {
+    return 0;
   }
 
   // SQTT primitives

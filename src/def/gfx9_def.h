@@ -135,6 +135,7 @@ enum SX_PERFCOUNTER_VALS {
 #define mmRLC_SPM_PERFMON_RING_BASE_HI 0xDC82
 #define mmRLC_SPM_PERFMON_RING_SIZE 0xDC83
 #define mmRLC_SPM_PERFMON_SEGMENT_SIZE 0xDC84
+#define mmRLC_SPM_PERFMON_SEGMENT_SIZE_CORE1 0xDCAF
 #define mmRLC_SPM_SE_MUXSEL_ADDR 0xDC85
 #define mmRLC_SPM_SE_MUXSEL_DATA 0xDC86
 #define mmRLC_SPM_CPC_PERFMON_SAMPLE_DELAY 0xDC88
@@ -348,6 +349,7 @@ typedef union SDMA0_PERFMON_CNTL regSDMA0_PERFMON_CNTL;
 typedef union GDS_PERFCOUNTER0_SELECT regGDS_PERFCOUNTER0_SELECT;
 typedef union RLC_SPM_PERFMON_CNTL regRLC_SPM_PERFMON_CNTL;
 typedef union RLC_SPM_PERFMON_SEGMENT_SIZE regRLC_SPM_PERFMON_SEGMENT_SIZE;
+typedef union RLC_SPM_PERFMON_SEGMENT_SIZE_CORE1 regRLC_SPM_PERFMON_SEGMENT_SIZE_CORE1;
 typedef union RLC_SPM_MC_CNTL regRLC_SPM_MC_CNTL;
 typedef union SPI_PERFCOUNTER0_SELECT regSPI_PERFCOUNTER0_SELECT;
 typedef union SQ_THREAD_TRACE_BASE regSQ_THREAD_TRACE_BASE;
@@ -510,6 +512,29 @@ union RLC_SPM_PERFMON_SEGMENT_SIZE {
     unsigned int GLOBAL_NUM_LINE : 5;
     unsigned int RESERVED1 : 3;
     unsigned int PERFMON_SEGMENT_SIZE : 8;
+#endif
+  } bitfields, bits;
+  unsigned int u32All;
+  signed int i32All;
+  float f32All;
+};
+
+union RLC_SPM_PERFMON_SEGMENT_SIZE_CORE1 {
+  struct {
+#if defined(LITTLEENDIAN_CPU)
+    unsigned int PERFMON_SEGMENT_SIZE_CORE1 : 7;
+    unsigned int RESERVED1 : 5;
+    unsigned int SE4_NUM_LINE : 5;
+    unsigned int SE5_NUM_LINE : 5;
+    unsigned int SE6_NUM_LINE : 5;
+    unsigned int SE7_NUM_LINE : 5;
+#elif defined(BIGENDIAN_CPU)
+    unsigned int SE7_NUM_LINE : 5;
+    unsigned int SE6_NUM_LINE : 5;
+    unsigned int SE5_NUM_LINE : 5;
+    unsigned int SE4_NUM_LINE : 5;
+    unsigned int RESERVED1 : 5;
+    unsigned int PERFMON_SEGMENT_SIZE_CORE1 : 7;
 #endif
   } bitfields, bits;
   unsigned int u32All;
@@ -1780,6 +1805,7 @@ class gfx9_cntx_prim {
   static const uint32_t RLC_SPM_PERFMON_RING_BASE_HI__ADDR = mmRLC_SPM_PERFMON_RING_BASE_HI;
   static const uint32_t RLC_SPM_PERFMON_RING_SIZE__ADDR = mmRLC_SPM_PERFMON_RING_SIZE;
   static const uint32_t RLC_SPM_PERFMON_SEGMENT_SIZE__ADDR = mmRLC_SPM_PERFMON_SEGMENT_SIZE;
+  static const uint32_t RLC_SPM_PERFMON_SEGMENT_SIZE_CORE1__ADDR = mmRLC_SPM_PERFMON_SEGMENT_SIZE_CORE1;
   static const uint32_t RLC_SPM_GLOBAL_MUXSEL_ADDR__ADDR = mmRLC_SPM_GLOBAL_MUXSEL_ADDR;
   static const uint32_t RLC_SPM_GLOBAL_MUXSEL_DATA__ADDR = mmRLC_SPM_GLOBAL_MUXSEL_DATA;
   static const uint32_t RLC_SPM_SE_MUXSEL_ADDR__ADDR = mmRLC_SPM_SE_MUXSEL_ADDR;
@@ -2161,6 +2187,17 @@ class gfx9_cntx_prim {
     value.bits.SE1_NUM_LINE = se_nlines;
     value.bits.SE2_NUM_LINE = se_nlines;
     value.bits.PERFMON_SEGMENT_SIZE = segment_size;
+    return value.u32All;
+  }
+  static uint32_t rlc_spm_perfmon_segment_size_core1_value(const uint32_t& se_count) {
+    const uint32_t se_nlines = se_count;
+    const uint32_t segment_size = 4 * se_nlines;
+    regRLC_SPM_PERFMON_SEGMENT_SIZE_CORE1 value{};
+    value.bits.PERFMON_SEGMENT_SIZE_CORE1 = segment_size;
+    value.bits.SE4_NUM_LINE = se_nlines;
+    value.bits.SE5_NUM_LINE = se_nlines;
+    value.bits.SE6_NUM_LINE = se_nlines;
+    value.bits.SE7_NUM_LINE = se_nlines;
     return value.u32All;
   }
 

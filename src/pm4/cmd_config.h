@@ -1,3 +1,4 @@
+
 #ifndef SRC_PM4_CMD_CONFIG_H_
 #define SRC_PM4_CMD_CONFIG_H_
 
@@ -31,7 +32,10 @@ struct TraceConfig {
   uint32_t tokenMask2;
   // Sampling rate
   uint32_t sampleRate;
-  bool sq_spm_32_bit;
+  // SPM mode
+  bool spm_sq_32bit_mode;
+  bool spm_kfd_mode;
+  bool mi100;
 
   void* control_buffer_ptr;
   void* data_buffer_ptr;

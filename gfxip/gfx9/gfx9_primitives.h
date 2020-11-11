@@ -56,6 +56,7 @@ class gfx9_cntx_prim {
   static const uint32_t RLC_SPM_PERFMON_RING_BASE_HI__ADDR = mmRLC_SPM_PERFMON_RING_BASE_HI;
   static const uint32_t RLC_SPM_PERFMON_RING_SIZE__ADDR = mmRLC_SPM_PERFMON_RING_SIZE;
   static const uint32_t RLC_SPM_PERFMON_SEGMENT_SIZE__ADDR = mmRLC_SPM_PERFMON_SEGMENT_SIZE;
+  static const uint32_t RLC_SPM_PERFMON_SEGMENT_SIZE_CORE1__ADDR = mmRLC_SPM_PERFMON_SEGMENT_SIZE_CORE1;
   static const uint32_t RLC_SPM_GLOBAL_MUXSEL_ADDR__ADDR = mmRLC_SPM_GLOBAL_MUXSEL_ADDR;
   static const uint32_t RLC_SPM_GLOBAL_MUXSEL_DATA__ADDR = mmRLC_SPM_GLOBAL_MUXSEL_DATA;
   static const uint32_t RLC_SPM_SE_MUXSEL_ADDR__ADDR = mmRLC_SPM_SE_MUXSEL_ADDR;
@@ -437,6 +438,17 @@ class gfx9_cntx_prim {
     value.bits.SE1_NUM_LINE = se_nlines;
     value.bits.SE2_NUM_LINE = se_nlines;
     value.bits.PERFMON_SEGMENT_SIZE = segment_size;
+    return value.u32All;
+  }
+  static uint32_t rlc_spm_perfmon_segment_size_core1_value(const uint32_t& se_count) {
+    const uint32_t se_nlines = se_count;
+    const uint32_t segment_size = 4 * se_nlines;
+    regRLC_SPM_PERFMON_SEGMENT_SIZE_CORE1 value{};
+    value.bits.PERFMON_SEGMENT_SIZE_CORE1 = segment_size;
+    value.bits.SE4_NUM_LINE = se_nlines;
+    value.bits.SE5_NUM_LINE = se_nlines;
+    value.bits.SE6_NUM_LINE = se_nlines;
+    value.bits.SE7_NUM_LINE = se_nlines;
     return value.u32All;
   }
 

@@ -120648,6 +120648,30 @@ union RLC_SPM_PERFMON_SEGMENT_SIZE {
 };
 
 
+union RLC_SPM_PERFMON_SEGMENT_SIZE_CORE1 {
+  struct {
+#if defined(LITTLEENDIAN_CPU)
+    unsigned int PERFMON_SEGMENT_SIZE_CORE1 : 7;
+    unsigned int RESERVED1 : 5;
+    unsigned int SE4_NUM_LINE : 5;
+    unsigned int SE5_NUM_LINE : 5;
+    unsigned int SE6_NUM_LINE : 5;
+    unsigned int SE7_NUM_LINE : 5;
+#elif defined(BIGENDIAN_CPU)
+    unsigned int SE7_NUM_LINE : 5;
+    unsigned int SE6_NUM_LINE : 5;
+    unsigned int SE5_NUM_LINE : 5;
+    unsigned int SE4_NUM_LINE : 5;
+    unsigned int RESERVED1 : 5;
+    unsigned int PERFMON_SEGMENT_SIZE_CORE1 : 7;
+#endif
+  } bitfields, bits;
+  unsigned int u32All;
+  signed int i32All;
+  float f32All;
+};
+
+
 union RLC_SPM_SE_MUXSEL_ADDR {
   struct {
 #if defined(LITTLEENDIAN_CPU)

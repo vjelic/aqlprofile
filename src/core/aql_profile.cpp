@@ -436,10 +436,8 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
       pm4_builder::ControlType* const control_ptr =
           reinterpret_cast<pm4_builder::ControlType*>(prefix_ptr + sizeof(uint32_t));
 
-      trace_config.sq_spm_32_bit = true;
       trace_config.se_number = tnumber;
       trace_config.se_vector = tvector;
-      trace_config.sampleRate = 10000;//tbd
       trace_config.control_buffer_ptr = control_ptr;
       trace_config.data_buffer_ptr = profile->output_buffer.ptr;
       trace_config.data_buffer_size = profile->output_buffer.size;
@@ -464,7 +462,11 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
       } else {
         pm4_builder::SpmBuilder* spm_builder = pm4_factory->GetSpmBuilder();
 
-        // Generate start commands
+        trace_config.spm_sq_32bit_mode = true;
+        trace_config.spm_kfd_mode = (getenv("AQLPROFILE_SPM_KFD_MODE") != NULL);
+        trace_config.mi100 = (pm4_factory->GetGpuId() == aql_profile::MI100_GPU_ID);
+
+	// Generate start commands
         spm_builder->Begin(&commands, &trace_config, countersVec);
         cmd_buffer_mgr.SetPreSize(commands.Size());
         // Generate stop commands
