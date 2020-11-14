@@ -21,8 +21,12 @@ class PmcBuilder {
  public:
   PmcBuilder() {}
   virtual ~PmcBuilder() {}
-  // Generate enable profiling commands for a specific queue
+  // Generate enable profiling commands
   virtual void Enable(CmdBuffer* cmd_buffer) = 0;
+  // Generate disable profiling commands
+  virtual void Disable(CmdBuffer* cmd_buffer) = 0;
+  // Generate wait for GPU idle commands
+  virtual void WaitIdle(CmdBuffer* cmd_buffer) = 0;
   // Generate start profiling commands.
   virtual void Start(CmdBuffer* cmd_buffer, const counters_vector& counters_vec) = 0;
   // Generate stop profiling commands.
@@ -59,6 +63,17 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
     // Program Compute Perfcount Enable register to support perf counting
     Builder::BuildWriteShRegPacket(cmd_buffer, Primitives::COMPUTE_PERFCOUNT_ENABLE_ADDR,
                                    Primitives::cp_perfcount_enable_value());
+  }
+  // Build PMC disable PM4 comands - enabel CP counting for a specific queue
+  void Disable(CmdBuffer* cmd_buffer) {
+    // Program Compute Perfcount Enable register to support perf counting
+    Builder::BuildWriteShRegPacket(cmd_buffer, Primitives::COMPUTE_PERFCOUNT_ENABLE_ADDR,
+                                   Primitives::cp_perfcount_disable_value());
+  }
+  // Build PMC waite-idle PM4 comands - enabel CP counting for a specific queue
+  void WaitIdle(CmdBuffer* cmd_buffer) {
+    // Program Compute Perfcount WaiteIdle register to support perf counting
+    Builder::BuildWriteWaitIdlePacket(cmd_buffer);
   }
 
   // Build PMC start PM4 comands

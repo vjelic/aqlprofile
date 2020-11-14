@@ -2200,6 +2200,13 @@ class gfx8_cntx_prim {
     return cp_perfcount_enable.u32All;
   }
 
+  // Compute Perfcount Enable register value to disable counting
+  static uint32_t cp_perfcount_disable_value() {
+    regCOMPUTE_PERFCOUNT_ENABLE__CI__VI cp_perfcount_enable{};
+    cp_perfcount_enable.bits.PERFCOUNT_ENABLE = 0;
+    return cp_perfcount_enable.u32All;
+  }
+
   // SQ Block primitives
 
   // SQ Counter Select Register value

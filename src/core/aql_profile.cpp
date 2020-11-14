@@ -581,6 +581,21 @@ hsa_ven_amd_aqlprofile_get_info(const hsa_ven_amd_aqlprofile_profile_t* profile,
                                 hsa_ven_amd_aqlprofile_info_type_t attribute, void* value) {
   hsa_status_t status = HSA_STATUS_SUCCESS;
 
+  const uint32_t attr_op = (uint32_t)attribute;
+  const uint32_t begin_op = (uint32_t)HSA_VEN_AMD_AQLPROFILE_INFO_ENABLE_CMD;
+  if (attr_op >= begin_op) attribute = (hsa_ven_amd_aqlprofile_info_type_t)begin_op;
+
+  if (profile == NULL) {
+    ERR_LOGGING << "NULL argument 'profile'";
+    return HSA_STATUS_ERROR;
+  }
+  if (attribute != HSA_VEN_AMD_AQLPROFILE_INFO_ENABLE_CMD) {
+    if (value == NULL) {
+      ERR_LOGGING << "NULL argument 'value'";
+      return HSA_STATUS_ERROR;
+    }
+  }
+
   try {
     aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile);
     switch (attribute) {
@@ -620,23 +635,46 @@ hsa_ven_amd_aqlprofile_get_info(const hsa_ven_amd_aqlprofile_profile_t* profile,
         pm4_builder::PmcBuilder* pmc_builder = pm4_factory->GetPmcBuilder();
         pm4_builder::CmdBuilder* cmd_writer = pm4_factory->GetCmdBuilder();
         pm4_builder::CmdBuffer commands;
-        pmc_builder->Enable(&commands);
 
-        if (profile->command_buffer.size < commands.Size()) {
-          const_cast<hsa_ven_amd_aqlprofile_profile_t*>(profile)->command_buffer.size = commands.Size();
-        } else if (profile->command_buffer.ptr != NULL) {
-          if (profile->command_buffer.size != commands.Size()) {
-            ERR_LOGGING << "get_info, wrong profile cmd size";
-            status = HSA_STATUS_ERROR;
+	const uint32_t op = attr_op - begin_op;
+        switch (op) {
+          case 0:
+            pmc_builder->Enable(&commands);
             break;
-          }
-          memcpy(profile->command_buffer.ptr, commands.Data(), profile->command_buffer.size);
-          aql_profile::PopulateAql(
-            profile->command_buffer.ptr,
-            profile->command_buffer.size,
-            cmd_writer,
-            reinterpret_cast<aql_profile::packet_t*>(value));
+          case 1:
+            pmc_builder->Disable(&commands);
+            break;
+          case 2:
+            pmc_builder->WaitIdle(&commands);
+            break;
+          default:
+            ERR_LOGGING << "get_info, not supported op (" << op << ")";
+	    status = HSA_STATUS_ERROR;
         }
+
+	if (profile->command_buffer.ptr == NULL) {
+          const_cast<hsa_ven_amd_aqlprofile_profile_t*>(profile)->command_buffer.size = commands.Size();
+	  break;
+	}
+
+        if (profile->command_buffer.size != commands.Size()) {
+          ERR_LOGGING << "get_info, wrong profile cmd size";
+          status = HSA_STATUS_ERROR;
+          break;
+        }
+        if (value == NULL) {
+          ERR_LOGGING << "NULL argument 'value'";
+          status = HSA_STATUS_ERROR;
+          break;
+        }
+
+        memcpy(profile->command_buffer.ptr, commands.Data(), profile->command_buffer.size);
+        aql_profile::PopulateAql(
+          profile->command_buffer.ptr,
+          profile->command_buffer.size,
+          cmd_writer,
+          reinterpret_cast<aql_profile::packet_t*>(value));
+
         break;
       }
       default:
