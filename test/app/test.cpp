@@ -224,11 +224,6 @@ int main(int argc, char* argv[]) {
       std::cerr << "Error in get_gpu_node_id()" << std::endl;
       return 1;
     }
-    HSAKMT_STATUS status = hsaKmtEnableDebugTrap(gpu_node_id, INVALID_QUEUEID);
-    if (status != HSAKMT_STATUS_SUCCESS) {
-      std::cerr << "Error in enabling debug trap for NodeId 32"<< std::endl;
-      return 1;
-    }
 
     if (spm_kfd_mode) {
       HSAKMT_STATUS status = hsaKmtSPMAcquire(gpu_node_id);
@@ -237,7 +232,11 @@ int main(int argc, char* argv[]) {
         return 1;
       }
     } else {
+#if SPM_DEBUG_TRAP
       HSAKMT_STATUS status = hsaKmtEnableDebugTrap(gpu_node_id, INVALID_QUEUEID);
+#else
+      HSAKMT_STATUS status = HSAKMT_STATUS_SUCCESS;
+#endif
       if (status != HSAKMT_STATUS_SUCCESS) {
         std::cerr << "Error in enabling debug trap for NodeId " << gpu_node_id << std::endl;
         return 1;
