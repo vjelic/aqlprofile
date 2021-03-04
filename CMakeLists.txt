@@ -94,21 +94,28 @@ install ( FILES ${PROJECT_BINARY_DIR}/so-link DESTINATION lib RENAME ${AQLPROFIL
 
 ## Add the packaging directives for the runtime library.
 set ( CPACK_PACKAGE_NAME ${AQLPROFILE_NAME} )
-set ( CPACK_PACKAGE_VENDOR "AMD" )
+set ( CPACK_PACKAGE_VENDOR "Advanced Micro Devices, Inc." )
 set ( CPACK_PACKAGE_VERSION_MAJOR ${BUILD_VERSION_MAJOR} )
 set ( CPACK_PACKAGE_VERSION_MINOR ${BUILD_VERSION_MINOR} )
 set ( CPACK_PACKAGE_VERSION_PATCH ${BUILD_VERSION_PATCH} )
-set ( CPACK_PACKAGE_CONTACT "Advanced Micro Devices Inc." )
+set ( CPACK_PACKAGE_CONTACT "TODO  <Add a valid email id>" )
 set ( CPACK_PACKAGE_DESCRIPTION_SUMMARY "AQLPROFILE library for AMD HSA runtime API extension support" )
 set ( CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md" )
+set ( ENABLE_LDCONFIG ON CACHE BOOL "Set library links and caches using ldconfig.")
 
 ## Debian package specific variables
 set ( CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/RadeonOpenCompute/HSA-AqlProfile-AMD-extension" )
-set ( CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_SOURCE_DIR}/DEBIAN/postinst;${CMAKE_CURRENT_SOURCE_DIR}/DEBIAN/prerm" )
+## Process the Debian install/remove scripts to update the CPACK variables
+configure_file ( ${CMAKE_CURRENT_SOURCE_DIR}/DEBIAN/postinst.in DEBIAN/postinst @ONLY )
+configure_file ( ${CMAKE_CURRENT_SOURCE_DIR}/DEBIAN/prerm.in DEBIAN/prerm @ONLY )
+set ( CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "DEBIAN/postinst;DEBIAN/prerm" )
 
+## Process the Rpm install/remove scripts to update the CPACK variables
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/RPM/post.in" RPM/post @ONLY )
+configure_file ( "${CMAKE_CURRENT_SOURCE_DIR}/RPM/postun.in" RPM/postun @ONLY )
 ## RPM package specific variables
-set ( CPACK_RPM_PRE_INSTALL_SCRIPT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/RPM/rpm_post" )
-set ( CPACK_RPM_POST_UNINSTALL_SCRIPT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/RPM/rpm_postun" )
+set ( CPACK_RPM_PRE_INSTALL_SCRIPT_FILE "${CMAKE_CURRENT_BINARY_DIR}/RPM/post" )
+set ( CPACK_RPM_POST_UNINSTALL_SCRIPT_FILE "${CMAKE_CURRENT_BINARY_DIR}/RPM/postun" )
 
 if ( DEFINED CPACK_PACKAGING_INSTALL_PREFIX )
     set ( CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION "${CPACK_PACKAGING_INSTALL_PREFIX}" )

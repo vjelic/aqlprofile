@@ -1,1 +1,0 @@
-rm -f /etc/ld.so.conf.d/libhsa-amd-aqlprofile64.conf && ldconfig
