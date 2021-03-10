@@ -235,7 +235,7 @@ int main(int argc, char* argv[]) {
 #if SPM_DEBUG_TRAP
       HSAKMT_STATUS status = hsaKmtEnableDebugTrap(gpu_node_id, INVALID_QUEUEID);
 #else
-      HSAKMT_STATUS status = HSAKMT_STATUS_SUCCESS;
+      HSAKMT_STATUS status = HSAKMT_STATUS_ERROR;
 #endif
       if (status != HSAKMT_STATUS_SUCCESS) {
         std::cerr << "Error in enabling debug trap for NodeId " << gpu_node_id << std::endl;

@@ -33,13 +33,13 @@ unset AQLPROFILE_SCAN
 unset AQLPROFILE_SPM
 eval $tbin
 
-echo "Run with SPM"
-unset AQLPROFILE_PMC
-unset AQLPROFILE_PMC_PRIV
-unset AQLPROFILE_SQTT
-unset AQLPROFILE_SDMA
-unset AQLPROFILE_SCAN
-export AQLPROFILE_SPM=1
-eval $tbin
+#echo "Run with SPM"
+#unset AQLPROFILE_PMC
+#unset AQLPROFILE_PMC_PRIV
+#unset AQLPROFILE_SQTT
+#unset AQLPROFILE_SDMA
+#unset AQLPROFILE_SCAN
+#export AQLPROFILE_SPM=1
+#eval $tbin
 
 exit 0
