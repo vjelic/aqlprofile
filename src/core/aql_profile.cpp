@@ -24,8 +24,10 @@
   }
 
 // Getting SPM data using driver API
-extern hsa_status_t spm_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* profile,
-                                    hsa_ven_amd_aqlprofile_data_callback_t callback, void* data);
+namespace spm_kfd_namespace {
+hsa_status_t spm_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* profile,
+                              hsa_ven_amd_aqlprofile_data_callback_t callback, void* data);
+}
 
 // PC sampling callback data
 struct pcsmp_callback_data_t {
@@ -856,7 +858,7 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
             sample_ptr = reinterpret_cast<char*>(sample_ptr) + sample_capacity;
           }
         } else {
-          status = spm_iterate_data(profile, callback, data);
+          status = spm_kfd_namespace::spm_iterate_data(profile, callback, data);
         }
       }
     } else {

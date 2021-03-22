@@ -6,6 +6,7 @@
 
 #include <atomic>
 #include <iostream>
+#include <mutex>
 #include <string>
 #include <thread>
 
@@ -128,7 +129,6 @@ void producer_fun(state_t* state) {
     printf("hsaKmtSPMSetDestBuffer stop error\n"); fflush(stdout);
     abort();
   }
-
 }
 
 void consumer_fun(state_t* state,
@@ -199,13 +199,22 @@ void mananger_fun(const hsa_ven_amd_aqlprofile_profile_t* profile,
   }
 }
 
+typedef std::mutex spm_mutex_t;
+spm_mutex_t spm_mutex;
+
 // Getting SPM data using driver API
 hsa_status_t spm_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* profile,
                               hsa_ven_amd_aqlprofile_data_callback_t callback,
                               void* data) {
-  // spm manager thread
-  std::thread t(mananger_fun, profile, callback, data);
-  t.detach();
+  std::lock_guard<spm_mutex_t> lck(spm_mutex);
+  static std::thread *t = NULL;
+
+  if (t == NULL) {
+    // spm manager thread
+    t = new std::thread(mananger_fun, profile, callback, data);
+  } else {
+    t->join();
+  }
 
   return HSA_STATUS_SUCCESS;
 }
