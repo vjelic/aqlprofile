@@ -487,7 +487,11 @@ int main(int argc, char* argv[]) {
     } else {
       ret_val = RunKernel<SimpleConvolution, TestPGenSpm>(events_count,
                                                           pmc_argv(events_count, events_spm));
+#if SPM_DEBUG_TRAP
       HSAKMT_STATUS status = hsaKmtDisableDebugTrap(gpu_node_id);
+#else
+      HSAKMT_STATUS status = HSAKMT_STATUS_ERROR;
+#endif
       if (status != HSAKMT_STATUS_SUCCESS) {
         std::cerr << "Error in disabling debug trap for NodeId " << gpu_node_id << std::endl;
         return 1;
