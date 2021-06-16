@@ -238,6 +238,7 @@ class gfx9_cntx_prim {
     } else if (block_id == SqCsCounterBlockId) {
       sq_cntr_ctrl.bits.CS_EN = 0x1;
     }
+    sq_cntr_ctrl.bits.VMID_MASK = 0xFFFF;
     return sq_cntr_ctrl.u32All;
   }
 
@@ -260,6 +261,7 @@ class gfx9_cntx_prim {
     sq_cntr_ctrl.bits.HS_EN = 0x1;
     sq_cntr_ctrl.bits.LS_EN = 0x1;
     sq_cntr_ctrl.bits.CS_EN = 0x1;
+    sq_cntr_ctrl.bits.VMID_MASK = 0xFFFF;
     return sq_cntr_ctrl.u32All;
   }
 

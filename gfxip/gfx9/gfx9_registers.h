@@ -140474,9 +140474,11 @@ union SQ_PERFCOUNTER_CTRL {
     unsigned int : 1;
     unsigned int CNTR_RATE : 5;
     unsigned int DISABLE_FLUSH : 1;
-    unsigned int : 18;
+    unsigned int : 2;
+    unsigned int VMID_MASK : 16;
 #elif defined(BIGENDIAN_CPU)
-    unsigned int : 18;
+    unsigned int VMID_MASK : 16;
+    unsigned int : 2;
     unsigned int DISABLE_FLUSH : 1;
     unsigned int CNTR_RATE : 5;
     unsigned int : 1;

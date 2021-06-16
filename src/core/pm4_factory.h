@@ -30,6 +30,7 @@ enum gpu_id_t {
   FIJI_GPU_ID,   // Fiji GPU id
   GFX9_GPU_ID,   // generic Gfx9 id
   MI100_GPU_ID,  // Mi100 GPU id
+  MI200_GPU_ID   // Mi200 GPU id
 };
 
 // Block info map class
@@ -177,6 +178,8 @@ class Pm4Factory {
   static Pm4Factory* Gfx9Create(const AgentInfo* agent_info);
   // Create MI100 factory
   static Pm4Factory* Mi100Create(const AgentInfo* agent_info);
+  // Create MI200 factory
+  static Pm4Factory* Mi200Create(const AgentInfo* agent_info);
   // Return GPU id for a given agent
   static gpu_id_t GetGpuId(const hsa_agent_t agent);
 
@@ -222,6 +225,9 @@ inline Pm4Factory* Pm4Factory::Create(const hsa_agent_t agent, bool concurrent) 
       // Create MI100 generic factory
       case MI100_GPU_ID:
         it->second = Mi100Create(agent_info);
+        break;
+      case MI200_GPU_ID:
+        it->second = Mi200Create(agent_info);
         break;
       default:
         throw aql_profile_exc_val<gpu_id_t>("GPU id error", gpu_id);
@@ -332,6 +338,8 @@ inline gpu_id_t Pm4Factory::GetGpuId(const hsa_agent_t agent) {
     } else {
       gpu_id = GFX9_GPU_ID;
     }
+  } else if (strncmp(agent_name, "gfx90a", 6) == 0) {
+    gpu_id = MI200_GPU_ID;
   } else {
     throw aql_profile_exc_val<std::string>("GFXIP is not supported", agent_name);
   }

@@ -2,6 +2,7 @@
 #include "gfx9_metrics.xml"
 #include "gfx906_metrics.xml"
 #include "gfx908_metrics.xml"
+#include "gfx90a_metrics.xml"
 
 <gfx8_expr>
   <metric name="TA_BUSY_avr" expr=avr(TA_TA_BUSY,16) descr="TA block is busy. Average over TA instances."></metric>
@@ -78,6 +79,7 @@
 <gfx9 base="gfx9_expr"></gfx9>
 <gfx906 base="gfx906_expr"></gfx906>
 <gfx908 base="gfx908_expr"></gfx908>
+<gfx90a base="gfx908_expr"></gfx90a>
 
 <global>
   # GPUBusy         The percentage of time GPU was busy.

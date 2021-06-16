@@ -65,7 +65,7 @@ const GpuBlockInfo* Gfx9Factory::block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMB
     &SdmaCounterBlockInfo
 };
 
-// Fiji factory class
+// Mi100 factory class
 class Mi100Factory : public Gfx9Factory {
  public:
   explicit Mi100Factory(const AgentInfo* agent_info) : Gfx9Factory(block_table_, sizeof(block_table_), agent_info) {
@@ -108,6 +108,12 @@ class Mi100Factory : public Gfx9Factory {
 
 const GpuBlockInfo* Mi100Factory::block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER] = {};
 
+// Mi200 factory class
+class Mi200Factory : public Mi100Factory {
+ public:
+  explicit Mi200Factory(const AgentInfo* agent_info) : Mi100Factory(agent_info) {}
+};
+
 // Pm4Factory create mathods
 Pm4Factory* Pm4Factory::Gfx9Create(const AgentInfo* agent_info) {
   auto p = new Gfx9Factory(agent_info);
@@ -117,6 +123,12 @@ Pm4Factory* Pm4Factory::Gfx9Create(const AgentInfo* agent_info) {
 
 Pm4Factory* Pm4Factory::Mi100Create(const AgentInfo* agent_info) {
   auto p = new Mi100Factory(agent_info);
+  if (p == NULL) throw aql_profile_exc_msg("FijiFactory allocation failed");
+  return p;
+}
+
+Pm4Factory* Pm4Factory::Mi200Create(const AgentInfo* agent_info) {
+  auto p = new Mi200Factory(agent_info);
   if (p == NULL) throw aql_profile_exc_msg("FijiFactory allocation failed");
   return p;
 }
