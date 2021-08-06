@@ -26,10 +26,14 @@ set ( CTRL_SRC
 set ( TEST_NAME simple_convolution )
 set ( KERN_SRC ${TEST_DIR}/${TEST_NAME}/${TEST_NAME}.cpp )
 
+find_package(hsa-runtime64 1.0 REQUIRED HINTS ${CMAKE_INSTALL_PREFIX} PATHS /opt/rocm)
+find_package(hsakmt 1.0 REQUIRED HINTS ${CMAKE_INSTALL_PREFIX} PATHS /opt/rocm)
 ## Building test executable
 add_executable ( ${EXE_NAME} ${KERN_SRC} ${CTRL_SRC} ${UTIL_SRC} )
 target_include_directories ( ${EXE_NAME} PRIVATE ${TEST_DIR} ${API_PATH} ${ROCM_ROOT_DIR}/include )
-target_link_libraries( ${EXE_NAME} PRIVATE ${HSA_RUNTIME_LIB} ${HSA_KMT_LIB} c stdc++ dl pthread rt numa)
+target_link_libraries( ${EXE_NAME} PRIVATE hsa-runtime64::hsa-runtime64 )
+target_link_libraries( ${EXE_NAME} PRIVATE hsakmt::hsakmt )
+target_link_libraries( ${EXE_NAME} PRIVATE c stdc++ dl )
 
 ## Building test kernel
 add_custom_target( mytest
