@@ -423,8 +423,8 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
     if (counters_vec.get_attr() & CounterBlockSrbmAttr)
       Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::SRBM_PERFMON_CNTL_ADDR,
                                           Primitives::srbm_start_value());
-    // Cache flush
-    Builder::BuildCacheFlushPacket(cmd_buffer);
+    // Issue barrier command to wait commands to complete
+    Builder::BuildWriteWaitIdlePacket(cmd_buffer);
     // Return amount of data to read
     return data_size;
   }

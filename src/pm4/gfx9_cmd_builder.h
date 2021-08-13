@@ -78,7 +78,6 @@ class Gfx9CmdBuilder : public CmdBuilder {
 
   void BuildWriteWaitIdlePacket(CmdBuffer* cmdbuf) {
     BuildBarrierCommand(cmdbuf);
-    BuildCacheFlushPacket(cmdbuf);
   }
 
   void BuildWaitRegMemCommand(CmdBuffer* cmdbuf, bool mem_space, uint64_t wait_addr, bool func_eq,
