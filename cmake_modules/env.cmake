@@ -83,51 +83,20 @@ elseif ( ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86" )
   set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32" )
 endif ()
 
-## Find hsa-runtime headers/lib
-find_file ( HSA_RUNTIME_INC "hsa.h" )
-if ( "${HSA_RUNTIME_INC_PATH}" STREQUAL "" )
-  find_file ( HSA_RUNTIME_INC "hsa/hsa.h" )
-endif ()
-find_library ( HSA_RUNTIME_LIB "libhsa-runtime${NBIT}.so" )
-get_filename_component ( HSA_RUNTIME_INC_PATH "${HSA_RUNTIME_INC}" DIRECTORY )
-get_filename_component ( HSA_RUNTIME_LIB_PATH "${HSA_RUNTIME_LIB}" DIRECTORY )
+## Find hsa-runtime
+find_package(hsa-runtime64 1.0 REQUIRED HINTS ${CMAKE_INSTALL_PREFIX} PATHS /opt/rocm)
 
-# find KFD thank header
-find_library ( HSA_KMT_LIB "libhsakmt.so" )
-if ( "${HSA_KMT_LIB_PATH}" STREQUAL "" )
-  find_library ( HSA_KMT_LIB "libhsakmt.a" )
-endif()
-get_filename_component ( HSA_KMT_LIB_PATH "${HSA_KMT_LIB}" DIRECTORY )
-get_filename_component ( ROCM_ROOT_DIR "${HSA_KMT_LIB_PATH}" DIRECTORY )
-
-set ( API_PATH ${HSA_RUNTIME_INC_PATH} )
+# find KFD thunk
+find_package(hsakmt 1.0 REQUIRED HINTS ${CMAKE_INSTALL_PREFIX} PATHS /opt/rocm)
 
 ## Basic Tool Chain Information
 message ( "----------------NBIT: ${NBIT}" )
 message ( "-----------BuildType: ${CMAKE_BUILD_TYPE}" )
 message ( "------------Compiler: ${CMAKE_CXX_COMPILER}" )
 message ( "----Compiler-Version: ${CMAKE_CXX_COMPILER_VERSION}" )
-message ( "-----HSA-Runtime-Inc: ${HSA_RUNTIME_INC_PATH}" )
-message ( "-----HSA-Runtime-Lib: ${HSA_RUNTIME_LIB_PATH}" )
-message ( "----HSA_KMT_LIB_PATH: ${HSA_KMT_LIB_PATH}" )
-message ( "-------ROCM_ROOT_DIR: ${ROCM_ROOT_DIR}" )
 message ( "------------API-path: ${API_PATH}" )
 message ( "-----CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}" )
 message ( "---CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}" )
 message ( "-CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}" )
 message ( "-CMAKE_CXX_COMPILER_VERSION: ${CMAKE_CXX_COMPILER_VERSION}" )
 message ( "---------GPU_TARGETS: ${GPU_TARGETS}" )
-
-## Check the ROCm pathes
-if ( "${HSA_RUNTIME_INC_PATH}" STREQUAL "" )
-  message ( FATAL_ERROR "HSA_RUNTIME_INC_PATH is not found." )
-endif ()
-if ( "${HSA_RUNTIME_LIB_PATH}" STREQUAL "" )
-  message ( FATAL_ERROR "HSA_RUNTIME_LIB_PATH is not found." )
-endif ()
-if ( "${HSA_KMT_LIB_PATH}" STREQUAL "" )
-  message ( FATAL_ERROR "HSA_KMT_LIB_PATH is not found." )
-endif ()
-if ( "${ROCM_ROOT_DIR}" STREQUAL "" )
-  message ( FATAL_ERROR "ROCM_ROOT_DIR is not found." )
-endif ()

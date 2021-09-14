@@ -13,8 +13,8 @@ set ( LIB_SRC
 )
 
 add_library ( ${TARGET_LIB} SHARED ${LIB_SRC} )
-target_include_directories ( ${TARGET_LIB} PRIVATE ${LIB_DIR} ${API_PATH} ${ROCM_ROOT_DIR}/include )
-target_link_libraries( ${TARGET_LIB} PRIVATE ${HSA_RUNTIME_LIB} ${HSA_KMT_LIB} c stdc++ )
+target_include_directories ( ${TARGET_LIB} PRIVATE ${LIB_DIR} ${API_PATH})
+target_link_libraries( ${TARGET_LIB} PRIVATE hsa-runtime64::hsa-runtime64 hsakmt::hsakmt )
 
 ## Generating definitions
 set ( SCRIPT_DIR "${ROOT_DIR}/script" )
