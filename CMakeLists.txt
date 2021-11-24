@@ -100,6 +100,12 @@ set ( CPACK_PACKAGE_DESCRIPTION_SUMMARY "AQLPROFILE library for AMD HSA runtime 
 set ( CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md" )
 set ( ENABLE_LDCONFIG ON CACHE BOOL "Set library links and caches using ldconfig.")
 
+# Logic to install copyright file (required for debian specifications)
+set ( CPACK_INSTALL_COMMANDS "install -m 644 -D ${CPACK_RESOURCE_FILE_LICENSE} \
+      ${PROJECT_BINARY_DIR}/doc/${CPACK_PACKAGE_NAME}/copyright" )
+set ( CPACK_INSTALLED_DIRECTORIES "${PROJECT_BINARY_DIR}/doc/${CPACK_PACKAGE_NAME}"
+      "/usr/share/doc/${CPACK_PACKAGE_NAME}" )
+
 if ( DEFINED ENV{ROCM_LIBPATCH_VERSION} )
   set ( CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION}.$ENV{ROCM_LIBPATCH_VERSION}" )
 endif()
@@ -130,6 +136,7 @@ if ( DEFINED ENV{CPACK_RPM_PACKAGE_RELEASE} )
 else()
   set ( CPACK_RPM_PACKAGE_RELEASE "local" )
 endif()
+set( CPACK_RPM_PACKAGE_LICENSE "AMD Proprietary" )
 
 ## 'dist' breaks manual builds on debian systems due to empty Provides
 execute_process( COMMAND rpm --eval %{?dist}
