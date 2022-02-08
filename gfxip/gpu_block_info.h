@@ -31,7 +31,9 @@ enum CounterBlockAttr {
   CounterBlockExplInstAttr = 0x800,
   // SPM blocks
   CounterBlockSpmGlobalAttr = 0x1000,
-  CounterBlockSpmSeAttr = 0x2000
+  CounterBlockSpmSeAttr = 0x2000,
+  // GUS block
+  CounterBlockGusAttr = 0x4000
 };
 
 // Register address corresponding to each counter

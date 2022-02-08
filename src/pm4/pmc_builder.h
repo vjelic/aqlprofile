@@ -129,6 +129,15 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_PERFCOUNTER_CTRL_ADDR,
                                           Primitives::sq_control_enable_value());
     }
+#ifdef _GFX10_PRIMITIVES_H_
+    // Clear and enable GUS counters
+    if (counters_vec.get_attr() & CounterBlockGusAttr) {
+      Builder::BuildWriteConfigRegPacket(cmd_buffer, Primitives::GUS_PERFCOUNTER_RSLT_CNTL_ADDR,
+                                         Primitives::gus_disable_clear_value());
+      Builder::BuildWriteConfigRegPacket(cmd_buffer, Primitives::GUS_PERFCOUNTER_RSLT_CNTL_ADDR,
+                                         Primitives::gus_start_value());
+    }
+#endif
     // SDMA mask
     uint32_t sdma_mask = 0;
     // Programming perf counters
@@ -205,11 +214,18 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       }
       // Configure SQ block
       if (block_info->attr & CounterBlockSqAttr) {
-        Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_PERFCOUNTER_MASK_ADDR,
+        if (Primitives::GFXIP_LEVEL != 10)
+          Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_PERFCOUNTER_MASK_ADDR,
                                             Primitives::sq_mask_value(counter_des));
         Builder::BuildWriteUConfigRegPacket(cmd_buffer, reg_info.control_addr,
                                             Primitives::sq_control_value(counter_des));
       }
+#ifdef _GFX10_PRIMITIVES_H_
+      // Configure GUS block
+      if (block_info->attr & CounterBlockGusAttr)
+        Builder::BuildWriteConfigRegPacket(cmd_buffer, reg_info.select_addr,
+                                           Primitives::gus_select_value(counter_des));
+#endif
     }
     // SDMA start
     if (sdma_mask != 0) {
@@ -298,6 +314,12 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
                                          Primitives::MC_SEQ_PERFCOUNTER_RSLT_CNTL_M3_ADDR,
                                          Primitives::mc_seq_hbm_stop_value());
     }
+#ifdef _GFX10_PRIMITIVES_H_
+    // Stop GUS counters
+    if (counters_vec.get_attr() & CounterBlockGusAttr)
+      Builder::BuildWriteConfigRegPacket(cmd_buffer, Primitives::GUS_PERFCOUNTER_RSLT_CNTL_ADDR,
+                                         Primitives::gus_stop_value());
+#endif
     // SDMA mask
     uint32_t sdma_mask = 0;
     // Iterate through the list of blocks to create PM4 packets to read counter values

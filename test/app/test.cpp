@@ -245,7 +245,6 @@ int main(int argc, char* argv[]) {
   }
 
   TestHsa::HsaInstantiate();
-
   const hsa_ven_amd_aqlprofile_event_t* events_arr;
 
   // Run simple convolution test
@@ -387,9 +386,9 @@ int main(int argc, char* argv[]) {
     }
     ret_val = RunKernel<SimpleConvolution, TestPGenPmc<RUN_MODE> >(
         events_count, pmc_argv(events_count, events_arr));
-  } else if (sqtt_enable) {
+  } else if (sqtt_enable && TestHsa::HsaAgentName() != "gfx10") {
     ret_val = RunKernel<SimpleConvolution, TestPGenSqtt>(argc, argv);
-  } else if (pcsmp_enable) {
+  } else if (pcsmp_enable && TestHsa::HsaAgentName() != "gfx10") {
     ret_val = RunKernel<SimpleConvolution, TestPGenPcsmp>(argc, argv);
   } else if (spm_enable) {
     int events_count = 0;

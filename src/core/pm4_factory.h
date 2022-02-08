@@ -28,7 +28,8 @@ enum gpu_id_t {
   INVAL_GPU_ID,  // invalid GPU id
   GFX9_GPU_ID,   // generic Gfx9 id
   MI100_GPU_ID,  // Mi100 GPU id
-  MI200_GPU_ID   // Mi200 GPU id
+  MI200_GPU_ID,   // Mi200 GPU id
+  GFX10_GPU_ID  // generic Gfx10 id
 };
 
 // Block info map class
@@ -169,6 +170,8 @@ class Pm4Factory {
 
   // Create GFX9 generic factory
   static Pm4Factory* Gfx9Create(const AgentInfo* agent_info);
+  // Create GFX10 generic factory
+  static Pm4Factory* Gfx10Create(const AgentInfo* agent_info);
   // Create MI100 factory
   static Pm4Factory* Mi100Create(const AgentInfo* agent_info);
   // Create MI200 factory
@@ -206,6 +209,10 @@ inline Pm4Factory* Pm4Factory::Create(const hsa_agent_t agent, bool concurrent) 
       // Create Gfx9 generic factory
       case GFX9_GPU_ID:
         it->second = Gfx9Create(agent_info);
+        break;
+      // Create Gfx10 generic factory
+      case GFX10_GPU_ID:
+        it->second = Gfx10Create(agent_info);
         break;
       // Create MI100 generic factory
       case MI100_GPU_ID:
@@ -249,6 +256,7 @@ inline bool Pm4Factory::CheckConcurrent(const profile_t* profile) {
 inline gpu_id_t Pm4Factory::GetGpuId(const hsa_agent_t agent) {
   hsa_status_t status = HSA_STATUS_ERROR;
   char agent_name[64];
+  char agent_gfxip[64];
   uint32_t device_id = 0;
 
   // Getting GfxIP name
@@ -269,7 +277,14 @@ inline gpu_id_t Pm4Factory::GetGpuId(const hsa_agent_t agent) {
 
   // Obtaining GPU id
   gpu_id_t gpu_id = INVAL_GPU_ID;
-  if ((strncmp(agent_name, "gfx900", 6) == 0) || (strncmp(agent_name, "gfx902", 6) == 0) ||
+
+  const int gfxip_label_len = strlen(agent_name) - 2;
+  memcpy(agent_gfxip, agent_name, gfxip_label_len);
+  agent_gfxip[gfxip_label_len] = '\0';
+
+  if (strcmp(agent_gfxip, "gfx10") == 0){
+    gpu_id = GFX10_GPU_ID;
+  } else if ((strncmp(agent_name, "gfx900", 6) == 0) || (strncmp(agent_name, "gfx902", 6) == 0) ||
              (strncmp(agent_name, "gfx906", 6) == 0) ||
              (strncmp(agent_name, "gfx908", 6) == 0)  // MI100
   ) {

@@ -7,6 +7,7 @@ set ( LIB_SRC
   ${LIB_DIR}/core/spm_data.cpp
   ${LIB_DIR}/core/populate_aql.cpp
   ${LIB_DIR}/core/gfx9_factory.cpp
+  ${LIB_DIR}/core/gfx10_factory.cpp
   ${LIB_DIR}/util/hsa_rsrc_factory.cpp
 )
 
@@ -24,16 +25,23 @@ set ( BINFO_HEADER "${DEF_DIR}/gpu_block_info.h" )
 set ( GFX9_TEMPL "${SCRIPT_DIR}/gfx9_def.h" )
 set ( GFX9_DEF "${GFXIP_DIR}/gfx9_def.h" )
 set ( GFX9_HEADER "${DEF_DIR}/gfx9_def.h" )
+set ( GFX10_TEMPL "${SCRIPT_DIR}/gfx10_def.h" )
+set ( GFX10_DEF "${GFXIP_DIR}/gfx10_def.h" )
+set ( GFX10_HEADER "${DEF_DIR}/gfx10_def.h" )
 include_directories ( ${ROOT_DIR} )
 add_custom_target( mygenreset
   COMMAND sh -xc "cp ${BINFO_TEMPL} ${BINFO_HEADER}"
   COMMAND sh -xc "cp ${GFX9_TEMPL} ${GFX9_HEADER}"
+  COMMAND sh -xc "cp ${GFX10_TEMPL} ${GFX10_HEADER}"
 )
 add_custom_target( mygen
   COMMAND sh -xc "cp ${BINFO_TEMPL} ${BINFO_HEADER}"
   COMMAND sh -xc "cp ${GFX9_TEMPL} ${GFX9_HEADER}"
+  COMMAND sh -xc "cp ${GFX10_TEMPL} ${GFX10_HEADER}"
   COMMAND sh -xc "sed '/gfx9_def/ s/.*//' ${GFX9_TEMPL} >${GFX9_HEADER}"
   COMMAND sh -xc "${ROOT_DIR}/script/errextr.sh ${GFX9_HEADER} ${GFX9_DEF}"
+  COMMAND sh -xc "sed '/gfx10_def/ s/.*//' ${GFX10_TEMPL} >${GFX10_HEADER}"
+  COMMAND sh -xc "${ROOT_DIR}/script/errextr.sh ${GFX10_HEADER} ${GFX10_DEF}"
   COMMAND sh -xc "head -n1 ${BINFO_TEMPL} >${BINFO_HEADER}"
   COMMAND sh -xc "sed 's/_GPU_BLOCKINFO_H_/SRC_DEF_GPU_BLOCK_INFO_H_/' ${BINFO_DEF} >>${BINFO_HEADER}"
 )

@@ -8,9 +8,10 @@
 #include <iostream>
 #include <sstream>
 
-#include "def/gfx9_def.h"
 #include "pm4/cmd_builder.h"
-
+#ifndef SRC_PM4_GFX10_CMD_BUILDER_H_
+  #include "def/gfx9_def.h"
+#endif
 namespace pm4_builder {
 
 /// @brief class Gfx9CmdBuilder implements the virtual class CmdBuilder
@@ -31,7 +32,7 @@ class Gfx9CmdBuilder : public CmdBuilder {
     return ((addr >= CONFIG_SPACE_START) && (addr <= CONFIG_SPACE_END));
   }
 
-  void BuildBarrierCommand(CmdBuffer* cmdBuf) {
+  virtual void BuildBarrierCommand(CmdBuffer* cmdBuf) {
     PM4MEC_EVENT_WRITE event_write{};
 
     // Initialize the command header
@@ -39,11 +40,11 @@ class Gfx9CmdBuilder : public CmdBuilder {
 
     event_write.bitfields2.event_type = CS_PARTIAL_FLUSH;
     event_write.bitfields2.event_index = event_index__mec_event_write__cs_partial_flush;
-
     // Append the built command into output Command Buffer
     APPEND_COMMAND_WRAPPER(cmdBuf, event_write);
   }
 
+#ifndef SRC_PM4_GFX10_CMD_BUILDER_H_
   void BuildCacheFlushPacket(CmdBuffer* cmdbuf) {
     PM4MEC_ACQUIRE_MEM cache_flush{};
 
@@ -76,7 +77,7 @@ class Gfx9CmdBuilder : public CmdBuilder {
     // Append the built command into output Command Buffer
     APPEND_COMMAND_WRAPPER(cmdbuf, cache_flush);
   }
-
+#endif
   void BuildWriteWaitIdlePacket(CmdBuffer* cmdbuf) { BuildBarrierCommand(cmdbuf); }
 
   void BuildWaitRegMemCommand(CmdBuffer* cmdbuf, bool mem_space, uint64_t wait_addr, bool func_eq,
@@ -171,7 +172,7 @@ class Gfx9CmdBuilder : public CmdBuilder {
     return IsPrivilegedConfigReg(addr) ? BuildWritePConfigRegPacket(cmdbuf, addr, value)
                                        : BuildWriteUConfigRegPacket(cmdbuf, addr, value);
   }
-
+#ifndef SRC_PM4_GFX10_CMD_BUILDER_H_
   void BuildCopyRegDataPacket(CmdBuffer* cmdbuf, uint32_t src_reg_addr, const void* dst_addr,
                               uint32_t size, bool wait) {
     PM4MEC_COPY_DATA copy_data{};
@@ -205,7 +206,7 @@ class Gfx9CmdBuilder : public CmdBuilder {
     // Append the built command into output Command Buffer
     APPEND_COMMAND_WRAPPER(cmdbuf, copy_data);
   }
-
+#endif
   uint32_t BuildCopyCounterDataPacket(CmdBuffer* cmdbuf, uint32_t src_reg_addr_lo,
                                       uint32_t src_reg_addr_hi, const void* dst_addr,
                                       uint32_t dw_mask) {
