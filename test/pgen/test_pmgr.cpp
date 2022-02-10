@@ -31,23 +31,9 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "util/test_assert.h"
 
-bool TestPMgr::AddPacketGfx9(const packet_t* packet) {
+bool TestPMgr::AddPacket(const packet_t* packet) {
   GetRsrcFactory()->Submit(GetQueue(), packet);
   return true;
-}
-
-bool TestPMgr::AddPacketGfx8(const packet_t* packet) {
-  // Create legacy devices PM4 data
-  const hsa_ext_amd_aql_pm4_packet_t* aql_packet = (const hsa_ext_amd_aql_pm4_packet_t*)packet;
-  slot_pm4_t data;
-  api_->hsa_ven_amd_aqlprofile_legacy_get_pm4(aql_packet, reinterpret_cast<void*>(data.words));
-  GetRsrcFactory()->Submit(GetQueue(), &data, HSA_VEN_AMD_AQLPROFILE_LEGACY_PM4_PACKET_SIZE);
-  return true;
-}
-
-bool TestPMgr::AddPacket(const packet_t* packet) {
-  const char* agent_name = GetAgentInfo()->name;
-  return (strncmp(agent_name, "gfx8", 4) == 0) ? AddPacketGfx8(packet) : AddPacketGfx9(packet);
 }
 
 bool TestPMgr::AddWaitPacket(packet_t* packet, hsa_signal_t signal) {

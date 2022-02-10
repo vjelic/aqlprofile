@@ -70,9 +70,6 @@ class TestPMgr : public TestAql {
 
   bool AddPacket(const packet_t* packet);
   bool AddWaitPacket(packet_t* packet, hsa_signal_t signal);
-
-  bool AddPacketGfx8(const packet_t* packet);
-  bool AddPacketGfx9(const packet_t* packet);
 };
 
 #endif  // TEST_PGEN_TEST_PMGR_H_

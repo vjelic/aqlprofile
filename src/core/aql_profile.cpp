@@ -562,20 +562,7 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_read(const hsa_ven_amd_aqlprofile
 // Legacy devices, converting of the profiling AQL packet to PM4 packet blob
 PUBLIC_API hsa_status_t
 hsa_ven_amd_aqlprofile_legacy_get_pm4(const aql_profile::packet_t* aql_packet, void* data) {
-  try {
-    // Populate GFX8 pm4 packet blob
-    // Adding HSA barrier acquire packet
-    data = aql_profile::LegacyAqlAcquire(aql_packet, data);
-    // Adding PM4 command packet
-    data = aql_profile::LegacyPm4(aql_packet, data);
-    // Adding HSA barrier release packet
-    data = aql_profile::LegacyAqlRelease(aql_packet, data);
-  } catch (std::exception& e) {
-    ERR_LOGGING << e.what();
-    return HSA_STATUS_ERROR;
-  }
-
-  return HSA_STATUS_SUCCESS;
+  return HSA_STATUS_ERROR;
 }
 
 // Method for getting the profile info

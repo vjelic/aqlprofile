@@ -20,7 +20,7 @@ class CfgHandler:
     os.chdir(path)
     # filename formats:
     #  rai: <path>/rai_files/<gfxip>_*.rai,
-    #       e.g., gfx8_ellesmere_chip_interface.rai
+    #       e.g., gfx9_greenland_chip_interface.rai
     #  misc: <path>/misc_files/*<gfxip>_*<block>_*,
     #       e.g., gfx906_gfx908_GCEA_PERFCOUNTER0_CFG.txt
     if sym != ".rai": sym = sym + '_*[!~]'

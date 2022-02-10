@@ -98,7 +98,7 @@ def parse_rai(inp, out, blist, nrai_blocks):
 #############################################################
 
 if (len(sys.argv) < 3):
-  print >>sys.stderr, "Usage:", sys.argv[0], " <path to .rai and misc> <gfxip in lower case, gfx8, gfx9, etc..>"
+  print >>sys.stderr, "Usage:", sys.argv[0], " <path to .rai and misc> <gfxip in lower case, gfx9, etc..>"
   sys.exit(1)
 
 gfxip = sys.argv[1]     # gfxip version, e.g., gfx906

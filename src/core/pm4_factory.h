@@ -26,8 +26,6 @@ namespace aql_profile {
 // GPU enumeration
 enum gpu_id_t {
   INVAL_GPU_ID,  // invalid GPU id
-  GFX8_GPU_ID,   // generic Gfx8 id
-  FIJI_GPU_ID,   // Fiji GPU id
   GFX9_GPU_ID,   // generic Gfx9 id
   MI100_GPU_ID,  // Mi100 GPU id
   MI200_GPU_ID   // Mi200 GPU id
@@ -169,10 +167,6 @@ class Pm4Factory {
   };
   typedef std::map<instances_key_t, Pm4Factory*, instances_fncomp_t> instances_t;
 
-  // Create Fiji factory
-  static Pm4Factory* FijiCreate(const AgentInfo* agent_info);
-  // Create GFX8 generic factory
-  static Pm4Factory* Gfx8Create(const AgentInfo* agent_info);
   // Create GFX9 generic factory
   static Pm4Factory* Gfx9Create(const AgentInfo* agent_info);
   // Create MI100 factory
@@ -209,14 +203,6 @@ inline Pm4Factory* Pm4Factory::Create(const hsa_agent_t agent, bool concurrent) 
   // Create a factory implementation for the GPU id
   if (ret.second) {
     switch (gpu_id) {
-      // Create Gfx8 generaic factory
-      case GFX8_GPU_ID:
-        it->second = Gfx8Create(agent_info);
-        break;
-      // Create Fiji specific factory
-      case FIJI_GPU_ID:
-        it->second = FijiCreate(agent_info);
-        break;
       // Create Gfx9 generic factory
       case GFX9_GPU_ID:
         it->second = Gfx9Create(agent_info);
@@ -283,49 +269,7 @@ inline gpu_id_t Pm4Factory::GetGpuId(const hsa_agent_t agent) {
 
   // Obtaining GPU id
   gpu_id_t gpu_id = INVAL_GPU_ID;
-  if (strncmp(agent_name, "gfx801", 6) == 0) {
-    throw aql_profile_exc_val<std::string>("GPU Carrizo is not supported", agent_name);
-  } else if (strncmp(agent_name, "gfx8", 4) == 0) {
-    switch (device_id) {
-      // Ellesmere
-      case 0x67C0:  // EllesmereM GL XT
-      case 0x67C1:  // EllesmereM GL PRO
-      case 0x67C2:  // Ellesmere Server XT, EllesmereM Server XT
-      case 0x67C4:  // Ellesmere GL XT
-      case 0x67C7:  // Ellesmere GL PRO
-      case 0x67DF:  // Ellesmere consumer, EllesmereM; Polaris20; Polaris20M
-      case 0x67D0:  // Ellesmere VF
-      // Ellesmere Kickers
-      case 0x67C8:  // EllesmereM GL XT Kicker
-      case 0x67C9:  // EllesmereM GL PRO  Kicker
-      case 0x67CA:  // Ellesmere Server XT Kicker
-      case 0x67CC:  // Ellesmere GL XT Kicker
-      case 0x67CF:  // Ellesmere GL PRO Kicker
-      // Buffin
-      case 0x67E0:  // BaffinM GL XT
-      case 0x67E3:  // Baffin Desktop GL XT
-      case 0x67E8:  // BaffinM GL Pro
-      case 0x67EB:  // BaffinM Server
-      case 0x67EF:  // BaffinM, Baffin Desktop; Polaris21; Polaris21M
-      case 0x67FF:  // BaffinM XPA; Polaris21; Polaris21M
-      // Baffin Kickers
-      case 0x67E1:  // BaffinM GL XT Kicker
-      case 0x67E7:  // Baffin Desktop GL XT Kicker
-      case 0x67E9:  // BaffinM GL Pro Kicker
-        gpu_id = GFX8_GPU_ID;
-        break;
-      // Fiji
-      case 0x7300:  // Fiji
-      case 0x730f:  // Fiji VF
-        gpu_id = FIJI_GPU_ID;
-        break;
-      default: {
-        std::ostringstream oss;
-        oss << "GPU device_id(" << std::hex << device_id << ") is not supported";
-        throw aql_profile_exc_msg(oss.str());
-      }
-    }
-  } else if ((strncmp(agent_name, "gfx900", 6) == 0) || (strncmp(agent_name, "gfx902", 6) == 0) ||
+  if ((strncmp(agent_name, "gfx900", 6) == 0) || (strncmp(agent_name, "gfx902", 6) == 0) ||
              (strncmp(agent_name, "gfx906", 6) == 0) ||
              (strncmp(agent_name, "gfx908", 6) == 0)  // MI100
   ) {

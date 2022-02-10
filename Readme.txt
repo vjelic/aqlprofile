@@ -1,7 +1,7 @@
 HSA extension AMD AQL profile library.
 Provides AQL packets helper methods for perfcounters (PMC) and SQ threadtraces (SQTT).
 
-Library supports GFX8/GFX9 APIs.
+Library supports GFX9 APIs.
 The library source tree:
  - doc  - Documantation, the API specification and the presentation
  - <hsa-runtime>/inc/hsa_ven_amd_aqlprofile.h - AMD AQL profile library public API
