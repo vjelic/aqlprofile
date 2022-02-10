@@ -1,20 +1,21 @@
 #ifndef SRC_PM4_GFX9_CMD_BUILDER_H_
 #define SRC_PM4_GFX9_CMD_BUILDER_H_
 
-#include <string.h>
 #include <assert.h>
+#include <string.h>
 
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <sstream>
 
-#include "pm4/cmd_builder.h"
 #include "def/gfx9_def.h"
+#include "pm4/cmd_builder.h"
 
 namespace pm4_builder {
 
 // @brief Initializer for various Gpu command headers
-template <class T> static void GenerateCmdHeader(T* pm4, IT_OpCodeType op_code) {
+template <class T>
+static void GenerateCmdHeader(T* pm4, IT_OpCodeType op_code) {
   pm4->header.u32All = PM4_TYPE3_HDR(op_code, sizeof(T) / sizeof(uint32_t));
 }
 
@@ -76,9 +77,7 @@ class Gfx9CmdBuilder : public CmdBuilder {
     APPEND_COMMAND_WRAPPER(cmdbuf, cache_flush);
   }
 
-  void BuildWriteWaitIdlePacket(CmdBuffer* cmdbuf) {
-    BuildBarrierCommand(cmdbuf);
-  }
+  void BuildWriteWaitIdlePacket(CmdBuffer* cmdbuf) { BuildBarrierCommand(cmdbuf); }
 
   void BuildWaitRegMemCommand(CmdBuffer* cmdbuf, bool mem_space, uint64_t wait_addr, bool func_eq,
                               uint32_t mask_val, uint32_t wait_val) {
@@ -159,8 +158,8 @@ class Gfx9CmdBuilder : public CmdBuilder {
 
   void BuildWritePConfigRegPacket(CmdBuffer* cmdbuf, uint32_t addr, uint32_t value) {
     const MEC_COPY_DATA_dst_sel_enum dst_sel = IsPrivilegedConfigReg(addr)
-        ? dst_sel__mec_copy_data__perfcounters
-        : dst_sel__mec_copy_data__mem_mapped_register;
+                                                   ? dst_sel__mec_copy_data__perfcounters
+                                                   : dst_sel__mec_copy_data__mem_mapped_register;
 
     PM4MEC_COPY_DATA cmd_data;
     memset(&cmd_data, 0, sizeof(PM4MEC_COPY_DATA));
@@ -193,8 +192,8 @@ class Gfx9CmdBuilder : public CmdBuilder {
   void BuildCopyRegDataPacket(CmdBuffer* cmdbuf, uint32_t src_reg_addr, void* dst_addr,
                               uint32_t size, bool wait) {
     const MEC_COPY_DATA_src_sel_enum src_sel = IsPrivilegedConfigReg(src_reg_addr)
-        ? src_sel__mec_copy_data__perfcounters
-        : src_sel__mec_copy_data__mem_mapped_register;
+                                                   ? src_sel__mec_copy_data__perfcounters
+                                                   : src_sel__mec_copy_data__mem_mapped_register;
 
     PM4MEC_COPY_DATA cmd_data;
     memset(&cmd_data, 0, sizeof(PM4MEC_COPY_DATA));
@@ -243,8 +242,8 @@ class Gfx9CmdBuilder : public CmdBuilder {
     return read_counter;
   }
 
-  void BuildWriteRegDataPacket(CmdBuffer* cmdbuf, uint32_t dst_reg_addr,
-                               uint32_t* data, uint32_t count, bool wait) {
+  void BuildWriteRegDataPacket(CmdBuffer* cmdbuf, uint32_t dst_reg_addr, uint32_t* data,
+                               uint32_t count, bool wait) {
     PM4MEC_WRITE_DATA cmd_data{};
 
     // Initialize the command header
@@ -252,7 +251,8 @@ class Gfx9CmdBuilder : public CmdBuilder {
 
     // ordinal2
     cmd_data.bitfields2.dst_sel = dst_sel__mec_write_data__mem_mapped_register;  // mem-mapped reg
-    cmd_data.bitfields2.addr_incr = addr_incr__mec_write_data__do_not_increment_address;  // not increment address
+    cmd_data.bitfields2.addr_incr =
+        addr_incr__mec_write_data__do_not_increment_address;  // not increment address
     cmd_data.bitfields2.wr_confirm = (MEC_WRITE_DATA_wr_confirm_enum)wait;
 
     // ordinal3
@@ -268,7 +268,7 @@ class Gfx9CmdBuilder : public CmdBuilder {
     for (uint32_t i = 0; i < count; i++) {
       APPEND_COMMAND_WRAPPER(cmdbuf, data[i]);
     }
-    const uint32_t NOP_dw = PM4_TYPE3_HDR(IT_NOP, 0x3FFF+2);
+    const uint32_t NOP_dw = PM4_TYPE3_HDR(IT_NOP, 0x3FFF + 2);
     if (count & 1) APPEND_COMMAND_WRAPPER(cmdbuf, NOP_dw);
   }
 
@@ -298,6 +298,6 @@ class Gfx9CmdBuilder : public CmdBuilder {
   }
 };
 
-}  // pm4_builder
+}  // namespace pm4_builder
 
 #endif  //  SRC_PM4_GFX9_CMD_BUILDER_H_

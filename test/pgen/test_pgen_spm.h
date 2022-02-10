@@ -28,14 +28,14 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef TEST_PGEN_TEST_PGEN_SPM_H_
 #define TEST_PGEN_TEST_PGEN_SPM_H_
 
-#include <string>
 #include <fstream>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
+#include <string>
 #include <vector>
 
-#include "util/test_assert.h"
 #include "pgen/test_pgen.h"
+#include "util/test_assert.h"
 
 typedef std::vector<hsa_ven_amd_aqlprofile_info_data_t> callback_data_t;
 
@@ -64,7 +64,7 @@ class TestPGenSpm : public TestPGen {
       unsigned event_id = 0;
       sscanf(arg_list[i], "%u:%u:%u", &block_id, &block_index, &event_id);
       const hsa_ven_amd_aqlprofile_event_t event = {
-        static_cast<hsa_ven_amd_aqlprofile_block_name_t>(block_id), block_index, event_id};
+          static_cast<hsa_ven_amd_aqlprofile_block_name_t>(block_id), block_index, event_id};
       event_vec.push_back(event);
     }
 

@@ -58,8 +58,7 @@ bool TestPMgr::AddWaitPacket(packet_t* packet, hsa_signal_t signal) {
   bool result = AddPacket(packet);
 
   // Wait for Dispatch packet to complete
-  hsa_signal_wait_acquire(signal, HSA_SIGNAL_CONDITION_LT, 1, (uint64_t)-1,
-                          HSA_WAIT_STATE_BLOCKED);
+  hsa_signal_wait_acquire(signal, HSA_SIGNAL_CONDITION_LT, 1, (uint64_t)-1, HSA_WAIT_STATE_BLOCKED);
 
   hsa_signal_store_relaxed(signal, 1);
 

@@ -31,8 +31,8 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <list>
 #include <vector>
 
-#include "util/test_assert.h"
 #include "pgen/test_pgen.h"
+#include "util/test_assert.h"
 
 typedef std::vector<hsa_ven_amd_aqlprofile_info_data_t> callback_data_t;
 
@@ -45,7 +45,7 @@ hsa_status_t TestPGenPmcCallback(hsa_ven_amd_aqlprofile_info_type_t info_type,
 }
 
 // Class implements PMC profiling
-template<int MODE>
+template <int MODE>
 class TestPGenPmc : public TestPGen {
  public:
   explicit TestPGenPmc(TestAql* t) : TestPGen(t) {
@@ -53,7 +53,7 @@ class TestPGenPmc : public TestPGen {
     profile_ = hsa_ven_amd_aqlprofile_profile_t{};
   }
 
-  ~TestPGenPmc() { delete [] profile_.events; }
+  ~TestPGenPmc() { delete[] profile_.events; }
 
   bool Initialize(int arg_cnt, char** arg_list) {
     std::vector<hsa_ven_amd_aqlprofile_event_t> event_vec;

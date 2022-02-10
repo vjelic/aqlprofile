@@ -28,24 +28,24 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef TEST_CTRL_TEST_ASSERT_H_
 #define TEST_CTRL_TEST_ASSERT_H_
 
-#define TEST_ASSERT(cond)                                                                          \
-  {                                                                                                \
-    if (!(cond)) {                                                                                 \
-      std::cerr << "Assert failed(" << #cond << ") at " << __FILE__ << ", line " << __LINE__       \
-                << std::endl;                                                                      \
-      exit(-1);                                                                                    \
-    }                                                                                              \
+#define TEST_ASSERT(cond)                                                                    \
+  {                                                                                          \
+    if (!(cond)) {                                                                           \
+      std::cerr << "Assert failed(" << #cond << ") at " << __FILE__ << ", line " << __LINE__ \
+                << std::endl;                                                                \
+      exit(-1);                                                                              \
+    }                                                                                        \
   }
 
-#define TEST_STATUS(cond)                                                                          \
-  {                                                                                                \
-    if (!(cond)) {                                                                                 \
-      std::cerr << "Test error at " << __FILE__ << ", line " << __LINE__ << std::endl;             \
-      const char* message;                                                                         \
-      rocprofiler_error_string(&message);                                                          \
-      std::cerr << "ERROR: " << message << std::endl;                                              \
-      exit(-1);                                                                                    \
-    }                                                                                              \
+#define TEST_STATUS(cond)                                                              \
+  {                                                                                    \
+    if (!(cond)) {                                                                     \
+      std::cerr << "Test error at " << __FILE__ << ", line " << __LINE__ << std::endl; \
+      const char* message;                                                             \
+      rocprofiler_error_string(&message);                                              \
+      std::cerr << "ERROR: " << message << std::endl;                                  \
+      exit(-1);                                                                        \
+    }                                                                                  \
   }
 
 #endif  // TEST_CTRL_TEST_ASSERT_H_

@@ -30,15 +30,12 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <hsa.h>
 #include <hsa_ven_amd_aqlprofile.h>
+
 #include <atomic>
 
 #include "ctrl/test_aql.h"
 
-enum Mode {
-  SETUP_MODE,
-  RUN_MODE,
-  UNKNOWN
-};
+enum Mode { SETUP_MODE, RUN_MODE, UNKNOWN };
 
 // Class implements profiling manager
 class TestPMgr : public TestAql {

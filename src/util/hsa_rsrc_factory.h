@@ -36,8 +36,8 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <string.h>
 
 #include <iostream>
-#include <mutex>
 #include <map>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -45,23 +45,25 @@ POSSIBILITY OF SUCH DAMAGE.
 #define HSA_QUEUE_ALIGN_BYTES 64
 #define HSA_PACKET_ALIGN_BYTES 64
 
-#define CHECK_STATUS(msg, status) do {                                                             \
-  if ((status) != HSA_STATUS_SUCCESS) {                                                            \
-    const char* emsg = 0;                                                                          \
-    hsa_status_string(status, &emsg);                                                              \
-    printf("%s: %s\n", msg, emsg ? emsg : "<unknown error>");                                      \
-    abort();                                                                                       \
-  }                                                                                                \
-} while (0)
+#define CHECK_STATUS(msg, status)                               \
+  do {                                                          \
+    if ((status) != HSA_STATUS_SUCCESS) {                       \
+      const char* emsg = 0;                                     \
+      hsa_status_string(status, &emsg);                         \
+      printf("%s: %s\n", msg, emsg ? emsg : "<unknown error>"); \
+      abort();                                                  \
+    }                                                           \
+  } while (0)
 
-#define CHECK_ITER_STATUS(msg, status) do {                                                        \
-  if ((status) != HSA_STATUS_INFO_BREAK) {                                                         \
-    const char* emsg = 0;                                                                          \
-    hsa_status_string(status, &emsg);                                                              \
-    printf("%s: %s\n", msg, emsg ? emsg : "<unknown error>");                                      \
-    abort();                                                                                       \
-  }                                                                                                \
-} while (0)
+#define CHECK_ITER_STATUS(msg, status)                          \
+  do {                                                          \
+    if ((status) != HSA_STATUS_INFO_BREAK) {                    \
+      const char* emsg = 0;                                     \
+      hsa_status_string(status, &emsg);                         \
+      printf("%s: %s\n", msg, emsg ? emsg : "<unknown error>"); \
+      abort();                                                  \
+    }                                                           \
+  } while (0)
 
 static const size_t MEM_PAGE_BYTES = 0x1000;
 static const size_t MEM_PAGE_MASK = MEM_PAGE_BYTES - 1;
@@ -282,7 +284,9 @@ class HsaRsrcFactory {
   const hsa_ven_amd_loader_1_00_pfn_t* LoaderApi() const { return &loader_api_; }
 
   // Methods for system-clock/ns conversion and timestamp in 'ns'
-  timestamp_t SysclockToNs(const timestamp_t& sysclock) const { return timer_->sysclock_to_ns(sysclock); }
+  timestamp_t SysclockToNs(const timestamp_t& sysclock) const {
+    return timer_->sysclock_to_ns(sysclock);
+  }
   timestamp_t NsToSysclock(const timestamp_t& time) const { return timer_->ns_to_sysclock(time); }
   timestamp_t TimestampNs() const { return timer_->timestamp_ns(); }
 
@@ -349,9 +353,8 @@ class HsaRsrcFactory {
   HsaTimer* timer_;
 
   // CPU/kern-arg memory pools
-  hsa_amd_memory_pool_t *cpu_pool_;
-  hsa_amd_memory_pool_t *kern_arg_pool_;
+  hsa_amd_memory_pool_t* cpu_pool_;
+  hsa_amd_memory_pool_t* kern_arg_pool_;
 };
-
 
 #endif  // SRC_UTIL_HSA_RSRC_FACTORY_H_

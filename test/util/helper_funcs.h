@@ -25,6 +25,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #define TEST_UTIL_HELPER_FUNCS_H_
 
 #include <time.h>
+
 #include <cmath>
 #include <iostream>
 #include <sstream>
@@ -69,7 +70,8 @@ bool FillRandom(T* array_ptr, const int width, const int height, const T range_m
   return true;
 }
 
-template <typename T> T RoundToPowerOf2(T val) {
+template <typename T>
+T RoundToPowerOf2(T val) {
   int bytes = sizeof(T);
 
   val--;
@@ -79,7 +81,8 @@ template <typename T> T RoundToPowerOf2(T val) {
   return val;
 }
 
-template <typename T> bool IsPowerOf2(T val) {
+template <typename T>
+bool IsPowerOf2(T val) {
   long long long_val = val;
   return (((long_val & (-long_val)) - long_val == 0) && (long_val != 0));
 }

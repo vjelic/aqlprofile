@@ -1,12 +1,12 @@
-#include <string.h>
 #include <assert.h>
+#include <string.h>
 
+#include <iomanip>
 #include <iostream>
 #include <sstream>
-#include <iomanip>
 
-#include "core/aql_profile.h"
 #include "core/amd_aql_pm4_ib_packet.h"
+#include "core/aql_profile.h"
 #include "def/gfx8_def.h"
 
 namespace aql_profile {
@@ -19,7 +19,7 @@ void* LegacyAqlAcquire(const packet_t* aql_packet, void* data) {
   const aql_packet_header_t aql_header_type = HSA_PACKET_TYPE_BARRIER_AND << HSA_PACKET_HEADER_TYPE;
   const aql_packet_header_t aql_header_barrier = 1ul << HSA_PACKET_HEADER_BARRIER;
   const aql_packet_header_t aql_header_acquire = HSA_FENCE_SCOPE_SYSTEM
-      << HSA_PACKET_HEADER_SCACQUIRE_FENCE_SCOPE;
+                                                 << HSA_PACKET_HEADER_SCACQUIRE_FENCE_SCOPE;
   aql_barrier->header |= aql_header_type;
   aql_barrier->header |= aql_header_barrier;
   aql_barrier->header |= aql_header_acquire;
@@ -32,7 +32,7 @@ void* LegacyAqlRelease(const packet_t* aql_packet, void* data) {
   const aql_packet_header_t aql_header_type = HSA_PACKET_TYPE_BARRIER_AND << HSA_PACKET_HEADER_TYPE;
   const aql_packet_header_t aql_header_barrier = 1ul << HSA_PACKET_HEADER_BARRIER;
   const aql_packet_header_t aql_header_release = HSA_FENCE_SCOPE_SYSTEM
-      << HSA_PACKET_HEADER_SCRELEASE_FENCE_SCOPE;
+                                                 << HSA_PACKET_HEADER_SCRELEASE_FENCE_SCOPE;
   aql_barrier->header |= aql_header_type;
   aql_barrier->header |= aql_header_barrier;
   aql_barrier->header |= aql_header_release;

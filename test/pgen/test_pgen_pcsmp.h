@@ -31,31 +31,28 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cstdint>
 #include <iostream>
 
-#include "util/test_assert.h"
 #include "pgen/test_pgen.h"
 #include "pgen/test_pgen_sqtt.h"
+#include "util/test_assert.h"
 
 // PC sampling callback data
 struct pcsmp_callback_data_t {
-  const char* kernel_name;     // sampled kernel name
-  void* data_buffer;           // host buffer for tracing data
-  uint64_t id;                 // sample id
-  uint64_t cycle;              // sample cycle
-  uint64_t pc;                 // sample PC
+  const char* kernel_name;  // sampled kernel name
+  void* data_buffer;        // host buffer for tracing data
+  uint64_t id;              // sample id
+  uint64_t cycle;           // sample cycle
+  uint64_t pc;              // sample PC
 };
 
 hsa_status_t TestPGenPcsmpCallback(hsa_ven_amd_aqlprofile_info_type_t info_type,
-                                  hsa_ven_amd_aqlprofile_info_data_t* info_data,
-                                  void* callback_data) {
+                                   hsa_ven_amd_aqlprofile_info_data_t* info_data,
+                                   void* callback_data) {
   hsa_status_t status = HSA_STATUS_SUCCESS;
-  pcsmp_callback_data_t* pcsmp_data =
-    reinterpret_cast<pcsmp_callback_data_t*>(callback_data);
-  std::cout <<
-    "id(" << std::dec << pcsmp_data->id <<
-    ") cycle(" << std::dec << pcsmp_data->cycle <<
-    ") pc(0x" << std::hex << pcsmp_data->pc <<
-    ") name(\"" << pcsmp_data->kernel_name <<
-    "\")" << std::dec << std::endl << std::flush;
+  pcsmp_callback_data_t* pcsmp_data = reinterpret_cast<pcsmp_callback_data_t*>(callback_data);
+  std::cout << "id(" << std::dec << pcsmp_data->id << ") cycle(" << std::dec << pcsmp_data->cycle
+            << ") pc(0x" << std::hex << pcsmp_data->pc << ") name(\"" << pcsmp_data->kernel_name
+            << "\")" << std::dec << std::endl
+            << std::flush;
   return status;
 }
 

@@ -1,11 +1,11 @@
 #include <assert.h>
 
+#include <iomanip>
 #include <iostream>
 #include <sstream>
-#include <iomanip>
 
-#include "core/aql_profile.h"
 #include "core/amd_aql_pm4_ib_packet.h"
+#include "core/aql_profile.h"
 #include "pm4/cmd_builder.h"
 
 namespace aql_profile {

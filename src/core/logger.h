@@ -1,22 +1,22 @@
 #ifndef SRC_CORE_LOGGER_H_
 #define SRC_CORE_LOGGER_H_
 
-#include <time.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/syscall.h>
-#include <sys/file.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <sys/file.h>
+#include <sys/syscall.h>
+#include <sys/types.h>
+#include <time.h>
+#include <unistd.h>
 
-#include <string>
-#include <iostream>
-#include <sstream>
-#include <fstream>
 #include <exception>
-#include <mutex>
+#include <fstream>
+#include <iostream>
 #include <map>
+#include <mutex>
+#include <sstream>
+#include <string>
 
 namespace aql_profile {
 
@@ -24,7 +24,8 @@ class Logger {
  public:
   typedef std::recursive_mutex mutex_t;
 
-  template <typename T> Logger& operator<<(const T& m) {
+  template <typename T>
+  Logger& operator<<(const T& m) {
     std::ostringstream oss;
     oss << m;
     if (!streaming_)
@@ -127,27 +128,27 @@ class Logger {
 
 }  // namespace aql_profile
 
-#define ERR_LOGGING                                                                                \
-  (aql_profile::Logger::Instance() << aql_profile::Logger::endl                                    \
-                                   << "Error: " << __FUNCTION__                                    \
-                                   << "(): " << aql_profile::Logger::begm)
-#define ERR2_LOGGING                                                                               \
-  (aql_profile::Logger::Instance() << aql_profile::Logger::endl                                    \
+#define ERR_LOGGING                \
+  (aql_profile::Logger::Instance() \
+   << aql_profile::Logger::endl    \
+   << "Error: " << __FUNCTION__ << "(): " << aql_profile::Logger::begm)
+#define ERR2_LOGGING                                            \
+  (aql_profile::Logger::Instance() << aql_profile::Logger::endl \
                                    << "Error: " << __FUNCTION__ << "(): ")
-#define INFO_LOGGING                                                                               \
-  (aql_profile::Logger::Instance() << aql_profile::Logger::endl                                    \
-                                   << "Info: " << __FUNCTION__                                     \
-                                   << "(): " << aql_profile::Logger::begm)
+#define INFO_LOGGING               \
+  (aql_profile::Logger::Instance() \
+   << aql_profile::Logger::endl    \
+   << "Info: " << __FUNCTION__ << "(): " << aql_profile::Logger::begm)
 
-#define WARN_LOGGING                                                                               \
-  (aql_profile::Logger::Instance() << aql_profile::Logger::endl                                    \
-                                   << "Warning: " << __FUNCTION__                                  \
-                                   << "(): " << aql_profile::Logger::begm)
+#define WARN_LOGGING               \
+  (aql_profile::Logger::Instance() \
+   << aql_profile::Logger::endl    \
+   << "Warning: " << __FUNCTION__ << "(): " << aql_profile::Logger::begm)
 
 #ifdef DEBUG
-#define DBG_LOGGING                                                                                \
-  (aql_profile::Logger::Instance() << aql_profile::Logger::endl                                    \
-                                   << "Debug: in " << __FUNCTION__ << " at " << __FILE__           \
+#define DBG_LOGGING                                                                      \
+  (aql_profile::Logger::Instance() << aql_profile::Logger::endl                          \
+                                   << "Debug: in " << __FUNCTION__ << " at " << __FILE__ \
                                    << " line " << __LINE__ << aql_profile::Logger::begm)
 #endif
 

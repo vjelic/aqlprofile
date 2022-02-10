@@ -9,14 +9,12 @@ namespace aql_profile {
 // Gfx9 factory class
 class Gfx9Factory : public Pm4Factory {
  public:
-  explicit Gfx9Factory(const AgentInfo* agent_info) :
-    Pm4Factory(BlockInfoMap(block_table_, sizeof(block_table_)))
-  {
+  explicit Gfx9Factory(const AgentInfo* agent_info)
+      : Pm4Factory(BlockInfoMap(block_table_, sizeof(block_table_))) {
     Init(agent_info);
   }
-  Gfx9Factory(const GpuBlockInfo** table, const uint32_t& size, const AgentInfo* agent_info) :
-    Pm4Factory(BlockInfoMap(table, size))
-  {
+  Gfx9Factory(const GpuBlockInfo** table, const uint32_t& size, const AgentInfo* agent_info)
+      : Pm4Factory(BlockInfoMap(table, size)) {
     Init(agent_info);
   }
 
@@ -33,10 +31,12 @@ void Gfx9Factory::Init(const AgentInfo* agent_info) {
   // Mark and set the mode
   if (Pm4Factory::IsConcurrent()) {
     Pm4Factory::pmc_builder_ =
-      new pm4_builder::GpuPmcBuilder<pm4_builder::Gfx9CmdBuilder, gfx9_cntx_prim, true>(agent_info);
+        new pm4_builder::GpuPmcBuilder<pm4_builder::Gfx9CmdBuilder, gfx9_cntx_prim, true>(
+            agent_info);
   } else {
     Pm4Factory::pmc_builder_ =
-      new pm4_builder::GpuPmcBuilder<pm4_builder::Gfx9CmdBuilder, gfx9_cntx_prim, false>(agent_info);
+        new pm4_builder::GpuPmcBuilder<pm4_builder::Gfx9CmdBuilder, gfx9_cntx_prim, false>(
+            agent_info);
   }
   if (Pm4Factory::pmc_builder_ == NULL) throw aql_profile_exc_msg("PmcBuilder allocation failed");
 
@@ -62,13 +62,13 @@ const GpuBlockInfo* Gfx9Factory::block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMB
     NULL /*MC_XBAR*/, &AtcCounterBlockInfo, &AtcL2CounterBlockInfo, NULL /*&GceaCounterBlockInfo*/,
     &RpbCounterBlockInfo,
     // System blocks
-    &SdmaCounterBlockInfo
-};
+    &SdmaCounterBlockInfo};
 
 // Mi100 factory class
 class Mi100Factory : public Gfx9Factory {
  public:
-  explicit Mi100Factory(const AgentInfo* agent_info) : Gfx9Factory(block_table_, sizeof(block_table_), agent_info) {
+  explicit Mi100Factory(const AgentInfo* agent_info)
+      : Gfx9Factory(block_table_, sizeof(block_table_), agent_info) {
     for (unsigned i = 0; i < HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER; ++i) {
       const GpuBlockInfo* base_table_ptr = Gfx9Factory::block_table_[i];
       if (base_table_ptr == NULL) continue;

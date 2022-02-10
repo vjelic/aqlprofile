@@ -67,7 +67,9 @@ class TestAql {
   virtual bool VerifyResults() { return (test_) ? test_->VerifyResults() : true; }
 
   // Print to console the time taken to execute kernel
-  virtual void PrintTime() { if (test_) test_->PrintTime(); }
+  virtual void PrintTime() {
+    if (test_) test_->PrintTime();
+  }
 
   // Release resources e.g. memory allocations
   // @return bool true on success and false on failure

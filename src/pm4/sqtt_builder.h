@@ -2,6 +2,7 @@
 #define SRC_PM4_SQTT_BUILDER_H_
 
 #include <stdint.h>
+
 #include <iostream>
 
 #include "pm4/cmd_config.h"
@@ -71,9 +72,9 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
     if (config->concurrent == 0) Builder::BuildWriteWaitIdlePacket(cmd_buffer);
     // Program the thread trace mask - specifies SH, CU, SIMD and
     // VM Id masks to apply. Enabling SQ/SPI/REG_STALL_EN bits
-    const uint32_t mask_value = (config->mask)
-        ? config->mask
-        : Primitives::sqtt_mask_value(config->targetCu, config->vmIdMask);
+    const uint32_t mask_value =
+        (config->mask) ? config->mask
+                       : Primitives::sqtt_mask_value(config->targetCu, config->vmIdMask);
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_MASK_ADDR,
                                         mask_value);
     // Program the thread trace Perf mask

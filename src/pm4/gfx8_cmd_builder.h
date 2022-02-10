@@ -1,20 +1,21 @@
 #ifndef SRC_PM4_GFX8_CMD_BUILDER_H_
 #define SRC_PM4_GFX8_CMD_BUILDER_H_
 
-#include <string.h>
 #include <assert.h>
+#include <string.h>
 
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <sstream>
 
-#include "pm4/cmd_builder.h"
 #include "def/gfx8_def.h"
+#include "pm4/cmd_builder.h"
 
 namespace pm4_builder {
 
 // Desc: Initializer for various Gpu command headers
-template <class T> static void GenerateCmdHeader(T* pm4, IT_OpCodeType op_code) {
+template <class T>
+static void GenerateCmdHeader(T* pm4, IT_OpCodeType op_code) {
   pm4->header.u32All = PM4_TYPE_3_HDR(op_code, sizeof(T) / sizeof(uint32_t), ShaderCompute, 0);
 }
 
@@ -235,8 +236,8 @@ class Gfx8CmdBuilder : public CmdBuilder {
     return read_counter;
   }
 
-  void BuildWriteRegDataPacket(CmdBuffer* cmdbuf, uint32_t dst_reg_addr,
-                               uint32_t* data, uint32_t count, bool wait) {
+  void BuildWriteRegDataPacket(CmdBuffer* cmdbuf, uint32_t dst_reg_addr, uint32_t* data,
+                               uint32_t count, bool wait) {
     PM4CMDWRITEDATA cmd_data{};
 
     // Initialize the command header
@@ -244,8 +245,8 @@ class Gfx8CmdBuilder : public CmdBuilder {
 
     // ordinal2
     cmd_data.dstSel = WRITE_DATA_DST_SEL_REGISTER;  // mem-mapped reg
-    cmd_data.wrOneAddr = 1;  // not increment address
-    cmd_data.wrConfirm = wait;  // wait for confirmation
+    cmd_data.wrOneAddr = 1;                         // not increment address
+    cmd_data.wrConfirm = wait;                      // wait for confirmation
     cmd_data.atc__CI = atc_support_;
     cmd_data.engineSel = WRITE_DATA_ENGINE_ME;  // engine select
 
@@ -286,6 +287,6 @@ class Gfx8CmdBuilder : public CmdBuilder {
   constexpr static bool atc_support_ = false;
 };
 
-}  // pm4_builder
+}  // namespace pm4_builder
 
 #endif  //  SRC_PM4_GFX8_CMD_BUILDER_H_

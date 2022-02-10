@@ -9,14 +9,12 @@ namespace aql_profile {
 // Gfx8 factory class
 class Gfx8Factory : public Pm4Factory {
  public:
-  explicit Gfx8Factory(const AgentInfo* agent_info) :
-    Pm4Factory(BlockInfoMap(block_table_, sizeof(block_table_)))
-  {
+  explicit Gfx8Factory(const AgentInfo* agent_info)
+      : Pm4Factory(BlockInfoMap(block_table_, sizeof(block_table_))) {
     Init(agent_info);
   }
-  Gfx8Factory(const GpuBlockInfo** table, const uint32_t& size, const AgentInfo* agent_info) :
-    Pm4Factory(BlockInfoMap(table, size))
-  {
+  Gfx8Factory(const GpuBlockInfo** table, const uint32_t& size, const AgentInfo* agent_info)
+      : Pm4Factory(BlockInfoMap(table, size)) {
     Init(agent_info);
   }
 
@@ -33,10 +31,12 @@ void Gfx8Factory::Init(const AgentInfo* agent_info) {
   // Mark and set the mode
   if (Pm4Factory::IsConcurrent()) {
     Pm4Factory::pmc_builder_ =
-      new pm4_builder::GpuPmcBuilder<pm4_builder::Gfx8CmdBuilder, gfx8_cntx_prim, true>(agent_info);
+        new pm4_builder::GpuPmcBuilder<pm4_builder::Gfx8CmdBuilder, gfx8_cntx_prim, true>(
+            agent_info);
   } else {
     Pm4Factory::pmc_builder_ =
-      new pm4_builder::GpuPmcBuilder<pm4_builder::Gfx8CmdBuilder, gfx8_cntx_prim, false>(agent_info);
+        new pm4_builder::GpuPmcBuilder<pm4_builder::Gfx8CmdBuilder, gfx8_cntx_prim, false>(
+            agent_info);
   }
   if (Pm4Factory::pmc_builder_ == NULL) throw aql_profile_exc_msg("PmcBuilder allocation failed");
 
@@ -62,13 +62,13 @@ const GpuBlockInfo* Gfx8Factory::block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMB
     &McSeqCounterBlockInfo, &McVmL2CounterBlockInfo, &McXbarCounterBlockInfo, &AtcCounterBlockInfo,
     NULL /*GFX9 ATC_L2*/, NULL /*GFX9 GCEA*/, &RpbCounterBlockInfo,
     // System blocks
-    &SdmaCounterBlockInfo
-};
+    &SdmaCounterBlockInfo};
 
 // Fiji factory class
 class FijiFactory : public Gfx8Factory {
  public:
-  explicit FijiFactory(const AgentInfo* agent_info) : Gfx8Factory(block_table_, sizeof(block_table_), agent_info) {
+  explicit FijiFactory(const AgentInfo* agent_info)
+      : Gfx8Factory(block_table_, sizeof(block_table_), agent_info) {
     for (unsigned i = 0; i < HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER; ++i) {
       block_table_[i] = Gfx8Factory::block_table_[i];
     }

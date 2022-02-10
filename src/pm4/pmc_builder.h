@@ -3,13 +3,13 @@
 
 #include <stdint.h>
 
-#include <vector>
-#include <utility>
 #include <map>
 #include <string>
+#include <utility>
+#include <vector>
 
-#include "pm4/cmd_config.h"
 #include "def/gpu_block_info.h"
+#include "pm4/cmd_config.h"
 #include "util/hsa_rsrc_factory.h"
 
 namespace pm4_builder {
@@ -51,13 +51,15 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
   const CounterRegInfo* get_reg_table(const counter_des_t& counter_des) {
     const auto* block_info = counter_des.block_info;
     const auto& block_des = counter_des.block_des;
-    const auto base_index = (block_info->attr & CounterBlockExplInstAttr) ?
-      block_des.index * block_info->counter_count : 0;
+    const auto base_index = (block_info->attr & CounterBlockExplInstAttr)
+                                ? block_des.index * block_info->counter_count
+                                : 0;
     return &(block_info->counter_reg_info[base_index]);
   }
 
  public:
-  explicit GpuPmcBuilder(const AgentInfo* agent_info) : PmcBuilder(), se_number_(agent_info->se_num) {}
+  explicit GpuPmcBuilder(const AgentInfo* agent_info)
+      : PmcBuilder(), se_number_(agent_info->se_num) {}
   // Build PMC enable PM4 comands - enabel CP counting for a specific queue
   void Enable(CmdBuffer* cmd_buffer) {
     // Program Compute Perfcount Enable register to support perf counting
@@ -79,7 +81,8 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
   // Build PMC start PM4 comands
   void Start(CmdBuffer* cmd_buffer, const counters_vector& counters_vec) {
     // sdma performance monitor control value accumulator
-    std::pair<reg_addr_t, uint32_t> sdma_select_accumulator[Primitives::SDMA_COUNTER_BLOCK_NUM_INSTANCES];
+    std::pair<reg_addr_t, uint32_t>
+        sdma_select_accumulator[Primitives::SDMA_COUNTER_BLOCK_NUM_INSTANCES];
     // Issue barrier command
     if (!concurrent) Builder::BuildWriteWaitIdlePacket(cmd_buffer);
     // Reset Grbm to its default state - broadcast
@@ -136,14 +139,14 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       const auto& reg_info = reg_table[counter_des.index];
 
 #if DEBUG_TRACE == 1
-      printf("block id(%u) index(%u) counter id (%u) index(%u) sel-addr(0x%x)\n",
-        block_des.id, block_des.index, counter_des.id, counter_des.index,
-        reg_info.select_addr);
+      printf("block id(%u) index(%u) counter id (%u) index(%u) sel-addr(0x%x)\n", block_des.id,
+             block_des.index, counter_des.id, counter_des.index, reg_info.select_addr);
 #endif
 
       // Set GRBM index to access proper block instance
-      const uint32_t grbm_value = (block_info->instance_count > 1) ?
-        Primitives::grbm_inst_index_value(block_des.index) : Primitives::grbm_broadcast_value();
+      const uint32_t grbm_value = (block_info->instance_count > 1)
+                                      ? Primitives::grbm_inst_index_value(block_des.index)
+                                      : Primitives::grbm_broadcast_value();
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR, grbm_value);
       // Reset counters
       if (block_info->attr & CounterBlockMcAttr) {
@@ -264,7 +267,8 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
   }
 
   // Build PMC read PM4 packets
-  uint32_t ReadPackets(CmdBuffer* cmd_buffer, const counters_vector& counters_vec, void* data_buffer) {
+  uint32_t ReadPackets(CmdBuffer* cmd_buffer, const counters_vector& counters_vec,
+                       void* data_buffer) {
     // Reset Grbm to its default state - broadcast
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
                                         Primitives::grbm_broadcast_value());
@@ -335,9 +339,11 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
             Primitives::mc_hbm_register_hi_addr(counter_des), data, 3);
         read_counter += 2;
       } else if (block_info->attr & CounterBlockMcAttr) {
-        const uint32_t grbm_value = (block_info->instance_count > 1) ?
-          Primitives::grbm_inst_index_value(block_des.index) : Primitives::grbm_broadcast_value();
-        Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR, grbm_value);
+        const uint32_t grbm_value = (block_info->instance_count > 1)
+                                        ? Primitives::grbm_inst_index_value(block_des.index)
+                                        : Primitives::grbm_broadcast_value();
+        Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
+                                            grbm_value);
         Builder::BuildWritePConfigRegPacket(cmd_buffer, reg_info.control_addr,
                                             Primitives::mc_config_value(counter_des));
         uint32_t* data = reinterpret_cast<uint32_t*>(data_buffer) + read_counter;
@@ -359,8 +365,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
         if (data_buffer != 0) {
           *reinterpret_cast<uint64_t*>(data) = 0;
         }
-        Builder::BuildCopyCounterDataPacket(cmd_buffer, reg_info.register_addr_lo,
-                                            0x0, data, 0x1);
+        Builder::BuildCopyCounterDataPacket(cmd_buffer, reg_info.register_addr_lo, 0x0, data, 0x1);
         read_counter += 2;
       } else {
         const uint32_t se_end_index = (block_info->attr & CounterBlockSeAttr) ? se_number_ : 1;

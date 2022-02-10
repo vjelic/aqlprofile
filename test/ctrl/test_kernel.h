@@ -28,8 +28,9 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef TEST_CTRL_TEST_KERNEL_H_
 #define TEST_CTRL_TEST_KERNEL_H_
 
-#include <string.h>
 #include <stdint.h>
+#include <string.h>
+
 #include <map>
 
 // Class implements kernel test

@@ -82,7 +82,6 @@ int PerfTimer::StartTimer(int index) {
   return SUCCESS;
 }
 
-
 int PerfTimer::StopTimer(int index) {
   double n = 0;
   if (index >= (int)timers_.size()) {
@@ -126,7 +125,6 @@ int PerfTimer::StopTimer(int index) {
 
 void PerfTimer::Error(std::string str) { std::cout << str << std::endl; }
 
-
 double PerfTimer::ReadTimer(int index) {
   if (index >= (int)timers_.size()) {
     Error("Cannot read timer. Invalid handle.");
@@ -139,7 +137,6 @@ double PerfTimer::ReadTimer(int index) {
 
   return reading;
 }
-
 
 uint64_t PerfTimer::CoarseTimestampUs() {
 #ifdef _WIN32

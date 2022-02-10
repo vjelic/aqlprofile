@@ -29,9 +29,9 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <atomic>
 
-#include "util/test_assert.h"
 #include "util/helper_funcs.h"
 #include "util/hsa_rsrc_factory.h"
+#include "util/test_assert.h"
 
 HsaRsrcFactory* TestHsa::hsa_rsrc_ = NULL;
 const AgentInfo* TestHsa::agent_info_ = NULL;
@@ -181,7 +181,6 @@ bool TestHsa::Run() {
   hsa_executable_symbol_get_info(kernel_code_desc_,
                                  HSA_EXECUTABLE_SYMBOL_INFO_KERNEL_PRIVATE_SEGMENT_SIZE,
                                  &private_segment_size);
-
 
   // Retrieve handle of the code block
   hsa_executable_symbol_get_info(kernel_code_desc_, HSA_EXECUTABLE_SYMBOL_INFO_KERNEL_OBJECT,

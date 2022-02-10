@@ -15,12 +15,12 @@
 #define PUBLIC_API __attribute__((visibility("default")))
 #define CONSTRUCTOR_API __attribute__((constructor))
 #define DESTRUCTOR_API __attribute__((destructor))
-#define ERR_CHECK(cond, err, msg)                                                                  \
-  {                                                                                                \
-    if (cond) {                                                                                    \
-      ERR_LOGGING << msg;                                                                          \
-      return err;                                                                                  \
-    }                                                                                              \
+#define ERR_CHECK(cond, err, msg) \
+  {                               \
+    if (cond) {                   \
+      ERR_LOGGING << msg;         \
+      return err;                 \
+    }                             \
   }
 
 // Getting SPM data using driver API
@@ -31,11 +31,11 @@ hsa_status_t spm_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* profile,
 
 // PC sampling callback data
 struct pcsmp_callback_data_t {
-  const char* kernel_name;     // sampled kernel name
-  void* data_buffer;           // host buffer for tracing data
-  uint64_t id;                 // sample id
-  uint64_t cycle;              // sample cycle
-  uint64_t pc;                 // sample PC
+  const char* kernel_name;  // sampled kernel name
+  void* data_buffer;        // host buffer for tracing data
+  uint64_t id;              // sample id
+  uint64_t cycle;           // sample cycle
+  uint64_t pc;              // sample PC
 };
 
 namespace aql_profile {
@@ -195,7 +195,6 @@ class CommandBufferMgr {
   info_t* info_slot_;
 };
 
-
 static inline pm4_builder::counters_vector CountersVec(const profile_t* profile,
                                                        const Pm4Factory* pm4_factory) {
   pm4_builder::counters_vector vec;
@@ -221,7 +220,7 @@ static inline pm4_builder::counters_vector CountersVec(const profile_t* profile,
 
 static inline bool IsEventMatch(const event_t& event1, const event_t& event2) {
   return (event1.block_name == event2.block_name) && (event1.block_index == event2.block_index) &&
-      (event1.counter_id == event2.counter_id);
+         (event1.counter_id == event2.counter_id);
 }
 
 hsa_status_t DefaultPmcdataCallback(hsa_ven_amd_aqlprofile_info_type_t info_type,
@@ -246,8 +245,8 @@ hsa_status_t DefaultPmcdataCallback(hsa_ven_amd_aqlprofile_info_type_t info_type
 }
 
 hsa_status_t DefaultTracedataCallback(hsa_ven_amd_aqlprofile_info_type_t info_type,
-                                     hsa_ven_amd_aqlprofile_info_data_t* info_data,
-                                     void* callback_data) {
+                                      hsa_ven_amd_aqlprofile_info_data_t* info_data,
+                                      void* callback_data) {
   hsa_status_t status = HSA_STATUS_SUCCESS;
   hsa_ven_amd_aqlprofile_info_data_t* passed_data =
       reinterpret_cast<hsa_ven_amd_aqlprofile_info_data_t*>(callback_data);
@@ -343,7 +342,9 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
 
         if (is_concurrent) {
           // Generate read commands
-          pmc_builder->Read(&commands, countersVec, (char*)(profile->output_buffer.ptr) + (profile->output_buffer.size / 2));
+          pmc_builder->Read(
+              &commands, countersVec,
+              (char*)(profile->output_buffer.ptr) + (profile->output_buffer.size / 2));
           cmd_buffer_mgr.SetRd2Size(commands.Size());
 
           // Copy generated read commands
@@ -366,8 +367,8 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
       if (profile->output_buffer.size < data_size) {
         profile->output_buffer.size = data_size;
         if (profile->output_buffer.ptr != NULL) {
-          ERR_LOGGING << "Bad profile output_buffer size ("
-            << profile->output_buffer.size << "), required size(" << data_size << ")";
+          ERR_LOGGING << "Bad profile output_buffer size (" << profile->output_buffer.size
+                      << "), required size(" << data_size << ")";
           return HSA_STATUS_ERROR_INVALID_ARGUMENT;
         }
       }
@@ -473,7 +474,7 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
         trace_config.spm_kfd_mode = pm4_factory->SpmKfdMode();
         trace_config.mi100 = (pm4_factory->GetGpuId() == aql_profile::MI100_GPU_ID);
 
-	// Generate start commands
+        // Generate start commands
         spm_builder->Begin(&commands, &trace_config, countersVec);
         cmd_buffer_mgr.SetPreSize(commands.Size());
         // Generate stop commands
@@ -489,8 +490,8 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
     if (profile->command_buffer.size < cmd_size) {
       profile->command_buffer.size = cmd_size;
       if (profile->command_buffer.ptr != NULL) {
-        ERR_LOGGING << "Bad profile command_buffer size ("
-          << profile->command_buffer.size << "), required size(" << cmd_size << ")";
+        ERR_LOGGING << "Bad profile command_buffer size (" << profile->command_buffer.size
+                    << "), required size(" << cmd_size << ")";
         return HSA_STATUS_ERROR_INVALID_ARGUMENT;
       }
     }
@@ -545,7 +546,7 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_read(const hsa_ven_amd_aqlprofile
       aql_profile::CommandBufferMgr cmd_buffer_mgr(profile);
 
       const aql_profile::descriptor_t rd_descr =
-        (is_concurrent == false) ? cmd_buffer_mgr.GetRdDescr() : cmd_buffer_mgr.FetchRdDescr();
+          (is_concurrent == false) ? cmd_buffer_mgr.GetRdDescr() : cmd_buffer_mgr.FetchRdDescr();
       aql_profile::PopulateAql(rd_descr.ptr, rd_descr.size, cmd_writer, aql_read_packet);
     } catch (std::exception& e) {
       ERR_LOGGING << e.what();
@@ -638,7 +639,7 @@ hsa_ven_amd_aqlprofile_get_info(const hsa_ven_amd_aqlprofile_profile_t* profile,
         pm4_builder::CmdBuilder* cmd_writer = pm4_factory->GetCmdBuilder();
         pm4_builder::CmdBuffer commands;
 
-	const uint32_t op = attr_op - begin_op;
+        const uint32_t op = attr_op - begin_op;
         switch (op) {
           case 0:
             pmc_builder->Enable(&commands);
@@ -651,13 +652,14 @@ hsa_ven_amd_aqlprofile_get_info(const hsa_ven_amd_aqlprofile_profile_t* profile,
             break;
           default:
             ERR_LOGGING << "get_info, not supported op (" << op << ")";
-	    status = HSA_STATUS_ERROR;
+            status = HSA_STATUS_ERROR;
         }
 
-	if (profile->command_buffer.ptr == NULL) {
-          const_cast<hsa_ven_amd_aqlprofile_profile_t*>(profile)->command_buffer.size = commands.Size();
-	  break;
-	}
+        if (profile->command_buffer.ptr == NULL) {
+          const_cast<hsa_ven_amd_aqlprofile_profile_t*>(profile)->command_buffer.size =
+              commands.Size();
+          break;
+        }
 
         if (profile->command_buffer.size != commands.Size()) {
           ERR_LOGGING << "get_info, wrong profile cmd size";
@@ -671,11 +673,8 @@ hsa_ven_amd_aqlprofile_get_info(const hsa_ven_amd_aqlprofile_profile_t* profile,
         }
 
         memcpy(profile->command_buffer.ptr, commands.Data(), profile->command_buffer.size);
-        aql_profile::PopulateAql(
-          profile->command_buffer.ptr,
-          profile->command_buffer.size,
-          cmd_writer,
-          reinterpret_cast<aql_profile::packet_t*>(value));
+        aql_profile::PopulateAql(profile->command_buffer.ptr, profile->command_buffer.size,
+                                 cmd_writer, reinterpret_cast<aql_profile::packet_t*>(value));
 
         break;
       }
@@ -728,8 +727,8 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
             uint64_t start_val = samples[sample_index + sample_count / 2];
             if (val < start_val) {
               ERR_LOGGING << "Bad values (end=" << val << " < start=" << start_val
-                  << ") of sample index (" << sample_index << ") bloc id ("
-                  << p->block_index << ") counter id (" << p->counter_id << ")";
+                          << ") of sample index (" << sample_index << ") bloc id ("
+                          << p->block_index << ") counter id (" << p->counter_id << ")";
               return HSA_STATUS_ERROR;
             }
             val -= start_val;
@@ -737,8 +736,8 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
           sample_info.pmc_data.result = val;
 #if DEBUG_TRACE == 2
           printf("DATA: sample index(%u) id(%u) bloc id(%u) index(%u) counter id(%u) res(%lu)\n",
-            sample_index, i, p->block_name, p->block_index, p->counter_id,
-            samples[sample_index]);
+                 sample_index, i, p->block_name, p->block_index, p->counter_id,
+                 samples[sample_index]);
 #endif
           status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_PMC_DATA, &sample_info, data);
           if (status == HSA_STATUS_INFO_BREAK) {
@@ -756,7 +755,9 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
     } else if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_TRACE) {
       uint32_t mode = 2;
       switch (profile->event_count) {
-        case 0: mode = 0; break;
+        case 0:
+          mode = 0;
+          break;
         case UINT32_MAX:
           const_cast<hsa_ven_amd_aqlprofile_profile_t*>(profile)->event_count = 0;
           mode = 1;
@@ -801,7 +802,7 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
           const uint32_t wptr_ind =
               (pm4_builder::TT_STATUS_IDX_MAX * i) + pm4_builder::TT_STATUS_IDX_WPTR;
           const uint32_t sample_size = (control_ptr[wptr_ind] & pm4_builder::TT_WRITE_PTR_MASK) *
-              pm4_builder::TT_WRITE_PTR_BLK;
+                                       pm4_builder::TT_WRITE_PTR_BLK;
           if (sample_size > sample_capacity) {
             ERR_LOGGING << "SQTT data out of bounds, sample_id(" << i << ") size(" << sample_size
                         << "/" << sample_capacity << ")";

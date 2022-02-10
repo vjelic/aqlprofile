@@ -2,9 +2,10 @@
 #define SRC_PM4_SPM_BUILDER_H_
 
 #include <stdint.h>
+
+#include <algorithm>
 #include <iostream>
 #include <utility>
-#include <algorithm>
 #include <vector>
 
 #include "pm4/cmd_config.h"
@@ -26,7 +27,8 @@ class SpmBuilder {
   // Builds Pm4 command stream to program hardware registers that
   // enable a SPM session, including the issue of an event
   // to begin thread session
-  virtual void Begin(CmdBuffer* cmd_buffer, const SpmConfig* config, const counters_vector& counters_vec) = 0;
+  virtual void Begin(CmdBuffer* cmd_buffer, const SpmConfig* config,
+                     const counters_vector& counters_vec) = 0;
   // Builds Pm4 command stream to program hardware registers that
   // disable a SPM session, including the issue of an event
   // to stop currently ongoing thread session
@@ -36,6 +38,7 @@ class SpmBuilder {
 template <typename Builder, typename Primitives>
 class GpuSpmBuilder : public SpmBuilder, protected Builder, protected Primitives {
   typedef typename Primitives::mux_info_t mux_info_t;
+
  public:
   void Begin(CmdBuffer* cmd_buffer, const SpmConfig* config, const counters_vector& counters_vec) {
     // SPM parameters
@@ -69,9 +72,12 @@ class GpuSpmBuilder : public SpmBuilder, protected Builder, protected Primitives
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_SPM_PERFMON_CNTL__ADDR,
                                         Primitives::rlc_spm_perfmon_cntl_value(sampling_rate));
     if (!config->spm_kfd_mode) {
-      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_SPM_PERFMON_RING_BASE_LO__ADDR, buffer_ptr);
-      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_SPM_PERFMON_RING_BASE_HI__ADDR, buffer_ptr >> 32);
-      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_SPM_PERFMON_RING_SIZE__ADDR, buffer_size);
+      Builder::BuildWriteUConfigRegPacket(
+          cmd_buffer, Primitives::RLC_SPM_PERFMON_RING_BASE_LO__ADDR, buffer_ptr);
+      Builder::BuildWriteUConfigRegPacket(
+          cmd_buffer, Primitives::RLC_SPM_PERFMON_RING_BASE_HI__ADDR, buffer_ptr >> 32);
+      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_SPM_PERFMON_RING_SIZE__ADDR,
+                                          buffer_size);
     }
 
     // Setting VMID
@@ -79,11 +85,13 @@ class GpuSpmBuilder : public SpmBuilder, protected Builder, protected Primitives
                                         Primitives::rlc_spm_mc_cntl_value());
 
     // Iterate through the list of blocks to create PM4 packets to read counter values
-    // Below pair.first is the block id of a counter event and pair.second is the index into counters_vec of the counter event
+    // Below pair.first is the block id of a counter event and pair.second is the index into
+    // counters_vec of the counter event
     std::vector<std::vector<std::pair<int, int> > > counter_info_even(Primitives::NUMBER_OF_BLOCKS);
     std::vector<std::vector<std::pair<int, int> > > counter_info_odd(Primitives::NUMBER_OF_BLOCKS);
 
-    // distribute counter events to counter_info_even and counter_info_odd according to their block id
+    // distribute counter events to counter_info_even and counter_info_odd according to their block
+    // id
     for (uint32_t index = 0; index < counters_vec.size(); ++index) {
       auto& counter_des = counters_vec[index];
       const auto& block_des = counter_des.block_des;
@@ -127,8 +135,10 @@ class GpuSpmBuilder : public SpmBuilder, protected Builder, protected Primitives
 
     uint32_t ss[2] = {};
     for (int i = 0; i < 2; ++i) {
-      ss_even[i] = ss_even[i] / Primitives::RLC_SPM_COUNTERS_PER_LINE + uint32_t(ss_even[i] % Primitives::RLC_SPM_COUNTERS_PER_LINE > 0);
-      ss_odd[i] = ss_odd[i] / Primitives::RLC_SPM_COUNTERS_PER_LINE + uint32_t(ss_odd[i] % Primitives::RLC_SPM_COUNTERS_PER_LINE > 0);
+      ss_even[i] = ss_even[i] / Primitives::RLC_SPM_COUNTERS_PER_LINE +
+                   uint32_t(ss_even[i] % Primitives::RLC_SPM_COUNTERS_PER_LINE > 0);
+      ss_odd[i] = ss_odd[i] / Primitives::RLC_SPM_COUNTERS_PER_LINE +
+                  uint32_t(ss_odd[i] % Primitives::RLC_SPM_COUNTERS_PER_LINE > 0);
 
       ss[i] = std::max(ss_even[i], ss_odd[i]) * 2;
     }
@@ -146,7 +156,7 @@ class GpuSpmBuilder : public SpmBuilder, protected Builder, protected Primitives
     std::fill(mux_ram[1].begin(), mux_ram[1].end(), mxinf);
 
     size_t even_idx = 0;
-    size_t odd_idx  = Primitives::RLC_SPM_COUNTERS_PER_LINE;
+    size_t odd_idx = Primitives::RLC_SPM_COUNTERS_PER_LINE;
     // follow the exact steps to fill in mux_ram as when the number of even/odd events are counted
     // Register timestamp
     mxinf.data = Primitives::spm_timestamp_muxsel();
@@ -162,7 +172,7 @@ class GpuSpmBuilder : public SpmBuilder, protected Builder, protected Primitives
           for (size_t k = 0; k < counter_info_even[j].size(); ++k) {
             const auto& counter_des = counters_vec[counter_info_even[j][k].second];
             mux_ram[0][even_idx] = Primitives::spm_mux_ram_value(counter_des);
-            even_idx= Primitives::spm_mux_ram_idx_incr(even_idx);
+            even_idx = Primitives::spm_mux_ram_idx_incr(even_idx);
           }
           for (size_t k = 0; k < counter_info_odd[j].size(); ++k) {
             const auto& counter_des = counters_vec[counter_info_odd[j][k].second];
@@ -174,7 +184,7 @@ class GpuSpmBuilder : public SpmBuilder, protected Builder, protected Primitives
     }
     // fill in SE mux_ram
     even_idx = 0;
-    odd_idx  = Primitives::RLC_SPM_COUNTERS_PER_LINE;
+    odd_idx = Primitives::RLC_SPM_COUNTERS_PER_LINE;
     for (size_t j = 0; j < Primitives::NUMBER_OF_BLOCKS; ++j) {
       // Use this code to do 32-bit SQ profiling
       if (j == Primitives::SQ_BLOCK_ID && config->spm_sq_32bit_mode) {
@@ -184,7 +194,7 @@ class GpuSpmBuilder : public SpmBuilder, protected Builder, protected Primitives
           const auto block = Primitives::SQ_BLOCK_SPM_ID;
           const auto instance = uint16_t(counter_des.block_des.index);
           mux_ram[1][even_idx] = Primitives::spm_mux_ram_value(counter, block, instance);
-          even_idx= Primitives::spm_mux_ram_idx_incr(even_idx);
+          even_idx = Primitives::spm_mux_ram_idx_incr(even_idx);
         }
         for (size_t k = 0; k < counter_info_odd[j].size(); ++k) {
           const auto& counter_des = counters_vec[counter_info_odd[j][k].second];
@@ -237,7 +247,8 @@ class GpuSpmBuilder : public SpmBuilder, protected Builder, protected Primitives
               int delay_index = i * block_info->instance_count + j;
               Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
                                                   Primitives::grbm_inst_se_index_value(j, i));
-              Builder::BuildWriteUConfigRegPacket(cmd_buffer, block_info->delay_info[delay_index].reg,
+              Builder::BuildWriteUConfigRegPacket(cmd_buffer,
+                                                  block_info->delay_info[delay_index].reg,
                                                   Primitives::get_spm_se_delay(counter_des, i, j));
             }
           }
@@ -246,12 +257,13 @@ class GpuSpmBuilder : public SpmBuilder, protected Builder, protected Primitives
                                             Primitives::grbm_broadcast_value());
       }
 
-      // 4. Program the Block instance streaming performance counters in order to specify which items
-      //    (events) the counters should count, if any. This is done by programming the GRBM_GFX_INDEX
-      //    register to specify the type of access (broadcast or instance specific) followed by the actual
-      //    register value. The first step may be to clear all counters of all instances to select zero (no
-      //    counting). Then program the GRBM_GFX_INDEX, followed by the
-      //    [BLK]_STRMPERFMON_SELECTx register.
+      // 4. Program the Block instance streaming performance counters in order to specify which
+      // items
+      //    (events) the counters should count, if any. This is done by programming the
+      //    GRBM_GFX_INDEX register to specify the type of access (broadcast or instance specific)
+      //    followed by the actual register value. The first step may be to clear all counters of
+      //    all instances to select zero (no counting). Then program the GRBM_GFX_INDEX, followed by
+      //    the [BLK]_STRMPERFMON_SELECTx register.
       // Setup counters
       // Configure SQ block
       if (block_info->attr & CounterBlockSqAttr) {
@@ -265,8 +277,7 @@ class GpuSpmBuilder : public SpmBuilder, protected Builder, protected Primitives
     }
 
     for (size_t i = 0; i < Primitives::NUMBER_OF_BLOCKS; ++i) {
-      if (i == Primitives::SQ_BLOCK_ID)
-        continue;
+      if (i == Primitives::SQ_BLOCK_ID) continue;
 
       for (size_t j = 0; j < counter_info_even[i].size(); ++j) {
         // get 16-bit SPM select value for even counters
@@ -282,8 +293,9 @@ class GpuSpmBuilder : public SpmBuilder, protected Builder, protected Primitives
         int index = j >> 1;
         int offset = j % 2;
         uint32_t spm_select_addr = block_info->counter_reg_info[index].select_addr + offset;
-        Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
-                                            Primitives::grbm_inst_index_value(counter_des.block_des.index));
+        Builder::BuildWriteUConfigRegPacket(
+            cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
+            Primitives::grbm_inst_index_value(counter_des.block_des.index));
         Builder::BuildWriteConfigRegPacket(cmd_buffer, spm_select_addr, spm_select_value);
       }
     }
@@ -291,26 +303,32 @@ class GpuSpmBuilder : public SpmBuilder, protected Builder, protected Primitives
     // Set segment size
     uint32_t global_count = ss[0];
     uint32_t se_count = ss[1];
-    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_SPM_PERFMON_SEGMENT_SIZE__ADDR,
-                                        Primitives::rlc_spm_perfmon_segment_size_value(global_count, se_count));
+    Builder::BuildWriteUConfigRegPacket(
+        cmd_buffer, Primitives::RLC_SPM_PERFMON_SEGMENT_SIZE__ADDR,
+        Primitives::rlc_spm_perfmon_segment_size_value(global_count, se_count));
     if (config->mi100) {
-      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_SPM_PERFMON_SEGMENT_SIZE_CORE1__ADDR,
-                                          Primitives::rlc_spm_perfmon_segment_size_core1_value(se_count));
+      Builder::BuildWriteUConfigRegPacket(
+          cmd_buffer, Primitives::RLC_SPM_PERFMON_SEGMENT_SIZE_CORE1__ADDR,
+          Primitives::rlc_spm_perfmon_segment_size_core1_value(se_count));
     }
     // Finish MUXSEL RAM
     // 5. Program the RLC_[GLOBAL/SE]_MUXSEL_ADDR register with the starting address, likely zero.
     if (!mux_ram[0].empty()) {
-      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_SPM_GLOBAL_MUXSEL_ADDR__ADDR, 0);
+      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_SPM_GLOBAL_MUXSEL_ADDR__ADDR,
+                                          0);
       Builder::BuildWriteRegDataPacket(cmd_buffer, Primitives::RLC_SPM_GLOBAL_MUXSEL_DATA__ADDR,
-                                       reinterpret_cast<uint32_t*>(mux_ram[0].data()), mux_ram[0].size() / 2, 1);
+                                       reinterpret_cast<uint32_t*>(mux_ram[0].data()),
+                                       mux_ram[0].size() / 2, 1);
     }
     if (!mux_ram[1].empty()) {
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_SPM_SE_MUXSEL_ADDR__ADDR, 0);
       Builder::BuildWriteRegDataPacket(cmd_buffer, Primitives::RLC_SPM_SE_MUXSEL_DATA__ADDR,
-                                       reinterpret_cast<uint32_t*>(mux_ram[1].data()), mux_ram[1].size() / 2, 1);
+                                       reinterpret_cast<uint32_t*>(mux_ram[1].data()),
+                                       mux_ram[1].size() / 2, 1);
     }
     // pm4SPM code has the following code
-    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_SPM_GLOBAL_MUXSEL_ADDR__ADDR, 0);
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_SPM_GLOBAL_MUXSEL_ADDR__ADDR,
+                                        0);
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_SPM_SE_MUXSEL_ADDR__ADDR, 0);
 
     // Issue a CSPartialFlush cmd including cache flush

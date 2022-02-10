@@ -3,8 +3,8 @@
 
 #include <string.h>
 
-#include <string>
 #include <sstream>
+#include <string>
 
 namespace aql_profile {
 
@@ -17,7 +17,8 @@ class aql_profile_exc_msg : public std::exception {
   std::string str_;
 };
 
-template <typename T> class aql_profile_exc_val : public std::exception {
+template <typename T>
+class aql_profile_exc_val : public std::exception {
  public:
   aql_profile_exc_val(const std::string& msg, const T& val) {
     std::ostringstream oss;

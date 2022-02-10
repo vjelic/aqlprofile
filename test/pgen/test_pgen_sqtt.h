@@ -29,12 +29,12 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #define TEST_PGEN_TEST_PGEN_SQTT_H_
 
 #include <fstream>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <vector>
 
-#include "util/test_assert.h"
 #include "pgen/test_pgen.h"
+#include "util/test_assert.h"
 
 typedef std::vector<hsa_ven_amd_aqlprofile_info_data_t> callback_data_t;
 

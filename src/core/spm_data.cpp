@@ -14,14 +14,14 @@
 #include "core/logger.h"
 #include "core/pm4_factory.h"
 
-#define PTHREAD_CALL(call)                                                                         \
-  do {                                                                                             \
-    int err = call;                                                                                \
-    if (err != 0) {                                                                                \
-      errno = err;                                                                                 \
-      perror(#call);                                                                               \
-      abort();                                                                                     \
-    }                                                                                              \
+#define PTHREAD_CALL(call) \
+  do {                     \
+    int err = call;        \
+    if (err != 0) {        \
+      errno = err;         \
+      perror(#call);       \
+      abort();             \
+    }                      \
   } while (0)
 
 namespace spm_kfd_namespace {
@@ -32,8 +32,8 @@ int get_gpu_node_id(uint32_t gpu_ind) {
 
   // find a valid gpu node from /sys/class/kfd/kfd/topology/nodes
   std::string path = "/sys/class/kfd/kfd/topology/nodes";
-  DIR *dir;
-  struct dirent *ent;
+  DIR* dir;
+  struct dirent* ent;
 
   if ((dir = opendir(path.c_str())) != NULL) {
     while ((ent = readdir(dir)) != NULL) {
@@ -56,7 +56,8 @@ int get_gpu_node_id(uint32_t gpu_ind) {
   }
 
   if (gpu_node == -1) {
-    printf("get_gpu_node_id`error: GPU[%d] not found\n", gpu_ind); fflush(stdout);
+    printf("get_gpu_node_id`error: GPU[%d] not found\n", gpu_ind);
+    fflush(stdout);
     abort();
   }
 
@@ -85,27 +86,22 @@ struct state_t {
 
 void producer_fun(state_t* state) {
   uint32_t timeout = 0;
-  HSAKMT_STATUS status = hsaKmtSPMSetDestBuffer(state->node_id,
-                                                state->buf_size,
-                                                &timeout,
-                                                &(state->data_size),
-                                                state->kfd_buf,
-                                                &(state->data_loss));
+  HSAKMT_STATUS status =
+      hsaKmtSPMSetDestBuffer(state->node_id, state->buf_size, &timeout, &(state->data_size),
+                             state->kfd_buf, &(state->data_loss));
   if (status != HSAKMT_STATUS_SUCCESS) {
-    printf("hsaKmtSPMSetDestBuffer init error\n"); fflush(stdout);
+    printf("hsaKmtSPMSetDestBuffer init error\n");
+    fflush(stdout);
     abort();
   }
 
   do {
     timeout = state->timeout;
-    status = hsaKmtSPMSetDestBuffer(state->node_id,
-                                    state->buf_size,
-                                    &timeout,
-                                    &(state->data_size),
-                                    state->prod_buf,
-                                    &(state->data_loss));
+    status = hsaKmtSPMSetDestBuffer(state->node_id, state->buf_size, &timeout, &(state->data_size),
+                                    state->prod_buf, &(state->data_loss));
     if (status != HSAKMT_STATUS_SUCCESS) {
-      printf("hsaKmtSPMSetDestBuffer error\n"); fflush(stdout);
+      printf("hsaKmtSPMSetDestBuffer error\n");
+      fflush(stdout);
       abort();
     }
 
@@ -119,21 +115,16 @@ void producer_fun(state_t* state) {
     PTHREAD_CALL(pthread_mutex_unlock(&(state->work_mutex)));
   } while (!state->thread_stop);
 
-  status = hsaKmtSPMSetDestBuffer(state->node_id,
-                                  0,
-                                  &timeout,
-                                  &(state->data_size),
-                                  NULL,
+  status = hsaKmtSPMSetDestBuffer(state->node_id, 0, &timeout, &(state->data_size), NULL,
                                   &(state->data_loss));
   if (status != HSAKMT_STATUS_SUCCESS) {
-    printf("hsaKmtSPMSetDestBuffer stop error\n"); fflush(stdout);
+    printf("hsaKmtSPMSetDestBuffer stop error\n");
+    fflush(stdout);
     abort();
   }
 }
 
-void consumer_fun(state_t* state,
-                  hsa_ven_amd_aqlprofile_data_callback_t callback,
-                  void* data) {
+void consumer_fun(state_t* state, hsa_ven_amd_aqlprofile_data_callback_t callback, void* data) {
   const uint32_t sample_id = 0;
   PTHREAD_CALL(pthread_mutex_lock(&(state->work_mutex)));
   do {
@@ -161,8 +152,7 @@ void consumer_fun(state_t* state,
 }
 
 void mananger_fun(const hsa_ven_amd_aqlprofile_profile_t* profile,
-                  hsa_ven_amd_aqlprofile_data_callback_t callback,
-                  void* data) {
+                  hsa_ven_amd_aqlprofile_data_callback_t callback, void* data) {
   state_t obj{};
   const int gpu_node_id = get_gpu_node_id(profile->agent);
   char* buf_ptr = (char*)(profile->output_buffer.ptr);
@@ -181,7 +171,8 @@ void mananger_fun(const hsa_ven_amd_aqlprofile_profile_t* profile,
 
   HSAKMT_STATUS status = hsaKmtSPMAcquire(gpu_node_id);
   if (status != HSAKMT_STATUS_SUCCESS) {
-    printf("hsaKmtSPMAcquire error\n"); fflush(stdout);
+    printf("hsaKmtSPMAcquire error\n");
+    fflush(stdout);
     abort();
   }
 
@@ -194,7 +185,8 @@ void mananger_fun(const hsa_ven_amd_aqlprofile_profile_t* profile,
 
   status = hsaKmtSPMRelease(gpu_node_id);
   if (status != HSAKMT_STATUS_SUCCESS) {
-    printf("hsaKmtSPMRelease error\n"); fflush(stdout);
+    printf("hsaKmtSPMRelease error\n");
+    fflush(stdout);
     abort();
   }
 }
@@ -204,10 +196,9 @@ spm_mutex_t spm_mutex;
 
 // Getting SPM data using driver API
 hsa_status_t spm_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* profile,
-                              hsa_ven_amd_aqlprofile_data_callback_t callback,
-                              void* data) {
+                              hsa_ven_amd_aqlprofile_data_callback_t callback, void* data) {
   std::lock_guard<spm_mutex_t> lck(spm_mutex);
-  static std::thread *t = NULL;
+  static std::thread* t = NULL;
 
   if (t == NULL) {
     // spm manager thread
@@ -219,4 +210,4 @@ hsa_status_t spm_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* profile,
   return HSA_STATUS_SUCCESS;
 }
 
-}  // spm_kfd_namespace
+}  // namespace spm_kfd_namespace

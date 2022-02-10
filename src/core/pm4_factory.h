@@ -110,7 +110,7 @@ class Pm4Factory {
     // Checking that the block index is in proper range
     if (event->block_index >= info->instance_count)
       throw event_exception(std::string("Bad block index, "), *event);
-    // Checking that the counter event index is in proper range
+      // Checking that the counter event index is in proper range
 #if 0
     if (event->counter_id > info->event_id_max)
       throw event_exception(std::string("Bad event ID, "), *event);
@@ -127,15 +127,14 @@ class Pm4Factory {
   uint32_t FindBlock(const char* name) const { return block_map_.Find(name); }
 
  protected:
-  explicit Pm4Factory(const BlockInfoMap& map) :
-    cmd_builder_(NULL),
-    pmc_builder_(NULL),
-    spm_builder_(NULL),
-    sqtt_builder_(NULL),
-    agent_info_(NULL),
-    concurrent_mode_(concurrent_create_mode_),
-    block_map_(map)
-  {}
+  explicit Pm4Factory(const BlockInfoMap& map)
+      : cmd_builder_(NULL),
+        pmc_builder_(NULL),
+        spm_builder_(NULL),
+        sqtt_builder_(NULL),
+        agent_info_(NULL),
+        concurrent_mode_(concurrent_create_mode_),
+        block_map_(map) {}
 
   virtual ~Pm4Factory() {
     delete cmd_builder_;
@@ -164,7 +163,7 @@ class Pm4Factory {
   // PM4 factory instance map type
   typedef std::pair<gpu_id_t, int> instances_key_t;
   struct instances_fncomp_t {
-    bool operator() (const instances_key_t& a, const instances_key_t& b) const {
+    bool operator()(const instances_key_t& a, const instances_key_t& b) const {
       return (a.first < b.first) || ((a.first == b.first) && (a.second < b.second));
     }
   };
@@ -253,10 +252,8 @@ inline void Pm4Factory::Destroy() {
 // Check the setting of pmc profiling mode
 inline bool Pm4Factory::CheckConcurrent(const profile_t* profile) {
   for (const hsa_ven_amd_aqlprofile_parameter_t* p = profile->parameters;
-          p < (profile->parameters + profile->parameter_count); ++p) {
-    if (p->parameter_name ==
-            HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_K_CONCURRENT)
-      return true;
+       p < (profile->parameters + profile->parameter_count); ++p) {
+    if (p->parameter_name == HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_K_CONCURRENT) return true;
   }
 
   return false;
@@ -328,11 +325,10 @@ inline gpu_id_t Pm4Factory::GetGpuId(const hsa_agent_t agent) {
         throw aql_profile_exc_msg(oss.str());
       }
     }
-  } else if ((strncmp(agent_name, "gfx900", 6) == 0) ||
-             (strncmp(agent_name, "gfx902", 6) == 0) ||
+  } else if ((strncmp(agent_name, "gfx900", 6) == 0) || (strncmp(agent_name, "gfx902", 6) == 0) ||
              (strncmp(agent_name, "gfx906", 6) == 0) ||
              (strncmp(agent_name, "gfx908", 6) == 0)  // MI100
-             ) {
+  ) {
     if (strncmp(agent_name, "gfx908", 6) == 0) {  // MI100
       gpu_id = MI100_GPU_ID;
     } else {

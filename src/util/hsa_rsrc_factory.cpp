@@ -26,17 +26,17 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include <dlfcn.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include <hsa.h>
 #include <hsa_ext_amd.h>
 #include <hsa_ext_finalize.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 #include <atomic>
 #include <cassert>
@@ -130,23 +130,25 @@ HsaRsrcFactory::HsaRsrcFactory(bool initialize_hsa) : initialize_hsa_(initialize
   status = LoadAqlProfileLib(&aqlprofile_api_);
 #else
   status = hsa_system_get_major_extension_table(HSA_EXTENSION_AMD_AQLPROFILE,
-    hsa_ven_amd_aqlprofile_VERSION_MAJOR, sizeof(aqlprofile_api_), &aqlprofile_api_);
+                                                hsa_ven_amd_aqlprofile_VERSION_MAJOR,
+                                                sizeof(aqlprofile_api_), &aqlprofile_api_);
 #endif
   CHECK_STATUS("aqlprofile API table load failed", status);
 
   // Get Loader API table
   loader_api_ = {0};
-  status = hsa_system_get_major_extension_table(HSA_EXTENSION_AMD_LOADER,
-    1, sizeof(loader_api_), &loader_api_);
+  status = hsa_system_get_major_extension_table(HSA_EXTENSION_AMD_LOADER, 1, sizeof(loader_api_),
+                                                &loader_api_);
   CHECK_STATUS("loader API table query failed", status);
 
   // Instantiate HSA timer
   timer_ = new HsaTimer;
   CHECK_STATUS("HSA timer allocation failed",
-    (timer_ == NULL) ? HSA_STATUS_ERROR : HSA_STATUS_SUCCESS);
+               (timer_ == NULL) ? HSA_STATUS_ERROR : HSA_STATUS_SUCCESS);
 
   // System timeout
-  timeout_ = (timeout_ns_ == HsaTimer::TIMESTAMP_MAX) ? timeout_ns_ : timer_->ns_to_sysclock(timeout_ns_);
+  timeout_ =
+      (timeout_ns_ == HsaTimer::TIMESTAMP_MAX) ? timeout_ns_ : timer_->ns_to_sysclock(timeout_ns_);
 }
 
 // Destructor of the class
@@ -213,7 +215,8 @@ const AgentInfo* HsaRsrcFactory::AddAgentInfo(const hsa_agent_t agent) {
     status = hsa_amd_agent_iterate_memory_pools(agent, FindStandardPool, &agent_info->cpu_pool);
     if ((status == HSA_STATUS_INFO_BREAK) && (cpu_pool_ == NULL)) cpu_pool_ = &agent_info->cpu_pool;
     status = hsa_amd_agent_iterate_memory_pools(agent, FindKernArgPool, &agent_info->kern_arg_pool);
-    if ((status == HSA_STATUS_INFO_BREAK) && (kern_arg_pool_ == NULL)) kern_arg_pool_ = &agent_info->kern_arg_pool;
+    if ((status == HSA_STATUS_INFO_BREAK) && (kern_arg_pool_ == NULL))
+      kern_arg_pool_ = &agent_info->kern_arg_pool;
     agent_info->gpu_pool = {};
 
     cpu_list_.push_back(agent_info);
@@ -360,7 +363,8 @@ uint8_t* HsaRsrcFactory::AllocateLocalMemory(const AgentInfo* agent_info, size_t
   hsa_status_t status = HSA_STATUS_ERROR;
   uint8_t* buffer = NULL;
   size = (size + MEM_PAGE_MASK) & ~MEM_PAGE_MASK;
-  status = hsa_amd_memory_pool_allocate(agent_info->gpu_pool, size, 0, reinterpret_cast<void**>(&buffer));
+  status = hsa_amd_memory_pool_allocate(agent_info->gpu_pool, size, 0,
+                                        reinterpret_cast<void**>(&buffer));
   uint8_t* ptr = (status == HSA_STATUS_SUCCESS) ? buffer : NULL;
   return ptr;
 }
@@ -375,7 +379,8 @@ uint8_t* HsaRsrcFactory::AllocateKernArgMemory(const AgentInfo* agent_info, size
   uint8_t* buffer = NULL;
   if (!cpu_agents_.empty()) {
     size = (size + MEM_PAGE_MASK) & ~MEM_PAGE_MASK;
-    status = hsa_amd_memory_pool_allocate(*kern_arg_pool_, size, 0, reinterpret_cast<void**>(&buffer));
+    status =
+        hsa_amd_memory_pool_allocate(*kern_arg_pool_, size, 0, reinterpret_cast<void**>(&buffer));
     // Both the CPU and GPU can access the kernel arguments
     if (status == HSA_STATUS_SUCCESS) {
       hsa_agent_t ag_list[1] = {agent_info->dev_id};
@@ -412,18 +417,19 @@ uint8_t* HsaRsrcFactory::AllocateSysMemory(const AgentInfo* agent_info, size_t s
 // @return uint8_t* Pointer to buffer, null if allocation fails.
 uint8_t* HsaRsrcFactory::AllocateCmdMemory(const AgentInfo* agent_info, size_t size) {
   size = (size + MEM_PAGE_MASK) & ~MEM_PAGE_MASK;
-  uint8_t* ptr = (agent_info->is_apu && CMD_MEMORY_MMAP)
-      ? reinterpret_cast<uint8_t*>(
-            mmap(NULL, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_SHARED | MAP_ANONYMOUS, 0, 0))
-      : AllocateSysMemory(agent_info, size);
+  uint8_t* ptr =
+      (agent_info->is_apu && CMD_MEMORY_MMAP)
+          ? reinterpret_cast<uint8_t*>(mmap(NULL, size, PROT_READ | PROT_WRITE | PROT_EXEC,
+                                            MAP_SHARED | MAP_ANONYMOUS, 0, 0))
+          : AllocateSysMemory(agent_info, size);
   return ptr;
 }
 
 // Wait signal
 void HsaRsrcFactory::SignalWait(const hsa_signal_t& signal) const {
   while (1) {
-    const hsa_signal_value_t signal_value =
-      hsa_signal_wait_scacquire(signal, HSA_SIGNAL_CONDITION_LT, 1, timeout_, HSA_WAIT_STATE_BLOCKED);
+    const hsa_signal_value_t signal_value = hsa_signal_wait_scacquire(
+        signal, HSA_SIGNAL_CONDITION_LT, 1, timeout_, HSA_WAIT_STATE_BLOCKED);
     if (signal_value == 0) {
       break;
     } else {
@@ -433,7 +439,8 @@ void HsaRsrcFactory::SignalWait(const hsa_signal_t& signal) const {
 }
 
 // Wait signal with signal value restore
-void HsaRsrcFactory::SignalWaitRestore(const hsa_signal_t& signal, const hsa_signal_value_t& signal_value) const {
+void HsaRsrcFactory::SignalWaitRestore(const hsa_signal_t& signal,
+                                       const hsa_signal_value_t& signal_value) const {
   SignalWait(signal);
   hsa_signal_store_relaxed(const_cast<hsa_signal_t&>(signal), signal_value);
 }
@@ -562,7 +569,8 @@ uint64_t HsaRsrcFactory::Submit(hsa_queue_t* queue, const void* packet) {
   }
 
   uint32_t slot_idx = (uint32_t)(write_idx % queue->size);
-  uint32_t* queue_slot = reinterpret_cast<uint32_t*>((uintptr_t)(queue->base_address) + (slot_idx * slot_size_b));
+  uint32_t* queue_slot =
+      reinterpret_cast<uint32_t*>((uintptr_t)(queue->base_address) + (slot_idx * slot_size_b));
   const uint32_t* slot_data = reinterpret_cast<const uint32_t*>(packet);
 
   // Copy buffered commands into the queue slot.
