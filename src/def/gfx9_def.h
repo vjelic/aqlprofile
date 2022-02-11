@@ -1659,6 +1659,70 @@ typedef struct PM4_MEC_WRITE_DATA {
   //  uint32_t data[];  // N-DWords
 
 } PM4MEC_WRITE_DATA, *PPM4MEC_WRITE_DATA;
+
+enum MEC_SET_SH_REG_index_enum {
+     index__mec_set_sh_reg__default = 0,
+     index__mec_set_sh_reg__insert_vmid = 1 };
+
+
+typedef struct PM4_MEC_SET_SH_REG
+{
+    union
+    {
+        PM4_MEC_TYPE_3_HEADER   header;            ///header
+        uint32_t            ordinal1;
+    };
+
+    union
+    {
+        struct
+        {
+            uint32_t reg_offset:16;
+            uint32_t reserved1:7;
+            uint32_t vmid_shift:5;
+            MEC_SET_SH_REG_index_enum index:4;
+        } bitfields2;
+        uint32_t ordinal2;
+    };
+
+//  uint32_t reg_data[];  // N-DWords
+
+} PM4MEC_SET_SH_REG, *PPM4MEC_SET_SH_REG;
+
+typedef struct PM4_MEC_SET_UCONFIG_REG
+{
+    union
+    {
+        PM4_MEC_TYPE_3_HEADER   header;            ///header
+        uint32_t            ordinal1;
+    };
+
+    union
+    {
+        struct
+        {
+            uint32_t reg_offset:16;
+            uint32_t reserved1:16;
+        } bitfields2;
+        uint32_t ordinal2;
+    };
+
+//  uint32_t reg_data[];  // N-DWords
+
+} PM4MEC_SET_UCONFIG_REG, *PPM4MEC_SET_UCONFIG_REG;
+
+typedef struct PM4_MEC_NOP
+{
+    union
+    {
+        PM4_MEC_TYPE_3_HEADER   header;            ///header
+        uint32_t            ordinal1;
+    };
+
+//  uint32_t data_block[];  // N-DWords
+
+} PM4MEC_NOP, *PPM4MEC_NOP;
+
 // include gfxip/gfx9/gfx9_utils.h
 #define PM4_TYPE_SHIFT 30
 #define PM4_COUNT_SHIFT 16

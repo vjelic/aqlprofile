@@ -9,30 +9,55 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <type_traits>
 #include <vector>
 
-#define APPEND_COMMAND_WRAPPER(cmdbuf, command) \
-  do {                                          \
-    PrintPacket(command, __FUNCTION__);         \
-    cmdbuf->Append(&command, sizeof(command));  \
-  } while (0);
+#define APPEND_COMMAND_WRAPPER(cmdbuf, ...)  \
+  do {                                       \
+    PrintCommand(__FUNCTION__, __VA_ARGS__); \
+    cmdbuf->Append(__VA_ARGS__);             \
+  } while (false);
 
 namespace pm4_builder {
 
-template <class T>
-static void PrintPacket(const T& command, const char* name) {
+namespace {
+
 #if defined(DEBUG_TRACE)
-  uint32_t* cmd = (uint32_t*)&command;
-  uint32_t size = sizeof(command) / sizeof(uint32_t);
+template <typename T, typename std::enable_if<sizeof(T) % sizeof(uint32_t) == 0, int>::type = 0>
+constexpr size_t PacketsSize(T&& packet) {
+  return sizeof(packet) / sizeof(uint32_t);
+}
+template <typename T, typename... Ts>
+constexpr size_t PacketsSize(T&& packet, Ts&&... rest) {
+  return PacketsSize(std::forward<T>(packet)) + PacketsSize(std::forward<Ts>(rest)...);
+}
+
+template <typename T, typename std::enable_if<sizeof(T) % sizeof(uint32_t) == 0, int>::type = 0>
+void PrintPackets(std::ostream& stream, T&& packet) {
+  for (size_t i = 0; i < sizeof(packet) / sizeof(uint32_t); ++i)
+    stream << " " << std::hex << std::right << std::setw(8) << std::setfill('0')
+           << reinterpret_cast<const uint32_t*>(&packet)[i];
+}
+template <typename T, typename... Ts>
+void PrintPackets(std::ostream& stream, T&& packet, Ts&&... rest) {
+  PrintPackets(stream, std::forward<T>(packet));
+  PrintPackets(stream, std::forward<Ts>(rest)...);
+}
+#endif
+
+template <typename... Ts>
+void PrintCommand(const char* function_name, Ts&&... packets) {
+#if defined(DEBUG_TRACE)
   std::ostringstream oss;
-  oss << "'" << name << "' size(" << std::dec << size << ")";
+  oss << "'" << function_name << "' size(" << std::dec << PacketsSize(std::forward<Ts>(packets)...)
+      << ")";
   std::clog << std::setw(40) << std::left << oss.str() << ":";
-  for (uint32_t idx = 0; idx < size; idx++) {
-    std::clog << " " << std::hex << std::right << std::setw(8) << std::setfill('0') << cmd[idx];
-  }
+  PrintPackets(std::clog, std::forward<Ts>(packets)...);
   std::clog << std::setfill(' ') << std::endl;
 #endif
 }
+
+}  // namespace
 
 /// @brief Implements the interface CmdBuffer and thus can be used to
 /// translate various Gpu commands as byte stream.
@@ -40,34 +65,32 @@ static void PrintPacket(const T& command, const char* name) {
 /// Users are therefore required to be access in a serialized manner.
 class CmdBuffer {
  public:
-  typedef uint32_t value_type;
-
   /// @brief Append the command into the underlying buffer
-  /// @param cmd Buffer containing one or more instances of Gpu commands
-  /// @param size Size of Gpu command(s) in bytes
-  void Append(const void* cmd, uint32_t size) { memcpy(Reserve(size), cmd, size); }
+  /// @param packet Buffer containing one or more instances of Gpu commands
+  template <typename T, typename std::enable_if<sizeof(T) % sizeof(uint32_t) == 0, int>::type = 0>
+  void Append(T&& packet) {
+    size_t pos = data_.size();
+    data_.resize(pos + sizeof(packet) / sizeof(uint32_t));
+    memcpy(&data_[pos], &packet, sizeof(T));
+  }
+  template <typename... Ts>
+  void Append(Ts&&... packets) {
+    using expander = int[];
+    (void)expander{0, (Append(std::forward<Ts>(packets)), 0)...};
+  }
 
   /// @brief Return size of Gpu commands in bytes in the underlying buffer
-  size_t Size() const { return data_.size() * sizeof(value_type); }
+  size_t Size() const { return data_.size() * sizeof(data_[0]); }
 
   /// @brief Return address of the start of accumulated commands.
   const void* Data() const { return &data_[0]; }
 
   /// @brief Clear buffer.
-  const void Clear() { return data_.clear(); }
+  void Clear() { return data_.clear(); }
 
  private:
-  /// @brief Increase Gpu command buffer by specified size
-  /// @param size Size in bytes by which command buffer should be resized.
-  /// @return Pointer into the buffer where the next command can be written
-  void* Reserve(std::size_t size) {
-    const size_t len = data_.size();
-    data_.resize(len + size / sizeof(value_type));
-    return &data_[len];
-  }
-
-  /// @brief Defines Gpu command buffer as a vector of value_type
-  std::vector<value_type> data_;
+  /// @brief Defines Gpu command buffer as a vector of uint32_t
+  std::vector<uint32_t> data_;
 };
 
 /// @brief Specifies the public interface of CmdBuilder for use by
@@ -82,7 +105,7 @@ class CmdBuilder {
   /// @param cmdbuf Pointer to command buffer to be appended
   virtual void BuildWriteWaitIdlePacket(CmdBuffer* cmdbuf) = 0;
 
-  /// @bried Builds a Gpu command to wait until condition is realized
+  /// @brief Builds a Gpu command to wait until condition is realized
   /// @param cmdbuf command buffer to be appended with launch command
   /// @param mem_space if the address is in memory or is a register offset
   /// @param wait_addr address to wait on
@@ -113,8 +136,8 @@ class CmdBuilder {
   /// @param size Size of the data to be written
   /// @param  wait True if Gpu command should confirm the write operation
   /// operation has completed successfully
-  virtual void BuildCopyRegDataPacket(CmdBuffer* cmdbuf, uint32_t src_reg_addr, void* dst_addr,
-                                      uint32_t size, bool wait) = 0;
+  virtual void BuildCopyRegDataPacket(CmdBuffer* cmdbuf, uint32_t src_reg_addr,
+                                      const void* dst_addr, uint32_t size, bool wait) = 0;
 
   /// @brief Builds the Gpu command to reference indirectly a stream
   /// of other Gpu commands. The launch command is then copied into
@@ -130,16 +153,16 @@ class CmdBuilder {
 };
 
 /// @brief Returns the lower 32-bits of a value
-inline uint32_t Low32(uint64_t u) { return (u & 0xFFFFFFFFUL); }
+constexpr uint32_t Low32(uint64_t u) { return static_cast<uint32_t>(u); }
 
 /// @brief Returns the upper 32-bits of a value
-inline uint32_t High32(uint64_t u) { return (u >> 32); }
+constexpr uint32_t High32(uint64_t u) { return static_cast<uint32_t>(u >> 32); }
 
 /// @brief Returns the lower 32-bits of an address
-inline uint32_t PtrLow32(const void* p) { return reinterpret_cast<uintptr_t>(p); }
+constexpr uint32_t PtrLow32(const void* p) { return Low32(reinterpret_cast<uintptr_t>(p)); }
 
 /// @brief Returns the upper 32-bits of an address
-inline uint32_t PtrHigh32(const void* p) { return reinterpret_cast<uintptr_t>(p) >> 32; }
+constexpr uint32_t PtrHigh32(const void* p) { return High32(reinterpret_cast<uintptr_t>(p)); }
 
 }  // namespace pm4_builder
 
