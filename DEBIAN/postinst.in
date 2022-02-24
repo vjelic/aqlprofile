@@ -5,7 +5,7 @@ set -e
 # left-hand term originates from ENABLE_LDCONFIG = ON/OFF at package build
 do_ldconfig() {
   if [ "@ENABLE_LDCONFIG@" == "ON" ]; then
-     echo @CPACK_PACKAGING_INSTALL_PREFIX@/hsa-amd-aqlprofile/lib > /etc/ld.so.conf.d/libhsa-amd-aqlprofile64.conf
+     echo @CPACK_PACKAGING_INSTALL_PREFIX@/lib > /etc/ld.so.conf.d/libhsa-amd-aqlprofile64.conf
      ldconfig
   fi
 }
