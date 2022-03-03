@@ -83,11 +83,12 @@ add_subdirectory ( ${TEST_DIR} ${TEST_BINARY_DIR} )
 
 ## Add the install directives for the runtime library.
 set ( DEST_NAME ${AQLPROFILE_NAME} )
-add_custom_target ( so-link ALL WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-                    COMMAND ${CMAKE_COMMAND} -E create_symlink ../${DEST_NAME}/lib/${AQLPROFILE_LIBRARY}.so so-link )
-install ( TARGETS ${AQLPROFILE_TARGET} LIBRARY DESTINATION ${AQLPROFILE_NAME}/lib COMPONENT ${AQLPROFILE_LIBRARY} )
-install ( FILES ${PROJECT_BINARY_DIR}/so-link DESTINATION lib RENAME ${AQLPROFILE_LIBRARY}.so )
+install ( TARGETS ${AQLPROFILE_TARGET} LIBRARY DESTINATION lib COMPONENT ${AQLPROFILE_LIBRARY} )
 
+option(FILE_REORG_BACKWARD_COMPATIBILITY "Enable File Reorg with backward compatibility" ON)
+if(FILE_REORG_BACKWARD_COMPATIBILITY)
+  include(aqlprof-backward-compat.cmake)
+endif()
 ## Add the packaging directives for the runtime library.
 set ( CPACK_PACKAGE_NAME ${AQLPROFILE_NAME} )
 set ( CPACK_PACKAGE_VENDOR "Advanced Micro Devices, Inc." )
