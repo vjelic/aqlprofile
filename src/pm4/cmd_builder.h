@@ -159,10 +159,10 @@ constexpr uint32_t Low32(uint64_t u) { return static_cast<uint32_t>(u); }
 constexpr uint32_t High32(uint64_t u) { return static_cast<uint32_t>(u >> 32); }
 
 /// @brief Returns the lower 32-bits of an address
-constexpr uint32_t PtrLow32(const void* p) { return Low32(reinterpret_cast<uintptr_t>(p)); }
+inline uint32_t PtrLow32(const void* p) { return Low32(reinterpret_cast<uintptr_t>(p)); }
 
 /// @brief Returns the upper 32-bits of an address
-constexpr uint32_t PtrHigh32(const void* p) { return High32(reinterpret_cast<uintptr_t>(p)); }
+inline uint32_t PtrHigh32(const void* p) { return High32(reinterpret_cast<uintptr_t>(p)); }
 
 }  // namespace pm4_builder
 
