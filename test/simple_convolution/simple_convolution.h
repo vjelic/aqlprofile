@@ -29,6 +29,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #define TEST_SIMPLE_CONVOLUTION_SIMPLE_CONVOLUTION_H_
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "ctrl/test_kernel.h"
