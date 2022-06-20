@@ -35,7 +35,7 @@ function(create_library_symlink)
      add_custom_target(link_${file_name} ALL
                   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                   COMMAND ${CMAKE_COMMAND} -E create_symlink
-                  ../../lib/${file_name} ${AQLPROF_WRAPPER_LIB_DIR}/${file_name})
+                  ../../${CMAKE_INSTALL_LIBDIR}/${file_name} ${AQLPROF_WRAPPER_LIB_DIR}/${file_name})
   endforeach()
 endfunction()
 
