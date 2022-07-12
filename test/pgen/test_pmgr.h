@@ -28,8 +28,8 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef TEST_PGEN_TEST_PMGR_H_
 #define TEST_PGEN_TEST_PMGR_H_
 
-#include <hsa.h>
-#include <hsa_ven_amd_aqlprofile.h>
+#include <hsa/hsa.h>
+#include <hsa/hsa_ven_amd_aqlprofile.h>
 
 #include <atomic>
 

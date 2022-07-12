@@ -1,7 +1,7 @@
 #ifndef SRC_CORE_AQL_PROFILE_H_
 #define SRC_CORE_AQL_PROFILE_H_
 
-#include <hsa_ven_amd_aqlprofile.h>
+#include <hsa/hsa_ven_amd_aqlprofile.h>
 
 #include <iostream>
 #include <string>

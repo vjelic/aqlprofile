@@ -26,9 +26,9 @@ POSSIBILITY OF SUCH DAMAGE.
 
 #include <dlfcn.h>
 #include <fcntl.h>
-#include <hsa.h>
-#include <hsa_ext_amd.h>
-#include <hsa_ext_finalize.h>
+#include <hsa/hsa.h>
+#include <hsa/hsa_ext_amd.h>
+#include <hsa/hsa_ext_finalize.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
