@@ -1,5 +1,5 @@
 #include <dirent.h>
-#include <hsakmt.h>
+#include <hsakmt/hsakmt.h>
 #include <pthread.h>
 #include <sys/types.h>
 #include <unistd.h>

@@ -25,7 +25,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#include <hsakmt.h>
+#include <hsakmt/hsakmt.h>
 #include <stdlib.h>
 
 #include <string>
