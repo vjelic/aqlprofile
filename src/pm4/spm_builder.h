@@ -81,6 +81,7 @@ class GpuSpmBuilder : public SpmBuilder, protected Builder, protected Primitives
     }
 
     // Setting VMID
+    if (!config->spm_kfd_mode)
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_SPM_MC_CNTL__ADDR,
                                         Primitives::rlc_spm_mc_cntl_value());
 

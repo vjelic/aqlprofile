@@ -13,7 +13,7 @@ set ( LIB_SRC
 
 add_library ( ${TARGET_LIB} SHARED ${LIB_SRC} )
 target_include_directories ( ${TARGET_LIB} PRIVATE ${LIB_DIR} ${API_PATH})
-target_link_libraries( ${TARGET_LIB} PRIVATE hsa-runtime64::hsa-runtime64 hsakmt::hsakmt )
+target_link_libraries( ${TARGET_LIB} PRIVATE pthread hsa-runtime64::hsa-runtime64 )
 
 ## Generating definitions
 set ( SCRIPT_DIR "${ROOT_DIR}/script" )

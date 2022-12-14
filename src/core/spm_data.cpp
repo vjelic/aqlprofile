@@ -1,5 +1,5 @@
 #include <dirent.h>
-#include <hsakmt/hsakmt.h>
+#include "hsa/hsa_ext_amd.h"
 #include <pthread.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -82,25 +82,26 @@ struct state_t {
   bool ready;
   pthread_mutex_t work_mutex;
   pthread_cond_t work_cond;
+  hsa_agent_t agent;
 };
 
 void producer_fun(state_t* state) {
   uint32_t timeout = 0;
-  HSAKMT_STATUS status =
-      hsaKmtSPMSetDestBuffer(state->node_id, state->buf_size, &timeout, &(state->data_size),
+  hsa_status_t status =
+      hsa_amd_spm_set_dest_buffer(state->agent, state->buf_size, &timeout, &(state->data_size),
                              state->kfd_buf, &(state->data_loss));
-  if (status != HSAKMT_STATUS_SUCCESS) {
-    printf("hsaKmtSPMSetDestBuffer init error\n");
+  if (status != HSA_STATUS_SUCCESS) {
+    printf("hsa SPM Set DestBuffer init error\n");
     fflush(stdout);
     abort();
   }
 
   do {
     timeout = state->timeout;
-    status = hsaKmtSPMSetDestBuffer(state->node_id, state->buf_size, &timeout, &(state->data_size),
+    status = hsa_amd_spm_set_dest_buffer(state->agent, state->buf_size, &timeout, &(state->data_size),
                                     state->prod_buf, &(state->data_loss));
-    if (status != HSAKMT_STATUS_SUCCESS) {
-      printf("hsaKmtSPMSetDestBuffer error\n");
+    if (status != HSA_STATUS_SUCCESS) {
+      printf("hsa SPM Set DestBuffer error\n");
       fflush(stdout);
       abort();
     }
@@ -115,10 +116,10 @@ void producer_fun(state_t* state) {
     PTHREAD_CALL(pthread_mutex_unlock(&(state->work_mutex)));
   } while (!state->thread_stop);
 
-  status = hsaKmtSPMSetDestBuffer(state->node_id, 0, &timeout, &(state->data_size), NULL,
+  status = hsa_amd_spm_set_dest_buffer(state->agent, 0, &timeout, &(state->data_size), NULL,
                                   &(state->data_loss));
-  if (status != HSAKMT_STATUS_SUCCESS) {
-    printf("hsaKmtSPMSetDestBuffer stop error\n");
+  if (status != HSA_STATUS_SUCCESS) {
+    printf("hsa SPM Set DestBuffer stop error\n");
     fflush(stdout);
     abort();
   }
@@ -165,13 +166,14 @@ void mananger_fun(const hsa_ven_amd_aqlprofile_profile_t* profile,
   obj.kfd_buf = buf_ptr;
   obj.prod_buf = buf_ptr + buf_size;
   obj.cons_buf = buf_ptr + 2 * buf_size;
+  obj.agent = profile->agent;
 
   PTHREAD_CALL(pthread_mutex_init(&(obj.work_mutex), NULL));
   PTHREAD_CALL(pthread_cond_init(&(obj.work_cond), NULL));
 
-  HSAKMT_STATUS status = hsaKmtSPMAcquire(gpu_node_id);
-  if (status != HSAKMT_STATUS_SUCCESS) {
-    printf("hsaKmtSPMAcquire error\n");
+  hsa_status_t status = hsa_amd_spm_acquire(profile->agent);
+  if (status != HSA_STATUS_SUCCESS) {
+    printf("hsa SPM Acquire error\n");
     fflush(stdout);
     abort();
   }
@@ -183,9 +185,9 @@ void mananger_fun(const hsa_ven_amd_aqlprofile_profile_t* profile,
   producer.join();
   consumer.join();
 
-  status = hsaKmtSPMRelease(gpu_node_id);
-  if (status != HSAKMT_STATUS_SUCCESS) {
-    printf("hsaKmtSPMRelease error\n");
+  status = hsa_amd_spm_release(profile->agent);
+  if (status != HSA_STATUS_SUCCESS) {
+    printf("hsa SPM Release error\n");
     fflush(stdout);
     abort();
   }

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright ©2013 Advanced Micro Devices, Inc. All rights reserved.
+Copyright ï¿½2013 Advanced Micro Devices, Inc. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -25,7 +25,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 *******************************************************************************/
 
-#include <hsakmt/hsakmt.h>
+#include "hsa/hsa_ext_amd.h"
 #include <stdlib.h>
 
 #include <string>
@@ -61,7 +61,7 @@ std::atomic<bool> test_done{false};  // is GPU kernel finished?
 int get_gpu_node_id() {
   int gpu_node = -1;
 
-#if 0
+  #if 0
   // find a valid gpu node from /sys/class/kfd/kfd/topology/nodes
   std::string path = "/sys/class/kfd/kfd/topology/nodes";
   DIR *dir;
@@ -85,31 +85,31 @@ int get_gpu_node_id() {
     }
     closedir(dir);
   }
-#else
-  HsaSystemProperties m_SystemProperties;
-  memset(&m_SystemProperties, 0, sizeof(m_SystemProperties));
 
-  HSAKMT_STATUS status = hsaKmtAcquireSystemProperties(&m_SystemProperties);
-  if (status != HSAKMT_STATUS_SUCCESS) {
-    std::cerr << "Error in hsaKmtAcquireSystemProperties" << std::endl;
-    return 1;
-  }
+        HsaSystemProperties m_SystemProperties;
+        memset(&m_SystemProperties, 0, sizeof(m_SystemProperties));
 
-  // tranverse all CPU and GPU nodes and break when a GPU node is found
-  for (unsigned i = 0; i < m_SystemProperties.NumNodes; ++i) {
-    HsaNodeProperties nodeProperties;
-    memset(&nodeProperties, 0, sizeof(HsaNodeProperties));
+        HSAKMT_STATUS status = hsaKmtAcquireSystemProperties(&m_SystemProperties);
+        if (status != HSAKMT_STATUS_SUCCESS) {
+          std::cerr << "Error in hsaKmtAcquireSystemProperties" << std::endl;
+          return 1;
+        }
 
-    status = hsaKmtGetNodeProperties(i, &nodeProperties);
-    if (status != HSAKMT_STATUS_SUCCESS) {
-      std::cerr << "Error in hsaKmtAcquireSystemProperties" << std::endl;
-      break;
-    } else if (nodeProperties.NumFComputeCores) {
-      gpu_node = i;
-      break;
-    }
-  }
-#endif
+        // tranverse all CPU and GPU nodes and break when a GPU node is found
+        for (unsigned i = 0; i < m_SystemProperties.NumNodes; ++i) {
+          HsaNodeProperties nodeProperties;
+          memset(&nodeProperties, 0, sizeof(HsaNodeProperties));
+
+          status = hsaKmtGetNodeProperties(i, &nodeProperties);
+          if (status != HSAKMT_STATUS_SUCCESS) {
+            std::cerr << "Error in hsaKmtAcquireSystemProperties" << std::endl;
+            break;
+          } else if (nodeProperties.NumFComputeCores) {
+            gpu_node = i;
+            break;
+          }
+        }
+  #endif
 
   printf("GPU node id(%d)\n", gpu_node);
   return gpu_node;
@@ -139,24 +139,26 @@ void thread_kernel(bool* ret_val, pf_pmc_argv pmc_argv, int events_count,
   *ret_val =
       RunKernel<SimpleConvolution, TestPGenSpm>(events_count, pmc_argv(events_count, events));
   test_done = true;
+
 }
 
 void thread_spm_buffer_setup() {
-  while (!test_done) {
-    auto idx = (spm_buffer_idx.load() + 1) & 0x1;
-    std::cout << "thread_spm_buffer_setup: " << idx << std::endl;
-    HSAKMT_STATUS status =
-        hsaKmtSPMSetDestBuffer(gpu_node_id, spm_buffer_params[idx].size,
-                               &spm_buffer_params[idx].timeout, &spm_buffer_params[idx].len,
-                               spm_buffer_params[idx].addr, &spm_buffer_params[idx].data_loss);
-    if (status != HSAKMT_STATUS_SUCCESS) {
-      std::cerr << "Error in initial spm setup of buffer 0" << std::endl;
-      return;
-    }
-
-    // inform data saving thread there is spm data to save
-    if (spm_buffer_params[idx].len != 0) spm_check_data = true;
+  #if ENABLE_SPM
+    while (!test_done) {
+      auto idx = (spm_buffer_idx.load() + 1) & 0x1;
+      std::cout << "thread_spm_buffer_setup: " << idx << std::endl;
+      hsa_status_t status =
+        hsa_amd_spm_set_dest_buffer(gpu_node_id, spm_buffer_params[idx].size,
+                                &spm_buffer_params[idx].timeout, &spm_buffer_params[idx].len,
+                                spm_buffer_params[idx].addr, &spm_buffer_params[idx].data_loss);
+      if (status != HSA_STATUS_SUCCESS) {
+        std::cerr << "Error in initial spm setup of buffer 0" << std::endl;
+        return;
+      }
+      // inform data saving thread there is spm data to save
+      if (spm_buffer_params[idx].len != 0) spm_check_data = true;
   }
+  #endif
 
   std::cout << "Exiting thread_spm_buffer_setup ..." << std::endl;
 }
@@ -187,9 +189,8 @@ int main(int argc, char* argv[]) {
   const bool scan_enable = (getenv("AQLPROFILE_SCAN") != NULL);
   const bool trace_enable = (getenv("AQLPROFILE_TRACE") != NULL);
   const bool spm_enable = (getenv("AQLPROFILE_SPM") != NULL);
-  const bool spm_kfd_mode = (getenv("AQLPROFILE_SPM_KFD_MODE") != NULL);
+  [[maybe_unused]]const bool spm_kfd_mode = (getenv("AQLPROFILE_SPM_KFD_MODE") != NULL);
   // int gpu_node_id = -1;
-
   int scan_step = 1;
   const char* step_env = getenv("AQLPROFILE_SCAN_STEP");
   if (step_env != NULL) {
@@ -215,7 +216,10 @@ int main(int argc, char* argv[]) {
   //}
 
   if (spm_enable) {
+ 
+   #if ENABLE_SPM
     {
+
       hsa_status_t status = hsa_init();
       CHECK_STATUS("Error in hsa_init", status);
     }
@@ -226,23 +230,25 @@ int main(int argc, char* argv[]) {
     }
 
     if (spm_kfd_mode) {
-      HSAKMT_STATUS status = hsaKmtSPMAcquire(gpu_node_id);
-      if (status != HSAKMT_STATUS_SUCCESS) {
+      hsa_status_t status = hsa_amd_spm_acquire(gpu_node_id);
+      if (status != HSA_STATUS_SUCCESS) {
         std::cerr << "Error in acquiring SPM for NodeId " << gpu_node_id << std::endl;
         return 1;
       }
-    } else {
-#if SPM_DEBUG_TRAP
-      HSAKMT_STATUS status = hsaKmtEnableDebugTrap(gpu_node_id, INVALID_QUEUEID);
-#else
-      HSAKMT_STATUS status = HSAKMT_STATUS_ERROR;
-#endif
-      if (status != HSAKMT_STATUS_SUCCESS) {
-        std::cerr << "Error in enabling debug trap for NodeId " << gpu_node_id << std::endl;
-        return 1;
-      }
-    }
   }
+    else {
+          #if SPM_DEBUG_TRAP
+            HSAKMT_STATUS status = hsaKmtEnableDebugTrap(gpu_node_id, INVALID_QUEUEID);
+          #else
+            HSAKMT_STATUS status = HSAKMT_STATUS_ERROR;
+          #endif
+            if (status != HSAKMT_STATUS_SUCCESS) {
+              std::cerr << "Error in enabling debug trap for NodeId " << gpu_node_id << std::endl;
+              return 1;
+            }
+    }
+    #endif
+ }
 
   TestHsa::HsaInstantiate();
   const hsa_ven_amd_aqlprofile_event_t* events_arr;
@@ -391,6 +397,7 @@ int main(int argc, char* argv[]) {
   } else if (pcsmp_enable && TestHsa::HsaAgentName() != "gfx10") {
     ret_val = RunKernel<SimpleConvolution, TestPGenPcsmp>(argc, argv);
   } else if (spm_enable) {
+    #ifdef ENABLE_SPM
     int events_count = 0;
     const hsa_ven_amd_aqlprofile_event_t events_spm[] = {
         // {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SQ, 0, 0 /*NONE*/},
@@ -445,10 +452,10 @@ int main(int argc, char* argv[]) {
 
       // non-blocking set up the first spm buffer for use before GPU kernel started
       std::cout << "spm_buffer_setup 0 ..." << std::endl;
-      HSAKMT_STATUS status = hsaKmtSPMSetDestBuffer(
+      hsa_status_t status =  hsa_amd_spm_set_dest_buffer(
           gpu_node_id, spm_buffer_params[0].size, &spm_buffer_params[0].timeout,
           &spm_buffer_params[0].len, spm_buffer_params[0].addr, &spm_buffer_params[0].data_loss);
-      if (status != HSAKMT_STATUS_SUCCESS) {
+      if (status != HSA_STATUS_SUCCESS) {
         std::cerr << "Error in initial spm setup of buffer 0" << std::endl;
         return 1;
       }
@@ -473,8 +480,8 @@ int main(int argc, char* argv[]) {
       std::cout << "data in buff0: " << spm_buffer_params[0].len << " bytes" << std::endl;
       std::cout << "data in buff1: " << spm_buffer_params[1].len << " bytes" << std::endl;
 
-      status = hsaKmtSPMRelease(gpu_node_id);
-      if (status != HSAKMT_STATUS_SUCCESS) {
+      status = hsa_amd_spm_release(gpu_node_id);
+      if (status != HSA_STATUS_SUCCESS) {
         std::cerr << "Error in releasing SPM for NodeId " << gpu_node_id << std::endl;
         return 1;
       }
@@ -487,9 +494,9 @@ int main(int argc, char* argv[]) {
 #if SPM_DEBUG_TRAP
       HSAKMT_STATUS status = hsaKmtDisableDebugTrap(gpu_node_id);
 #else
-      HSAKMT_STATUS status = HSAKMT_STATUS_ERROR;
+      hsa_status_t status = HSA_STATUS_ERROR;
 #endif
-      if (status != HSAKMT_STATUS_SUCCESS) {
+      if (status != HSA_STATUS_SUCCESS) {
         std::cerr << "Error in disabling debug trap for NodeId " << gpu_node_id << std::endl;
         return 1;
       }
@@ -508,6 +515,7 @@ int main(int argc, char* argv[]) {
       std::cout << "SPM test passed!" << std::endl;
     else
       std::cerr << "SPM test failed!" << std::endl;
+   #endif
   } else {
     ret_val = RunKernel<SimpleConvolution, TestAql>(argc, argv);
   }

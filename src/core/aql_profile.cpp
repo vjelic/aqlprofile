@@ -489,7 +489,8 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
         pm4_builder::SpmBuilder* spm_builder = pm4_factory->GetSpmBuilder();
 
         trace_config.spm_sq_32bit_mode = true;
-        trace_config.spm_kfd_mode = pm4_factory->SpmKfdMode();
+        trace_config.spm_kfd_mode = true;
+        trace_config.sampleRate = 625;
         trace_config.mi100 = (pm4_factory->GetGpuId() == aql_profile::MI100_GPU_ID);
 
         // Generate start commands

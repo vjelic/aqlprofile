@@ -29,7 +29,7 @@ set ( KERN_SRC ${TEST_DIR}/${TEST_NAME}/${TEST_NAME}.cpp )
 ## Building test executable
 add_executable ( ${EXE_NAME} ${KERN_SRC} ${CTRL_SRC} ${UTIL_SRC} )
 target_include_directories ( ${EXE_NAME} PRIVATE ${TEST_DIR} ${API_PATH} ${ROCM_ROOT_DIR}/include )
-target_link_libraries( ${EXE_NAME} PRIVATE hsa-runtime64::hsa-runtime64 hsakmt::hsakmt dl )
+target_link_libraries( ${EXE_NAME} PRIVATE pthread hsa-runtime64::hsa-runtime64 dl )
 
 ## Building test kernel
 add_custom_target( mytest
