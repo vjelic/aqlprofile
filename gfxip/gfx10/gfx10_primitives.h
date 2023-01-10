@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define SQTT_PRIM_ENABLED 0
+#define SQTT_PRIM_ENABLED 1
 
 namespace gfxip {
 namespace gfx10 {
@@ -17,6 +17,8 @@ class gfx10_cntx_prim {
   static const uint32_t RLC_PERFMON_CLK_CNTL_ADDR = mmRLC_PERFMON_CLK_CNTL;
   static const uint32_t CP_PERFMON_CNTL_ADDR = mmCP_PERFMON_CNTL;
   static const uint32_t SRBM_PERFMON_CNTL_ADDR = 0;
+
+  static const uint32_t COMPUTE_THREAD_TRACE_ENABLE_ADDR = mmCOMPUTE_THREAD_TRACE_ENABLE;
 
   static const uint32_t MC_CONFIG_MCD_ADDR = 0;
   static const uint32_t MC_SEQ_SELECT_ADDR = 0;
@@ -44,7 +46,7 @@ class gfx10_cntx_prim {
   static const uint32_t SQ_THREAD_TRACE_HIWATER_ADDR = 0;
   static const uint32_t SQ_THREAD_TRACE_HIWATER_VAL = 0x6;
   static const uint32_t SQ_THREAD_TRACE_STATUS_ADDR = mmSQ_THREAD_TRACE_STATUS;
-  static const uint32_t SQ_THREAD_TRACE_CNTR_ADDR = 0;
+  static const uint32_t SQ_THREAD_TRACE_CNTR_ADDR = mmSQ_THREAD_TRACE_DROPPED_CNTR;
   static const uint32_t SQ_THREAD_TRACE_WPTR_ADDR = mmSQ_THREAD_TRACE_WPTR;
   static const uint32_t SQ_THREAD_TRACE_STATUS_OFFSET =
       mmSQ_THREAD_TRACE_STATUS - UCONFIG_SPACE_START;
@@ -473,29 +475,26 @@ class gfx10_cntx_prim {
     return 0;
   }
 
-  // Enable Thread Trace for all VM Id's
   // Enable all of the SIMD's of the compute unit
-  // Enable Compute Unit (CU) at index Zero to be used for fine-grained data
+  // Enable all of the WGPs
+  // Enable all of the WTYPEs
   // Enable Shader Array (SH) at index Zero to be used for fine-grained data
-  //
-  // @note: Not enabling REG_STALL_EN, SPI_STALL_EN and SQ_STALL_EN bits. They
-  // are useful if we wish to program buffer throttling.
-  //
-  static uint32_t sqtt_mask_value(const uint32_t& targetCu, const uint32_t& vmIdMask) {
+  static uint32_t sqtt_mask_value_gfx10 (){
+ //  static uint32_t sqtt_mask_value (){
 #if SQTT_PRIM_ENABLED
     regSQ_THREAD_TRACE_MASK mask{};
-    mask.bits.SH_SEL = 0x0;
-    mask.bits.SIMD_EN = 0xF;
-    mask.bits.CU_SEL = targetCu;
-    mask.bits.SQ_STALL_EN = 0x1;
-    mask.bits.SPI_STALL_EN = 0x1;
-    mask.bits.REG_STALL_EN = 0x1;
-    mask.bits.VM_ID_MASK = vmIdMask;
+    mask.bits.SIMD_SEL = 0x3;
+    mask.bits.WGP_SEL = 0xf;
+    mask.bits.SA_SEL = 0x0;
+    mask.bits.WTYPE_INCLUDE = 0x7f;
     return mask.u32All;
 #else
     return 0;
 #endif
   }
+static uint32_t sqtt_mask_value(const uint32_t& targetCu, const uint32_t& vmIdMask) {
+    return 0;
+}
 
   // not supported in gfx10
   static uint32_t sqtt_perf_mask_value() { return 0; }
@@ -505,9 +504,13 @@ class gfx10_cntx_prim {
   static uint32_t sqtt_token_mask_value() {
 #if SQTT_PRIM_ENABLED
     regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
-    token_mask.bits.REG_MASK = 0xFF;
-    token_mask.bits.TOKEN_MASK = 0xFFFF;
-    token_mask.bits.REG_DROP_ON_STALL = 0x1;
+    token_mask.bits.REG_INCLUDE = SQ_TT_TOKEN_MASK_SQDEC_BIT |
+                                  SQ_TT_TOKEN_MASK_SHDEC_BIT |
+                                  SQ_TT_TOKEN_MASK_GFXUDEC_BIT |
+                                  SQ_TT_TOKEN_MASK_COMP_BIT |
+                                  SQ_TT_TOKEN_MASK_CONTEXT_BIT |
+                                  SQ_TT_TOKEN_MASK_CONFIG_BIT;
+    token_mask.bits.TOKEN_EXCLUDE = 0x800;  //token_exclude_perf
     return token_mask.u32All;
 #else
     return 0;
@@ -516,20 +519,8 @@ class gfx10_cntx_prim {
 
   // not supported in gfx10
   static uint32_t sqtt_token_mask2_value() { return 0; }
-
-  // Check if stalling is supported
-  static bool sqtt_stalling_enabled(const uint32_t& mask_val, const uint32_t& token_mask_val) {
-#if SQTT_PRIM_ENABLED
-    regSQ_THREAD_TRACE_MASK mask{};
-    mask.u32All = mask_val;
-    regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
-    token_mask.u32All = token_mask_val;
-    return ((mask.bits.SQ_STALL_EN) || (mask.bits.SPI_STALL_EN) || (mask.bits.REG_STALL_EN) ||
-            (token_mask.bits.REG_DROP_ON_STALL));
-#else
-    return 0;
-#endif
-  }
+  static bool sqtt_stalling_enabled(const uint32_t& mask_val, const uint32_t& token_mask_val) {return 0;}
+  
 
   // Indicates various attributes of a thread trace session.
   //
@@ -554,28 +545,21 @@ class gfx10_cntx_prim {
   // Base address of buffer to use for thread trace
   static uint32_t sqtt_base_value_lo(const uint64_t& base_addr) {
 #if SQTT_PRIM_ENABLED
-    regSQ_THREAD_TRACE_BASE base{};
-    base.bits.ADDR = Low32(base_addr >> TT_BUFF_ALIGN_SHIFT);
-    return base.u32All;
-#else
-    return 0;
-#endif
-  }
-  static uint32_t sqtt_base_value_hi(const uint64_t& base_addr) {
-#if SQTT_PRIM_ENABLED
-    regSQ_THREAD_TRACE_BASE2 base{};
-    base.bits.ADDR_HI = High32(base_addr >> TT_BUFF_ALIGN_SHIFT);
+    regSQ_THREAD_TRACE_BUF0_BASE base{};
+    base.bits.BASE_LO = Low32(base_addr >> TT_BUFF_ALIGN_SHIFT);
     return base.u32All;
 #else
     return 0;
 #endif
   }
 
+  static uint32_t sqtt_base_value_hi(const uint64_t& base_addr) {return 0; }
+
   // Indicates the size of buffer to use per Shader Engine instance.
   // The size is specified in terms of 4KB blocks
   static uint32_t sqtt_size_value(const uint32_t& size_val) {
 #if SQTT_PRIM_ENABLED
-    regSQ_THREAD_TRACE_SIZE size{};
+    regSQ_THREAD_TRACE_BUF0_SIZE size{};
     size.bits.SIZE = size_val >> TT_BUFF_ALIGN_SHIFT;
     return size.u32All;
 #else
@@ -588,7 +572,18 @@ class gfx10_cntx_prim {
   static uint32_t sqtt_ctrl_value() {
 #if SQTT_PRIM_ENABLED
     regSQ_THREAD_TRACE_CTRL ctrl{};
-    ctrl.bits.RESET_BUFFER = 1;
+    ctrl.bits.MODE = 1;
+    ctrl.bits.HIWATER = 5;
+    ctrl.bits.UTIL_TIMER = 1;
+    ctrl.bits.RT_FREQ = 2;
+    ctrl.bits.DRAW_EVENT_EN = 1;
+    ctrl.bits.REG_STALL_EN = 1;
+    ctrl.bits.SPI_STALL_EN = 1;
+    ctrl.bits.SQ_STALL_EN = 1;
+    ctrl.bits.REG_DROP_ON_STALL = 0;
+    ctrl.bits.REG_DROP_ON_STALL = 1;
+    ctrl.bits.LOWATER_OFFSET = 4;
+    ctrl.bits.AUTO_FLUSH_MODE = 1;
     return ctrl.u32All;
 #else
     return 0;

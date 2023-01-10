@@ -151773,13 +151773,17 @@
 		uint32_t                         RT_FREQ : 2;
 		uint32_t              SYNC_COUNT_MARKERS : 1;
 		uint32_t                SYNC_COUNT_DRAWS : 1;
-		uint32_t                                 : 10;
+                uint32_t                  LOWATER_OFFSET : 3;
+		uint32_t                                 : 6;
+                uint32_t                 AUTO_FLUSH_MODE : 1;
 		uint32_t                     CAPTURE_ALL : 1;
 		uint32_t                   DRAW_EVENT_EN : 1;
 #elif		defined(BIGENDIAN_CPU)
 		uint32_t                   DRAW_EVENT_EN : 1;
 		uint32_t                     CAPTURE_ALL : 1;
-		uint32_t                                 : 10;
+                uint32_t                 AUTO_FLUSH_MODE : 1;
+		uint32_t                                 : 6;
+                uint32_t                  LOWATER_OFFSET : 3;
 		uint32_t                SYNC_COUNT_DRAWS : 1;
 		uint32_t              SYNC_COUNT_MARKERS : 1;
 		uint32_t                         RT_FREQ : 2;

@@ -1845,6 +1845,7 @@ class gfx9_cntx_prim {
 
   static const uint32_t SQ_PERFCOUNTER_CTRL_ADDR = mmSQ_PERFCOUNTER_CTRL;
   static const uint32_t SQ_PERFCOUNTER_MASK_ADDR = mmSQ_PERFCOUNTER_MASK;
+  static const uint32_t COMPUTE_THREAD_TRACE_ENABLE_ADDR = 0;
   static const uint32_t SQ_THREAD_TRACE_MASK_ADDR = mmSQ_THREAD_TRACE_MASK;
   static const uint32_t SQ_THREAD_TRACE_PERF_MASK_ADDR = mmSQ_THREAD_TRACE_PERF_MASK;
   static const uint32_t SQ_THREAD_TRACE_TOKEN_MASK_ADDR = mmSQ_THREAD_TRACE_TOKEN_MASK;
@@ -2305,6 +2306,8 @@ class gfx9_cntx_prim {
     mask.bits.VM_ID_MASK = vmIdMask;
     return mask.u32All;
   }
+  
+  static uint32_t sqtt_mask_value_gfx10() { return 0;}
 
   // Mask of compute units to get thread trace data from
   static uint32_t sqtt_perf_mask_value() {

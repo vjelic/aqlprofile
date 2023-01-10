@@ -91,6 +91,56 @@ void BuildBarrierCommand(CmdBuffer* cmdBuf) override {
   // Append the built command into output Command Buffer
     APPEND_COMMAND_WRAPPER(cmdbuf, cache_flush);
   }
+
+  void BuildWaitRegMemCommand(CmdBuffer* cmdbuf, bool mem_space, uint64_t wait_addr, bool func_eq,
+                              uint32_t mask_val, uint32_t wait_val) override {
+    PM4MEC_WAIT_REG_MEM wait_reg_mem{};
+
+    // Initialize the command header
+    wait_reg_mem.header = MakePacket3Header(IT_WAIT_REG_MEM, sizeof(wait_reg_mem));
+
+    wait_reg_mem.bitfields7.poll_interval = 0x04;
+    wait_reg_mem.bitfields2.operation = operation__mec_wait_reg_mem__wait_reg_mem;
+
+    // Apply the space to which addr belongs
+    wait_reg_mem.bitfields2.mem_space = mem_space ? mem_space__mec_wait_reg_mem__memory_space
+                                                  : mem_space__mec_wait_reg_mem__register_space;
+
+    // Apply the function - equal / not equal desired by user
+    wait_reg_mem.bitfields2.function =
+        func_eq ? function__mec_wait_reg_mem__equal_to_the_reference_value
+                : function__mec_wait_reg_mem__not_equal_reference_value;
+
+    // Apply the mask on value at address/register
+    wait_reg_mem.mask = mask_val;
+
+    // Value to use in applying equal / not equal function
+    wait_reg_mem.reference = wait_val;
+
+    // The address to poll should be DWord (4 byte) aligned
+    // Update upper 32 bit address if addr is not a register
+    if (mem_space) {
+      assert(!(wait_addr & 0x3) && "WaitRegMem address must be 4 byte aligned");
+      wait_reg_mem.bitfields3a.mem_poll_addr_lo = (Low32(wait_addr) >> 2);
+      wait_reg_mem.mem_poll_addr_hi = High32(wait_addr);
+     }
+     else
+       wait_reg_mem.bitfields3b.reg_poll_addr = wait_addr;
+
+     // Append the built command into output Command Buffer
+     APPEND_COMMAND_WRAPPER(cmdbuf, wait_reg_mem);
+    }
+
+  void BuildWriteShRegPacket(CmdBuffer* cmdbuf, uint32_t addr, uint32_t value) override {
+      PM4MEC_SET_SH_REG set_sh_reg{};
+
+      // Initialize the command header
+      set_sh_reg.header = MakePacket3Header(IT_SET_SH_REG, sizeof(set_sh_reg) + sizeof(value));
+      set_sh_reg.bitfields2.reg_offset = (addr - PERSISTENT_SPACE_START);
+      set_sh_reg.bitfields2.index = index__mec_set_sh_reg__default;
+      // Append the built command into output Command Buffer
+      APPEND_COMMAND_WRAPPER(cmdbuf, set_sh_reg, value);
+    }
   
   void BuildCopyRegDataPacket(CmdBuffer* cmdbuf, uint32_t src_reg_addr, const void* dst_addr,
                             uint32_t size, bool wait) override {
@@ -102,13 +152,10 @@ void BuildBarrierCommand(CmdBuffer* cmdBuf) override {
     copy_data.bitfields2.src_sel = IsPrivilegedConfigReg(src_reg_addr)
                                        ? src_sel__mec_copy_data__perfcounters
                                        : src_sel__mec_copy_data__mem_mapped_register;
-   // copy_data.bitfields2.src_cache_policy = src_cache_policy__mec_copy_data__stream;
-    copy_data.bitfields2.src_cache_policy = src_cache_policy__mec_copy_data__bypass;
-   // copy_data.bitfields2.dst_sel = dst_sel__mec_copy_data__memory;
+    copy_data.bitfields2.src_cache_policy = src_cache_policy__mec_copy_data__lru;
     copy_data.bitfields2.dst_sel = dst_sel__mec_copy_data__tc_l2;
-   // copy_data.bitfields2.dst_cache_policy = dst_cache_policy__mec_copy_data__stream;
-    copy_data.bitfields2.dst_cache_policy = dst_cache_policy__mec_copy_data__bypass;
-
+    copy_data.bitfields2.dst_cache_policy = dst_cache_policy__mec_copy_data__lru;
+    
     copy_data.bitfields2.wr_confirm = (MEC_COPY_DATA_wr_confirm_enum)wait;
     copy_data.bitfields2.count_sel = (size == 0) ? count_sel__mec_copy_data__32_bits_of_data
                                                  : count_sel__mec_copy_data__64_bits_of_data;
