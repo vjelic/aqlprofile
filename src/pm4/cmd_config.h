@@ -32,6 +32,11 @@ struct TraceConfig {
   uint32_t tokenMask2;
   // Sampling rate
   uint32_t sampleRate;
+  // PERF
+  uint32_t perfMASK;
+  uint32_t perfCTRL;
+  uint32_t perfcounters[16];
+  uint8_t n_perfcounters;
   // SPM mode
   bool spm_sq_32bit_mode;
   bool spm_kfd_mode;

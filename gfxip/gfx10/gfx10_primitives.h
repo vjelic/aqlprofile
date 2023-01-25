@@ -67,6 +67,8 @@ class gfx10_cntx_prim {
   static const uint32_t RLC_SPM_COUNTERS_PER_LINE = 16;
   static const uint32_t RLC_SPM_TIMESTAMP_SIZE16 = 4;
 
+  static uint32_t sqtt_perfcounter_addr(uint32_t index) { return 0; }
+
   union mux_info_t {
     uint16_t data;
     struct {

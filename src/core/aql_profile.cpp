@@ -375,6 +375,7 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
       assert(data_size <= profile->output_buffer.size);
     } else if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_TRACE) {
       pm4_builder::TraceConfig trace_config{};
+      memset(trace_config.perfcounters, 0, sizeof(trace_config.perfcounters));
 
       const uint32_t se_number = pm4_factory->GetShaderEnginesNumber();
       uint32_t se_mask = (1 << se_number) - 1;
@@ -421,8 +422,25 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
               trace_config.concurrent = p->value;
               break;
             default:
-              ERR_LOGGING << "Bad trace parameter name (" << p->parameter_name << ")";
-              return HSA_STATUS_ERROR_INVALID_ARGUMENT;
+              switch (hsa_ven_amd_aqlprofile_parameter_name_ext_t(p->parameter_name)) {
+                case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERF_MASK:
+                  trace_config.perfMASK = p->value;
+                  break;
+                case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERF_CTRL:
+                  trace_config.perfCTRL = p->value;
+                  break;
+                case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERFCOUNTER:
+                  if(trace_config.n_perfcounters < 16) {
+                    trace_config.perfcounters[trace_config.n_perfcounters] = p->value;
+                    trace_config.n_perfcounters ++;
+                  } else {
+                    ERR_LOGGING << "Maximum number of perfcounters reached!";
+                  }
+                  break;
+                default:
+                  ERR_LOGGING << "Bad trace parameter name (" << p->parameter_name << ")";
+                  return HSA_STATUS_ERROR_INVALID_ARGUMENT;
+              }
           }
         }
       }

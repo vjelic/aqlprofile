@@ -75,7 +75,7 @@ class Mi100Factory : public Gfx9Factory {
       GpuBlockInfo* block_info = new GpuBlockInfo(*base_table_ptr);
       block_table_[i] = block_info;
 
-      // overerite block info for any update from gfx9 to mi100
+      // overwrite block info for any update from gfx9 to mi100
       switch (block_info->id) {
         case SqCounterBlockId:
           block_info->event_id_max = 303;
@@ -114,6 +114,11 @@ class Mi200Factory : public Mi100Factory {
   explicit Mi200Factory(const AgentInfo* agent_info) : Mi100Factory(agent_info) {}
 };
 
+class Mi300Factory : public Mi100Factory {
+ public:
+  explicit Mi300Factory(const AgentInfo* agent_info) : Mi100Factory(agent_info) {}
+};
+
 // Pm4Factory create mathods
 Pm4Factory* Pm4Factory::Gfx9Create(const AgentInfo* agent_info) {
   auto p = new Gfx9Factory(agent_info);
@@ -129,6 +134,12 @@ Pm4Factory* Pm4Factory::Mi100Create(const AgentInfo* agent_info) {
 
 Pm4Factory* Pm4Factory::Mi200Create(const AgentInfo* agent_info) {
   auto p = new Mi200Factory(agent_info);
+  if (p == NULL) throw aql_profile_exc_msg("FijiFactory allocation failed");
+  return p;
+}
+
+Pm4Factory* Pm4Factory::Mi300Create(const AgentInfo* agent_info) {
+  auto p = new Mi300Factory(agent_info);
   if (p == NULL) throw aql_profile_exc_msg("FijiFactory allocation failed");
   return p;
 }

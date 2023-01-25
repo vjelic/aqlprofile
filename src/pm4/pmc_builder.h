@@ -60,19 +60,19 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
  public:
   explicit GpuPmcBuilder(const AgentInfo* agent_info)
       : PmcBuilder(), se_number_(agent_info->se_num) {}
-  // Build PMC enable PM4 comands - enabel CP counting for a specific queue
+  // Build PMC enable PM4 comands - enable CP counting for a specific queue
   void Enable(CmdBuffer* cmd_buffer) {
     // Program Compute Perfcount Enable register to support perf counting
     Builder::BuildWriteShRegPacket(cmd_buffer, Primitives::COMPUTE_PERFCOUNT_ENABLE_ADDR,
                                    Primitives::cp_perfcount_enable_value());
   }
-  // Build PMC disable PM4 comands - enabel CP counting for a specific queue
+  // Build PMC disable PM4 comands - enable CP counting for a specific queue
   void Disable(CmdBuffer* cmd_buffer) {
     // Program Compute Perfcount Enable register to support perf counting
     Builder::BuildWriteShRegPacket(cmd_buffer, Primitives::COMPUTE_PERFCOUNT_ENABLE_ADDR,
                                    Primitives::cp_perfcount_disable_value());
   }
-  // Build PMC waite-idle PM4 comands - enabel CP counting for a specific queue
+  // Build PMC waite-idle PM4 comands - enable CP counting for a specific queue
   void WaitIdle(CmdBuffer* cmd_buffer) {
     // Program Compute Perfcount WaiteIdle register to support perf counting
     Builder::BuildWriteWaitIdlePacket(cmd_buffer);

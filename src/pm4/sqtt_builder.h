@@ -7,6 +7,14 @@
 
 #include "pm4/cmd_config.h"
 
+// Extension for hsa_ven_amd_aqlprofile_parameter_name_t in hsa_ven_amd_aqlprofile.h
+typedef enum {
+  // Trace applicable parameters
+  HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERF_MASK = 240,
+  HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERF_CTRL = 241,
+  HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERFCOUNTER = 242
+} hsa_ven_amd_aqlprofile_parameter_name_ext_t;
+
 namespace pm4_builder {
 class CmdBuffer;
 class CmdBuilder;
@@ -59,11 +67,41 @@ class SqttBuilder {
   // disable a thread trace session, including the issue of an event
   // to stop currently ongoing thread session
   virtual void End(CmdBuffer* cmd_buffer, const ThreadTraceConfig* config) = 0;
+
 };
 
 template <typename Builder, typename Primitives>
 class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitives {
  public:
+
+  void StartPerfMon(CmdBuffer* cmd_buffer, const ThreadTraceConfig* config) {
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_PERFMON_CLK_CNTL_ADDR, 1);
+    Builder::BuildWriteShRegPacket(cmd_buffer, Primitives::COMPUTE_PERFCOUNT_ENABLE_ADDR,
+                                   Primitives::cp_perfcount_enable_value());
+
+    for(int perf = 0; perf < config->n_perfcounters && perf < 16; perf++) {
+      Builder::BuildWriteConfigRegPacket(cmd_buffer, Primitives::sqtt_perfcounter_addr(perf),
+                                        config->perfcounters[perf]);
+    }
+
+    uint32_t perfmask = config->perfMASK ? config->perfMASK : 0xFFFFFFFF;
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_PERFCOUNTER_MASK_ADDR,
+                                        perfmask);
+    uint32_t perfctrl = config->perfCTRL ? config->perfCTRL : 0xFFFF0F7F;
+    Builder::BuildWriteConfigRegPacket(cmd_buffer, Primitives::SQ_PERFCOUNTER_CTRL_ADDR,
+                                        perfctrl);
+  }
+
+  void StopPerfMon(CmdBuffer* cmd_buffer) {
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_PERFMON_CLK_CNTL_ADDR, 0);
+    Builder::BuildWriteShRegPacket(cmd_buffer, Primitives::COMPUTE_PERFCOUNT_ENABLE_ADDR,
+                                   Primitives::cp_perfcount_disable_value());
+    Builder::BuildWriteWaitIdlePacket(cmd_buffer);
+  }
+
+  // ###########
+
+
   void Begin(CmdBuffer* cmd_buffer, const ThreadTraceConfig* config) {
     // Program Grbm to broadcast messages to all shader engines
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
@@ -80,6 +118,9 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
     // Program the thread trace Perf mask
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_PERF_MASK_ADDR,
                                         Primitives::sqtt_perf_mask_value());
+
+    if(config->n_perfcounters) StartPerfMon(cmd_buffer, config);
+
     // Program the thread trace token mask
     const uint32_t token_mask_value =
         (config->tokenMask) ? config->tokenMask : Primitives::sqtt_token_mask_value();
@@ -91,6 +132,7 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
         (config->tokenMask2) ? config->tokenMask2 : Primitives::sqtt_token_mask2_value();
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_TOKEN_MASK2_ADDR,
                                         token_mask2_value);
+
     // Program the thread trace mode register, mode OFF
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_MODE_ADDR,
                                         Primitives::sqtt_mode_off_value());
@@ -151,6 +193,9 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
                                         Primitives::sqtt_mode_off_value());
     // Issue a CSPartialFlush cmd including cache flush
     Builder::BuildWriteWaitIdlePacket(cmd_buffer);
+
+    if(config->n_perfcounters) StopPerfMon(cmd_buffer);
+
     // Iterate through the list of SE's and read the Status, Counter and
     // Write Pointer registers of Thread Trace subsystem
     const uint32_t se_number = config->se_number;

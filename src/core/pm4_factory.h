@@ -29,6 +29,7 @@ enum gpu_id_t {
   GFX9_GPU_ID,   // generic Gfx9 id
   MI100_GPU_ID,  // Mi100 GPU id
   MI200_GPU_ID,   // Mi200 GPU id
+  MI300_GPU_ID,   // Mi300 GPU id
   GFX10_GPU_ID  // generic Gfx10 id
 };
 
@@ -176,6 +177,8 @@ class Pm4Factory {
   static Pm4Factory* Mi100Create(const AgentInfo* agent_info);
   // Create MI200 factory
   static Pm4Factory* Mi200Create(const AgentInfo* agent_info);
+  // Create MI300 factory
+  static Pm4Factory* Mi300Create(const AgentInfo* agent_info);
   // Return GPU id for a given agent
   static gpu_id_t GetGpuId(const hsa_agent_t agent);
 
@@ -220,6 +223,9 @@ inline Pm4Factory* Pm4Factory::Create(const hsa_agent_t agent, bool concurrent) 
         break;
       case MI200_GPU_ID:
         it->second = Mi200Create(agent_info);
+        break;
+      case MI300_GPU_ID:
+        it->second = Mi300Create(agent_info);
         break;
       default:
         throw aql_profile_exc_val<gpu_id_t>("GPU id error", gpu_id);
@@ -284,17 +290,17 @@ inline gpu_id_t Pm4Factory::GetGpuId(const hsa_agent_t agent) {
 
   if (strcmp(agent_gfxip, "gfx10") == 0){
     gpu_id = GFX10_GPU_ID;
-  } else if ((strncmp(agent_name, "gfx900", 6) == 0) || (strncmp(agent_name, "gfx902", 6) == 0) ||
-             (strncmp(agent_name, "gfx906", 6) == 0) ||
-             (strncmp(agent_name, "gfx908", 6) == 0)  // MI100
-  ) {
-    if (strncmp(agent_name, "gfx908", 6) == 0) {  // MI100
-      gpu_id = MI100_GPU_ID;
-    } else {
-      gpu_id = GFX9_GPU_ID;
-    }
+  } else if (strncmp(agent_name, "gfx908", 6) == 0) {  // MI100
+    gpu_id = MI100_GPU_ID;
   } else if (strncmp(agent_name, "gfx90a", 6) == 0) {
     gpu_id = MI200_GPU_ID;
+  } else if (strncmp(agent_name, "gfx940", 6) == 0) {
+    gpu_id = MI300_GPU_ID;
+  } else if ((strncmp(agent_name, "gfx900", 6) == 0)
+      || (strncmp(agent_name, "gfx902", 6) == 0)
+      || (strncmp(agent_name, "gfx906", 6) == 0)
+  ) {
+    gpu_id = GFX9_GPU_ID;
   } else {
     throw aql_profile_exc_val<std::string>("GFXIP is not supported", agent_name);
   }
