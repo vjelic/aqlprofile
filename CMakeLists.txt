@@ -65,7 +65,7 @@ set ( TARGET_NAME "${AQLPROFILE_TARGET}" )
 set ( ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}" )
 set ( LIB_DIR "${ROOT_DIR}/src" )
 set ( TEST_DIR "${ROOT_DIR}/test" )
-set ( ROCMTOOLS_DIR "${ROOT_DIR}/src/rocmtools_support" )
+set ( ROCMTOOLS_DIR "${ROOT_DIR}/src/rocprofv2_att" )
 
 ## Build library
 include ( ${LIB_DIR}/CMakeLists.txt )

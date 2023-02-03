@@ -36,9 +36,9 @@ set ( ROCMTOOLS_SUPPORT_FILES
   ${ROCMTOOLS_DIR}/wave.cpp
   ${ROCMTOOLS_DIR}/trie.cpp
 )
-add_library(rocmtools_support SHARED ${ROCMTOOLS_SUPPORT_FILES})
+add_library(rocprofv2_att SHARED ${ROCMTOOLS_SUPPORT_FILES})
 
-target_include_directories(rocmtools_support PUBLIC
+target_include_directories(rocprofv2_att PUBLIC
  ${ROCM_PATH}/include/rocmtools
  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/inc>
  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
@@ -48,4 +48,4 @@ target_include_directories(rocmtools_support PUBLIC
  ${CMAKE_CURRENT_SOURCE_DIR}
  ${PROJECT_SOURCE_DIR}/inc)
 
-install(TARGETS rocmtools_support LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/${CMAKE_PROJECT_NAME})
+install(TARGETS rocprofv2_att LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/${CMAKE_PROJECT_NAME})
