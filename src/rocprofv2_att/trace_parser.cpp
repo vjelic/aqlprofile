@@ -74,38 +74,18 @@ struct wavedata_persist_t : public wavedata_t {
   ~wavedata_persist_t() { Delete(); }
 };
 
-void PrintCounter(const std::vector<Token>& tokens) {
-  std::unordered_map<int, int> counter;
-
-  std::cout << "Token counters:" << std::endl;
-
-  for (auto& k : wave_t::token_name_dict) counter[k.first] = 0;
-
-  for (const Token& t : tokens) {
-    if (counter.find(t.type) != counter.end())
-      counter[t.type] += 1;
-    else
-      std::cout << "Invalid counter type: " << t.type << std::endl;
-  }
-
-  for (auto& c : counter)
-    if (c.second > 0)
-      std::cout << " \t " << wave_t::token_name_dict[c.first] << " " << c.second << std::endl;
-}
-
 std::vector<wavedata_persist_t> wavedata;
 std::vector<perfevent_t> perfevents;
 
 extern "C" {
-__attribute__((visibility("default"))) return_info_t AnalyseBinary(const char* filename, int target_cu, bool verbose) {
+__attribute__((visibility("default")))
+return_info_t AnalyseBinary(const char* filename, int target_cu, bool verbose) {
   if (verbose) std::cout << ">>> Parsing SQTT tokens, this may take a while ..." << std::endl;
   std::vector<Token> tokens = Token::parse(filename);
 
-  if (verbose) PrintCounter(tokens);
-
   Token::patch_time(tokens);
   if (verbose) std::cout << ">>> Analyzing waves ..." << std::endl;
-  auto result = wave_t::sqtt_simd_analysis(tokens, target_cu, verbose);
+  auto result = wave_t::sqtt_simd_analysis(tokens, target_cu);
   if (verbose) std::cout << "done." << std::endl;
 
   int num_waves = 0;

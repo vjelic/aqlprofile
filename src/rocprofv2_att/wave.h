@@ -133,7 +133,7 @@ struct wave_t : public wavedata_t {
 
   typedef std::array<std::array<std::vector<wave_t>, SQTT_CFG_WAVES>, SQTT_CFG_SIMDS> WaveArray;
   static std::pair<WaveArray, std::vector<perfevent_t>> sqtt_simd_analysis(std::vector<Token>& tokens,
-                                                      uint64_t target_cu = 0, bool verbose = false);
+                                                      uint64_t target_cu = 0);
 
   static std::unordered_map<int, std::string> inst_type_dict;
   static std::unordered_map<int, std::string> token_name_dict;

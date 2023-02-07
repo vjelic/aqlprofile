@@ -205,7 +205,8 @@ AsParseRetype as_parse(const char* assembly_file, const char* kernel) {
 }
 
 extern "C" {
-__attribute__((visibility("default"))) return_assembly_info_t wrapped_parse_binary(const char* p_filename, const char* kernel) {
+__attribute__((visibility("default")))
+return_assembly_info_t wrapped_parse_binary(const char* p_filename, const char* kernel) {
   code_jumps = as_parse(p_filename, kernel);
 
   std::vector<processed_t>& processed = code_jumps.first;

@@ -31,6 +31,7 @@ void empty_wave_check(size_t waveslot_size) {
 const std::string waveslot_state[] = {"EMPTY", "IDLE", "EXEC", "WAIT", "STALL"};
 const std::string issue_state[] = {"NULL", "STALL", "INST", "IMMED"};
 
+/*
 std::unordered_map<int, std::string> wave_t::inst_type_dict = {
   {0, "INST_SMEM_RD"},          {1, "INST_SALU_32"},          {2, "INST_VMEM_RD"},
   {3, "INST_VMEM_WR"},          {4, "INST_FLAT_WR"},          {5, "INST_VALU_32"},
@@ -56,12 +57,11 @@ std::unordered_map<int, std::string> wave_t::token_name_dict = {
 std::unordered_map<int, std::string> wave_t::misc_token_type_dict = {
     {0, "TIME"},      {1, "TIME_RESET"},         {2, "PACKET_LOST"},
     {3, "SURF_SYNC"}, {4, "TTRACE_STALL_BEGIN"}, {5, "TTRACE_STALL_END"}
-};
+}; */
 
 std::pair<WaveArray, std::vector<perfevent_t>> wave_t::sqtt_simd_analysis(
   std::vector<Token>& tokens,
-  uint64_t target_cu,
-  bool verbose
+  uint64_t target_cu
 ) {
   WaveArray SIMD;
   int total_num_issue_cycles = 0;
@@ -69,21 +69,10 @@ std::pair<WaveArray, std::vector<perfevent_t>> wave_t::sqtt_simd_analysis(
   int num_waves_completed = 0;
   std::vector<perfevent_t> perfEvents{};
 
-  if (verbose) std::cout << "SQTT Profiling starts, total tokens: " << tokens.size() << std::endl;
-
   // auto tokens = std::vector<Token>(tokens2.begin(), tokens2.begin()+252);
   for (Token& token : tokens) {
-    if (verbose) {
-      std::cout << "Time:" << token.time << " Token:" << wave_t::token_name_dict[token.type] << ' '
-                << ((token.type == 0) ? wave_t::misc_token_type_dict[token.misc_type] : "")
-                << std::endl;
-    }
 
     if (token.type == SQTT_TOKEN_WAVE_START && token.cu == target_cu) {  // Wave start
-      if (verbose) {
-        std::cout << "Time:" << token.time << " WAVE_START " << token.cu << '-' << token.simd << '-'
-                  << token.wave << " tg:" << token.tg << std::endl;
-      }
 
       SIMD[token.simd][token.wave].push_back(wave_t());
       wave_t& simd_wave_token = SIMD[token.simd][token.wave].back();
@@ -95,10 +84,6 @@ std::pair<WaveArray, std::vector<perfevent_t>> wave_t::sqtt_simd_analysis(
 
       num_waves_started += 1;
     } else if (token.type == SQTT_TOKEN_WAVE_END && token.cu == target_cu) {  // Wave stop
-      if (verbose) {
-        std::cout << "Time:" << token.time << " WAVE_END cu:" << token.cu << '-' << token.simd
-                  << '-' << token.wave << std::endl;
-      }
       //assert(SIMD[token.simd][token.wave].size() > 0);
       empty_wave_check(SIMD[token.simd][token.wave].size());
       wave_t& simd_wave_token = SIMD[token.simd][token.wave].back();
@@ -119,7 +104,7 @@ std::pair<WaveArray, std::vector<perfevent_t>> wave_t::sqtt_simd_analysis(
 
       num_waves_completed += 1;
     } else if (token.type == SQTT_TOKEN_INST) {  // Update timestamp for executed inst
-      assert(inst_type_dict.find(token.inst_type) != inst_type_dict.end());
+      //assert(inst_type_dict.find(token.inst_type) != inst_type_dict.end());
 
       wave_t& simd_wave_token = SIMD[token.simd][token.wave].back();
       //assert(SIMD[token.simd][token.wave].size() > 0);
@@ -214,13 +199,6 @@ std::pair<WaveArray, std::vector<perfevent_t>> wave_t::sqtt_simd_analysis(
         }
       }
 
-      if (verbose) {
-        std::cout << "Time:" << token.time << " " << token.simd << '-' << token.wave
-                  << " [INST:" << inst_type_dict[token.inst_type]
-                  << "] stall_started:" << simd_wave_token.stall_started
-                  << " state:" << waveslot_state[simd_wave_token.cur_state] << std::endl;
-      }
-
     } else if (token.type == SQTT_TOKEN_ISSUE) {
       uint64_t active_issue_cycle = 0;
       for (uint64_t wave_id = 0; wave_id < token.inst.size(); wave_id++) {
@@ -248,9 +226,6 @@ std::pair<WaveArray, std::vector<perfevent_t>> wave_t::sqtt_simd_analysis(
         }
 #endif
         if (wave_status == SQTT_ISSUE_IMMED) {
-          if (verbose)
-            std::cout << "Time:" << token.time << " " << token.simd << 
-              '-' << wave_id << " IMMED Issued:" << std::endl;
  
 #if 0
           instructions.push_back({waveid_token.inst_time, WaveInstCategory::IMMED, 0, 0});
@@ -286,10 +261,6 @@ std::pair<WaveArray, std::vector<perfevent_t>> wave_t::sqtt_simd_analysis(
             waveid_token.mem_access_started = 0;
           }
         } else if (wave_status == SQTT_ISSUE_STALL) {
-          if (verbose)
-            std::cout << "Time:" << token.time << " " << token.simd << '-' << wave_id
-                      << " STALL Issued:" << std::endl;
-
           waveid_token.stall_started = 1;
 
           // State: IDLE/EXEC -> STALL
@@ -309,12 +280,6 @@ std::pair<WaveArray, std::vector<perfevent_t>> wave_t::sqtt_simd_analysis(
           waveid_token.issue_time = token.time;
           waveid_token.num_issued_instrs += 1;
 
-          if (verbose) {
-            std::cout << "Time:" << token.time << " " << token.simd << '-' << wave_id
-                      << " INST Issued: state:" << waveslot_state[waveid_token.cur_state]
-                      << " stall_started:" << waveid_token.stall_started << std::endl;
-          }
-
           // state transitions, no explicit WAIT->EXEC
           uint64_t cur_state = waveid_token.cur_state;
           if (cur_state == WAVESLOT_STATE_IDLE) {
@@ -325,21 +290,12 @@ std::pair<WaveArray, std::vector<perfevent_t>> wave_t::sqtt_simd_analysis(
                 std::make_pair(cur_state, token.time - state_start_cycle));
             waveid_token.state_start_cycle = token.time;
 
-            if (verbose)
-              std::cout << "Time:" << token.time << " " << token.simd << '-' << wave_id
-                        << " State: IDLE -> EXEC" << std::endl;
-
           } else if (cur_state == WAVESLOT_STATE_STALL) {
             // State: STALL -> EXEC
             uint64_t state_start_cycle = std::min(waveid_token.state_start_cycle, token.time);
             waveid_token.timeline.push_back(
                 std::make_pair(WAVESLOT_STATE_STALL, token.time - state_start_cycle));
             waveid_token.state_start_cycle = token.time;
-
-            if (verbose)
-              std::cout << "Time:" << token.time << " " << token.simd << '-' << wave_id
-                        << " State: STALL -> EXEC" << std::endl;
-
           } else if (cur_state == WAVESLOT_STATE_EMPTY) {
             // this is exception, should not happen. observed in SQTT extend timeline
             uint64_t state_start_cycle = std::min(waveid_token.state_start_cycle, token.time);
