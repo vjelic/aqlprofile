@@ -19,6 +19,10 @@
  THE SOFTWARE. */
 
 #pragma once
+#include <utility>
+#include <vector>
+#include <string>
+#include <unordered_map>
 #include "token.h"
 
 const uint64_t WAVESLOT_STATE_EMPTY = 0;  // no wave dispatched to this slot yet
@@ -69,7 +73,7 @@ typedef struct {
 
 struct instruction_t {
   instruction_t(uint64_t time, WaveInstCategory value, uint64_t issue2inst, uint64_t last)
-      : time(time), issue2inst(issue2inst), last(last), value(value){};
+      : time(time), issue2inst(issue2inst), last(last), value(value) {}
 
   uint64_t time;
   uint64_t issue2inst;
@@ -132,7 +136,8 @@ struct wave_t : public wavedata_t {
   uint64_t inst_time = 0;   // use to calculate instruction cycles
 
   typedef std::array<std::array<std::vector<wave_t>, SQTT_CFG_WAVES>, SQTT_CFG_SIMDS> WaveArray;
-  static std::pair<WaveArray, std::vector<perfevent_t>> sqtt_simd_analysis(std::vector<Token>& tokens,
+  static std::pair<WaveArray, std::vector<perfevent_t>> sqtt_simd_analysis(
+                                                      std::vector<Token>& tokens,
                                                       uint64_t target_cu = 0);
 
   static std::unordered_map<int, std::string> inst_type_dict;

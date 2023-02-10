@@ -67,35 +67,42 @@ class SqttBuilder {
   // disable a thread trace session, including the issue of an event
   // to stop currently ongoing thread session
   virtual void End(CmdBuffer* cmd_buffer, const ThreadTraceConfig* config) = 0;
-
 };
 
 template <typename Builder, typename Primitives>
 class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitives {
  public:
-
   void StartPerfMon(CmdBuffer* cmd_buffer, const ThreadTraceConfig* config) {
-    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_PERFMON_CLK_CNTL_ADDR, 1);
+    if (Primitives::GFXIP_LEVEL == 9)
+      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_PERFMON_CLK_CNTL_ADDR, 1);
+
     Builder::BuildWriteShRegPacket(cmd_buffer, Primitives::COMPUTE_PERFCOUNT_ENABLE_ADDR,
                                    Primitives::cp_perfcount_enable_value());
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::CP_PERFMON_CNTL_ADDR,
+                                        Primitives::cp_perfmon_cntl_reset_value());
 
-    for(int perf = 0; perf < config->n_perfcounters && perf < 16; perf++) {
+    for (int perf = 0; perf < config->n_perfcounters && perf < 16; perf++) {
       Builder::BuildWriteConfigRegPacket(cmd_buffer, Primitives::sqtt_perfcounter_addr(perf),
                                         config->perfcounters[perf]);
     }
-
     uint32_t perfmask = config->perfMASK ? config->perfMASK : 0xFFFFFFFF;
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_PERFCOUNTER_MASK_ADDR,
                                         perfmask);
     uint32_t perfctrl = config->perfCTRL ? config->perfCTRL : 0xFFFF0F7F;
     Builder::BuildWriteConfigRegPacket(cmd_buffer, Primitives::SQ_PERFCOUNTER_CTRL_ADDR,
                                         perfctrl);
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::CP_PERFMON_CNTL_ADDR,
+                                        Primitives::cp_perfmon_cntl_start_value());
+    Builder::BuildWriteWaitIdlePacket(cmd_buffer);
   }
 
   void StopPerfMon(CmdBuffer* cmd_buffer) {
-    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_PERFMON_CLK_CNTL_ADDR, 0);
-    Builder::BuildWriteShRegPacket(cmd_buffer, Primitives::COMPUTE_PERFCOUNT_ENABLE_ADDR,
-                                   Primitives::cp_perfcount_disable_value());
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::CP_PERFMON_CNTL_ADDR,
+                                        Primitives::cp_perfmon_cntl_stop_value());
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::CP_PERFMON_CNTL_ADDR,
+                                        Primitives::cp_perfmon_cntl_reset_value());
+    if (Primitives::GFXIP_LEVEL == 9)
+      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_PERFMON_CLK_CNTL_ADDR, 0);
     Builder::BuildWriteWaitIdlePacket(cmd_buffer);
   }
 
@@ -119,7 +126,7 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_PERF_MASK_ADDR,
                                         Primitives::sqtt_perf_mask_value());
 
-    if(config->n_perfcounters) StartPerfMon(cmd_buffer, config);
+    if (config->n_perfcounters) StartPerfMon(cmd_buffer, config);
 
     // Program the thread trace token mask
     const uint32_t token_mask_value =
@@ -194,7 +201,7 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
     // Issue a CSPartialFlush cmd including cache flush
     Builder::BuildWriteWaitIdlePacket(cmd_buffer);
 
-    if(config->n_perfcounters) StopPerfMon(cmd_buffer);
+    if (config->n_perfcounters) StopPerfMon(cmd_buffer);
 
     // Iterate through the list of SE's and read the Status, Counter and
     // Write Pointer registers of Thread Trace subsystem

@@ -100,7 +100,7 @@ std::vector<clean_lines_t> clean_and_loc(std::vector<std::pair<int, std::string>
 }
 
 std::vector<std::pair<int, std::string>> extract_kernel(
-  const char* assembly_file, 
+  const char* assembly_file,
   const char* kernel_string
 ) {
   std::regex beg("-- Begin function (\\w+)");

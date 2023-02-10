@@ -19,10 +19,10 @@
  THE SOFTWARE. */
 
 #pragma once
+#include <sys/stat.h>
 #include <iostream>
 #include <string>
 #include <fstream>
-#include <sys/stat.h>
 #include <vector>
 #include <unordered_map>
 
@@ -50,7 +50,7 @@ class Token {
     else if (type == 14) msg_perf();
   }
 
-  void timestamp() { time = get_bits(16, 63); };  // std::cout << time << std::endl; exit(0); }
+  void timestamp() { time = get_bits(16, 63); }  // std::cout << time << std::endl; exit(0); }
   uint64_t time;
 
   void misc() {
@@ -65,7 +65,7 @@ class Token {
     sh = get_bits(5, 5);
     wave = get_bits(10, 13);
     simd = get_bits(14, 15);
-  };
+  }
   uint64_t cu, wave, simd;
 
   void get_wave() {
@@ -140,7 +140,7 @@ class Token {
     delta = get_bits(4, 4);
     simd = get_bits(5, 6);
     inst = std::vector<uint64_t>(10);
-    for(int i=0; i<=9; i++)
+    for (int i = 0; i <= 9; i ++)
       inst[i] = get_bits(2*i+8, 2*i+9);
   }
   std::vector<uint64_t> inst;

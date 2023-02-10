@@ -18,18 +18,21 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE. */
 
-#include "wave.h"
 #include <cassert>
+#include <vector>
+#include <algorithm>
+#include <utility>
+#include "wave.h"
 
 void empty_wave_check(size_t waveslot_size) {
-  if(waveslot_size == 0) {
-    printf("Operation on empty wave slot. Did you set the right target_cu?\n");
+  if (waveslot_size == 0) {
+    // printf("Operation on empty wave slot. Did you set the right target_cu?\n");
     exit(1);
   }
 }
 
-const std::string waveslot_state[] = {"EMPTY", "IDLE", "EXEC", "WAIT", "STALL"};
-const std::string issue_state[] = {"NULL", "STALL", "INST", "IMMED"};
+// const std::string waveslot_state[] = {"EMPTY", "IDLE", "EXEC", "WAIT", "STALL"};
+// const std::string issue_state[] = {"NULL", "STALL", "INST", "IMMED"};
 
 /*
 std::unordered_map<int, std::string> wave_t::inst_type_dict = {
@@ -71,9 +74,7 @@ std::pair<WaveArray, std::vector<perfevent_t>> wave_t::sqtt_simd_analysis(
 
   // auto tokens = std::vector<Token>(tokens2.begin(), tokens2.begin()+252);
   for (Token& token : tokens) {
-
     if (token.type == SQTT_TOKEN_WAVE_START && token.cu == target_cu) {  // Wave start
-
       SIMD[token.simd][token.wave].push_back(wave_t());
       wave_t& simd_wave_token = SIMD[token.simd][token.wave].back();
       simd_wave_token.begin_time = token.time;
@@ -84,7 +85,7 @@ std::pair<WaveArray, std::vector<perfevent_t>> wave_t::sqtt_simd_analysis(
 
       num_waves_started += 1;
     } else if (token.type == SQTT_TOKEN_WAVE_END && token.cu == target_cu) {  // Wave stop
-      //assert(SIMD[token.simd][token.wave].size() > 0);
+      // assert(SIMD[token.simd][token.wave].size() > 0);
       empty_wave_check(SIMD[token.simd][token.wave].size());
       wave_t& simd_wave_token = SIMD[token.simd][token.wave].back();
       uint64_t state_update_cycle = std::min(simd_wave_token.state_update_cycle, token.time);
@@ -104,10 +105,10 @@ std::pair<WaveArray, std::vector<perfevent_t>> wave_t::sqtt_simd_analysis(
 
       num_waves_completed += 1;
     } else if (token.type == SQTT_TOKEN_INST) {  // Update timestamp for executed inst
-      //assert(inst_type_dict.find(token.inst_type) != inst_type_dict.end());
+      // assert(inst_type_dict.find(token.inst_type) != inst_type_dict.end());
 
       wave_t& simd_wave_token = SIMD[token.simd][token.wave].back();
-      //assert(SIMD[token.simd][token.wave].size() > 0);
+      // assert(SIMD[token.simd][token.wave].size() > 0);
       empty_wave_check(SIMD[token.simd][token.wave].size());
 
       simd_wave_token.end_time = token.time;
@@ -204,10 +205,10 @@ std::pair<WaveArray, std::vector<perfevent_t>> wave_t::sqtt_simd_analysis(
       for (uint64_t wave_id = 0; wave_id < token.inst.size(); wave_id++) {
         uint64_t wave_status = token.inst[wave_id];
 
-        if(wave_status == SQTT_ISSUE_NULL)
+        if (wave_status == SQTT_ISSUE_NULL)
           continue;
 
-        //assert(SIMD[token.simd][wave_id].size() > 0);
+        // assert(SIMD[token.simd][wave_id].size() > 0);
         empty_wave_check(SIMD[token.simd][wave_id].size());
         wave_t& waveid_token = SIMD[token.simd][wave_id].back();
 
@@ -216,25 +217,24 @@ std::pair<WaveArray, std::vector<perfevent_t>> wave_t::sqtt_simd_analysis(
 
 #if 0
         if (instructions.size())
-            instructions.back().last = inst_issue_time; 
+            instructions.back().last = inst_issue_time;
 #else
         if (instructions.size()) {
-          if(instructions.back().value == WaveInstCategory::IMMED)
+          if (instructions.back().value == WaveInstCategory::IMMED)
             instructions.back().last += inst_issue_time;
           else
-            instructions.back().last = inst_issue_time; // v_mul_lo_u32 gets 2 tokens
+            instructions.back().last = inst_issue_time;  // v_mul_lo_u32 gets 2 tokens
         }
 #endif
         if (wave_status == SQTT_ISSUE_IMMED) {
- 
 #if 0
           instructions.push_back({waveid_token.inst_time, WaveInstCategory::IMMED, 0, 0});
 #else     // May not add up to correct number of cycles
-          if(instructions.size()) {
+          if (instructions.size()) {
             instructions.back().last -= inst_issue_time-4;
-            inst_issue_time = (inst_issue_time>4) ? (inst_issue_time-4) : 0;
+            inst_issue_time = (inst_issue_time > 4) ? (inst_issue_time-4) : 0;
           }
-          instructions.push_back({waveid_token.inst_time + 4, 
+          instructions.push_back({waveid_token.inst_time + 4,
                                 WaveInstCategory::IMMED, 0, inst_issue_time});
 #endif
           waveid_token.inst_time = token.time;
@@ -245,8 +245,8 @@ std::pair<WaveArray, std::vector<perfevent_t>> wave_t::sqtt_simd_analysis(
           if (cur_state == WAVESLOT_STATE_EXEC && mem_access_started == 1) {
             // Align by hand
             uint64_t state_update_cycle = std::min(token.time, waveid_token.state_update_cycle+4);
-            uint64_t state_start_cycle = std::min(waveid_token.state_start_cycle, state_update_cycle);
-
+            uint64_t state_start_cycle = std::min(waveid_token.state_start_cycle,
+                                                  state_update_cycle);
             // EXEC -> WAIT -> EXEC
             waveid_token.timeline.push_back(
                 std::make_pair(WAVESLOT_STATE_EXEC, state_update_cycle - state_start_cycle));
@@ -311,14 +311,14 @@ std::pair<WaveArray, std::vector<perfevent_t>> wave_t::sqtt_simd_analysis(
       total_num_issue_cycles += active_issue_cycle;
     }
 
-    if(token.type == 14)
+    if (token.type == 14)
       perfEvents.push_back(perfevent_t{
-        token.time/4, 
-        (uint16_t)token.cntr[0], 
-        (uint16_t)token.cntr[1], 
-        (uint16_t)token.cntr[2], 
+        token.time/4,
+        (uint16_t)token.cntr[0],
+        (uint16_t)token.cntr[1],
+        (uint16_t)token.cntr[2],
         (uint16_t)token.cntr[3],
-        (uint8_t)token.cu, 
+        (uint8_t)token.cu,
         (uint8_t)token.cntr_bank
         });
   }

@@ -28,6 +28,7 @@
 #include <vector>
 #include <fstream>
 #include <cassert>
+#include <utility>
 
 enum class InstCategory {
   COMMENT = 0,

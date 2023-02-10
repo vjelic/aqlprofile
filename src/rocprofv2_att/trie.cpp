@@ -160,8 +160,8 @@ InstCategory Trie::type_from_trie(const std::string& inst) {
     if (trie->type != InstCategory::NEGATIVE) return trie->type;
   }
 
-  if (inst.size() > 0 && inst[0] != '_')
-    std::cout << ">>> Type not found for " << inst << std::endl;
+  // if (inst.size() > 0 && inst[0] != '_')
+  //  std::cout << ">>> Type not found for " << inst << std::endl;
 
   return InstCategory::DONT_KNOW;
 }

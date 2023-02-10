@@ -41,7 +41,7 @@ uint32_t get_msg_len(uint32_t type) {
   try {
     return token_len_dict[type];
   } catch (std::exception& e) {
-    std::cout << "Unknown Token type " << type << ", exitting." << std::endl;
+    // std::cout << "Unknown Token type " << type << ", exitting." << std::endl;
     exit(-1);
   }
 }
@@ -49,12 +49,12 @@ uint32_t get_msg_len(uint32_t type) {
 template <typename Type> Type unpack(std::ifstream& file) {}
 template <> uint32_t unpack<uint32_t>(std::ifstream& file) {
   uint32_t ret;
-  file.read((char*)&ret, sizeof(ret));
+  file.read(reinterpret_cast<char*>(&ret), sizeof(ret));
   return ret;
 }
 template <> uint16_t unpack<uint16_t>(std::ifstream& file) {
   uint16_t ret;
-  file.read((char*)&ret, sizeof(ret));
+  file.read(reinterpret_cast<char*>(&ret), sizeof(ret));
   return ret;
 }
 
@@ -66,7 +66,7 @@ std::vector<Token> Token::parse(const std::string& filename) {
 
   std::ifstream file(filename, std::ios::in | std::ios::binary);
   if (!file.good()) {
-    std::cout << ">>> Error: File empty or wrong path." << std::endl;
+    // std::cout << ">>> Error: File empty or wrong path." << std::endl;
     exit(0);
   }
 
@@ -99,9 +99,9 @@ std::vector<Token> Token::parse(const std::string& filename) {
   return tokens;
 }
 
-std::unordered_map<int, std::string> misc_token_type_dict = {
+/*std::unordered_map<int, std::string> misc_token_type_dict = {
     {0, "TIME"},      {1, "TIME_RESET"},         {2, "PACKET_LOST"},
-    {3, "SURF_SYNC"}, {4, "TTRACE_STALL_BEGIN"}, {5, "TTRACE_STALL_END"}};
+    {3, "SURF_SYNC"}, {4, "TTRACE_STALL_BEGIN"}, {5, "TTRACE_STALL_END"}}; */
 
 void Token::patch_time(std::vector<Token>& tokens) {
   uint64_t base_time = 0, rel_time = 0;
@@ -112,19 +112,15 @@ void Token::patch_time(std::vector<Token>& tokens) {
 
     if (token.type == 1) {
       if (last_reset_time_idx < 0 && base_time != 0) {
-        std::cout << "[" << rel_time
+        /*std::cout << "[" << rel_time
                   << "] TIMESTAMP must be the 1st packet or preceded by a TIME_RESET, skip "
                      "TIMESTAMP Token"
-                  << std::endl;
+                  << std::endl; */
         continue;
       }
 
       if (base_time == 0) base_time = token.time - rel_time;
-
-      // std::cout << "32 " << token.time << " " << base_time << std::endl;
-      // std::cout << "33 " << (token.time - base_time) << std::endl;
       rel_time = ((token.time - base_time) / 4) * 4 - 4;  // Set or rewind timer
-      // std::cout << "35 " << rel_time << std::endl;
 
       if (last_reset_time_idx >= 0) {
         tokens[last_reset_time_idx].time = rel_time;
@@ -138,10 +134,10 @@ void Token::patch_time(std::vector<Token>& tokens) {
       token.time = rel_time;
     } else if (token.type == 0 && token.misc_type == 1) {
       if (last_reset_time_idx >= 0) {
-        std::cout << "[" << rel_time
+        /*std::cout << "[" << rel_time
                   << "] Cascading TIME_RESET tokens without any TIMESTAMP token in-between, skip "
                      "RESET token"
-                  << std::endl;
+                  << std::endl; */
         continue;
       }
 
@@ -152,7 +148,7 @@ void Token::patch_time(std::vector<Token>& tokens) {
                (token.misc_type == 2 || token.misc_type == 4 || token.misc_type == 5)) {
       rel_time += token.delta * 4;
       token.time = rel_time;
-      std::cout << misc_token_type_dict[token.misc_type] << " : " << rel_time << std::endl;
+      // std::cout << misc_token_type_dict[token.misc_type] << " : " << rel_time << std::endl;
     } else if (last_reset_time_idx < 0) {
       rel_time += token.delta * 4;
       token.time = rel_time;

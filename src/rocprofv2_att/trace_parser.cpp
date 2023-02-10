@@ -18,9 +18,9 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE. */
 
-#include "wave.h"
 #include <sstream>
 #include <cstring>
+#include "wave.h"
 
 typedef struct {
   uint64_t num_waves;
@@ -36,14 +36,14 @@ struct wavedata_persist_t : public wavedata_t {
 
   void Copy(wave_t& data) {
     Delete();
-    std::memcpy((char*)this, (char*)(wavedata_t*)&data, sizeof(wavedata_t));
+    std::memcpy(static_cast<void*>(this), static_cast<wavedata_t*>(&data), sizeof(wavedata_t));
 
     std::stringstream timeline_stream;
     for (auto& inst : data.timeline)
       timeline_stream << '(' << inst.first << ", " << inst.second << "),";
 
     std::string time_string = timeline_stream.str();
-    if(time_string.size() == 0)
+    if (time_string.size() == 0)
       time_string = " ";  // assert size > 0
     this->timeline_string = new char[time_string.size()];
     std::memcpy(this->timeline_string, time_string.c_str(), time_string.size());
@@ -56,7 +56,7 @@ struct wavedata_persist_t : public wavedata_t {
     }
 
     std::string inst_string = inst_stream.str();
-    if(inst_string.size() == 0)
+    if (inst_string.size() == 0)
       inst_string = " ";  // assert size > 0
     this->instructions_string = new char[inst_string.size()];
     std::memcpy(this->instructions_string, inst_string.c_str(), inst_string.size());
@@ -80,13 +80,13 @@ std::vector<perfevent_t> perfevents;
 extern "C" {
 __attribute__((visibility("default")))
 return_info_t AnalyseBinary(const char* filename, int target_cu, bool verbose) {
-  if (verbose) std::cout << ">>> Parsing SQTT tokens, this may take a while ..." << std::endl;
+  // if (verbose) std::cout << ">>> Parsing SQTT tokens, this may take a while ..." << std::endl;
   std::vector<Token> tokens = Token::parse(filename);
 
   Token::patch_time(tokens);
-  if (verbose) std::cout << ">>> Analyzing waves ..." << std::endl;
+  // if (verbose) std::cout << ">>> Analyzing waves ..." << std::endl;
   auto result = wave_t::sqtt_simd_analysis(tokens, target_cu);
-  if (verbose) std::cout << "done." << std::endl;
+  // if (verbose) std::cout << "done." << std::endl;
 
   int num_waves = 0;
   for (auto& Wave_j : result.first)
