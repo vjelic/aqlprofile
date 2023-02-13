@@ -135,8 +135,7 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
                                         token_mask_value);
     // Program the thread trace token mask2 to specify the list of instruction
     // tokens to record. Disabling INST_PC instruction tokens
-    const uint32_t token_mask2_value =
-        (config->tokenMask2) ? config->tokenMask2 : Primitives::sqtt_token_mask2_value();
+    const uint32_t token_mask2_value = (config->tokenMask2) ? Primitives::sqtt_token_mask2_value() : 0;
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_TOKEN_MASK2_ADDR,
                                         token_mask2_value);
 
