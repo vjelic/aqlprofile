@@ -72,7 +72,6 @@ std::pair<WaveArray, std::vector<perfevent_t>> wave_t::sqtt_simd_analysis(
   int num_waves_completed = 0;
   std::vector<perfevent_t> perfEvents{};
 
-  // auto tokens = std::vector<Token>(tokens2.begin(), tokens2.begin()+252);
   for (Token& token : tokens) {
     if (token.type == SQTT_TOKEN_WAVE_START && token.cu == target_cu) {  // Wave start
       SIMD[token.simd][token.wave].push_back(wave_t());
@@ -313,7 +312,7 @@ std::pair<WaveArray, std::vector<perfevent_t>> wave_t::sqtt_simd_analysis(
 
     if (token.type == 14)
       perfEvents.push_back(perfevent_t{
-        token.time/4,
+        token.time/4 - token.cu,
         (uint16_t)token.cntr[0],
         (uint16_t)token.cntr[1],
         (uint16_t)token.cntr[2],
