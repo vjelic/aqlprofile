@@ -24,12 +24,7 @@
 #include <utility>
 #include "wave.h"
 
-void empty_wave_check(size_t waveslot_size) {
-  if (waveslot_size == 0) {
-    // printf("Operation on empty wave slot. Did you set the right target_cu?\n");
-    exit(1);
-  }
-}
+#define empty_wave_check(waveslot_size) if (waveslot_size == 0) { return empty_pair; }
 
 // const std::string waveslot_state[] = {"EMPTY", "IDLE", "EXEC", "WAIT", "STALL"};
 // const std::string issue_state[] = {"NULL", "STALL", "INST", "IMMED"};
@@ -71,8 +66,12 @@ std::pair<WaveArray, std::vector<perfevent_t>> wave_t::sqtt_simd_analysis(
   int num_waves_started = 0;
   int num_waves_completed = 0;
   std::vector<perfevent_t> perfEvents{};
+  auto empty_pair = std::make_pair(WaveArray(), std::vector<perfevent_t>());
 
   for (Token& token : tokens) {
+    if (token.type == 0 && token.misc_type == 2) // Packet lost
+      return empty_pair;
+
     if (token.type == SQTT_TOKEN_WAVE_START && token.cu == target_cu) {  // Wave start
       SIMD[token.simd][token.wave].push_back(wave_t());
       wave_t& simd_wave_token = SIMD[token.simd][token.wave].back();
