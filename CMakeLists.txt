@@ -23,10 +23,7 @@
 ##
 ################################################################################
 
-cmake_minimum_required ( VERSION 2.8.12 )
-
-## Verbose output.
-set ( CMAKE_VERBOSE_MAKEFILE TRUE CACHE BOOL "Verbose Output" FORCE )
+cmake_minimum_required(VERSION 3.16.0)
 
 ## Set module name and project name.
 set ( AQLPROFILE_NAME "hsa-amd-aqlprofile" )

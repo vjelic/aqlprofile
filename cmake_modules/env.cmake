@@ -4,34 +4,21 @@ if ( WIN32 )
 endif ()
 
 ## Compiler Preprocessor definitions.
-add_definitions ( -D__linux__ )
-add_definitions ( -DUNIX_OS )
-add_definitions ( -DLINUX )
-add_definitions ( -D__AMD64__ )
-add_definitions ( -D__x86_64__ )
 add_definitions ( -DAMD_INTERNAL_BUILD )
-add_definitions ( -DLITTLEENDIAN_CPU=1 )
 add_definitions ( -DHSA_LARGE_MODEL= )
 add_definitions ( -DHSA_DEPRECATED= )
 
 ## Linux Compiler options
-set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall" )
-set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror" )
-set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=return-type" )
-set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fexceptions" )
-set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden" )
-set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti" )
-set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-math-errno" )
-set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-threadsafe-statics" )
-set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fmerge-all-constants" )
-set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fms-extensions" )
-set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fmerge-all-constants" )
-set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC" )
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-math-errno")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-threadsafe-statics")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fms-extensions")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fmerge-all-constants")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
-add_link_options ("-Bdynamic -z,neexecstack")
-
-add_definitions ( -DNEW_TRACE_API=1 )
+add_definitions(-DNEW_TRACE_API=1)
 
 ## CLANG options
 if ( "$ENV{CXX}" STREQUAL "/usr/bin/clang++" )
@@ -45,7 +32,7 @@ endif()
 
 ## Enable direct loading of AQL-profile HSA extension
 if ( DEFINED ENV{CMAKE_LD_AQLPROFILE} )
-  add_definitions ( -DROCP_LD_AQLPROFILE=1 )
+  add_definitions (-DROCP_LD_AQLPROFILE=1)
 endif()
 
 ## Build type
