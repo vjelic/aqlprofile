@@ -142,6 +142,8 @@ std::unordered_map<std::string, InstCategory> Trie::type_dict = {
     {"v_writelane", InstCategory::VALU},
     {"s_setpc", InstCategory::SALU},
     {"v_mac_f32", InstCategory::VALU},
+    {"s_memtime", InstCategory::SMEM},
+    {"s_memrealtime", InstCategory::SMEM},
 };
 
 InstCategory Trie::type_from_trie(const std::string& inst) {
