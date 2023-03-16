@@ -30,7 +30,8 @@ enum gpu_id_t {
   MI100_GPU_ID,  // Mi100 GPU id
   MI200_GPU_ID,   // Mi200 GPU id
   MI300_GPU_ID,   // Mi300 GPU id
-  GFX10_GPU_ID  // generic Gfx10 id
+  GFX10_GPU_ID,  // generic Gfx10 id
+  GFX11_GPU_ID   // generic Gfx11 id
 };
 
 // Block info map class
@@ -173,6 +174,8 @@ class Pm4Factory {
   static Pm4Factory* Gfx9Create(const AgentInfo* agent_info);
   // Create GFX10 generic factory
   static Pm4Factory* Gfx10Create(const AgentInfo* agent_info);
+  // Create GFX11 generic factory
+  static Pm4Factory* Gfx11Create(const AgentInfo* agent_info);
   // Create MI100 factory
   static Pm4Factory* Mi100Create(const AgentInfo* agent_info);
   // Create MI200 factory
@@ -216,6 +219,10 @@ inline Pm4Factory* Pm4Factory::Create(const hsa_agent_t agent, bool concurrent) 
       // Create Gfx10 generic factory
       case GFX10_GPU_ID:
         it->second = Gfx10Create(agent_info);
+        break;
+      // Create Gfx11 generic factory
+      case GFX11_GPU_ID:
+        it->second = Gfx11Create(agent_info);
         break;
       // Create MI100 generic factory
       case MI100_GPU_ID:
@@ -288,7 +295,9 @@ inline gpu_id_t Pm4Factory::GetGpuId(const hsa_agent_t agent) {
   memcpy(agent_gfxip, agent_name, gfxip_label_len);
   agent_gfxip[gfxip_label_len] = '\0';
 
-  if (strcmp(agent_gfxip, "gfx10") == 0){
+  if (strcmp(agent_gfxip, "gfx11") == 0){
+    gpu_id = GFX11_GPU_ID;
+  } else if (strcmp(agent_gfxip, "gfx10") == 0){
     gpu_id = GFX10_GPU_ID;
   } else if (strncmp(agent_name, "gfx908", 6) == 0) {  // MI100
     gpu_id = MI100_GPU_ID;

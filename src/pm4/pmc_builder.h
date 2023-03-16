@@ -129,7 +129,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_PERFCOUNTER_CTRL_ADDR,
                                           Primitives::sq_control_enable_value());
     }
-#ifdef _GFX10_PRIMITIVES_H_
+#if defined(_GFX10_PRIMITIVES_H_) || defined (_GFX11_PRIMITIVES_H_)
     // Clear and enable GUS counters
     if (counters_vec.get_attr() & CounterBlockGusAttr) {
       Builder::BuildWriteConfigRegPacket(cmd_buffer, Primitives::GUS_PERFCOUNTER_RSLT_CNTL_ADDR,
@@ -220,7 +220,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
         Builder::BuildWriteUConfigRegPacket(cmd_buffer, reg_info.control_addr,
                                             Primitives::sq_control_value(counter_des));
       }
-#ifdef _GFX10_PRIMITIVES_H_
+#if defined(_GFX10_PRIMITIVES_H_) || defined (_GFX11_PRIMITIVES_H_)
       // Configure GUS block
       if (block_info->attr & CounterBlockGusAttr)
         Builder::BuildWriteConfigRegPacket(cmd_buffer, reg_info.select_addr,
@@ -325,7 +325,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
                                          Primitives::MC_SEQ_PERFCOUNTER_RSLT_CNTL_M3_ADDR,
                                          Primitives::mc_seq_hbm_stop_value());
     }
-#ifdef _GFX10_PRIMITIVES_H_
+#if defined(_GFX10_PRIMITIVES_H_) || defined (_GFX11_PRIMITIVES_H_)
     // Stop GUS counters
     if (counters_vec.get_attr() & CounterBlockGusAttr)
       Builder::BuildWriteConfigRegPacket(cmd_buffer, Primitives::GUS_PERFCOUNTER_RSLT_CNTL_ADDR,
