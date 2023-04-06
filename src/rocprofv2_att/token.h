@@ -50,6 +50,13 @@ class Token {
     else if (type == 14) msg_perf();
   }
 
+  void CheckWave() {
+    if (wave < 10) return;
+    //std::cout << "Invalid wave slot: " << wave << std::endl;
+    type = 0;
+    misc_type = 2;
+  }
+
   void timestamp() { time = get_bits(16, 63); }  // std::cout << time << std::endl; exit(0); }
   uint64_t time;
 
@@ -58,15 +65,16 @@ class Token {
     sh = get_bits(12, 12);
     misc_type = get_bits(13, 15);
   }
-  uint64_t delta, sh, misc_type;
+  int16_t delta, sh, misc_type;
 
   void _group_id() {
     cu = get_bits(6, 9);
     sh = get_bits(5, 5);
     wave = get_bits(10, 13);
     simd = get_bits(14, 15);
+    CheckWave();
   }
-  uint64_t cu, wave, simd;
+  int16_t cu, wave, simd;
 
   void get_wave() {
     delta = get_bits(4, 4);
@@ -79,7 +87,7 @@ class Token {
     stage = get_bits(6, 8);
     eventype = get_bits(10, 15);
   }
-  uint64_t stage, eventype;
+  int16_t stage, eventype;
 
   void wave_start() {
     delta = get_bits(4, 4);
@@ -89,7 +97,7 @@ class Token {
     count = get_bits(22, 28);
     tg = get_bits(29, 31);
   }
-  uint64_t dispatcher, na, count, tg;
+  int16_t dispatcher, na, count, tg;
 
   void msg_reg() {
     delta = get_bits(4, 4);
@@ -102,7 +110,7 @@ class Token {
     regaddr = get_bits(16, 31);
     regdata = get_bits(32, 63);
   }
-  uint64_t pip, me, reg_dropped_prev, reg_type, reg_priv, reg_op, regaddr, regdata;
+  int16_t pip, me, reg_dropped_prev, reg_type, reg_priv, reg_op, regaddr, regdata;
 
   void msg_reg_cs() {
     delta = get_bits(4, 4);
@@ -117,8 +125,9 @@ class Token {
     wave = get_bits(5, 8);
     simd = get_bits(9, 10);
     inst_type = get_bits(11, 15);
+    CheckWave();
   }
-  uint64_t inst_type;
+  int16_t inst_type;
 
   void msg_inst_pc() {
     delta = get_bits(4, 4);
@@ -126,8 +135,10 @@ class Token {
     simd = get_bits(9, 10);
     err = get_bits(15, 15);
     pc = get_bits(16, 63);
+    CheckWave();
   }
-  uint64_t err, pc;
+  int16_t err;
+  uint64_t pc;
 
   void user_data() {
     delta = get_bits(4, 4);
@@ -139,11 +150,11 @@ class Token {
   void issue() {
     delta = get_bits(4, 4);
     simd = get_bits(5, 6);
-    inst = std::vector<uint64_t>(10);
+    inst = {};
     for (int i = 0; i <= 9; i ++)
       inst[i] = get_bits(2*i+8, 2*i+9);
   }
-  std::vector<uint64_t> inst;
+  std::array<int8_t, 10> inst;
 
   void msg_perf() {
     delta = get_bits(4, 4);

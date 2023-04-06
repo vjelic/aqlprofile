@@ -40,6 +40,10 @@ enum class InstCategory {
   VALU = 6,
   IMMED = 9,
   BRANCH = 10,
+  GETPC = 11,
+  SETPC = 12,
+  SWAPPC = 13,
+  LANE = 14,
   DONT_KNOW = 100,
   NEGATIVE = -1
 };

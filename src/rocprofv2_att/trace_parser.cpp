@@ -27,6 +27,8 @@ typedef struct {
   void* wavedata;
   uint64_t num_events;
   perfevent_t* perfevents;
+  void* occupancy;
+  uint64_t num_occupancy;
 } return_info_t;
 
 struct wavedata_persist_t : public wavedata_t {
@@ -76,6 +78,7 @@ struct wavedata_persist_t : public wavedata_t {
 
 std::vector<wavedata_persist_t> wavedata;
 std::vector<perfevent_t> perfevents;
+std::vector<occupancy_info_t> occupancy;
 
 extern "C" {
 __attribute__((visibility("default")))
@@ -87,9 +90,10 @@ return_info_t AnalyseBinary(const char* filename, int target_cu, bool verbose) {
   // if (verbose) std::cout << ">>> Analyzing waves ..." << std::endl;
   auto result = wave_t::sqtt_simd_analysis(tokens, target_cu);
   // if (verbose) std::cout << "done." << std::endl;
+  occupancy = std::get<2>(result);
 
   int num_waves = 0;
-  for (auto& Wave_j : result.first)
+  for (auto& Wave_j : std::get<0>(result))
     for (auto& Wave_ij : Wave_j) num_waves += Wave_ij.size();
 
   wavedata = std::vector<wavedata_persist_t>(num_waves);
@@ -97,20 +101,22 @@ return_info_t AnalyseBinary(const char* filename, int target_cu, bool verbose) {
 
   for (uint64_t simd = 0; simd < SQTT_CFG_SIMDS; simd++)
     for (uint64_t wave_id = 0; wave_id < SQTT_CFG_WAVES; wave_id++)
-      for (wave_t& wave : result.first[simd][wave_id]) {
+      for (wave_t& wave : std::get<0>(result)[simd][wave_id]) {
         wavedata[num_waves].Copy(wave);
         wavedata[num_waves].simd = simd;
         wavedata[num_waves].wave_id = wave_id;
         num_waves += 1;
       }
 
-  perfevents = std::move(result.second);
+  perfevents = std::move(std::get<1>(result));
 
   return_info_t info;
   info.wavedata = wavedata.data();
   info.num_waves = wavedata.size();
   info.perfevents = perfevents.data();
   info.num_events = perfevents.size();
+  info.occupancy = occupancy.data();
+  info.num_occupancy = occupancy.size();
   return info;
 }
 }

@@ -44,9 +44,11 @@ std::unordered_map<std::string, InstCategory> Trie::type_dict = {
     {"s_scratch", InstCategory::SMEM},
     {"s_store", InstCategory::SMEM},
     {"s_dcache", InstCategory::SMEM},
-    {"s_getpc", InstCategory::SMEM},
-    {"s_getreg", InstCategory::SMEM},
+    // {"s_getpc", InstCategory::SMEM},
+    // {"s_getreg", InstCategory::SMEM},
+    {"s_getreg", InstCategory::SALU}, // Check!
     {"s_setreg", InstCategory::SMEM},
+    {"s_memrealtime", InstCategory::SMEM},
 
     {"v_load", InstCategory::VMEM},
     {"v_store", InstCategory::VMEM},
@@ -137,13 +139,14 @@ std::unordered_map<std::string, InstCategory> Trie::type_dict = {
     {"v_readfirstlane", InstCategory::VALU},
     {"v_xor", InstCategory::VALU},
     {"v_not", InstCategory::VALU},
-    {"s_swappc", InstCategory::SMEM},
-    {"v_readlane", InstCategory::VALU},
-    {"v_writelane", InstCategory::VALU},
-    {"s_setpc", InstCategory::SALU},
+    // {"s_swappc", InstCategory::SMEM},
+    {"v_readlane", InstCategory::LANE},
+    {"v_writelane", InstCategory::LANE},
+    {"s_getpc", InstCategory::GETPC},
+    {"s_setpc", InstCategory::SETPC},
+    {"s_swappc", InstCategory::SWAPPC},
     {"v_mac_f32", InstCategory::VALU},
-    {"s_memtime", InstCategory::SMEM},
-    {"s_memrealtime", InstCategory::SMEM},
+    {"v_accvgpr", InstCategory::VALU},
 };
 
 InstCategory Trie::type_from_trie(const std::string& inst) {

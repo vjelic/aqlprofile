@@ -43,6 +43,7 @@ const uint64_t SQTT_TOKEN_WAVE_START = 3;
 const uint64_t SQTT_TOKEN_WAVE_END = 6;
 const uint64_t SQTT_TOKEN_INST = 10;
 const uint64_t SQTT_TOKEN_ISSUE = 13;
+const uint64_t SQTT_PERFCOUNTER_TOKEN = 14;
 
 // CU configuration (fixed)
 const uint64_t SQTT_CFG_SIMDS = 4;
@@ -118,8 +119,15 @@ typedef struct {
   char* instructions_string = 0;
 } wavedata_t;
 
+typedef struct {
+  uint64_t cu : 8;
+  uint64_t value : 8;
+  uint64_t time : 48;  
+} occupancy_info_t;
+
 struct wave_t : public wavedata_t {
   wave_t() = default;
+  wave_t(class Token&);
 
   std::vector<std::pair<uint64_t, uint64_t>> timeline;  // wave state in each cycle
   std::vector<instruction_t> instructions;              // (time, instruction_category)*
@@ -136,13 +144,17 @@ struct wave_t : public wavedata_t {
   uint64_t inst_time = 0;   // use to calculate instruction cycles
 
   typedef std::array<std::array<std::vector<wave_t>, SQTT_CFG_WAVES>, SQTT_CFG_SIMDS> WaveArray;
-  static std::pair<WaveArray, std::vector<perfevent_t>> sqtt_simd_analysis(
-                                                      std::vector<Token>& tokens,
-                                                      uint64_t target_cu = 0);
+  static std::tuple<WaveArray, std::vector<perfevent_t>, std::vector<occupancy_info_t>>
+                    sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu = 1);
 
   static std::unordered_map<int, std::string> inst_type_dict;
   static std::unordered_map<int, std::string> token_name_dict;
   static std::unordered_map<int, std::string> misc_token_type_dict;
+
+  void complete_wave(Token& token);
+  void apply_inst(Token& token);
+  int64_t apply_issue(uint64_t wave_status, uint64_t token_time);
+  static int64_t array_apply_issue(Token& token, WaveArray& SIMD);
 };
 
 using WaveArray = wave_t::WaveArray;
