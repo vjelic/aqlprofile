@@ -289,9 +289,20 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
                                         Primitives::grbm_broadcast_value());
     // Stop and freeze counters
-    if (counters_vec.get_attr() & CounterBlockCpmonAttr)
+    if (counters_vec.get_attr() & CounterBlockCpmonAttr) {
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::CP_PERFMON_CNTL_ADDR,
                                           Primitives::cp_perfmon_cntl_stop_value());
+      // After setting CP_PERFMON_CNTL_ADDR on GFX10, the first reg read is invalid if from SQ block
+      if (Primitives::GFXIP_LEVEL != 9 && counters_vec.size() && counters_vec[0].block_des.id == 12) {
+        const auto& reg_info = get_reg_table(counters_vec[0])[counters_vec[0].index];
+        Builder::BuildCopyCounterDataPacket(cmd_buffer, reg_info.register_addr_lo,
+                                        reg_info.register_addr_hi, data_buffer, 3);
+        Builder::BuildWriteWaitIdlePacket(cmd_buffer);
+      }
+      // Uncommenting this will cause the bug to happen again
+      //Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::CP_PERFMON_CNTL_ADDR,
+      //                                    Primitives::cp_perfmon_cntl_stop_value());
+    }
     if (counters_vec.get_attr() & CounterBlockSrbmAttr)
       Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::SRBM_PERFMON_CNTL_ADDR,
                                           Primitives::srbm_stop_value());
@@ -329,6 +340,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       const auto& block_des = counter_des.block_des;
       const auto* reg_table = get_reg_table(counter_des);
       const auto& reg_info = reg_table[counter_des.index];
+
       // Reset Grbm to its default state - broadcast
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
                                           Primitives::grbm_broadcast_value());
@@ -426,6 +438,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
   // Build PMC stop PM4 comands
   uint32_t Stop(CmdBuffer* cmd_buffer, const counters_vector& counters_vec, void* data_buffer) {
     // Issue barrier command to wait for dispatch to complete
+
     Builder::BuildWriteWaitIdlePacket(cmd_buffer);
     // Generate read commands
     const uint32_t data_size = ReadPackets(cmd_buffer, counters_vec, data_buffer);
