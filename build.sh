@@ -1,12 +1,103 @@
-#!/bin/sh -x
-BIN_DIR=`dirname $0`
-BLD_DIR=$BIN_DIR/build
+#!/bin/bash -e
 
-rm -rf $BLD_DIR && mkdir $BLD_DIR && cd $BLD_DIR && cmake -DCPACK_GENERATOR="DEB;RPM" ..
-make -j
+################################################################################
+# Copyright (c) 2018-2022 Advanced Micro Devices, Inc.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to
+# deal in the Software without restriction, including without limitation the
+# rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+# sell copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+# IN THE SOFTWARE.
+################################################################################
+
+SRC_DIR=$(dirname "$0")
+COMPONENT="aqlprofile"
+ROCM_PATH="${ROCM_PATH:=/opt/rocm}"
+LD_RUNPATH_FLAG=" -Wl,--enable-new-dtags -Wl,--rpath,$ROCM_PATH/lib:$ROCM_PATH/lib64"
+
+usage() {
+  echo -e "AQLProfile Build Script Usage:"
+  echo -e "\nTo run ./build.sh PARAMs, PARAMs can be the following:"
+  echo -e "-h   | --help               For showing this message"
+  echo -e "-b   | --build              For compiling"
+  echo -e "-cb  | --clean-build        For full clean build"
+  exit 1
+}
+
+while [ 1 ] ; do
+  if [[ "$1" = "-h" || "$1" = "--help" ]] ; then
+    usage
+    exit 1
+  elif [[ "$1" = "-b" || "$1" = "--build" ]] ; then
+    TO_CLEAN=no
+    shift
+  elif [[ "$1" = "-cb" || "$1" = "--clean-build" ]] ; then
+    TO_CLEAN=yes
+    shift
+  elif [[ "$1" = "-"* || "$1" = "--"* ]] ; then
+    echo -e "Wrong option \"$1\", Please use the following options:\n"
+    usage
+    exit 1
+  else
+    break
+  fi
+done
+
+umask 022
+
+if [ -z "$AQLPROFILE_ROOT" ]; then AQLPROFILE_ROOT=$SRC_DIR; fi
+if [ -z "$BUILD_DIR" ] ; then BUILD_DIR=build; fi
+if [ -z "$BUILD_TYPE" ] ; then BUILD_TYPE="RelWithDebInfo"; fi
+if [ -z "$PACKAGE_ROOT" ] ; then PACKAGE_ROOT=$ROCM_PATH; fi
+if [ -z "$PREFIX_PATH" ] ; then PREFIX_PATH=$PACKAGE_ROOT; fi
+if [ -z "$HIP_VDI" ] ; then HIP_VDI=0; fi
+if [ -n "$ROCM_RPATH" ] ; then LD_RUNPATH_FLAG=" -Wl,--enable-new-dtags -Wl,--rpath,${ROCM_RPATH}"; fi
+if [ -z "$TO_CLEAN" ] ; then TO_CLEAN=yes; fi
+
+AQLPROFILE_ROOT=$(cd $AQLPROFILE_ROOT && echo $PWD)
+
+if [ "$TO_CLEAN" = "yes" ] ; then rm -rf $BUILD_DIR; fi
+mkdir -p $BUILD_DIR
+pushd $BUILD_DIR
+
+cmake \
+    -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE \
+    -DCMAKE_BUILD_TYPE=${BUILD_TYPE:-'RelWithDebInfo'} \
+    -DCMAKE_PREFIX_PATH="$PREFIX_PATH" \
+    -DCMAKE_INSTALL_PREFIX="$PACKAGE_ROOT" \
+    -DCMAKE_SHARED_LINKER_FLAGS="$LD_RUNPATH_FLAG" \
+    -DCPACK_PACKAGING_INSTALL_PREFIX=$PACKAGE_ROOT \
+    -DCPACK_GENERATOR=${CPACKGEN:-'DEB;RPM'} \
+    -DCMAKE_INSTALL_RPATH=${ROCM_RPATH} \
+    -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=FALSE \
+    $AQLPROFILE_ROOT
+
+popd
+
+MAKE_OPTS="-j -C $AQLPROFILE_ROOT/$BUILD_DIR"
+
+cmake --build "$BUILD_DIR" -- $MAKE_OPTS
+cmake --build "$BUILD_DIR" -- $MAKE_OPTS package
+
+pushd $BUILD_DIR
 if [ "$?" = 0 ] ; then
-  make mytest
+  make -j mytest
 fi
 if [ "$?" = 0 ] ; then
   ./run.sh
 fi
+popd
+
+exit 0

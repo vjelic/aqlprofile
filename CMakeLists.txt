@@ -75,7 +75,7 @@ set_property ( TARGET ${TARGET_NAME} PROPERTY SOVERSION "${LIB_VERSION_MAJOR}" )
 
 ## If the library is a release, strip the target library
 if ( "${CMAKE_BUILD_TYPE}" STREQUAL release )
-  add_custom_command ( TARGET ${AQLPROFILE_TARGET} POST_BUILD COMMAND ${CMAKE_STRIP} *.so )
+  add_custom_command ( TARGET ${AQLPROFILE_TARGET} POST_BUILD COMMAND ${CMAKE_STRIP} *aqlprofile*.so )
 endif ()
 
 ## Build tests
