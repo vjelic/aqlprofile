@@ -2323,13 +2323,15 @@ class gfx9_cntx_prim {
 
   // Indicate the different TT messages/tokens that should be enabled/logged
   // Indicate the different TT tokens that specify register operations to be logged
-  static uint32_t sqtt_token_mask_value() {
+  static uint32_t sqtt_token_mask_on_value() {
     regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
     token_mask.bits.REG_MASK = 0xFF;
     token_mask.bits.TOKEN_MASK = 0xFFFF;
     token_mask.bits.REG_DROP_ON_STALL = 0x1;
     return token_mask.u32All;
   }
+
+  static uint32_t sqtt_token_mask_off_value() { return 0; }
 
   // Indicate the different TT tokens that specify instruction operations to be logged
   // Disabling specifically instruction operations updating Program Counter (PC).
@@ -2397,7 +2399,7 @@ class gfx9_cntx_prim {
 
   // Indicates the size of buffer to use per Shader Engine instance.
   // The size is specified in terms of 4KB blocks
-  static uint32_t sqtt_size_value(const uint32_t& size_val) {
+  static uint32_t sqtt_buffer_size_value(uint32_t size_val, uint32_t base_hi) {
     regSQ_THREAD_TRACE_SIZE size{};
     size.bits.SIZE = size_val >> TT_BUFF_ALIGN_SHIFT;
     return size.u32All;

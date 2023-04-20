@@ -488,7 +488,7 @@ class gfx10_cntx_prim {
     mask.bits.SIMD_SEL = simd;
     mask.bits.WGP_SEL = wgp;
     mask.bits.SA_SEL = 0x0;
-    mask.bits.WTYPE_INCLUDE = 0x7f;
+    mask.bits.WTYPE_INCLUDE = 1<<6;
     return mask.u32All;
 #else
     return 0;
@@ -500,7 +500,7 @@ class gfx10_cntx_prim {
 
   // Indicate the different TT messages/tokens that should be enabled/logged
   // Indicate the different TT tokens that specify register operations to be logged
-  static uint32_t sqtt_token_mask_value() {
+  static uint32_t sqtt_token_mask_on_value() {
 #if SQTT_PRIM_ENABLED
     regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
     /*token_mask.bits.REG_INCLUDE = SQ_TT_TOKEN_MASK_SQDEC_BIT |
@@ -516,10 +516,20 @@ class gfx10_cntx_prim {
 #endif
   }
 
+  static uint32_t sqtt_token_mask_off_value() {
+#if SQTT_PRIM_ENABLED
+    regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
+    token_mask.bits.INST_EXCLUDE = 0x3;
+    token_mask.bits.TOKEN_EXCLUDE = 0xFFF;
+    return token_mask.u32All;
+#else
+    return 0;
+#endif
+  }
+
   // not supported in gfx10
   static uint32_t sqtt_token_mask2_value() { return 0; }
   static bool sqtt_stalling_enabled(const uint32_t& mask_val, const uint32_t& token_mask_val) {return 0;}
-  
 
   // Indicates various attributes of a thread trace session.
   //
@@ -556,10 +566,11 @@ class gfx10_cntx_prim {
 
   // Indicates the size of buffer to use per Shader Engine instance.
   // The size is specified in terms of 4KB blocks
-  static uint32_t sqtt_size_value(const uint32_t& size_val) {
+  static uint32_t sqtt_buffer_size_value(uint32_t size_val, uint32_t base_hi) {
 #if SQTT_PRIM_ENABLED
     regSQ_THREAD_TRACE_BUF0_SIZE size{};
     size.bits.SIZE = size_val >> TT_BUFF_ALIGN_SHIFT;
+    size.bits.BASE_HI = base_hi;
     return size.u32All;
 #else
     return 0;

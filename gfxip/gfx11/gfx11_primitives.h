@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define SQTT_PRIM_ENABLED 0
+#define SQTT_PRIM_ENABLED 1
 
 namespace gfxip {
 namespace gfx11 {
@@ -505,16 +505,17 @@ class gfx11_cntx_prim {
   // Enable Shader Array (SH) at index Zero to be used for fine-grained data
   //static uint32_t sqtt_mask_value_gfx10 (){
   static uint32_t sqtt_mask_value(uint32_t wgp, uint32_t simd){
-//#if SQTT_PRIM_ENABLED
+#if SQTT_PRIM_ENABLED
     regSQ_THREAD_TRACE_MASK mask{};
     mask.bits.SIMD_SEL = simd;
     mask.bits.WGP_SEL = wgp;
     mask.bits.SA_SEL = 0x0;
-    mask.bits.WTYPE_INCLUDE = 0x7f;
+    mask.bits.WTYPE_INCLUDE = 1<<6;
+    mask.bits.EXCLUDE_NONDETAIL_SHADERDATA = 1;
     return mask.u32All;
-//#else
-//    return 0;
-//#endif
+#else
+    return 0;
+#endif
   }
 
   // not supported in gfx11
@@ -522,12 +523,21 @@ class gfx11_cntx_prim {
 
   // Indicate the different TT messages/tokens that should be enabled/logged
   // Indicate the different TT tokens that specify register operations to be logged
-  static uint32_t sqtt_token_mask_value() {
+  static uint32_t sqtt_token_mask_on_value() {
 #if SQTT_PRIM_ENABLED
     regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
-    token_mask.bits.REG_MASK = 0xFF;
-    token_mask.bits.TOKEN_MASK = 0xFFFF;
-    token_mask.bits.REG_DROP_ON_STALL = 0x1;
+    token_mask.bits.REG_EXCLUDE = 0x7;
+    return token_mask.u32All;
+#else
+    return 0;
+#endif
+  }
+  static uint32_t sqtt_token_mask_off_value() {
+#if SQTT_PRIM_ENABLED
+    regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
+    token_mask.bits.REG_EXCLUDE = 0x7;
+    token_mask.bits.INST_EXCLUDE = 0x3;
+    token_mask.bits.TOKEN_EXCLUDE = 0x7FF;
     return token_mask.u32All;
 #else
     return 0;
@@ -538,18 +548,7 @@ class gfx11_cntx_prim {
   static uint32_t sqtt_token_mask2_value() { return 0; }
 
   // Check if stalling is supported
-  static bool sqtt_stalling_enabled(const uint32_t& mask_val, const uint32_t& token_mask_val) {
-#if SQTT_PRIM_ENABLED
-    regSQ_THREAD_TRACE_MASK mask{};
-    mask.u32All = mask_val;
-    regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
-    token_mask.u32All = token_mask_val;
-    return ((mask.bits.SQ_STALL_EN) || (mask.bits.SPI_STALL_EN) || (mask.bits.REG_STALL_EN) ||
-            (token_mask.bits.REG_DROP_ON_STALL));
-#else
-    return 0;
-#endif
-  }
+  static bool sqtt_stalling_enabled(const uint32_t& mask_val, const uint32_t& token_mask_val) { return 0; }
 
   // Indicates various attributes of a thread trace session.
   //
@@ -574,34 +573,29 @@ class gfx11_cntx_prim {
   // Base address of buffer to use for thread trace
   static uint32_t sqtt_base_value_lo(const uint64_t& base_addr) {
 #if SQTT_PRIM_ENABLED
-    regSQ_THREAD_TRACE_BASE base{};
-    base.bits.ADDR = Low32(base_addr >> TT_BUFF_ALIGN_SHIFT);
-    return base.u32All;
-#else
-    return 0;
-#endif
-  }
-  static uint32_t sqtt_base_value_hi(const uint64_t& base_addr) {
-#if SQTT_PRIM_ENABLED
-    regSQ_THREAD_TRACE_BASE2 base{};
-    base.bits.ADDR_HI = High32(base_addr >> TT_BUFF_ALIGN_SHIFT);
+    regSQ_THREAD_TRACE_BUF0_BASE base{};
+    base.bits.BASE_LO = Low32(base_addr >> TT_BUFF_ALIGN_SHIFT);
     return base.u32All;
 #else
     return 0;
 #endif
   }
 
+  static uint32_t sqtt_base_value_hi(const uint64_t& base_addr) { return 0; }
+
   // Indicates the size of buffer to use per Shader Engine instance.
   // The size is specified in terms of 4KB blocks
-  static uint32_t sqtt_size_value(const uint32_t& size_val) {
+  static uint32_t sqtt_buffer_size_value(uint32_t size_val, uint32_t base_hi) {
 #if SQTT_PRIM_ENABLED
-    regSQ_THREAD_TRACE_SIZE size{};
+    regSQ_THREAD_TRACE_BUF0_SIZE size{};
     size.bits.SIZE = size_val >> TT_BUFF_ALIGN_SHIFT;
+    size.bits.BASE_HI = base_hi;
     return size.u32All;
 #else
     return 0;
 #endif
   }
+
   static uint32_t sqtt_zero_size_value() { return 0; }
 
   // Thread trace ctrl register value
