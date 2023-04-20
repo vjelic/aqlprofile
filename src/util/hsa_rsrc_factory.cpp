@@ -247,6 +247,10 @@ const AgentInfo* HsaRsrcFactory::AddAgentInfo(const hsa_agent_t agent) {
                        static_cast<hsa_agent_info_t>(HSA_AMD_AGENT_INFO_NUM_SHADER_ARRAYS_PER_SE),
                        &agent_info->shader_arrays_per_se);
 
+    // Special case for Navi21
+    if (std::string(agent_info->gfxip) == "gfx10" && agent_info->cu_num == 72)
+      agent_info->se_num = 4;
+
     agent_info->cpu_pool = {};
     agent_info->kern_arg_pool = {};
     status = hsa_amd_agent_iterate_memory_pools(agent, FindStandardPool, &agent_info->gpu_pool);
