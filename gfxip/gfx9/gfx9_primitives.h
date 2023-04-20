@@ -478,7 +478,7 @@ class gfx9_cntx_prim {
   // @note: Not enabling REG_STALL_EN, SPI_STALL_EN and SQ_STALL_EN bits. They
   // are useful if we wish to program buffer throttling.
   //
-  static uint32_t sqtt_mask_value(const uint32_t& targetCu, const uint32_t& vmIdMask) {
+  static uint32_t sqtt_mask_value(uint32_t targetCu, uint32_t vmIdMask) {
     regSQ_THREAD_TRACE_MASK mask{};
     mask.bits.SH_SEL = 0x0;
     mask.bits.SIMD_EN = 0xF;

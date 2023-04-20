@@ -248,8 +248,8 @@ const AgentInfo* HsaRsrcFactory::AddAgentInfo(const hsa_agent_t agent) {
                        &agent_info->shader_arrays_per_se);
 
     // Special case for Navi21
-    if (std::string(agent_info->gfxip) == "gfx10" && agent_info->cu_num == 72)
-      agent_info->se_num = 4;
+    if (std::string(agent_info->gfxip) == "gfx10")
+      agent_info->se_num /= 2;
 
     agent_info->cpu_pool = {};
     agent_info->kern_arg_pool = {};
