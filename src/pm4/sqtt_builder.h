@@ -118,8 +118,7 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
     if (config->concurrent == 0) Builder::BuildWriteWaitIdlePacket(cmd_buffer);
     // Program the thread trace mask - specifies SH, CU, SIMD and
     // VM Id masks to apply. Enabling SQ/SPI/REG_STALL_EN bits
-    const uint32_t mask_value =
-        (config->mask) ? config->mask
+    const uint32_t mask_value = (config->mask) ? config->mask
                        : Primitives::sqtt_mask_value(config->targetCu, config->vmIdMask);
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_MASK_ADDR,
                                         mask_value);
@@ -187,7 +186,7 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
                                         Primitives::sqtt_mode_on_value());
     // Issue a CSPartialFlush cmd including cache flush
     if (config->concurrent == 0) Builder::BuildWriteWaitIdlePacket(cmd_buffer);
-   } else{
+   } else {
       // Iterate through the list of SE's and program the register
       // for carrying address of thread trace buffer which is aligned
       // to 4KB per thread trace specification
@@ -216,14 +215,13 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
         Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_BASE_ADDR, baddr_lo);
 
         // Program the thread trace mask
-        const uint32_t mask_value = (config->mask) ? (config->mask & 0x0001ffff)
-                                                   : Primitives::sqtt_mask_value_gfx10 ();
+        const uint32_t simd_sel = (config->mask >> 8) & 0x3;
+        const uint32_t mask_value = Primitives::sqtt_mask_value(config->mask & 0xF, simd_sel);
         Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_MASK_ADDR, mask_value);
 
         // Program the thread trace token mask
-        const uint32_t token_mask_value = (config->tokenMask) ? config->tokenMask
-                                                              : Primitives::sqtt_token_mask_value();
-        Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_TOKEN_MASK_ADDR, token_mask_value);
+        Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_TOKEN_MASK_ADDR,
+                                          Primitives::sqtt_token_mask_value());
 
         if (config->concurrent == 0) Builder::BuildWriteWaitIdlePacket(cmd_buffer);
         // Program the thread trace ctrl register
@@ -238,7 +236,6 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
 
      Builder::BuildWriteShRegPacket(cmd_buffer, Primitives::COMPUTE_THREAD_TRACE_ENABLE_ADDR, 1); //enabling thread trace by setting COMPUTE_THREAD_TRACE_ENABLE GpuF0MMReg:0xb878
    }
-
   }
 
   void End(CmdBuffer* cmd_buffer, const ThreadTraceConfig* config) {

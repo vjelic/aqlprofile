@@ -475,16 +475,14 @@ class gfx10_cntx_prim {
     return 0;
   }
 
-  // Enable all of the SIMD's of the compute unit
-  // Enable all of the WGPs
   // Enable all of the WTYPEs
   // Enable Shader Array (SH) at index Zero to be used for fine-grained data
-  static uint32_t sqtt_mask_value_gfx10 (){
- //  static uint32_t sqtt_mask_value (){
+  //static uint32_t sqtt_mask_value_gfx10 (){
+  static uint32_t sqtt_mask_value(uint32_t wgp, uint32_t simd){
 #if SQTT_PRIM_ENABLED
     regSQ_THREAD_TRACE_MASK mask{};
-    mask.bits.SIMD_SEL = 0x3;
-    mask.bits.WGP_SEL = 0xf;
+    mask.bits.SIMD_SEL = simd;
+    mask.bits.WGP_SEL = wgp;
     mask.bits.SA_SEL = 0x0;
     mask.bits.WTYPE_INCLUDE = 0x7f;
     return mask.u32All;
@@ -492,9 +490,9 @@ class gfx10_cntx_prim {
     return 0;
 #endif
   }
-static uint32_t sqtt_mask_value(const uint32_t& targetCu, const uint32_t& vmIdMask) {
+/*static uint32_t sqtt_mask_value(const uint32_t& targetCu, const uint32_t& vmIdMask) {
     return 0;
-}
+} */
 
   // not supported in gfx10
   static uint32_t sqtt_perf_mask_value() { return 0; }
@@ -504,12 +502,12 @@ static uint32_t sqtt_mask_value(const uint32_t& targetCu, const uint32_t& vmIdMa
   static uint32_t sqtt_token_mask_value() {
 #if SQTT_PRIM_ENABLED
     regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
-    token_mask.bits.REG_INCLUDE = SQ_TT_TOKEN_MASK_SQDEC_BIT |
+    /*token_mask.bits.REG_INCLUDE = SQ_TT_TOKEN_MASK_SQDEC_BIT |
                                   SQ_TT_TOKEN_MASK_SHDEC_BIT |
                                   SQ_TT_TOKEN_MASK_GFXUDEC_BIT |
                                   SQ_TT_TOKEN_MASK_COMP_BIT |
                                   SQ_TT_TOKEN_MASK_CONTEXT_BIT |
-                                  SQ_TT_TOKEN_MASK_CONFIG_BIT;
+                                  SQ_TT_TOKEN_MASK_CONFIG_BIT; */
     token_mask.bits.TOKEN_EXCLUDE = 0x800;  //token_exclude_perf
     return token_mask.u32All;
 #else
