@@ -7,6 +7,7 @@ endif ()
 add_definitions ( -DAMD_INTERNAL_BUILD )
 add_definitions ( -DHSA_LARGE_MODEL= )
 add_definitions ( -DHSA_DEPRECATED= )
+add_definitions ( -DLITTLEENDIAN_CPU=1 )
 
 ## Linux Compiler options
 set(CMAKE_CXX_STANDARD 17)
