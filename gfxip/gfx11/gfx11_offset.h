@@ -4535,6 +4535,32 @@
 #define mmSQ_PERFCOUNTER5_LO                            0xD1CA
 #define mmSQ_PERFCOUNTER6_LO                            0xD1CC
 #define mmSQ_PERFCOUNTER7_LO                            0xD1CE
+
+#define mmSQ_PERFCOUNTER8_LO                            0xD1D0
+#define mmSQ_PERFCOUNTER9_LO                            0xD1D2
+#define mmSQ_PERFCOUNTER10_LO                           0xD1D4
+#define mmSQ_PERFCOUNTER11_LO                           0xD1D6
+#define mmSQ_PERFCOUNTER12_LO                           0xD1D8
+#define mmSQ_PERFCOUNTER13_LO                           0xD1DA
+#define mmSQ_PERFCOUNTER14_LO                           0xD1DC
+#define mmSQ_PERFCOUNTER15_LO                           0xD1DE
+#define mmSQ_PERFCOUNTER0_HI                            0xD1C1
+#define mmSQ_PERFCOUNTER1_HI                            0xD1C3
+#define mmSQ_PERFCOUNTER2_HI                            0xD1C5
+#define mmSQ_PERFCOUNTER3_HI                            0xD1C7
+#define mmSQ_PERFCOUNTER4_HI                            0xD1C9
+#define mmSQ_PERFCOUNTER5_HI                            0xD1CB
+#define mmSQ_PERFCOUNTER6_HI                            0xD1CD
+#define mmSQ_PERFCOUNTER7_HI                            0xD1CF
+#define mmSQ_PERFCOUNTER8_HI                            0xD1D1
+#define mmSQ_PERFCOUNTER9_HI                            0xD1D3
+#define mmSQ_PERFCOUNTER10_HI                           0xD1D5
+#define mmSQ_PERFCOUNTER11_HI                           0xD1D7
+#define mmSQ_PERFCOUNTER12_HI                           0xD1D9
+#define mmSQ_PERFCOUNTER13_HI                           0xD1DB
+#define mmSQ_PERFCOUNTER14_HI                           0xD1DD
+#define mmSQ_PERFCOUNTER15_HI                           0xD1DF
+
 #define mmSQ_PERFCOUNTER0_SELECT                        0xD9C0
 #define mmSQ_PERFCOUNTER1_SELECT                        0xD9C1
 #define mmSQ_PERFCOUNTER2_SELECT                        0xD9C2

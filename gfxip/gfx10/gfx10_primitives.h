@@ -490,9 +490,6 @@ class gfx10_cntx_prim {
     return 0;
 #endif
   }
-/*static uint32_t sqtt_mask_value(const uint32_t& targetCu, const uint32_t& vmIdMask) {
-    return 0;
-} */
 
   // not supported in gfx10
   static uint32_t sqtt_perf_mask_value() { return 0; }

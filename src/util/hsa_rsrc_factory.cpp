@@ -247,8 +247,8 @@ const AgentInfo* HsaRsrcFactory::AddAgentInfo(const hsa_agent_t agent) {
                        static_cast<hsa_agent_info_t>(HSA_AMD_AGENT_INFO_NUM_SHADER_ARRAYS_PER_SE),
                        &agent_info->shader_arrays_per_se);
 
-    // Special case for Navi21
-    if (std::string(agent_info->gfxip) == "gfx10")
+    // Special case for Navi. Temporary.
+    if (std::string(agent_info->gfxip).substr(0,4) != "gfx9")
       agent_info->se_num /= 2;
 
     agent_info->cpu_pool = {};

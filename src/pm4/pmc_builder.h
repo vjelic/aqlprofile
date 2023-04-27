@@ -147,10 +147,8 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       const auto* reg_table = get_reg_table(counter_des);
       const auto& reg_info = reg_table[counter_des.index];
 
-#if DEBUG_TRACE == 1
-      printf("block id(%u) index(%u) counter id (%u) index(%u) sel-addr(0x%x)\n", block_des.id,
-             block_des.index, counter_des.id, counter_des.index, reg_info.select_addr);
-#endif
+      std:: cout << "block id("<<block_des.id<<") index("<<block_des.index<<") counter id ("<<counter_des.id
+                  <<") index("<<counter_des.index<<") sel-addr("<<reg_info.select_addr<<")" << std::endl;
 
       // Set GRBM index to access proper block instance
       const uint32_t grbm_value = (block_info->instance_count > 1)
@@ -214,7 +212,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       }
       // Configure SQ block
       if (block_info->attr & CounterBlockSqAttr) {
-        if (Primitives::GFXIP_LEVEL != 10)
+        if (Primitives::GFXIP_LEVEL == 9)
           Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_PERFCOUNTER_MASK_ADDR,
                                             Primitives::sq_mask_value(counter_des));
         Builder::BuildWriteUConfigRegPacket(cmd_buffer, reg_info.control_addr,

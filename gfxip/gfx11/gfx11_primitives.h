@@ -480,40 +480,14 @@ class gfx11_cntx_prim {
     return 0;
   }
 
-  // Enable Thread Trace for all VM Id's
-  // Enable all of the SIMD's of the compute unit
-  // Enable Compute Unit (CU) at index Zero to be used for fine-grained data
-  // Enable Shader Array (SH) at index Zero to be used for fine-grained data
-  //
-  // @note: Not enabling REG_STALL_EN, SPI_STALL_EN and SQ_STALL_EN bits. They
-  // are useful if we wish to program buffer throttling.
-  //
-  static uint32_t sqtt_mask_value(const uint32_t& targetCu, const uint32_t& vmIdMask) {
-#if SQTT_PRIM_ENABLED
-    regSQ_THREAD_TRACE_MASK mask{};
-    mask.bits.SH_SEL = 0x0;
-    mask.bits.SIMD_EN = 0xF;
-    mask.bits.CU_SEL = targetCu;
-    mask.bits.SQ_STALL_EN = 0x1;
-    mask.bits.SPI_STALL_EN = 0x1;
-    mask.bits.REG_STALL_EN = 0x1;
-    mask.bits.VM_ID_MASK = vmIdMask;
-    return mask.u32All;
-#else
-    return 0;
-#endif
-  }
-
-  // Enable all of the SIMD's of the compute unit
-  // Enable all of the WGPs
   // Enable all of the WTYPEs
   // Enable Shader Array (SH) at index Zero to be used for fine-grained data
-  static uint32_t sqtt_mask_value_gfx10 (){
-  //  static uint32_t sqtt_mask_value (){
+  //static uint32_t sqtt_mask_value_gfx10 (){
+  static uint32_t sqtt_mask_value(uint32_t wgp, uint32_t simd){
 #if SQTT_PRIM_ENABLED
     regSQ_THREAD_TRACE_MASK mask{};
-    mask.bits.SIMD_SEL = 0x3;
-    mask.bits.WGP_SEL = 0xf;
+    mask.bits.SIMD_SEL = simd;
+    mask.bits.WGP_SEL = wgp;
     mask.bits.SA_SEL = 0x0;
     mask.bits.WTYPE_INCLUDE = 0x7f;
     return mask.u32All;
@@ -521,8 +495,6 @@ class gfx11_cntx_prim {
     return 0;
 #endif
   }
-
-
 
   // not supported in gfx11
   static uint32_t sqtt_perf_mask_value() { return 0; }
