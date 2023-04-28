@@ -73,8 +73,7 @@ template <typename Builder, typename Primitives>
 class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitives {
  public:
   void StartPerfMon(CmdBuffer* cmd_buffer, const ThreadTraceConfig* config) {
-    if (Primitives::GFXIP_LEVEL == 9)
-      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_PERFMON_CLK_CNTL_ADDR, 1);
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_PERFMON_CLK_CNTL_ADDR, 1);
 
     Builder::BuildWriteShRegPacket(cmd_buffer, Primitives::COMPUTE_PERFCOUNT_ENABLE_ADDR,
                                    Primitives::cp_perfcount_enable_value());
@@ -101,8 +100,7 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
                                         Primitives::cp_perfmon_cntl_stop_value());
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::CP_PERFMON_CNTL_ADDR,
                                         Primitives::cp_perfmon_cntl_reset_value());
-    if (Primitives::GFXIP_LEVEL == 9)
-      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_PERFMON_CLK_CNTL_ADDR, 0);
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_PERFMON_CLK_CNTL_ADDR, 0);
     Builder::BuildWriteWaitIdlePacket(cmd_buffer);
   }
 
@@ -143,10 +141,10 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_MODE_ADDR,
                                         Primitives::sqtt_mode_off_value());
     // Program the HiWaterMark register to support stalling
-    if (Primitives::sqtt_stalling_enabled(mask_value, token_mask_value)) {
+    /*if (Primitives::sqtt_stalling_enabled(mask_value, token_mask_value)) {
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_HIWATER_ADDR,
                                           Primitives::SQ_THREAD_TRACE_HIWATER_VAL);
-    }
+    } */
     // Iterate through the list of SE's and program the register
     // for carrying address of thread trace buffer which is aligned
     // to 4KB per thread trace specification
@@ -273,22 +271,6 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
                                       wait_val);
 
       ReadValues(cmd_buffer, config, se_index);
-#if 0
-      // Retrieve the values from various status registers
-      ControlType* control_buffer = reinterpret_cast<ControlType*>(config->control_buffer_ptr);
-      const uint32_t status_idx = ((TT_STATUS_IDX_MAX * se_index) + TT_STATUS_IDX_STATUS);
-      Builder::BuildCopyRegDataPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_STATUS_ADDR,
-                                      control_buffer + status_idx,
-                                      Primitives::COPY_DATA_SEL_COUNT_1DW_PRM, true);
-      const uint32_t cntr_idx = ((TT_STATUS_IDX_MAX * se_index) + TT_STATUS_IDX_CNTR);
-      Builder::BuildCopyRegDataPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_CNTR_ADDR,
-                                      control_buffer + cntr_idx,
-                                      Primitives::COPY_DATA_SEL_COUNT_1DW_PRM, true);
-      const uint32_t wptr_idx = ((TT_STATUS_IDX_MAX * se_index) + TT_STATUS_IDX_WPTR);
-      Builder::BuildCopyRegDataPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_WPTR_ADDR,
-                                      control_buffer + wptr_idx,
-                                      Primitives::COPY_DATA_SEL_COUNT_1DW_PRM, true);
-#endif
     }
     // Reset the GRBM to broadcast mode
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,

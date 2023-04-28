@@ -33,7 +33,7 @@ class gfx11_cntx_prim {
   static const uint32_t MC_PERFCOUNTER_RSLT_CNTL__CLEAR_ALL_MASK_PRM = 0x02000000L;
 
   static const uint32_t SQ_PERFCOUNTER_CTRL_ADDR = mmSQ_PERFCOUNTER_CTRL;
-  static const uint32_t SQ_PERFCOUNTER_MASK_ADDR = 0;
+  static const uint32_t SQ_PERFCOUNTER_MASK_ADDR = 0xD9E1;
   static const uint32_t SQ_THREAD_TRACE_MASK_ADDR = mmSQ_THREAD_TRACE_MASK;
   static const uint32_t SQ_THREAD_TRACE_PERF_MASK_ADDR = 0;
   static const uint32_t SQ_THREAD_TRACE_TOKEN_MASK_ADDR = mmSQ_THREAD_TRACE_TOKEN_MASK;
@@ -46,7 +46,7 @@ class gfx11_cntx_prim {
   static const uint32_t SQ_THREAD_TRACE_HIWATER_ADDR = 0;
   static const uint32_t SQ_THREAD_TRACE_HIWATER_VAL = 0x6;
   static const uint32_t SQ_THREAD_TRACE_STATUS_ADDR = mmSQ_THREAD_TRACE_STATUS;
-  static const uint32_t SQ_THREAD_TRACE_CNTR_ADDR = 0;
+  static const uint32_t SQ_THREAD_TRACE_CNTR_ADDR = mmSQ_THREAD_TRACE_DROPPED_CNTR;
   static const uint32_t SQ_THREAD_TRACE_WPTR_ADDR = mmSQ_THREAD_TRACE_WPTR;
   static const uint32_t SQ_THREAD_TRACE_STATUS_OFFSET =
       mmSQ_THREAD_TRACE_STATUS - UCONFIG_SPACE_START;
@@ -213,7 +213,7 @@ class gfx11_cntx_prim {
   }
 
   // SQ Counter Mask Register value - not used in gfx11
-  static uint32_t sq_mask_value(const counter_des_t&) { return 0; }
+  static uint32_t sq_mask_value(const counter_des_t&) { return 0xFFFFFFFF; }
 
   // SQ Counter Control Register value
   static uint32_t sq_control_value(const counter_des_t& counter_des) {
@@ -484,16 +484,16 @@ class gfx11_cntx_prim {
   // Enable Shader Array (SH) at index Zero to be used for fine-grained data
   //static uint32_t sqtt_mask_value_gfx10 (){
   static uint32_t sqtt_mask_value(uint32_t wgp, uint32_t simd){
-#if SQTT_PRIM_ENABLED
+//#if SQTT_PRIM_ENABLED
     regSQ_THREAD_TRACE_MASK mask{};
     mask.bits.SIMD_SEL = simd;
     mask.bits.WGP_SEL = wgp;
     mask.bits.SA_SEL = 0x0;
     mask.bits.WTYPE_INCLUDE = 0x7f;
     return mask.u32All;
-#else
-    return 0;
-#endif
+//#else
+//    return 0;
+//#endif
   }
 
   // not supported in gfx11
@@ -585,13 +585,18 @@ class gfx11_cntx_prim {
 
   // Thread trace ctrl register value
   static uint32_t sqtt_ctrl_value() {
-#if SQTT_PRIM_ENABLED
     regSQ_THREAD_TRACE_CTRL ctrl{};
-    ctrl.bits.RESET_BUFFER = 1;
+    ctrl.bits.MODE = 1;
+    ctrl.bits.HIWATER = 5;
+    ctrl.bits.UTIL_TIMER = 1;
+    ctrl.bits.RT_FREQ = 2;
+    ctrl.bits.DRAW_EVENT_EN = 1;
+    ctrl.bits.SPI_STALL_EN = 1;
+    ctrl.bits.SQ_STALL_EN = 1;
+    ctrl.bits.SQ_STALL_EN = 1;
+    ctrl.bits.LOWATER_OFFSET = 4;
+    ctrl.bits.AUTO_FLUSH_MODE = 1;
     return ctrl.u32All;
-#else
-    return 0;
-#endif
   }
 
   // SPM primitives

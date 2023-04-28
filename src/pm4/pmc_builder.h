@@ -128,6 +128,8 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
     if (counters_vec.get_attr() & CounterBlockTcAttr) {
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_PERFCOUNTER_CTRL_ADDR,
                                           Primitives::sq_control_enable_value());
+      //Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_PERFCOUNTER_CTRL2_ADDR,
+      //                                    Primitives::sq_control2_enable_value());
     }
 #if defined(_GFX10_PRIMITIVES_H_) || defined (_GFX11_PRIMITIVES_H_)
     // Clear and enable GUS counters
@@ -147,8 +149,8 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       const auto* reg_table = get_reg_table(counter_des);
       const auto& reg_info = reg_table[counter_des.index];
 
-      std:: cout << "block id("<<block_des.id<<") index("<<block_des.index<<") counter id ("<<counter_des.id
-                  <<") index("<<counter_des.index<<") sel-addr("<<reg_info.select_addr<<")" << std::endl;
+      //std:: cout << std::hex << "block id("<<block_des.id<<") index("<<block_des.index<<") counter id ("<<counter_des.id
+      //            <<") index("<<counter_des.index<<") sel-addr("<<reg_info.select_addr<<")" << std::endl;
 
       // Set GRBM index to access proper block instance
       const uint32_t grbm_value = (block_info->instance_count > 1)
@@ -291,7 +293,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::CP_PERFMON_CNTL_ADDR,
                                           Primitives::cp_perfmon_cntl_stop_value());
       // After setting CP_PERFMON_CNTL_ADDR on GFX10, the first reg read is invalid if from SQ block
-      if (Primitives::GFXIP_LEVEL != 9 && counters_vec.size() && counters_vec[0].block_des.id == 12) {
+      if (Primitives::GFXIP_LEVEL == 10 && counters_vec.size() && counters_vec[0].block_des.id == 12) {
         const auto& reg_info = get_reg_table(counters_vec[0])[counters_vec[0].index];
         Builder::BuildCopyCounterDataPacket(cmd_buffer, reg_info.register_addr_lo,
                                         reg_info.register_addr_hi, data_buffer, 3);
@@ -410,8 +412,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
           } else if (block_info->attr & CounterBlockSeAttr) {
             grbm_value = Primitives::grbm_se_index_value(se_index);
           }
-          Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
-                                              grbm_value);
+          Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR, grbm_value);
           Builder::BuildCopyCounterDataPacket(
               cmd_buffer, reg_info.register_addr_lo, reg_info.register_addr_hi,
               reinterpret_cast<uint32_t*>(data_buffer) + read_counter, 3);

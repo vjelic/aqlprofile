@@ -575,7 +575,6 @@ class gfx10_cntx_prim {
     ctrl.bits.REG_STALL_EN = 1;
     ctrl.bits.SPI_STALL_EN = 1;
     ctrl.bits.SQ_STALL_EN = 1;
-    ctrl.bits.REG_DROP_ON_STALL = 0;
     ctrl.bits.REG_DROP_ON_STALL = 1;
     ctrl.bits.LOWATER_OFFSET = 4;
     ctrl.bits.AUTO_FLUSH_MODE = 1;

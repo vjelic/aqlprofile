@@ -609,10 +609,10 @@ hsa_ven_amd_aqlprofile_get_info(const hsa_ven_amd_aqlprofile_profile_t* profile,
     aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile);
     switch (attribute) {
       case HSA_VEN_AMD_AQLPROFILE_INFO_COMMAND_BUFFER_SIZE:
-        *(uint32_t*)value = 0x1000;  // a current approximation as 4K is big enaugh
+        *(uint32_t*)value = 0x1000;  // a current approximation as 4K is big enough
         break;
       case HSA_VEN_AMD_AQLPROFILE_INFO_PMC_DATA_SIZE:
-        *(uint32_t*)value = 0x1000;  // a current approximation as 4K is big enaugh
+        *(uint32_t*)value = 0x1000;  // a current approximation as 4K is big enough
         break;
       case HSA_VEN_AMD_AQLPROFILE_INFO_PMC_DATA:
         reinterpret_cast<hsa_ven_amd_aqlprofile_info_data_t*>(value)->pmc_data.result = 0;
@@ -777,7 +777,6 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
         const uint32_t tnumber = *reinterpret_cast<const uint32_t*>(prefix_ptr);
         const pm4_builder::ControlType* const control_ptr =
             reinterpret_cast<const pm4_builder::ControlType*>(prefix_ptr + sizeof(uint32_t));
-
         // Check if SQTT buffer was wrapped
         for (unsigned i = 0; i < tnumber; ++i) {
           const uint32_t status_ind =
@@ -807,9 +806,16 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
           // written by hardware. The index is incremented by size of 32 bytes.
           const uint32_t wptr_ind =
               (pm4_builder::TT_STATUS_IDX_MAX * i) + pm4_builder::TT_STATUS_IDX_WPTR;
-          const uint32_t sample_size = (control_ptr[wptr_ind] & pm4_builder::TT_WRITE_PTR_MASK) *
+          uint64_t sample_size = (control_ptr[wptr_ind] & pm4_builder::TT_WRITE_PTR_MASK) *
                                        pm4_builder::TT_WRITE_PTR_BLK;
-          if (sample_size > sample_capacity) {
+
+          std::string gfxname = std::string(pm4_factory->GetGFX());
+          if (gfxname.size() >= 7 && gfxname.substr(0,7) == "gfx1100")
+            sample_size = (sample_size - reinterpret_cast<uint64_t>(sample_ptr)) & 0xFFFFFFFF;
+
+          if (sample_size > sample_capacity)
+            sample_size = sample_capacity;
+          if (sample_size > sample_capacity) { // WARNING! NOT TREATED BY ROCPROFILER!
             ERR_LOGGING << "SQTT data out of bounds, sample_id(" << i << ") size(" << sample_size
                         << "/" << sample_capacity << ")";
             return HSA_STATUS_ERROR;
