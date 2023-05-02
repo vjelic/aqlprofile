@@ -18,7 +18,9 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE. */
 
-#include "token.h"
+#include "gfx9token.h"
+#include "../wave.h"
+typedef gfx9Token Token;
 
 std::unordered_map<uint32_t, uint32_t> token_len_dict = {{0, 16},
                                                          {1, 64},
@@ -37,60 +39,45 @@ std::unordered_map<uint32_t, uint32_t> token_len_dict = {{0, 16},
                                                          {14, 64},
                                                          {15, 48}};
 
-uint32_t get_msg_len(uint32_t type) {
-  try {
-    return token_len_dict[type];
-  } catch (std::exception& e) {
-    // std::cout << "Unknown Token type " << type << ", exitting." << std::endl;
-    exit(-1);
-  }
+template <typename Type> std::pair<Type, const uint8_t*> unpack(const uint8_t* data) {
+  return {*reinterpret_cast<const Type*>(data), data+sizeof(Type)};
 }
 
-template <typename Type> Type unpack(std::ifstream& file) {}
-template <> uint32_t unpack<uint32_t>(std::ifstream& file) {
-  uint32_t ret;
-  file.read(reinterpret_cast<char*>(&ret), sizeof(ret));
-  return ret;
-}
-template <> uint16_t unpack<uint16_t>(std::ifstream& file) {
-  uint16_t ret;
-  file.read(reinterpret_cast<char*>(&ret), sizeof(ret));
-  return ret;
-}
-
-std::vector<Token> Token::parse(const std::string& filename) {
-  struct stat Stat;
-  stat(filename.c_str(), &Stat);
-  int total_len = Stat.st_size;
+std::vector<Token> Token::parse(const uint8_t* buffer, const int BUFFER_SIZE) {
+  int total_len = BUFFER_SIZE;
   int curr_len = 0;
-
-  std::ifstream file(filename, std::ios::in | std::ios::binary);
-  if (!file.good()) {
-    // std::cout << ">>> Error: File empty or wrong path." << std::endl;
-    exit(0);
-  }
 
   std::vector<Token> tokens;
 
   while (curr_len < total_len) {
-    uint64_t curr = unpack<uint16_t>(file);
+    uint64_t curr;
+    std::tie(curr, buffer) = unpack<uint16_t>(buffer);
     uint64_t type = curr & 15;
-    int msg_len = get_msg_len(type);
+    int msg_len = 0;
+    try {
+      msg_len = token_len_dict[type];
+    } catch (std::exception& e) {
+      return tokens;
+    }
 
     if (msg_len == 16) {
       tokens.push_back(Token(type, curr));
       curr_len += 2;
     } else if (msg_len == 32) {
-      uint64_t high = unpack<uint16_t>(file);
+      uint64_t high;
+      std::tie(high, buffer) = unpack<uint16_t>(buffer);
       tokens.push_back(Token(type, (high << 16) + curr));
       curr_len += 4;
     } else if (msg_len == 48) {
-      uint64_t high = unpack<uint32_t>(file);
+      uint64_t high;
+      std::tie(high, buffer) = unpack<uint32_t>(buffer);
       tokens.push_back(Token(type, (high << 16) + curr));
       curr_len += 6;
     } else if (msg_len == 64) {
-      uint64_t mid = unpack<uint16_t>(file);
-      uint64_t high = unpack<uint32_t>(file);
+      uint64_t mid;
+      uint64_t high;
+      std::tie(mid, buffer) = unpack<uint16_t>(buffer);
+      std::tie(high, buffer) = unpack<uint32_t>(buffer);
       tokens.push_back(Token(type, (high << 32) + (mid << 16) + curr));
       curr_len += 8;
     }

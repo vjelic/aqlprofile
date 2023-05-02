@@ -23,34 +23,18 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
-#include "token.h"
 
-const uint64_t WAVESLOT_STATE_EMPTY = 0;  // no wave dispatched to this slot yet
-const uint64_t WAVESLOT_STATE_IDLE =
-    1;  // between (wave_start, 1st instr) or (last instr, wave_end)
-const uint64_t WAVESLOT_STATE_EXEC = 2;   // Wave in normal issue/exec loop
-const uint64_t WAVESLOT_STATE_WAIT = 3;   // Wave in waitcnt model, waiting for mem data return
-const uint64_t WAVESLOT_STATE_STALL = 4;  // Wave in stall state, waiting for issue arbitration
-const uint64_t WAVESLOT_STATE_UNKNOWN = 5;  // Wave in stall state, waiting for issue arbitration
-
-const uint64_t SQTT_ISSUE_NULL = 0;
-const uint64_t SQTT_ISSUE_STALL = 1;
-const uint64_t SQTT_ISSUE_INST = 2;
-const uint64_t SQTT_ISSUE_IMMED = 3;
-
-// SQTT Tokens
-const uint64_t SQTT_TOKEN_WAVE_START = 3;
-const uint64_t SQTT_TOKEN_WAVE_END = 6;
-const uint64_t SQTT_TOKEN_INST = 10;
-const uint64_t SQTT_TOKEN_ISSUE = 13;
-const uint64_t SQTT_PERFCOUNTER_TOKEN = 14;
-
-// CU configuration (fixed)
-const uint64_t SQTT_CFG_SIMDS = 4;
-const uint64_t SQTT_CFG_WAVES = 10;
-
+enum WAVESLOT_STATE {
+  WS_EMPTY = 0,
+  WS_IDLE = 1,
+  WS_EXEC = 2,
+  WS_WAIT = 3,
+  WS_STALL = 4,
+  WS_UNKNOWN = 5,
+};
 
 enum class WaveInstCategory {
+  NONE = 0,
   SMEM = 1,
   SALU = 2,
   VMEM = 3,
@@ -59,7 +43,8 @@ enum class WaveInstCategory {
   VALU = 6,
   JUMP = 7,
   NEXT = 8,
-  IMMED = 9
+  IMMED = 9,
+  TRAP = 10
 };
 
 typedef struct {
@@ -122,39 +107,22 @@ typedef struct {
 typedef struct {
   uint64_t cu : 8;
   uint64_t value : 8;
-  uint64_t time : 48;  
+  uint64_t time : 48;
 } occupancy_info_t;
 
-struct wave_t : public wavedata_t {
-  wave_t() = default;
-  wave_t(class Token&);
+typedef union {
+  uint64_t flags;
+  struct {
+    uint64_t isNavi : 1;
+  };
+} _output_flags_t;
 
-  std::vector<std::pair<uint64_t, uint64_t>> timeline;  // wave state in each cycle
-  std::vector<instruction_t> instructions;              // (time, instruction_category)*
-
-  uint64_t cur_state = 0;           // EMPTY, IDLE, EXEC, WAIT, STALL, initial state: EMPTY
-  uint64_t state_start_cycle = 0;   // record the time of state transition
-  uint64_t state_update_cycle = 0;  // record last cycle state is updated in EXEC (issue->inst loop)
-
-  // Internal state: Stalled, Mem access started, instr issue started
-  uint64_t stall_started = 0;  // [Internal] indicating STALL starts, get stall cycles
-  // [Internal] mem instruction issued. paired with IMMED to get latency
-  uint64_t mem_access_started = 0;
-  uint64_t issue_time = 0;  // use to calculate instruction cycles
-  uint64_t inst_time = 0;   // use to calculate instruction cycles
-
-  typedef std::array<std::array<std::vector<wave_t>, SQTT_CFG_WAVES>, SQTT_CFG_SIMDS> WaveArray;
-  static std::tuple<WaveArray, std::vector<perfevent_t>, std::vector<occupancy_info_t>>
-                    sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu = 1);
-
-  static std::unordered_map<int, std::string> inst_type_dict;
-  static std::unordered_map<int, std::string> token_name_dict;
-  static std::unordered_map<int, std::string> misc_token_type_dict;
-
-  void complete_wave(Token& token);
-  void apply_inst(Token& token);
-  int64_t apply_issue(uint64_t wave_status, uint64_t token_time);
-  static int64_t array_apply_issue(Token& token, WaveArray& SIMD);
-};
-
-using WaveArray = wave_t::WaveArray;
+typedef struct {
+  uint64_t num_waves;
+  void* wavedata;
+  uint64_t num_events;
+  perfevent_t* perfevents;
+  void* occupancy;
+  uint64_t num_occupancy;
+  _output_flags_t flags;
+} return_info_t;

@@ -1,0 +1,63 @@
+/* Copyright (c) 2022 Advanced Micro Devices, Inc.
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE. */
+
+#pragma once
+#include <utility>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include "gfx9token.h"
+#include "../wave.h"
+
+struct gfx9wave_t : public wavedata_t {
+  gfx9wave_t() = default;
+  gfx9wave_t(class gfx9Token&);
+
+  static constexpr uint64_t SQTT_CFG_SIMDS = 4;
+  static constexpr uint64_t SQTT_CFG_WAVES = 10;
+
+  std::vector<std::pair<uint64_t, uint64_t>> timeline;  // wave state in each cycle
+  std::vector<instruction_t> instructions;              // (time, instruction_category)*
+
+  uint64_t cur_state = 0;           // EMPTY, IDLE, EXEC, WAIT, STALL, initial state: EMPTY
+  uint64_t state_start_cycle = 0;   // record the time of state transition
+  uint64_t state_update_cycle = 0;  // record last cycle state is updated in EXEC (issue->inst loop)
+
+  // Internal state: Stalled, Mem access started, instr issue started
+  uint64_t stall_started = 0;  // [Internal] indicating STALL starts, get stall cycles
+  // [Internal] mem instruction issued. paired with IMMED to get latency
+  uint64_t mem_access_started = 0;
+  uint64_t issue_time = 0;  // use to calculate instruction cycles
+  uint64_t inst_time = 0;   // use to calculate instruction cycles
+
+  typedef std::array<std::array<std::vector<gfx9wave_t>, SQTT_CFG_WAVES>, SQTT_CFG_SIMDS> WaveArray;
+  static std::tuple<WaveArray, std::vector<perfevent_t>, std::vector<occupancy_info_t>>
+                    sqtt_simd_analysis(std::vector<gfx9Token>& tokens, int target_cu = 1);
+
+  static std::unordered_map<int, std::string> inst_type_dict;
+  static std::unordered_map<int, std::string> token_name_dict;
+  static std::unordered_map<int, std::string> misc_token_type_dict;
+
+  void complete_wave(gfx9Token& token);
+  void apply_inst(gfx9Token& token);
+  int64_t apply_issue(uint64_t wave_status, uint64_t token_time);
+  static int64_t array_apply_issue(gfx9Token& token, WaveArray& SIMD);
+};
+

@@ -19,16 +19,15 @@
  THE SOFTWARE. */
 
 #pragma once
-#include <sys/stat.h>
 #include <iostream>
 #include <string>
 #include <fstream>
 #include <vector>
 #include <unordered_map>
 
-class Token {
+class gfx9Token {
  public:
-  Token(uint64_t type, uint64_t val) : val(val), type(type) { build(); }
+  gfx9Token(uint64_t type, uint64_t val) : val(val), type(type) { build(); }
   uint64_t val, type;
 
   inline uint64_t get_bits(uint64_t low, uint64_t high) const {
@@ -169,6 +168,6 @@ class Token {
   uint8_t cntr_bank;
   uint16_t cntr[4];
 
-  static std::vector<Token> parse(const std::string& filename);
-  static void patch_time(std::vector<Token>& tokens);
+  static std::vector<gfx9Token> parse(const uint8_t* buffer, const int BUFFER_SIZE);
+  static void patch_time(std::vector<gfx9Token>& tokens);
 };

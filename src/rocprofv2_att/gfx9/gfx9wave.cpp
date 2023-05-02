@@ -22,9 +22,14 @@
 #include <vector>
 #include <algorithm>
 #include <utility>
-#include "wave.h"
+#include "gfx9wave.h"
+
+typedef gfx9Token Token;
 
 #define empty_wave_check(waveslot_size) if (waveslot_size == 0) { continue; }
+
+using WaveArray = gfx9wave_t::WaveArray;
+typedef gfx9wave_t wave_t;
 
 // const std::string waveslot_state[] = {"EMPTY", "IDLE", "EXEC", "WAIT", "STALL"};
 // const std::string issue_state[] = {"NULL", "STALL", "INST", "IMMED"};
@@ -63,10 +68,22 @@ void print_token(Token& token) {
 }
 //*/
 
-wave_t::wave_t(Token& token) {
+const uint64_t SQTT_ISSUE_NULL = 0;
+const uint64_t SQTT_ISSUE_STALL = 1;
+const uint64_t SQTT_ISSUE_INST = 2;
+const uint64_t SQTT_ISSUE_IMMED = 3;
+
+// SQTT Tokens
+const uint64_t SQTT_TOKEN_WAVE_START = 3;
+const uint64_t SQTT_TOKEN_WAVE_END = 6;
+const uint64_t SQTT_TOKEN_INST = 10;
+const uint64_t SQTT_TOKEN_ISSUE = 13;
+const uint64_t SQTT_PERFCOUNTER_TOKEN = 14;
+
+wave_t::gfx9wave_t(Token& token) {
   this->begin_time = token.time;
   // State: EMPTY -> IDLE
-  this->cur_state = WAVESLOT_STATE_IDLE;
+  this->cur_state = WAVESLOT_STATE::WS_IDLE;
   this->state_start_cycle = token.time;
 }
 
@@ -76,11 +93,11 @@ void wave_t::complete_wave(Token& token) {
 
   // State: EXEC -> IDLE -> EMPTY
   timeline.push_back(
-      std::make_pair(WAVESLOT_STATE_EXEC, state_update_cycle - state_start_cycle));
+      std::make_pair(WAVESLOT_STATE::WS_EXEC, state_update_cycle - state_start_cycle));
   timeline.push_back(
-      std::make_pair(WAVESLOT_STATE_IDLE, token.time - state_update_cycle));
+      std::make_pair(WAVESLOT_STATE::WS_IDLE, token.time - state_update_cycle));
 
-  this->cur_state = WAVESLOT_STATE_EMPTY;
+  this->cur_state = WAVESLOT_STATE::WS_EMPTY;
   this->state_start_cycle = token.time;
 
   // update CU time, the last completed wave
@@ -237,7 +254,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
       total_num_issue_cycles += active_cycles;
     } else if (token.type == SQTT_PERFCOUNTER_TOKEN)
       perfEvents.push_back(perfevent_t{
-        token.time/4 - token.cu,
+        token.time - 4*token.cu,
         (uint16_t)token.cntr[0],
         (uint16_t)token.cntr[1],
         (uint16_t)token.cntr[2],
@@ -284,18 +301,17 @@ int64_t wave_t::apply_issue(uint64_t wave_status, uint64_t token_time) {
     uint64_t cur_state = this->cur_state;
     uint64_t mem_access_started = this->mem_access_started;
 
-    if (cur_state == WAVESLOT_STATE_EXEC && mem_access_started == 1) {
+    if (cur_state == WAVESLOT_STATE::WS_EXEC && mem_access_started == 1) {
       // Align by hand
       uint64_t state_update_cycle = std::min(token_time, this->state_update_cycle+4);
-      uint64_t state_start_cycle = std::min(this->state_start_cycle,
-                                            state_update_cycle);
+      uint64_t state_start_cycle = std::min(this->state_start_cycle, state_update_cycle);
       // EXEC -> WAIT -> EXEC
       this->timeline.push_back(
-          std::make_pair(WAVESLOT_STATE_EXEC, state_update_cycle - state_start_cycle));
+          std::make_pair(WAVESLOT_STATE::WS_EXEC, state_update_cycle - state_start_cycle));
       this->timeline.push_back(
-          std::make_pair(WAVESLOT_STATE_WAIT, token_time - state_update_cycle));
+          std::make_pair(WAVESLOT_STATE::WS_WAIT, token_time - state_update_cycle));
 
-      this->cur_state = WAVESLOT_STATE_EXEC;
+      this->cur_state = WAVESLOT_STATE::WS_EXEC;
       this->state_start_cycle = token_time;
       this->state_update_cycle = token_time;
 
@@ -312,7 +328,7 @@ int64_t wave_t::apply_issue(uint64_t wave_status, uint64_t token_time) {
     this->timeline.push_back(
         std::make_pair(cur_state, token_time - state_start_cycle));
 
-    this->cur_state = WAVESLOT_STATE_STALL;
+    this->cur_state = WAVESLOT_STATE::WS_STALL;
     this->state_start_cycle = token_time;
 
   } else if (wave_status == SQTT_ISSUE_INST) {
@@ -324,28 +340,27 @@ int64_t wave_t::apply_issue(uint64_t wave_status, uint64_t token_time) {
 
     // state transitions, no explicit WAIT->EXEC
     uint64_t cur_state = this->cur_state;
-    if (cur_state == WAVESLOT_STATE_IDLE) {
+    if (cur_state == WAVESLOT_STATE::WS_IDLE) {
       // Issue INST in EMPTY state is illegal, added to work around SQTT issue
       // fist instr in this wave, State: IDLE -> EXEC
       uint64_t state_start_cycle = std::min(this->state_start_cycle, token_time);
       this->timeline.push_back(
           std::make_pair(cur_state, token_time - state_start_cycle));
       this->state_start_cycle = token_time;
-
-    } else if (cur_state == WAVESLOT_STATE_STALL) {
+    } else if (cur_state == WAVESLOT_STATE::WS_STALL) {
       // State: STALL -> EXEC
       uint64_t state_start_cycle = std::min(this->state_start_cycle, token_time);
       this->timeline.push_back(
-          std::make_pair(WAVESLOT_STATE_STALL, token_time - state_start_cycle));
+          std::make_pair(WAVESLOT_STATE::WS_STALL, token_time - state_start_cycle));
       this->state_start_cycle = token_time;
-    } else if (cur_state == WAVESLOT_STATE_EMPTY) {
+    } else if (cur_state == WAVESLOT_STATE::WS_EMPTY) {
       // this is exception, should not happen. observed in SQTT extend timeline
       uint64_t state_start_cycle = std::min(this->state_start_cycle, token_time);
       this->timeline.push_back(
           std::make_pair(cur_state, token_time - state_start_cycle));
       this->state_start_cycle = token_time;
     }
-    this->cur_state = WAVESLOT_STATE_EXEC;
+    this->cur_state = WAVESLOT_STATE::WS_EXEC;
     this->state_update_cycle = token_time;
   }
   return active_issue_cycle;

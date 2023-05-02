@@ -37,6 +37,7 @@ std::unordered_map<std::string, InstCategory> Trie::type_dict = {
     {"s_decperflvl", InstCategory::IMMED},
     {"s_setvskip", InstCategory::IMMED},
     {"s_ttracedata", InstCategory::IMMED},
+    {"s_clause", InstCategory::IMMED},
 
     {"s_load", InstCategory::SMEM},
     {"s_buffer", InstCategory::SMEM},
@@ -52,14 +53,16 @@ std::unordered_map<std::string, InstCategory> Trie::type_dict = {
 
     {"v_load", InstCategory::VMEM},
     {"v_store", InstCategory::VMEM},
-    {"buffer_load", InstCategory::VMEM},
+    /*{"buffer_load", InstCategory::VMEM},
     {"buffer_store", InstCategory::VMEM},
-    {"buffer_wbin", InstCategory::VMEM},
+    {"buffer_wbin", InstCategory::VMEM},*/
+    {"buffer_", InstCategory::VMEM},
 
     {"flat_load", InstCategory::FLAT},
     {"global_load", InstCategory::FLAT},
     {"flat_store", InstCategory::FLAT},
     {"global_store", InstCategory::FLAT},
+    {"scratch_", InstCategory::FLAT},
 
     {"ds_", InstCategory::LDS},
     {"s_add", InstCategory::SALU},
@@ -147,6 +150,7 @@ std::unordered_map<std::string, InstCategory> Trie::type_dict = {
     {"s_swappc", InstCategory::SWAPPC},
     {"v_mac_f32", InstCategory::VALU},
     {"v_accvgpr", InstCategory::VALU},
+    {"v_dual_", InstCategory::VALU},
 };
 
 InstCategory Trie::type_from_trie(const std::string& inst) {
