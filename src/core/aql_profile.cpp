@@ -708,14 +708,22 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
     const uint32_t se_number = pm4_factory->GetShaderEnginesNumber();
 
     if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_PMC) {
+      const uint64_t countermask =
+        (pm4_factory->GetGpuId() == aql_profile::GFX11_GPU_ID) ? ~uint32_t(0) : ~uint64_t(0);
+
       uint64_t* samples = reinterpret_cast<uint64_t*>(profile->output_buffer.ptr);
       const uint32_t sample_count = profile->output_buffer.size / sizeof(uint64_t);
       uint32_t sample_index = 0;
+      uint32_t sample_location = 0;
+
       for (const hsa_ven_amd_aqlprofile_event_t* p = profile->events;
            p < profile->events + profile->event_count; ++p) {
         // A perfcounter data sample per ShaderEngine
         const uint32_t block_samples_count =
             (pm4_factory->GetBlockInfo(p)->attr & CounterBlockSeAttr) ? se_number : 1;
+        const bool IsSqCounter = bool(pm4_factory->GetBlockInfo(p)->attr & CounterBlockSqAttr);
+        const uint32_t samples_per_sq = IsSqCounter ? pm4_factory->GetSQ_PMC_samples_per_SE() : 1;
+
         for (uint32_t i = 0; i < block_samples_count; ++i) {
           assert(sample_index < sample_count);
           if (sample_index >= sample_count) {
@@ -726,9 +734,17 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
           hsa_ven_amd_aqlprofile_info_data_t sample_info;
           sample_info.sample_id = i;
           sample_info.pmc_data.event = *p;
-          uint64_t val = samples[sample_index];
-          // If in concurrent, get the value difference
-          //  1st half are from kernel end, and 2nd half are from kernel start
+          uint64_t val = 0;
+          for (int wgp=0; wgp<samples_per_sq; wgp++) {
+            if (sample_location >= sample_count) { printf("Invalid sample!\n"); continue; }
+            val += samples[sample_location] & countermask;
+#if DEBUG_TRACE == 2
+            printf("DATA: sample index(%u) loc(%u) id(%u) bloc id(%u) index(%u) counter id(%u) res(%lu)\n", sample_index,
+                sample_location, i, p->block_name, p->block_index, p->counter_id, samples[sample_location] & countermask);
+#endif
+            sample_location ++;
+          }
+
           if (is_concurrent) {
             uint64_t start_val = samples[sample_index + sample_count / 2];
             if (val < start_val) {
@@ -739,12 +755,8 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
             }
             val -= start_val;
           }
+
           sample_info.pmc_data.result = val;
-#if DEBUG_TRACE == 2
-          printf("DATA: sample index(%u) id(%u) bloc id(%u) index(%u) counter id(%u) res(%lu)\n",
-                 sample_index, i, p->block_name, p->block_index, p->counter_id,
-                 samples[sample_index]);
-#endif
           status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_PMC_DATA, &sample_info, data);
           if (status == HSA_STATUS_INFO_BREAK) {
             status = HSA_STATUS_SUCCESS;
@@ -809,17 +821,16 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
           uint64_t sample_size = (control_ptr[wptr_ind] & pm4_builder::TT_WRITE_PTR_MASK) *
                                        pm4_builder::TT_WRITE_PTR_BLK;
 
-          std::string gfxname = std::string(pm4_factory->GetGFX());
-          if (gfxname.size() >= 7 && gfxname.substr(0,7) == "gfx1100")
-            sample_size = (sample_size - reinterpret_cast<uint64_t>(sample_ptr)) & 0xFFFFFFFF;
+          if (pm4_factory->GetGpuId() == aql_profile::GFX11_GPU_ID)
+            sample_size = (sample_size - reinterpret_cast<uint64_t>(sample_ptr)) & 0xFFFFFFFFull;
 
           if (sample_size > sample_capacity)
             sample_size = sample_capacity;
-          if (sample_size > sample_capacity) { // WARNING! NOT TREATED BY ROCPROFILER!
+          /*if (sample_size > sample_capacity) { // WARNING! NOT TREATED BY ROCPROFILER!
             ERR_LOGGING << "SQTT data out of bounds, sample_id(" << i << ") size(" << sample_size
                         << "/" << sample_capacity << ")";
             return HSA_STATUS_ERROR;
-          }
+          } */
 
           if (mode == 0) {  // SQTT trace
             hsa_ven_amd_aqlprofile_info_data_t sample_info;

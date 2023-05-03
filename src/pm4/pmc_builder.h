@@ -37,6 +37,7 @@ class PmcBuilder {
   // Return actual required data buffer size.
   virtual uint32_t Read(CmdBuffer* cmd_buffer, const counters_vector& counters_vec,
                         void* data_buffer) = 0;
+  virtual int GetSQ_PMC_samples_per_SE() = 0;//{ return 1; };
 };
 
 // PMC PM4 commands builder template
@@ -46,6 +47,8 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
   typedef uint32_t reg_addr_t;
   // Shader Engines number on the GPU
   uint32_t se_number_;
+  uint32_t wgp_per_sa;
+  uint32_t sarrays_per_se;
 
   // Reg-info table getting helper
   const CounterRegInfo* get_reg_table(const counter_des_t& counter_des) {
@@ -58,8 +61,17 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
   }
 
  public:
-  explicit GpuPmcBuilder(const AgentInfo* agent_info)
-      : PmcBuilder(), se_number_(agent_info->se_num) {}
+  explicit GpuPmcBuilder(const AgentInfo* agent_info): PmcBuilder(),
+      sarrays_per_se(agent_info->shader_arrays_per_se), se_number_(agent_info->se_num) {
+        this->wgp_per_sa = agent_info->cu_num/sarrays_per_se/se_number_/2;
+  }
+
+  int GetSQ_PMC_samples_per_SE() override {
+    if (Primitives::GFXIP_LEVEL == 11)
+      return sarrays_per_se*wgp_per_sa;
+    return 1;
+  };
+
   // Build PMC enable PM4 comands - enable CP counting for a specific queue
   void Enable(CmdBuffer* cmd_buffer) {
     // Program Compute Perfcount Enable register to support perf counting
@@ -128,8 +140,10 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
     if (counters_vec.get_attr() & CounterBlockTcAttr) {
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_PERFCOUNTER_CTRL_ADDR,
                                           Primitives::sq_control_enable_value());
-      //Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_PERFCOUNTER_CTRL2_ADDR,
-      //                                    Primitives::sq_control2_enable_value());
+    }
+    if (Primitives::GFXIP_LEVEL == 11 && (counters_vec.get_attr() & (CounterBlockTcAttr|CounterBlockSqAttr))) {
+      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_PERFCOUNTER_CTRL2_ADDR,
+                                          Primitives::sq_control2_enable_value());
     }
 #if defined(_GFX10_PRIMITIVES_H_) || defined (_GFX11_PRIMITIVES_H_)
     // Clear and enable GUS counters
@@ -412,11 +426,25 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
           } else if (block_info->attr & CounterBlockSeAttr) {
             grbm_value = Primitives::grbm_se_index_value(se_index);
           }
-          Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR, grbm_value);
-          Builder::BuildCopyCounterDataPacket(
-              cmd_buffer, reg_info.register_addr_lo, reg_info.register_addr_hi,
-              reinterpret_cast<uint32_t*>(data_buffer) + read_counter, 3);
-          read_counter += 2;
+
+          bool bIsWGPcounter = Primitives::GFXIP_LEVEL == 11 && (block_info->attr & CounterBlockSqAttr);
+
+          if (bIsWGPcounter) {
+            for (int sa=0; sa<sarrays_per_se; sa++) for (int wgp=0; wgp<wgp_per_sa; wgp++) {
+              grbm_value = Primitives::grbm_se_sh_wgp_index_value(se_index, wgp, sa);
+              Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR, grbm_value);
+              Builder::BuildCopyCounterDataPacket(
+                  cmd_buffer, reg_info.register_addr_lo, reg_info.register_addr_hi,
+                  reinterpret_cast<uint32_t*>(data_buffer) + read_counter, 1);
+              read_counter += 2;
+            }
+          } else {
+            Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR, grbm_value);
+            Builder::BuildCopyCounterDataPacket(
+                cmd_buffer, reg_info.register_addr_lo, reg_info.register_addr_hi,
+                reinterpret_cast<uint32_t*>(data_buffer) + read_counter, 3);
+            read_counter += 2;
+          }
         }
       }
     }

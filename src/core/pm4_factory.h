@@ -128,6 +128,13 @@ class Pm4Factory {
   // Return block id for a given block name string
   uint32_t FindBlock(const char* name) const { return block_map_.Find(name); }
 
+  /// Workaround for GFX11. PMC Builder overrides this.
+  virtual int GetSQ_PMC_samples_per_SE() {
+    if (pmc_builder_)
+      return pmc_builder_->GetSQ_PMC_samples_per_SE();
+    return 1;
+  };
+
  protected:
   explicit Pm4Factory(const BlockInfoMap& map)
       : cmd_builder_(NULL),

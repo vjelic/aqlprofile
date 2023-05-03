@@ -1844,6 +1844,7 @@ class gfx9_cntx_prim {
   static const uint32_t MC_PERFCOUNTER_RSLT_CNTL__CLEAR_ALL_MASK_PRM = 0x02000000L;
 
   static const uint32_t SQ_PERFCOUNTER_CTRL_ADDR = mmSQ_PERFCOUNTER_CTRL;
+  static const uint32_t SQ_PERFCOUNTER_CTRL2_ADDR = 0;
   static const uint32_t SQ_PERFCOUNTER_MASK_ADDR = mmSQ_PERFCOUNTER_MASK;
   static const uint32_t COMPUTE_THREAD_TRACE_ENABLE_ADDR = 0;
   static const uint32_t SQ_THREAD_TRACE_MASK_ADDR = mmSQ_THREAD_TRACE_MASK;
@@ -1948,6 +1949,7 @@ class gfx9_cntx_prim {
     grbm_gfx_index.bitfields.SH_BROADCAST_WRITES = 1;
     return grbm_gfx_index.u32All;
   }
+  static uint32_t grbm_se_sh_wgp_index_value(uint32_t se_index, uint32_t wgp, uint32_t sa) { return 0; }
 
   // GRBM SE/BlockInstance indexing
   static uint32_t grbm_inst_se_index_value(const uint32_t& instance_index,
@@ -2090,6 +2092,8 @@ class gfx9_cntx_prim {
     sq_cntr_ctrl.bits.VMID_MASK = 0xFFFF;
     return sq_cntr_ctrl.u32All;
   }
+  static uint32_t sq_control2_enable_value() { return 0; }
+  static uint32_t sq_control2_disable_value() { return 0; }
 
   // MC Block primitives
 
