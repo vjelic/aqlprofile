@@ -30,7 +30,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "pgen/test_pmgr.h"
 
-// SimpleConvolution: Class implements OpenCL SimpleConvolution sample
+// simple_convolution: Class implements OpenCL simple_convolution sample
 class TestPGen : public TestPMgr {
  protected:
   typedef hsa_ext_amd_aql_pm4_packet_t packet_t;

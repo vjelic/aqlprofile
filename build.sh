@@ -89,12 +89,10 @@ popd
 MAKE_OPTS="-j -C $AQLPROFILE_ROOT/$BUILD_DIR"
 
 cmake --build "$BUILD_DIR" -- $MAKE_OPTS
+cmake --build "$BUILD_DIR" -- $MAKE_OPTS test
 cmake --build "$BUILD_DIR" -- $MAKE_OPTS package
 
 pushd $BUILD_DIR
-if [ "$?" = 0 ] ; then
-  make -j mytest
-fi
 if [ "$?" = 0 ] ; then
   ./run.sh
 fi

@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright ©2013 Advanced Micro Devices, Inc. All rights reserved.
+Copyright ï¿½2013 Advanced Micro Devices, Inc. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -35,7 +35,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util/helper_funcs.h"
 #include "util/test_assert.h"
 
-const uint32_t SimpleConvolution::input_data_[]{
+const uint32_t simple_convolution::input_data_[]{
     15,  201, 51,  89,  92,  34,  96,  66,  11,  225, 161, 96,  81,  211, 108, 124, 202, 244, 182,
     90,  215, 92,  98,  20,  44,  225, 55,  247, 202, 0,   45,  218, 202, 97,  51,  39,  131, 147,
     105, 143, 116, 11,  239, 198, 222, 92,  67,  169, 81,  250, 3,   40,  86,  101, 60,  131, 70,
@@ -253,7 +253,7 @@ const uint32_t SimpleConvolution::input_data_[]{
     229, 121, 86,  254, 202, 137, 124, 31,  130, 12,  222, 146, 142, 37,  129, 199, 247, 98,  236,
     212, 251, 108, 211, 20,  60,  13,  206, 158, 18,  84};
 
-SimpleConvolution::SimpleConvolution() {
+simple_convolution::simple_convolution() {
   width_ = 64;
   height_ = 64;
   mask_width_ = 3;
@@ -293,8 +293,8 @@ SimpleConvolution::SimpleConvolution() {
   if (!randomize_seed_) TEST_ASSERT(sizeof(input_data_) <= input_size_bytes);
 }
 
-void SimpleConvolution::Init() {
-  std::clog << "SimpleConvolution::init :" << std::endl;
+void simple_convolution::Init() {
+  std::clog << "simple_convolution::init :" << std::endl;
 
   mem_descr_t kernarg_des = GetDescr(KERNARG_BUF_ID);
   mem_descr_t input_des = GetDescr(INPUT_BUF_ID);
@@ -352,11 +352,11 @@ void SimpleConvolution::Init() {
                           mask_width_, mask_height_);
 }
 
-void SimpleConvolution::PrintOutput(const void* ptr) const {
+void simple_convolution::PrintOutput(const void* ptr) const {
   PrintArray<uint32_t>("> Output[0]", reinterpret_cast<const uint32_t*>(ptr), width_, 1);
 }
 
-bool SimpleConvolution::ReferenceImplementation(uint32_t* output, const uint32_t* input,
+bool simple_convolution::ReferenceImplementation(uint32_t* output, const uint32_t* input,
                                                 const float* mask, const uint32_t width,
                                                 const uint32_t height, const uint32_t mask_width,
                                                 const uint32_t mask_height) {
