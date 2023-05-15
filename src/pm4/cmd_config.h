@@ -49,7 +49,7 @@ struct TraceConfig {
   // SE number for tracing
   uint32_t se_number;
   // SE mask for tracing
-  uint32_t se_vector;
+  uint32_t se_mask;
 
   // concurrent kernels mode
   uint32_t concurrent;

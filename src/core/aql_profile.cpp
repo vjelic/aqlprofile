@@ -378,7 +378,7 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
       memset(trace_config.perfcounters, 0, sizeof(trace_config.perfcounters));
 
       const uint32_t se_number = pm4_factory->GetShaderEnginesNumber();
-      uint32_t se_mask = (1 << se_number) - 1;
+      uint32_t se_mask = (uint64_t(1) << se_number) - 1;
 
       if (profile->parameters) {
         for (const hsa_ven_amd_aqlprofile_parameter_t* p = profile->parameters;
@@ -445,16 +445,7 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
         }
       }
 
-      uint32_t tnumber = 0;
-      uint32_t tvector = 0;
-      for (unsigned i = 0; i < se_number; ++i, se_mask >>= 1) {
-        if (se_mask & 1) {
-          const uint32_t pos = (pm4_builder::SE_VECTOR_SHIFT * tnumber);
-          const uint32_t val = i << pos;
-          tvector |= val;
-          ++tnumber;
-        }
-      }
+      const uint32_t tnumber = se_number;
 
       const uint32_t control_size =
           pm4_builder::TT_STATUS_IDX_MAX * sizeof(pm4_builder::ControlType) * tnumber;
@@ -462,18 +453,22 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
       pm4_builder::ControlType* const control_ptr =
           reinterpret_cast<pm4_builder::ControlType*>(prefix_ptr + sizeof(uint32_t));
 
-      trace_config.se_number = tnumber;
-      trace_config.se_vector = tvector;
+      trace_config.se_number = se_number;
+      trace_config.se_mask = se_mask;
       trace_config.control_buffer_ptr = control_ptr;
       trace_config.data_buffer_ptr = profile->output_buffer.ptr;
       trace_config.data_buffer_size = profile->output_buffer.size;
 
       if (prefix_ptr != NULL) {
         *reinterpret_cast<uint32_t*>(prefix_ptr) = tnumber;
-        for (unsigned i = 0; i < tnumber; ++i, tvector >>= pm4_builder::SE_VECTOR_SHIFT) {
-          const uint32_t se_id_ind =
-              (pm4_builder::TT_STATUS_IDX_MAX * i) + pm4_builder::TT_STATUS_IDX_ID;
-          control_ptr[se_id_ind] = tvector & pm4_builder::SE_VECTOR_MASK;
+        uint32_t i = 0;
+        for (uint32_t t=0; t < se_number; t++) {
+          if (true) {
+            const uint32_t se_id_ind = (pm4_builder::TT_STATUS_IDX_MAX * i)
+                                        + pm4_builder::TT_STATUS_IDX_ID;
+            control_ptr[se_id_ind] = t;
+            i += 1;
+          }
         }
       }
 
@@ -736,7 +731,7 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
           sample_info.pmc_data.event = *p;
           uint64_t val = 0;
           for (int wgp=0; wgp<samples_per_sq; wgp++) {
-            if (sample_location >= sample_count) { printf("Invalid sample!\n"); continue; }
+            if (sample_location >= sample_count) break;
             val += samples[sample_location] & countermask;
 #if DEBUG_TRACE == 2
             printf("DATA: sample index(%u) loc(%u) id(%u) bloc id(%u) index(%u) counter id(%u) res(%lu)\n", sample_index,
@@ -822,7 +817,7 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
                                        pm4_builder::TT_WRITE_PTR_BLK;
 
           if (pm4_factory->GetGpuId() == aql_profile::GFX11_GPU_ID)
-            sample_size = (sample_size - reinterpret_cast<uint64_t>(sample_ptr)) & 0xFFFFFFFFull;
+            sample_size = (sample_size - reinterpret_cast<uint64_t>(sample_ptr)) & ((1ull<<28)-1);
 
           if (sample_size > sample_capacity)
             sample_size = sample_capacity;
@@ -854,7 +849,6 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
                         << ")";
             break;
           }
-
           sample_ptr = reinterpret_cast<char*>(sample_ptr) + sample_capacity;
         }
       } else {  // SPM trace data
