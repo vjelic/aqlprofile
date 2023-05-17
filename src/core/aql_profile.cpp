@@ -703,9 +703,6 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
     const uint32_t se_number = pm4_factory->GetShaderEnginesNumber();
 
     if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_PMC) {
-      const uint64_t countermask =
-        (pm4_factory->GetGpuId() == aql_profile::GFX11_GPU_ID) ? ~uint32_t(0) : ~uint64_t(0);
-
       uint64_t* samples = reinterpret_cast<uint64_t*>(profile->output_buffer.ptr);
       const uint32_t sample_count = profile->output_buffer.size / sizeof(uint64_t);
       uint32_t sample_index = 0;
@@ -732,10 +729,10 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
           uint64_t val = 0;
           for (int wgp=0; wgp<samples_per_sq; wgp++) {
             if (sample_location >= sample_count) break;
-            val += samples[sample_location] & countermask;
+            val += samples[sample_location];
 #if DEBUG_TRACE == 2
             printf("DATA: sample index(%u) loc(%u) id(%u) bloc id(%u) index(%u) counter id(%u) res(%lu)\n", sample_index,
-                sample_location, i, p->block_name, p->block_index, p->counter_id, samples[sample_location] & countermask);
+                sample_location, i, p->block_name, p->block_index, p->counter_id, samples[sample_location]);
 #endif
             sample_location ++;
           }
@@ -817,7 +814,7 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
                                        pm4_builder::TT_WRITE_PTR_BLK;
 
           if (pm4_factory->GetGpuId() == aql_profile::GFX11_GPU_ID)
-            sample_size = (sample_size - reinterpret_cast<uint64_t>(sample_ptr)) & ((1ull<<28)-1);
+            sample_size = (sample_size - reinterpret_cast<uint64_t>(sample_ptr)) & ((1ull<<29)-1);
 
           if (sample_size > sample_capacity)
             sample_size = sample_capacity;

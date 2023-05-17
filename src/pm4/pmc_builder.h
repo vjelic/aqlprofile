@@ -431,6 +431,8 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
 
           if (bIsWGPcounter) {
             for (int sa=0; sa<sarrays_per_se; sa++) for (int wgp=0; wgp<wgp_per_sa; wgp++) {
+              if (data_buffer)
+                memset(reinterpret_cast<uint32_t*>(data_buffer)+read_counter, 0, sizeof(uint64_t));
               grbm_value = Primitives::grbm_se_sh_wgp_index_value(se_index, wgp, sa);
               Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR, grbm_value);
               Builder::BuildCopyCounterDataPacket(
