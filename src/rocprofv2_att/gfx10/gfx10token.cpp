@@ -92,6 +92,7 @@ std::vector<encoding_t> gfx10TokenLookupTable::bit_encodings = {
     {gfx10type::HEADER, {1,0,0,0,1,0,0}}
 };
 
+/*
 std::unordered_map<uint8_t, std::string> TOKEN_NAMES = {
     {gfx10type::UNKNOWN,"UNKNOWN"},
     // Target
@@ -122,7 +123,7 @@ std::unordered_map<uint8_t, std::string> TOKEN_NAMES = {
     {gfx10type::REG_INIT,"reg_init"},
     {gfx10type::TIMESTAMP,"timestamp"},
     {gfx10type::HEADER,"header"},
-};
+}; //*/
 
 std::array<uint8_t, 32> gfx10Token::TOKEN_LEN = {
     /*UNKNOWN*/ 8,

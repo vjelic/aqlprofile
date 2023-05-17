@@ -38,6 +38,7 @@
 #include <utility>
 #include "gfx11wave.h"
 
+/*
 std::unordered_map<int, const char*> gfx11wave_t::INST_NAMES = {
     {0, "salu"},
     {1, "smem_rd"},
@@ -99,7 +100,7 @@ std::unordered_map<int, const char*> gfx11wave_t::INST_NAMES = {
     {99, "vmem_other_10"},
     {100, "vmem_other_11"},
     {101, "vmem_other_12"},
-};
+}; */
 
 using WaveArray = gfx11wave_t::WaveArray;
 typedef gfx11wave_t wave_t;
@@ -153,19 +154,32 @@ enum EINST {
     buf_wr_4,
     buf_wr_5,
     buf_wr_6,
-    lds_other_1=80,
-    vmem_other_1=90,
-    vmem_other_2,
-    vmem_other_3,
-    vmem_other_4,
-    vmem_other_5,
-    vmem_other_6,
-    vmem_other_7,
-    vmem_other_8,
-    vmem_other_9,
-    vmem_other_10,
-    vmem_other_11,
-    vmem_other_12,
+    img_sample_1,
+    img_sample_2,
+    img_sample_3,
+    img_sample_4,
+    img_sample_5,
+    img_sample_6,
+    img_sample_7,
+    img_sample_8,
+    img_sample_9,
+    img_sample_10,
+    img_sample_11,
+    img_sample_12,
+    img_sample_reserved=67,
+    img_rd_1,
+    img_rd_2,
+    img_rd_3,
+    img_rd_4,
+    img_wr_2,
+    img_wr_3,
+    img_wr_4,
+    img_wr_5,
+    img_wr_6,
+    img_wr_7,
+    img_wr_8,
+    img_sample_end=78,
+    einst_final
 };
 
 std::unordered_map<EINST, std::pair<WaveInstCategory, uint16_t>> table_inst_map_to_gfx9 {
@@ -213,24 +227,27 @@ std::unordered_map<EINST, std::pair<WaveInstCategory, uint16_t>> table_inst_map_
     {EINST::buf_wr_4, {WaveInstCategory::VMEM, 4}},
     {EINST::buf_wr_5, {WaveInstCategory::VMEM, 5}},
     {EINST::buf_wr_6, {WaveInstCategory::VMEM, 6}},
-    {EINST::lds_other_1, {WaveInstCategory::LDS, 1}},
-    {EINST::vmem_other_1, {WaveInstCategory::VMEM, 1}},
-    {EINST::vmem_other_2, {WaveInstCategory::VMEM, 2}},
-    {EINST::vmem_other_3, {WaveInstCategory::VMEM, 3}},
-    {EINST::vmem_other_4, {WaveInstCategory::VMEM, 4}},
-    {EINST::vmem_other_5, {WaveInstCategory::VMEM, 5}},
-    {EINST::vmem_other_6, {WaveInstCategory::VMEM, 6}},
-    {EINST::vmem_other_7, {WaveInstCategory::VMEM, 7}},
-    {EINST::vmem_other_8, {WaveInstCategory::VMEM, 8}},
-    {EINST::vmem_other_9, {WaveInstCategory::VMEM, 9}},
-    {EINST::vmem_other_10, {WaveInstCategory::VMEM, 10}},
-    {EINST::vmem_other_11, {WaveInstCategory::VMEM, 11}},
-    {EINST::vmem_other_12, {WaveInstCategory::VMEM, 12}},
+    {EINST::img_sample_1, {WaveInstCategory::VMEM, 1}},
+    {EINST::img_sample_2, {WaveInstCategory::VMEM, 2}},
+    {EINST::img_sample_3, {WaveInstCategory::VMEM, 3}},
+    {EINST::img_sample_4, {WaveInstCategory::VMEM, 4}},
+    {EINST::img_sample_5, {WaveInstCategory::VMEM, 5}},
+    {EINST::img_sample_6, {WaveInstCategory::VMEM, 6}},
+    {EINST::img_sample_7, {WaveInstCategory::VMEM, 7}},
+    {EINST::img_sample_8, {WaveInstCategory::VMEM, 8}},
+    {EINST::img_sample_9, {WaveInstCategory::VMEM, 9}},
+    {EINST::img_sample_10, {WaveInstCategory::VMEM, 10}},
+    {EINST::img_sample_11, {WaveInstCategory::VMEM, 11}},
+    {EINST::img_sample_12, {WaveInstCategory::VMEM, 12}},
 };
 
+
 std::pair<WaveInstCategory, uint16_t> gfx11wave_t::inst_map_to_gfx9(int einst) {
-  return table_inst_map_to_gfx9[(EINST)einst];
+  try {
+    return table_inst_map_to_gfx9.at((EINST)einst);
+  } catch (...) {
+    return {WaveInstCategory::NONE, 0};
+  }
 }
 
 wave_t::gfx11wave_t(Token& token) {}
-

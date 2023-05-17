@@ -66,7 +66,7 @@ struct gfx10wave_t : public wavedata_t {
   static std::tuple<WaveArray, std::vector<perfevent_t>, std::vector<occupancy_info_t>>
                     sqtt_simd_analysis(std::vector<gfx10Token>& tokens, int target_cu = 1);
 
-  static std::unordered_map<int, const char*> INST_NAMES;
+  //static std::unordered_map<int, const char*> INST_NAMES;
   static std::pair<WaveInstCategory, uint16_t> inst_map_to_gfx9(int einst);
 };
 

@@ -32,6 +32,6 @@ struct gfx11wave_t : public gfx10wave_t {
   gfx11wave_t() = default;
   gfx11wave_t(class gfx10Token&);
 
-  static std::unordered_map<int, const char*> INST_NAMES;
+  //static std::unordered_map<int, const char*> INST_NAMES;
   static std::pair<WaveInstCategory, uint16_t> inst_map_to_gfx9(int einst);
 };
