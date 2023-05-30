@@ -87,9 +87,9 @@ struct state_t {
 
 void producer_fun(state_t* state) {
   uint32_t timeout = 0;
-  hsa_status_t status =
-      hsa_amd_spm_set_dest_buffer(state->agent, state->buf_size, &timeout, &(state->data_size),
-                             state->kfd_buf, &(state->data_loss));
+  hsa_status_t status = HSA_STATUS_SUCCESS;
+  //hsa_amd_spm_set_dest_buffer(state->agent, state->buf_size, &timeout, &(state->data_size),
+  //                         state->kfd_buf, &(state->data_loss));
   if (status != HSA_STATUS_SUCCESS) {
     printf("hsa SPM Set DestBuffer init error\n");
     fflush(stdout);
@@ -98,8 +98,9 @@ void producer_fun(state_t* state) {
 
   do {
     timeout = state->timeout;
-    status = hsa_amd_spm_set_dest_buffer(state->agent, state->buf_size, &timeout, &(state->data_size),
-                                    state->prod_buf, &(state->data_loss));
+    status = HSA_STATUS_SUCCESS;
+    //hsa_amd_spm_set_dest_buffer(state->agent, state->buf_size, &timeout, &(state->data_size),
+    //                              state->prod_buf, &(state->data_loss));
     if (status != HSA_STATUS_SUCCESS) {
       printf("hsa SPM Set DestBuffer error\n");
       fflush(stdout);
@@ -116,8 +117,9 @@ void producer_fun(state_t* state) {
     PTHREAD_CALL(pthread_mutex_unlock(&(state->work_mutex)));
   } while (!state->thread_stop);
 
-  status = hsa_amd_spm_set_dest_buffer(state->agent, 0, &timeout, &(state->data_size), NULL,
-                                  &(state->data_loss));
+  status = HSA_STATUS_SUCCESS;
+  //hsa_amd_spm_set_dest_buffer(state->agent, 0, &timeout, &(state->data_size), NULL,
+  //                              &(state->data_loss));
   if (status != HSA_STATUS_SUCCESS) {
     printf("hsa SPM Set DestBuffer stop error\n");
     fflush(stdout);
@@ -171,7 +173,7 @@ void mananger_fun(const hsa_ven_amd_aqlprofile_profile_t* profile,
   PTHREAD_CALL(pthread_mutex_init(&(obj.work_mutex), NULL));
   PTHREAD_CALL(pthread_cond_init(&(obj.work_cond), NULL));
 
-  hsa_status_t status = hsa_amd_spm_acquire(profile->agent);
+  hsa_status_t status = HSA_STATUS_SUCCESS; //hsa_amd_spm_acquire(profile->agent);
   if (status != HSA_STATUS_SUCCESS) {
     printf("hsa SPM Acquire error\n");
     fflush(stdout);
@@ -185,7 +187,7 @@ void mananger_fun(const hsa_ven_amd_aqlprofile_profile_t* profile,
   producer.join();
   consumer.join();
 
-  status = hsa_amd_spm_release(profile->agent);
+  status = HSA_STATUS_SUCCESS; //hsa_amd_spm_release(profile->agent);
   if (status != HSA_STATUS_SUCCESS) {
     printf("hsa SPM Release error\n");
     fflush(stdout);

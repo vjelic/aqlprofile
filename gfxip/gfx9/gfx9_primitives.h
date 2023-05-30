@@ -48,7 +48,7 @@ class gfx9_cntx_prim {
   static const uint32_t SQ_THREAD_TRACE_STATUS_OFFSET =
       mmSQ_THREAD_TRACE_STATUS - UCONFIG_SPACE_START;
   static const uint32_t TT_BUFF_ALIGN_SHIFT = 12;
-  
+
   static const uint32_t SDMA_COUNTER_BLOCK_NUM_INSTANCES = SdmaCounterBlockMaxInstances;
 
   static const uint32_t RLC_SPM_PERFMON_CNTL__ADDR = mmRLC_SPM_PERFMON_CNTL;
@@ -74,6 +74,7 @@ class gfx9_cntx_prim {
     };
     return SQTT_PERFCOUNTERS_SELECT[index&0xF];
   }
+
   union mux_info_t {
     uint16_t data;
     struct {

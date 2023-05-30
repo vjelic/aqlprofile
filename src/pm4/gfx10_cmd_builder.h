@@ -174,7 +174,8 @@ void BuildBarrierCommand(CmdBuffer* cmdBuf) override {
     // Append the built command into output Command Buffer
     APPEND_COMMAND_WRAPPER(cmdbuf, copy_data);
   }
-  
+
+  void BuildPredExecPacket(CmdBuffer* cmdbuf, uint32_t xcc_id = 0, uint32_t exec_count = 0) {}
 };
 }  // namespace pm4_builder
 

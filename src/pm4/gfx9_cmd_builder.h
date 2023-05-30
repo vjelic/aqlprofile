@@ -45,6 +45,39 @@ class Gfx9CmdBuilder : public CmdBuilder {
   }
 
 #ifndef SRC_PM4_GFX10_CMD_BUILDER_H_
+#ifndef PM4_MEC_PRED_EXEC_DEFINED
+#define PM4_MEC_PRED_EXEC_DEFINED
+  static constexpr int IT_PRED_EXEC = 0x23;
+
+  typedef struct PM4_MEC_PRED_EXEC
+  {
+    union
+    {
+      PM4_MEC_TYPE_3_HEADER   header;            ///header
+      uint32_t                ordinal1; 
+    };
+    union
+    {
+      struct {
+        uint32_t exec_count:14;
+        uint32_t reserved1:10;
+        uint32_t virtualxccid_select:8;
+      } bitfields2;
+      uint32_t ordinal2;
+    };
+  } PM4MEC_PRED_EXEC, *PPM4MEC_PRED_EXEC;
+
+  void BuildPredExecPacket(CmdBuffer* cmdbuf, uint32_t xcc_select = 0, uint32_t exec_count = 0) {
+    PM4_MEC_PRED_EXEC pred_exec{};
+    pred_exec.header = MakePacket3Header(IT_PRED_EXEC, sizeof(pred_exec));
+    pred_exec.bitfields2.exec_count = exec_count;
+    pred_exec.bitfields2.reserved1 = 0;
+    uint32_t virtualxccid_select = 1 << xcc_select;
+    pred_exec.bitfields2.virtualxccid_select = virtualxccid_select;
+    APPEND_COMMAND_WRAPPER(cmdbuf, pred_exec);
+  }
+#endif
+
   void BuildCacheFlushPacket(CmdBuffer* cmdbuf) {
     PM4MEC_ACQUIRE_MEM cache_flush{};
 

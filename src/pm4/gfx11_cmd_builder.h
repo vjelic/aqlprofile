@@ -41,9 +41,9 @@ class Gfx11CmdBuilder : public CmdBuilder {
     // Append the built command into output Command Buffer
     APPEND_COMMAND_WRAPPER(cmdBuf, event_write);
   }
-  
-  void BuildWriteWaitIdlePacket(CmdBuffer* cmdbuf) { 
-    BuildBarrierCommand(cmdbuf); 
+
+  void BuildWriteWaitIdlePacket(CmdBuffer* cmdbuf) {
+    BuildBarrierCommand(cmdbuf);
   }
 
   void BuildCacheFlushPacket(CmdBuffer* cmdbuf){
@@ -276,6 +276,7 @@ class Gfx11CmdBuilder : public CmdBuilder {
     // Append the built command into output Command Buffer
     APPEND_COMMAND_WRAPPER(cmdbuf, indirect_buffer);
   }
+  void BuildPredExecPacket(CmdBuffer* cmdbuf, uint32_t xcc_id = 0, uint32_t exec_count = 0) {}
 };
 
 }  // namespace pm4_builder

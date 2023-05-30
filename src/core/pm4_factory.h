@@ -104,6 +104,8 @@ class Pm4Factory {
   // Return SQTT buffer alignment
   const uint32_t GetSQTTBufferAlignment() { return 0x1000; }
   const char* GetGFX() { return agent_info_->name; }
+  // Return number of XCC on the GPU
+  const uint32_t GetXccNumber() { return agent_info_->xcc_num; }
 
   // Return block info foor a given event
   const GpuBlockInfo* GetBlockInfo(const event_t* event) const {

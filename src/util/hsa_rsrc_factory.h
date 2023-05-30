@@ -116,6 +116,9 @@ struct AgentInfo {
   // Number of Shader Engines (SE) in Gpu
   uint32_t se_num;
 
+  // Number of MI3000 XCC
+  uint32_t xcc_num {1};
+
   // Number of Shader Arrays Per Shader Engines in Gpu
   uint32_t shader_arrays_per_se;
 };

@@ -141,7 +141,7 @@ class TestPGenPmc : public TestPGen {
     // Allocate(output_buffer_alignment, output_buffer_size,
     //          MODE_HOST_ACC|MODE_DEV_ACC)
     profile_.output_buffer.ptr =
-        GetRsrcFactory()->AllocateSysMemory(GetAgentInfo(), output_buffer_size);
+        GetRsrcFactory()->AllocateKernArgMemory(GetAgentInfo(), output_buffer_size);
     TEST_ASSERT(profile_.output_buffer.ptr != NULL);
     memset(profile_.output_buffer.ptr, 0x77, output_buffer_size);
     TEST_ASSERT((reinterpret_cast<uintptr_t>(profile_.output_buffer.ptr) &

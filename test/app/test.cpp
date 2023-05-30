@@ -418,6 +418,7 @@ int main(int argc, char* argv[]) {
         // {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_GDS, 0, 0 /*DS_ADDR_CONFL*/},
     };
     events_count = sizeof(events_spm) / sizeof(hsa_ven_amd_aqlprofile_event_t);
+
     if (spm_kfd_mode) {
       // open a binary file for spm samples
       const std::string spm_sample_file = "example.txt";

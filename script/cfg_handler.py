@@ -16,6 +16,7 @@ class CfgHandler:
 
   def get_file(self, path, gfxip, sym):
     '''locate the input file using the given path/gfxip/sym'''
+    print >>sys.stderr, "get_file", path, gfxip, sym
     owd = os.getcwd()
     os.chdir(path)
     # filename formats:
@@ -30,6 +31,8 @@ class CfgHandler:
     #       e.g, gfx9x_ATCL2_PERFCOUNTER_CFG.txt
     if (len(files) == 0):
       files.extend(glob.glob('*/*' + gfxip[0:4] + 'x_*' + sym))
+    if (len(files) == 0):
+      files.extend(glob.glob('*/*' + gfxip[0:5] + 'x_*' + sym))
     # a unique file is expected
     assert (len(files) == 1)
 

@@ -48,7 +48,7 @@ void Gfx10Factory::Init(const AgentInfo* agent_info) {
   if (Pm4Factory::spm_builder_ == NULL) throw aql_profile_exc_msg("SpmBuilder allocation failed");
 
   Pm4Factory::sqtt_builder_ =
-      new pm4_builder::GpuSqttBuilder<pm4_builder::Gfx10CmdBuilder, gfx10_cntx_prim>;
+      new pm4_builder::GpuSqttBuilder<pm4_builder::Gfx10CmdBuilder, gfx10_cntx_prim>(agent_info);
   if (Pm4Factory::sqtt_builder_ == NULL) throw aql_profile_exc_msg("SqttBuilder allocation failed");
 
   agent_info_ = agent_info;

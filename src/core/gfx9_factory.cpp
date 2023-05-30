@@ -45,7 +45,7 @@ void Gfx9Factory::Init(const AgentInfo* agent_info) {
   if (Pm4Factory::spm_builder_ == NULL) throw aql_profile_exc_msg("SpmBuilder allocation failed");
 
   Pm4Factory::sqtt_builder_ =
-      new pm4_builder::GpuSqttBuilder<pm4_builder::Gfx9CmdBuilder, gfx9_cntx_prim>;
+      new pm4_builder::GpuSqttBuilder<pm4_builder::Gfx9CmdBuilder, gfx9_cntx_prim>(agent_info);
   if (Pm4Factory::sqtt_builder_ == NULL) throw aql_profile_exc_msg("SqttBuilder allocation failed");
 
   agent_info_ = agent_info;
@@ -128,13 +128,13 @@ Pm4Factory* Pm4Factory::Gfx9Create(const AgentInfo* agent_info) {
 
 Pm4Factory* Pm4Factory::Mi100Create(const AgentInfo* agent_info) {
   auto p = new Mi100Factory(agent_info);
-  if (p == NULL) throw aql_profile_exc_msg("FijiFactory allocation failed");
+  if (p == NULL) throw aql_profile_exc_msg("Mi100Factory allocation failed");
   return p;
 }
 
 Pm4Factory* Pm4Factory::Mi200Create(const AgentInfo* agent_info) {
   auto p = new Mi200Factory(agent_info);
-  if (p == NULL) throw aql_profile_exc_msg("FijiFactory allocation failed");
+  if (p == NULL) throw aql_profile_exc_msg("Mi200Factory allocation failed");
   return p;
 }
 

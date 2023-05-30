@@ -82,6 +82,11 @@ class CmdBuffer {
   /// @brief Return size of Gpu commands in bytes in the underlying buffer
   size_t Size() const { return data_.size() * sizeof(data_[0]); }
 
+  /// @brief Return size of Gpu commands in DWord in the underlying buffer
+  size_t DwSize() const { return data_.size(); }
+
+  void Assign(uint32_t index, uint32_t value) { data_[index] = value; }
+
   /// @brief Return address of the start of accumulated commands.
   const void* Data() const { return &data_[0]; }
 

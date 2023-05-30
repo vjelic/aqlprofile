@@ -49,6 +49,8 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
   uint32_t se_number_;
   uint32_t wgp_per_sa;
   uint32_t sarrays_per_se;
+  // XCC number on the GPU
+  uint32_t xcc_number_;
 
   // Reg-info table getting helper
   const CounterRegInfo* get_reg_table(const counter_des_t& counter_des) {
@@ -62,7 +64,9 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
 
  public:
   explicit GpuPmcBuilder(const AgentInfo* agent_info): PmcBuilder(),
-      sarrays_per_se(agent_info->shader_arrays_per_se), se_number_(agent_info->se_num) {
+      se_number_(agent_info->se_num / agent_info->xcc_num),
+      xcc_number_(agent_info->xcc_num),
+      sarrays_per_se(agent_info->shader_arrays_per_se) {
         this->wgp_per_sa = agent_info->cu_num/sarrays_per_se/se_number_/2;
   }
 
@@ -297,8 +301,8 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
   }
 
   // Build PMC read PM4 packets
-  uint32_t ReadPackets(CmdBuffer* cmd_buffer, const counters_vector& counters_vec,
-                       void* data_buffer) {
+  uint32_t ReadXccPackets(CmdBuffer* cmd_buffer, const counters_vector& counters_vec,
+                          void* data_buffer, uint32_t& read_counter) {
     // Reset Grbm to its default state - broadcast
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
                                         Primitives::grbm_broadcast_value());
@@ -348,7 +352,6 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
     // SDMA mask
     uint32_t sdma_mask = 0;
     // Iterate through the list of blocks to create PM4 packets to read counter values
-    uint32_t read_counter = 0;
     for (const auto& counter_des : counters_vec) {
       const auto* block_info = counter_des.block_info;
       const auto& block_des = counter_des.block_des;
@@ -496,6 +499,42 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
     Builder::BuildWriteWaitIdlePacket(cmd_buffer);
     // Return amount of data to read
     return data_size;
+  }
+
+  // Build PMC read PM4 packets
+  uint32_t ReadPackets(CmdBuffer* cmd_buffer, const counters_vector& counters_vec,
+                       void* data_buffer) {
+    uint32_t read_counter = 0;
+
+    for (size_t xcc_selected = 0; xcc_selected < xcc_number_; ++xcc_selected) {
+      int pos = cmd_buffer->DwSize();
+      if (xcc_number_ > 1){
+        Builder::BuildPredExecPacket(cmd_buffer, xcc_selected, 0);
+      }
+
+      int initial_buff_size = cmd_buffer->DwSize();
+      ReadXccPackets(cmd_buffer, counters_vec, data_buffer, read_counter);
+      int delta = cmd_buffer->DwSize() - initial_buff_size;
+
+      // std::cout << "pos, initial_buff_size, delta: " << pos << ", " << initial_buff_size << ", " << delta << std::endl;
+
+      if (xcc_number_ > 1) {
+        CmdBuffer pred_exec;
+        //Builder::BuildPredExecPacket(&pred_exec, 0, 0);
+
+        auto xcc_buf_size = delta;
+
+        // update first PRED_EXEC packet to its correct value
+        //pred_exec.Clear();
+        Builder::BuildPredExecPacket(&pred_exec, xcc_selected, xcc_buf_size);
+        const uint32_t* data = (const uint32_t*)pred_exec.Data();
+
+        for (size_t i = 0; i < pred_exec.DwSize(); ++i)
+          cmd_buffer->Assign(pos + i, data[i]);
+      }
+    }
+    // Return amount of data to read
+    return read_counter * sizeof(uint32_t);
   }
 };
 
