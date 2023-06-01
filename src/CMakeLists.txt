@@ -7,8 +7,11 @@ set ( LIB_SRC
   ${LIB_DIR}/core/spm_data.cpp
   ${LIB_DIR}/core/populate_aql.cpp
   ${LIB_DIR}/core/gfx9_factory.cpp
+  ${LIB_DIR}/core/gfx908_factory.cpp
+  ${LIB_DIR}/core/gfx90a_factory.cpp
+  ${LIB_DIR}/core/gfx940_factory.cpp
   ${LIB_DIR}/core/gfx10_factory.cpp
-  ${LIB_DIR}/core/gfx11_factory.cpp  
+  ${LIB_DIR}/core/gfx11_factory.cpp
   ${LIB_DIR}/util/hsa_rsrc_factory.cpp
 )
 

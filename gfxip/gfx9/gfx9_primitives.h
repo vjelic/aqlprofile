@@ -51,6 +51,7 @@ class gfx9_cntx_prim {
   static const uint32_t TT_BUFF_ALIGN_SHIFT = 12;
 
   static const uint32_t SDMA_COUNTER_BLOCK_NUM_INSTANCES = SdmaCounterBlockMaxInstances;
+  static const uint32_t UMC_COUNTER_BLOCK_NUM_INSTANCES = UmcCounterBlockMaxInstances;
 
   static const uint32_t RLC_SPM_PERFMON_CNTL__ADDR = mmRLC_SPM_PERFMON_CNTL;
   static const uint32_t RLC_SPM_MC_CNTL__ADDR = mmRLC_SPM_MC_CNTL;
@@ -415,9 +416,50 @@ class gfx9_cntx_prim {
     return sdma_perfmon_cntl.u32All;
   }
 
+  // UMC primitives
+  static uint32_t umc_disable_clear_value() {
+    // register: UMCCH_PERFMONCTLCLK
+    regUMCCH_PerfMonCtlClk perfmon_ctl_clk{};
+    // clear - GlblReset
+    perfmon_ctl_clk.bits.GlblReset = 1;
+    return perfmon_ctl_clk.u32All;
+  }
+
+  static uint32_t umc_enable_value() {
+    // register: UMCCH_PERFMONCTLCLK
+    regUMCCH_PerfMonCtlClk perfmon_ctl_clk{};
+    // global enable
+    perfmon_ctl_clk.bits.GlblMonEn = 1;
+    return perfmon_ctl_clk.u32All;
+  }
+
+  static uint32_t umc_select_value(const counter_des_t& counter_des) {
+    // register: UMCCH_PERFMONCTR1-4
+    regUMCCH_PerfMonCtl1 perfmon_ctl{};
+    // enable counter
+    perfmon_ctl.bits.Enable = 1;
+    // perf select
+    perfmon_ctl.bits.EventSelect = counter_des.id;
+    return perfmon_ctl.u32All;
+  }
+
+  static uint32_t umc_select_cycle() {
+    // register: UMCCH_PERFMONCTR1-4
+    regUMCCH_PerfMonCtl1 perfmon_ctl{};
+    // enable cycle
+    perfmon_ctl.bits.Enable = 1;
+    return perfmon_ctl.u32All;
+  }
+
+  static uint32_t umc_stop_value() {
+    // register: UMCCH_PERFMONCTR1-4/CLK
+    regUMCCH_PerfMonCtl1 perfmon_ctl{};
+    return perfmon_ctl.u32All;
+  }
+
   // SPM trace routines
   static uint32_t rlc_spm_mc_cntl_value() {
-    regRLC_SPM_MC_CNTL mc_cntl;
+    regRLC_SPM_MC_CNTL mc_cntl{};
     mc_cntl.u32All = 0;
     mc_cntl.bits.RLC_SPM_VMID = 15;
     return mc_cntl.u32All;

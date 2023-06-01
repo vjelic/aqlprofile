@@ -1,18 +1,16 @@
 #if !defined(_greenland_TYPEDEF_HEADER)
 #define _greenland_TYPEDEF_HEADER
 /*
-*	gfx9_typedef.h
-*
-*	Register Spec Release:  <unknown>
-*
-*
-*	 (c) 2000 ATI Technologies Inc.  (unpublished)
+*        Copyright (C) 2000-2023, Advanced Micro Devices, Inc.
 *
 *	 All rights reserved.  This notice is intended as a precaution against
 *	 inadvertent publication and does not imply publication or any waiver
 *	 of confidentiality.  The year included in the foregoing notice is the
 *	 year of creation of the work.
 *
+*	gfx9_typedef.h
+*
+*	Register Spec Release:  <unknown>
 */
 
 namespace gfxip {
@@ -10751,6 +10749,33 @@ typedef union GCEA_SDP_BACKDOOR_MISCCREDITS regGCEA_SDP_BACKDOOR_MISCCREDITS;
 typedef union GCEA_SDP_ENABLE regGCEA_SDP_ENABLE;
 typedef union GCEA_CGTT_CLK_CTRL regGCEA_CGTT_CLK_CTRL;
 typedef union GCEA_SECURE_CTRL regGCEA_SECURE_CTRL;
+typedef union UMCCH_PerfMonCtlClk                    regUMCCH_PerfMonCtlClk;
+typedef union UMCCH_PerfMonCtrClk_Lo                 regUMCCH_PerfMonCtrClk_Lo;
+typedef union UMCCH_PerfMonCtrClk_Hi                 regUMCCH_PerfMonCtrClk_Hi;
+typedef union UMCCH_PerfMonCtl1                      regUMCCH_PerfMonCtl1;
+typedef union UMCCH_PerfMonCtr1_Lo                   regUMCCH_PerfMonCtr1_Lo;
+typedef union UMCCH_PerfMonCtr1_Hi                   regUMCCH_PerfMonCtr1_Hi;
+typedef union UMCCH_PerfMonCtl2                      regUMCCH_PerfMonCtl2;
+typedef union UMCCH_PerfMonCtr2_Lo                   regUMCCH_PerfMonCtr2_Lo;
+typedef union UMCCH_PerfMonCtr2_Hi                   regUMCCH_PerfMonCtr2_Hi;
+typedef union UMCCH_PerfMonCtl3                      regUMCCH_PerfMonCtl3;
+typedef union UMCCH_PerfMonCtr3_Lo                   regUMCCH_PerfMonCtr3_Lo;
+typedef union UMCCH_PerfMonCtr3_Hi                   regUMCCH_PerfMonCtr3_Hi;
+typedef union UMCCH_PerfMonCtl4                      regUMCCH_PerfMonCtl4;
+typedef union UMCCH_PerfMonCtr4_Lo                   regUMCCH_PerfMonCtr4_Lo;
+typedef union UMCCH_PerfMonCtr4_Hi                   regUMCCH_PerfMonCtr4_Hi;
+typedef union UMCCH_PerfMonCtl5                      regUMCCH_PerfMonCtl5;
+typedef union UMCCH_PerfMonCtr5_Lo                   regUMCCH_PerfMonCtr5_Lo;
+typedef union UMCCH_PerfMonCtr5_Hi                   regUMCCH_PerfMonCtr5_Hi;
+typedef union UMCCH_PerfMonCtl6                      regUMCCH_PerfMonCtl6;
+typedef union UMCCH_PerfMonCtr6_Lo                   regUMCCH_PerfMonCtr6_Lo;
+typedef union UMCCH_PerfMonCtr6_Hi                   regUMCCH_PerfMonCtr6_Hi;
+typedef union UMCCH_PerfMonCtl7                      regUMCCH_PerfMonCtl7;
+typedef union UMCCH_PerfMonCtr7_Lo                   regUMCCH_PerfMonCtr7_Lo;
+typedef union UMCCH_PerfMonCtr7_Hi                   regUMCCH_PerfMonCtr7_Hi;
+typedef union UMCCH_PerfMonCtl8                      regUMCCH_PerfMonCtl8;
+typedef union UMCCH_PerfMonCtr8_Lo                   regUMCCH_PerfMonCtr8_Lo;
+typedef union UMCCH_PerfMonCtr8_Hi                   regUMCCH_PerfMonCtr8_Hi;
 
 }  // gfx9
 }  // gfxip

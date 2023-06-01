@@ -44,6 +44,8 @@ enum CounterBlockId {
 
   // SDMA block
   SdmaCounterBlockId,
+  // UMC block
+  UmcCounterBlockId,
 
   // Counters retrieved by KFD
   IommuV2CounterBlockId,
@@ -93,8 +95,11 @@ static const uint32_t TcpCounterBlockNumInstances   = 16;
 static const uint32_t TcaCounterBlockNumInstances   = 2;
 static const uint32_t TccCounterBlockNumInstances   = 16;
 static const uint32_t SdmaCounterBlockNumInstances  = 2;
+static const uint32_t UmcCounterBlockNumInstances   = 32;
+
 // MI100 has 8 SDMA instances
 static const uint32_t SdmaCounterBlockMaxInstances  = 8;
+static const uint32_t UmcCounterBlockMaxInstances   = 32;
 static const uint32_t RmiCounterBlockNumInstances   = 8;
 static const uint32_t GceaCounterBlockNumInstances  = 16;
 
@@ -112,6 +117,7 @@ static const uint32_t PaSuCounterBlockNumCounters   = 4;
 static const uint32_t PaScCounterBlockNumCounters   = 8;
 static const uint32_t RlcCounterBlockNumCounters    = 2;
 static const uint32_t SdmaCounterBlockNumCounters   = 2;
+static const uint32_t UmcCounterBlockNumCounters    = 0;
 static const uint32_t SpiCounterBlockNumCounters    = 6;
 static const uint32_t SqCounterBlockNumCounters     = 8;
 static const uint32_t SxCounterBlockNumCounters     = 4;
@@ -143,6 +149,7 @@ static const uint32_t PaSuCounterBlockMaxEvent      = PERF_CLIENT_UTCL1_INFLIGHT
 static const uint32_t PaScCounterBlockMaxEvent      = SC_DB1_TILE_INTERFACE_CREDIT_AT_MAX_WITH_NO_PENDING_SEND;
 static const uint32_t RlcCounterBlockMaxEvent       = 7;
 static const uint32_t SdmaCounterBlockMaxEvent      = SDMA_PERF_SEL_MMHUB_TAG_DELAY_COUNTER;
+static const uint32_t UmcCounterBlockMaxEvent       = 255;
 static const uint32_t SpiCounterBlockMaxEvent       = SPI_PERF_VWC_CSC_WR;
 static const uint32_t SqCounterBlockMaxEvent        = SQC_PERF_SEL_DUMMY_LAST;
 static const uint32_t SxCounterBlockMaxEvent        = SX_PERF_SEL_DB3_SIZE;

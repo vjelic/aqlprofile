@@ -1,18 +1,16 @@
 #if !defined(_greenland_REG_HEADER)
 #define _greenland_REG_HEADER
 /*
-*	gfx9_registers.h
-*
-*	Register Spec Release:  <unknown>
-*
-*
-*	 (c) 2000 ATI Technologies Inc.  (unpublished)
+*        Copyright (C) 2000-2023, Advanced Micro Devices, Inc.
 *
 *	 All rights reserved.  This notice is intended as a precaution against
 *	 inadvertent publication and does not imply publication or any waiver
 *	 of confidentiality.  The year included in the foregoing notice is the
 *	 year of creation of the work.
 *
+*	gfx9_registers.h
+*
+*	Register Spec Release:  <unknown>
 */
 
 namespace gfxip {
@@ -224501,6 +224499,580 @@ union GCEA_SECURE_CTRL {
   signed int i32All;
   float f32All;
 };
+
+
+	union UMCCH_PerfMonCtlClk {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t                    GlblResetMsk : 9;
+        uint32_t                                 : 13;
+        uint32_t                         ClkGate : 1;
+        uint32_t                                 : 1;
+        uint32_t                       GlblReset : 1;
+        uint32_t                       GlblMonEn : 1;
+        uint32_t                     NumCounters : 4;
+        uint32_t                                 : 1;
+        uint32_t                        CtrClkEn : 1;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                        CtrClkEn : 1;
+        uint32_t                                 : 1;
+        uint32_t                     NumCounters : 4;
+        uint32_t                       GlblMonEn : 1;
+        uint32_t                       GlblReset : 1;
+        uint32_t                                 : 1;
+        uint32_t                         ClkGate : 1;
+        uint32_t                                 : 13;
+        uint32_t                    GlblResetMsk : 9;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
+
+
+	union UMCCH_PerfMonCtrClk_Lo {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t                            Data : 32;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                            Data : 32;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
+
+
+	union UMCCH_PerfMonCtrClk_Hi {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t                            Data : 16;
+        uint32_t                        Overflow : 1;
+        uint32_t                                 : 15;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                                 : 15;
+        uint32_t                        Overflow : 1;
+        uint32_t                            Data : 16;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
+
+
+	union UMCCH_PerfMonCtl1 {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t                     EventSelect : 8;
+        uint32_t                        RdWrMask : 2;
+        uint32_t                    PriorityMask : 4;
+        uint32_t                     ReqSizeMask : 2;
+        uint32_t                         BankSel : 8;
+        uint32_t                           VCSel : 5;
+        uint32_t                     SubChanMask : 2;
+        uint32_t                          Enable : 1;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                          Enable : 1;
+        uint32_t                     SubChanMask : 2;
+        uint32_t                           VCSel : 5;
+        uint32_t                         BankSel : 8;
+        uint32_t                     ReqSizeMask : 2;
+        uint32_t                    PriorityMask : 4;
+        uint32_t                        RdWrMask : 2;
+        uint32_t                     EventSelect : 8;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
+
+
+	union UMCCH_PerfMonCtr1_Lo {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t                            Data : 32;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                            Data : 32;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
+
+
+	union UMCCH_PerfMonCtr1_Hi {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t                            Data : 16;
+        uint32_t                        Overflow : 1;
+        uint32_t                                 : 1;
+        uint32_t                     ThreshCntEn : 2;
+        uint32_t                       ThreshCnt : 12;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                       ThreshCnt : 12;
+        uint32_t                     ThreshCntEn : 2;
+        uint32_t                                 : 1;
+        uint32_t                        Overflow : 1;
+        uint32_t                            Data : 16;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
+
+
+	union UMCCH_PerfMonCtl2 {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t                     EventSelect : 8;
+        uint32_t                        RdWrMask : 2;
+        uint32_t                    PriorityMask : 4;
+        uint32_t                     ReqSizeMask : 2;
+        uint32_t                         BankSel : 8;
+        uint32_t                           VCSel : 5;
+        uint32_t                     SubChanMask : 2;
+        uint32_t                          Enable : 1;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                          Enable : 1;
+        uint32_t                     SubChanMask : 2;
+        uint32_t                           VCSel : 5;
+        uint32_t                         BankSel : 8;
+        uint32_t                     ReqSizeMask : 2;
+        uint32_t                    PriorityMask : 4;
+        uint32_t                        RdWrMask : 2;
+        uint32_t                     EventSelect : 8;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
+
+
+	union UMCCH_PerfMonCtr2_Lo {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t                            Data : 32;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                            Data : 32;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
+
+
+	union UMCCH_PerfMonCtr2_Hi {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t                            Data : 16;
+        uint32_t                        Overflow : 1;
+        uint32_t                                 : 1;
+        uint32_t                     ThreshCntEn : 2;
+        uint32_t                       ThreshCnt : 12;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                       ThreshCnt : 12;
+        uint32_t                     ThreshCntEn : 2;
+        uint32_t                                 : 1;
+        uint32_t                        Overflow : 1;
+        uint32_t                            Data : 16;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
+
+
+	union UMCCH_PerfMonCtl3 {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t                     EventSelect : 8;
+        uint32_t                        RdWrMask : 2;
+        uint32_t                    PriorityMask : 4;
+        uint32_t                     ReqSizeMask : 2;
+        uint32_t                         BankSel : 8;
+        uint32_t                           VCSel : 5;
+        uint32_t                     SubChanMask : 2;
+        uint32_t                          Enable : 1;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                          Enable : 1;
+        uint32_t                     SubChanMask : 2;
+        uint32_t                           VCSel : 5;
+        uint32_t                         BankSel : 8;
+        uint32_t                     ReqSizeMask : 2;
+        uint32_t                    PriorityMask : 4;
+        uint32_t                        RdWrMask : 2;
+        uint32_t                     EventSelect : 8;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
+
+
+	union UMCCH_PerfMonCtr3_Lo {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t                            Data : 32;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                            Data : 32;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
+
+
+	union UMCCH_PerfMonCtr3_Hi {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t                            Data : 16;
+        uint32_t                        Overflow : 1;
+        uint32_t                                 : 1;
+        uint32_t                     ThreshCntEn : 2;
+        uint32_t                       ThreshCnt : 12;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                       ThreshCnt : 12;
+        uint32_t                     ThreshCntEn : 2;
+        uint32_t                                 : 1;
+        uint32_t                        Overflow : 1;
+        uint32_t                            Data : 16;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
+
+
+	union UMCCH_PerfMonCtl4 {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t                     EventSelect : 8;
+        uint32_t                        RdWrMask : 2;
+        uint32_t                    PriorityMask : 4;
+        uint32_t                     ReqSizeMask : 2;
+        uint32_t                         BankSel : 8;
+        uint32_t                           VCSel : 5;
+        uint32_t                     SubChanMask : 2;
+        uint32_t                          Enable : 1;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                          Enable : 1;
+        uint32_t                     SubChanMask : 2;
+        uint32_t                           VCSel : 5;
+        uint32_t                         BankSel : 8;
+        uint32_t                     ReqSizeMask : 2;
+        uint32_t                    PriorityMask : 4;
+        uint32_t                        RdWrMask : 2;
+        uint32_t                     EventSelect : 8;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
+
+
+	union UMCCH_PerfMonCtr4_Lo {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t                            Data : 32;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                            Data : 32;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
+
+
+	union UMCCH_PerfMonCtr4_Hi {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t                            Data : 16;
+        uint32_t                        Overflow : 1;
+        uint32_t                                 : 1;
+        uint32_t                     ThreshCntEn : 2;
+        uint32_t                       ThreshCnt : 12;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                       ThreshCnt : 12;
+        uint32_t                     ThreshCntEn : 2;
+        uint32_t                                 : 1;
+        uint32_t                        Overflow : 1;
+        uint32_t                            Data : 16;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
+
+
+	union UMCCH_PerfMonCtl5 {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t                     EventSelect : 8;
+        uint32_t                        RdWrMask : 2;
+        uint32_t                    PriorityMask : 4;
+        uint32_t                     ReqSizeMask : 2;
+        uint32_t                         BankSel : 8;
+        uint32_t                           VCSel : 5;
+        uint32_t                     SubChanMask : 2;
+        uint32_t                          Enable : 1;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                          Enable : 1;
+        uint32_t                     SubChanMask : 2;
+        uint32_t                           VCSel : 5;
+        uint32_t                         BankSel : 8;
+        uint32_t                     ReqSizeMask : 2;
+        uint32_t                    PriorityMask : 4;
+        uint32_t                        RdWrMask : 2;
+        uint32_t                     EventSelect : 8;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
+
+
+	union UMCCH_PerfMonCtr5_Lo {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t                            Data : 32;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                            Data : 32;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
+
+
+	union UMCCH_PerfMonCtr5_Hi {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t                            Data : 16;
+        uint32_t                        Overflow : 1;
+        uint32_t                                 : 1;
+        uint32_t                     ThreshCntEn : 2;
+        uint32_t                       ThreshCnt : 12;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                       ThreshCnt : 12;
+        uint32_t                     ThreshCntEn : 2;
+        uint32_t                                 : 1;
+        uint32_t                        Overflow : 1;
+        uint32_t                            Data : 16;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
+
+
+	union UMCCH_PerfMonCtl6 {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t                     EventSelect : 8;
+        uint32_t                        RdWrMask : 2;
+        uint32_t                    PriorityMask : 4;
+        uint32_t                     ReqSizeMask : 2;
+        uint32_t                         BankSel : 8;
+        uint32_t                           VCSel : 5;
+        uint32_t                     SubChanMask : 2;
+        uint32_t                          Enable : 1;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                          Enable : 1;
+        uint32_t                     SubChanMask : 2;
+        uint32_t                           VCSel : 5;
+        uint32_t                         BankSel : 8;
+        uint32_t                     ReqSizeMask : 2;
+        uint32_t                    PriorityMask : 4;
+        uint32_t                        RdWrMask : 2;
+        uint32_t                     EventSelect : 8;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
+
+
+	union UMCCH_PerfMonCtr6_Lo {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t                            Data : 32;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                            Data : 32;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
+
+
+	union UMCCH_PerfMonCtr6_Hi {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t                            Data : 16;
+        uint32_t                        Overflow : 1;
+        uint32_t                                 : 1;
+        uint32_t                     ThreshCntEn : 2;
+        uint32_t                       ThreshCnt : 12;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                       ThreshCnt : 12;
+        uint32_t                     ThreshCntEn : 2;
+        uint32_t                                 : 1;
+        uint32_t                        Overflow : 1;
+        uint32_t                            Data : 16;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
+
+
+	union UMCCH_PerfMonCtl7 {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t                     EventSelect : 8;
+        uint32_t                        RdWrMask : 2;
+        uint32_t                    PriorityMask : 4;
+        uint32_t                     ReqSizeMask : 2;
+        uint32_t                         BankSel : 8;
+        uint32_t                           VCSel : 5;
+        uint32_t                     SubChanMask : 2;
+        uint32_t                          Enable : 1;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                          Enable : 1;
+        uint32_t                     SubChanMask : 2;
+        uint32_t                           VCSel : 5;
+        uint32_t                         BankSel : 8;
+        uint32_t                     ReqSizeMask : 2;
+        uint32_t                    PriorityMask : 4;
+        uint32_t                        RdWrMask : 2;
+        uint32_t                     EventSelect : 8;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
+
+
+	union UMCCH_PerfMonCtr7_Lo {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t                            Data : 32;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                            Data : 32;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
+
+
+	union UMCCH_PerfMonCtr7_Hi {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t                            Data : 16;
+        uint32_t                        Overflow : 1;
+        uint32_t                                 : 1;
+        uint32_t                     ThreshCntEn : 2;
+        uint32_t                       ThreshCnt : 12;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                       ThreshCnt : 12;
+        uint32_t                     ThreshCntEn : 2;
+        uint32_t                                 : 1;
+        uint32_t                        Overflow : 1;
+        uint32_t                            Data : 16;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
+
+
+	union UMCCH_PerfMonCtl8 {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t                     EventSelect : 8;
+        uint32_t                        RdWrMask : 2;
+        uint32_t                    PriorityMask : 4;
+        uint32_t                     ReqSizeMask : 2;
+        uint32_t                         BankSel : 8;
+        uint32_t                           VCSel : 5;
+        uint32_t                     SubChanMask : 2;
+        uint32_t                          Enable : 1;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                          Enable : 1;
+        uint32_t                     SubChanMask : 2;
+        uint32_t                           VCSel : 5;
+        uint32_t                         BankSel : 8;
+        uint32_t                     ReqSizeMask : 2;
+        uint32_t                    PriorityMask : 4;
+        uint32_t                        RdWrMask : 2;
+        uint32_t                     EventSelect : 8;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
+
+
+	union UMCCH_PerfMonCtr8_Lo {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t                            Data : 32;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                            Data : 32;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
+
+
+	union UMCCH_PerfMonCtr8_Hi {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t                            Data : 16;
+        uint32_t                        Overflow : 1;
+        uint32_t                                 : 1;
+        uint32_t                     ThreshCntEn : 2;
+        uint32_t                       ThreshCnt : 12;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                       ThreshCnt : 12;
+        uint32_t                     ThreshCntEn : 2;
+        uint32_t                                 : 1;
+        uint32_t                        Overflow : 1;
+        uint32_t                            Data : 16;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
 
 }  // gfx9
 }  // gfxip

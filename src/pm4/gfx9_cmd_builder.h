@@ -195,7 +195,8 @@ class Gfx9CmdBuilder : public CmdBuilder {
 
     copy_data.imm_data = value;
 
-    copy_data.bitfields5a.dst_reg_offset = addr;
+    // extend register address to all 32-bit
+    copy_data.ordinal5 = addr;
 
     // Append the built command into output Command Buffer
     APPEND_COMMAND_WRAPPER(cmdbuf, copy_data);
