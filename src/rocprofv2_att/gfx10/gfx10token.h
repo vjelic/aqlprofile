@@ -88,8 +88,8 @@ union wstart_type {
     uint64_t raw;
 
     void print() const {
-        std::cout << "WSTART - wgp:" << wgp << " simd:" << simd << " wid: "
-                  << wid << " sa:" << sa << " dispatch:" << dispatcher << std::endl;
+        /*std::cout << "WSTART - wgp:" << wgp << " simd:" << simd << " wid: "
+                  << wid << " sa:" << sa << " dispatch:" << dispatcher << std::endl;*/
     }
     int CU() const { return 4*wgp + simd; }
 };
@@ -107,7 +107,7 @@ union wend_type {
     uint64_t raw;
 
     void print() const {
-        std::cout << "WEND - wgp:" << wgp << " simd:" << simd << " wid: " << wid << " sa:" << sa << std::endl;
+        /*std::cout << "WEND - wgp:" << wgp << " simd:" << simd << " wid: " << wid << " sa:" << sa << std::endl;*/
     }
     int CU() const { return 4*wgp + simd; }
 };
@@ -130,10 +130,10 @@ union header_type {
     uint64_t raw;
 
     void print() const {
-        std::cout << "TT Version:" << version << " NWGP:" << NWGP << std::endl;
-        std::cout << "DWGP:" << DWGP << " DSIMD:" << DSIMD << std::endl;
-        std::cout << "DSA:" << DSA << " NSA:" << NSA << " UCF:" << UCF << std::endl;
-        std::cout << "DPRate:" << DPRate << " WSM:" << WSM << std::endl;
+        /*std::cout << "TT Version:" << version << " NWGP:" << NWGP << std::endl;*/
+        /*std::cout << "DWGP:" << DWGP << " DSIMD:" << DSIMD << std::endl;*/
+        /*std::cout << "DSA:" << DSA << " NSA:" << NSA << " UCF:" << UCF << std::endl;*/
+        /*std::cout << "DPRate:" << DPRate << " WSM:" << WSM << std::endl;*/
     }
 };
 
@@ -149,7 +149,7 @@ union inst_type {
     uint64_t raw;
 
     void print() const {
-        std::cout << "INST - wid:" << wid << " inst:" << inst << " w64:" << (bool)w64h << std::endl;
+        /*std::cout << "INST - wid:" << wid << " inst:" << inst << " w64:" << (bool)w64h << std::endl;*/
     }
 };
 
@@ -163,7 +163,7 @@ union alu_exec_type {
     uint64_t raw;
 
     void print() const {
-        std::cout << "ALUX - SA:" << (bool)SA << " VA:" << (bool)VA << std::endl;
+        /*std::cout << "ALUX - SA:" << (bool)SA << " VA:" << (bool)VA << std::endl;*/
     }
 };
 
@@ -177,7 +177,7 @@ union mem_exec_type {
     uint64_t raw;
 
     void print() const {
-        std::cout << "MEMX - SC:" << (bool)SC << " TEX:" << (bool)TEX << std::endl;
+        /*std::cout << "MEMX - SC:" << (bool)SC << " TEX:" << (bool)TEX << std::endl;*/
     }
 };
 
@@ -191,7 +191,7 @@ union valu_inst_type {
     uint64_t raw;
 
     void print() const {
-        std::cout << "VALU - wid:" << wid << " w64:" << (bool)w64h << std::endl;
+        /*std::cout << "VALU - wid:" << wid << " w64:" << (bool)w64h << std::endl;*/
     }
 };
 
@@ -204,7 +204,7 @@ union immed_one_type {
     uint64_t raw;
 
     void print() const {
-        std::cout << "IMM1w - wid:" << wid << std::endl;
+        /*std::cout << "IMM1w - wid:" << wid << std::endl;*/
     }
 };
 
@@ -217,7 +217,7 @@ union immediate_type {
     uint64_t raw;
 
     void print() const {
-        std::cout << "IMMED - waves:" << std::hex << waves << std::endl;
+        /*std::cout << "IMMED - waves:" << std::hex << waves << std::endl;*/
     }
 };
 
@@ -230,7 +230,7 @@ union wave_ready_type {
     uint64_t raw;
 
     void print() const {
-        std::cout << "READY - waves:" << std::hex << waves << std::endl;
+        /*std::cout << "READY - waves:" << std::hex << waves << std::endl;*/
     }
 };
 
@@ -244,10 +244,10 @@ union miscgfx10_type {
     uint64_t raw;
 
     void print() const {
-        if (packetlost)
+        /*if (packetlost)
             std::cout << "MISC - PACKET LOST! - flags:" << std::hex << _flags << std::endl;
         else
-            std::cout << "MISC - flags:" << std::hex << _flags << std::endl;
+            std::cout << "MISC - flags:" << std::hex << _flags << std::endl;*/
     }
 };
 
@@ -261,7 +261,7 @@ union miscgfx11_type {
     uint64_t raw;
 
     void print() const {
-        std::cout << "MISC - flags:" << std::hex << _flags << std::endl;
+        /*std::cout << "MISC - flags:" << std::hex << _flags << std::endl;*/
     }
 };
 
@@ -276,7 +276,7 @@ union timestamp_gfx10_type {
     uint64_t raw;
 
     void print() const {
-        std::cout << "TIMESTAMP - type:" << type << " time:" << time << std::endl;
+        /*std::cout << "TIMESTAMP - type:" << type << " time:" << time << std::endl;*/
     }
 };
 
@@ -330,7 +330,7 @@ union new_pc_type {
         uint64_t err : 1;
     };
     uint64_t raw;
-    void print() const { std::cout << "NEW PC: w" << wave << " 0x" << std::hex << pc << " 0x" << (pc<<2) << std::dec << std::endl; }
+    void print() const { /*std::cout << "NEW PC: w" << wave << " 0x" << std::hex << pc << " 0x" << (pc<<2) << std::dec << std::endl;*/ }
 };
 
 class gfx10Token {
@@ -341,7 +341,7 @@ public:
     int64_t time;
     uint64_t contents;
     gfx10type type;
-    virtual void print() const { std::cout << "Undefined" << std::endl; };
+    virtual void print() const { /*std::cout << "Undefined" << std::endl;*/ };
 
     static std::vector<gfx10Token> parse(const uint8_t* buffer, const int BUFFER_SIZE);
     static std::array<uint8_t, 32> TOKEN_LEN;

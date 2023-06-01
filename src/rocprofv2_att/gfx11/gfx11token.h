@@ -37,7 +37,7 @@ union timestamp_gfx11_type {
     uint64_t raw;
 
     void print() const {
-        std::cout << "TIMESTAMP - type:" << type << " time:" << time << std::endl;
+        //std::cout << "TIMESTAMP - type:" << type << " time:" << time << std::endl;
     }
 };
 

@@ -248,7 +248,7 @@ std::pair<WaveInstCategory, uint16_t> gfx10wave_t::inst_map_to_gfx9(int einst) {
   }
 }
 
-#define empty_wave_check(waveslot_size) if (waveslot_size == 0) { std::cout << "Empty wave!" << std::endl; continue; }
+#define empty_wave_check(waveslot_size) if (waveslot_size == 0) { continue; }
 
 wave_t::gfx10wave_t(Token& token, int64_t last_completed_wave_cycle, int tg_simd) {
   this->begin_time = token.time;
@@ -364,6 +364,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
             SIMD[i].back().apply_immediate(token);
         break;
       }
+      /*
       case gfx10type::UTIL_COUNTER: {
         util_ctr_gfx10_type util { .raw = token.contents };
         if (util.cID == 0) {
@@ -389,7 +390,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
           } );
         }
         break;
-      }
+      } */
       /*
       case gfx10type::VMEM_EXEC: {
         break;
