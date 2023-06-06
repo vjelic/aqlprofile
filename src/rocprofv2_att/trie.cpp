@@ -151,6 +151,7 @@ std::unordered_map<std::string, InstCategory> Trie::type_dict = {
     {"v_mac_f32", InstCategory::VALU},
     {"v_accvgpr", InstCategory::VALU},
     {"v_dual_", InstCategory::VALU},
+    {"v_wmm", InstCategory::VALU},
 };
 
 InstCategory Trie::type_from_trie(const std::string& inst) {
