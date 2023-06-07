@@ -20,6 +20,8 @@
 
 #include "trie.h"
 
+#define MACRO_MAX_DEPTH 20
+
 typedef struct {
     const char* line = 0;
     const char* loc = 0;
@@ -155,6 +157,35 @@ std::vector<clean_lines_t> clean_and_loc(std::vector<std::pair<int, std::string>
     return results;
 }
 
+bool MacroFill(
+    std::vector<std::vector<std::string>>& defined_macros,
+    std::unordered_map<std::string, int>& macro_map,
+    std::vector<std::pair<int, std::string>>& code,
+    const std::string& line,
+    int line_num,
+    int depth
+) {
+    if (depth >= MACRO_MAX_DEPTH)
+        return false;
+    size_t first_space = line.find(' ');
+    int macro_id = macro_map[line.substr(0, first_space)];
+    if(macro_id ==0 || macro_id > defined_macros.size() || defined_macros[macro_id-1].size() == 0) {
+        printf("Invalid macro %s", line.c_str());
+        return false;
+    }
+    auto& macro_vector = defined_macros[macro_id-1];
+
+    code.push_back({line_num, ".macro " + macro_vector[0]});
+    for (auto& v : macro_vector)
+    for (size_t i=1; i<macro_vector.size(); i++) {
+        if (macro_map.find(macro_vector[i]) != macro_map.end())
+            MacroFill(defined_macros, macro_map, code, macro_vector[i], line_num, depth+1);
+        else
+            code.push_back({line_num, macro_vector[i]});
+    }
+    return true;
+}
+
 std::vector<std::pair<int, std::string>> extract_kernel(
     const char* assembly_file,
     const char* kernel_string_ptr
@@ -196,38 +227,28 @@ std::vector<std::pair<int, std::string>> extract_kernel(
         if (!kernel_started && IsKernelStart(line, kernel_string_ss, comment_pos))
             kernel_started = true;
 
-        if (!kernel_started)
-            continue;
-
         line = strip(line);
-        if (!line.size())
+        if (!line.size() || line.substr(0,4) == ".set")
             continue;
-        // std::string fin = ".end_amdhsa_kernel";
-        // if (line.find(".amdhsa_") == 0 || line.find(".cfi_") == 0)
-        //    continue;
 
         size_t first_space = line.find(' ');
 
-        if (IsMacro(line)) {
-            bIsMacro = true;
-            std::string macname = getMacroName(line);
-            defined_macros.push_back({line});
-            macro_map[macname] = defined_macros.size();
-        } else if (bIsMacro) {
+        if (bIsMacro) {
             defined_macros.back().push_back(line);
             if (line.find(".endm") != std::string::npos)
                 bIsMacro = false;
-        } else if (first_space != std::string::npos && defined_macros.size() &&
-            macro_map.find(line.substr(0, first_space)) != macro_map.end()
-        ) {
-            int macro_id = macro_map[line.substr(0, first_space)];
-            assert(macro_id < defined_macros.size());
-            auto& macro_vector = defined_macros[macro_id];
-            for (size_t i=0; i<macro_vector.size(); i++)
-                code.push_back({line_num, macro_vector[i]});
-        } else {
-            code.push_back({line_num, line});
-            //if (line.find(fin) != std::string::npos) break;
+        } else if (IsMacro(line)) {
+            bIsMacro = true;
+            std::string macname = getMacroName(line);
+            defined_macros.push_back({(first_space < line.size()-1) ? line.substr(first_space+1) : line});
+            macro_map[macname] = defined_macros.size();
+        } else if (kernel_started) {
+            if (first_space != std::string::npos && defined_macros.size() &&
+                macro_map.find(line.substr(0, first_space)) != macro_map.end()
+            )
+                MacroFill(defined_macros, macro_map, code, line, line_num, 0);
+            else
+                code.push_back({line_num, line});
         }
     }
     if (code.size() == 0) {
