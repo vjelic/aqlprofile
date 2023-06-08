@@ -34,14 +34,14 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "ctrl/test_kernel.h"
 
-// Class implements SimpleConvolution kernel parameters
-class SimpleConvolution : public TestKernel {
+// Class implements simple_convolution kernel parameters
+class simple_convolution : public TestKernel {
  public:
   // Kernel buffers IDs
   enum { INPUT_BUF_ID, LOCAL_BUF_ID, MASK_BUF_ID, KERNARG_BUF_ID, REFOUT_BUF_ID };
 
   // Constructor
-  SimpleConvolution();
+  simple_convolution();
 
   // Initialize method
   void Init();
@@ -53,7 +53,7 @@ class SimpleConvolution : public TestKernel {
   void PrintOutput(const void* ptr) const;
 
   // Return name
-  std::string Name() const { return std::string("SimpleConvolution"); }
+  std::string Name() const { return std::string("simple_convolution"); }
 
  private:
   // Local kernel arguments declaration

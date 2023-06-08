@@ -26,54 +26,22 @@ if [ -z "$TGT_LIST" ] ; then
 fi
 
 if [ -z "$TGT_LIST" ] ; then
-  echo "Error: GPU targets not found"
-  exit 1
+  TGT_LIST=`("gfx900" "gfx906" "gfx908" "gfx90a" "gfx1030")`
 fi
 
 OCL_VER="2.0"
 
 if [ -e $ROCM_DIR/llvm ] ; then
   LLVM_DIR=$ROCM_DIR/llvm
-  LIB_DIR=$ROCM_DIR/lib
-else
-  LLVM_DIR=$ROCM_DIR/hcc
-  LIB_DIR=$LLVM_DIR/lib
-fi
-
-# Determine whether using new or old device-libs layout
-if [ -e $LIB_DIR/bitcode/opencl.amdgcn.bc ]; then
-  BC_DIR=$LIB_DIR/bitcode
-elif [ -e $LIB_DIR/opencl.amdgcn.bc ]; then
-  BC_DIR=$LIB_DIR
-elif [ -e $ROCM_DIR/amdgcn/bitcode/opencl.bc ]; then
-  BC_DIR=$ROCM_DIR/amdgcn/bitcode
-else
-  echo "Error: Cannot find amdgcn bitcode directory"
-  exit 1
-fi
-
-CLANG_ROOT=$LLVM_DIR/lib/clang
-CLANG_DIR=`ls -d $CLANG_ROOT/* | head -n 1`
-if [ "$CLANG_DIR" = "" ] ; then
-  echo "Error: LLVM clang library was not found"
-  exit 1
 fi
 
 BIN_DIR=$LLVM_DIR/bin
-INC_DIR=$CLANG_DIR/include
-if [ -e $BC_DIR/opencl.amdgcn.bc ]; then
-  BITCODE_OPTS="-nogpulib \
-    -Xclang -mlink-bitcode-file -Xclang $BC_DIR/opencl.amdgcn.bc \
-    -Xclang -mlink-bitcode-file -Xclang $BC_DIR/ockl.amdgcn.bc \
-    -Xclang -mlink-bitcode-file -Xclang $BC_DIR/ocml.amdgcn.bc"
-else
-  BITCODE_OPTS="--hip-device-lib-path=$BC_DIR"
-fi
+BITCODE_OPTS="-O2 -x cl -Xclang -finclude-default-header -cl-denorms-are-zero -cl-std=CL2.0 -Wl,--build-id=sha1 -target amdgcn-amd-amdhsa"
 
 for GFXIP in $TGT_LIST ; do
   OBJ_PREF=$GFXIP
   OBJ_FILE="${OBJ_PREF}_${OBJ_NAME}.$SO_EXT"
-  $BIN_DIR/clang -cl-std=CL$OCL_VER -include $INC_DIR/opencl-c.h $BITCODE_OPTS -target amdgcn-amd-amdhsa -mcpu=$GFXIP $TEST_NAME.cl -o $DST_DIR/$OBJ_FILE
+  $BIN_DIR/clang $BITCODE_OPTS -mcpu=$GFXIP $TEST_NAME.cl -o $DST_DIR/$OBJ_FILE
   echo "'$OBJ_FILE' generated"
 done
 

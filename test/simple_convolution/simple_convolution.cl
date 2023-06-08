@@ -1,6 +1,6 @@
 /******************************************************************************
 
-Copyright ©2013 Advanced Micro Devices, Inc. All rights reserved.
+Copyright ï¿½2013 Advanced Micro Devices, Inc. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -26,9 +26,9 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 ********************************************************************************/
 
 /**
- * SimpleConvolution is where each pixel of the output image
+ * simple_convolution is where each pixel of the output image
  * is the weighted sum of the neighborhood pixels of the input image
- * The neighborhood is defined by the dimensions of the mask and 
+ * The neighborhood is defined by the dimensions of the mask and
  * weight of each neighbor is defined by the mask itself.
  * @param output Output matrix after performing convolution
  * @param input  Input  matrix on which convolution is to be performed
@@ -36,7 +36,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param inputDimensions dimensions of the input matrix
  * @param maskDimensions  dimensions of the mask matrix
  */
-__kernel void SimpleConvolution(__global  uint  * output,
+__kernel void simple_convolution(__global  uint  * output,
                                 __global  uint  * input,
                                 __global  float  * mask,
                                 const     uint2  inputDimensions,
@@ -59,9 +59,9 @@ __kernel void SimpleConvolution(__global  uint  * output,
   // find the left, right, top and bottom indices such that
   // the indices do not go beyond image boundaires
   uint left    = (x           <  vstep) ? 0         : (x - vstep);
-  uint right   = ((x + vstep) >= width) ? width - 1 : (x + vstep); 
+  uint right   = ((x + vstep) >= width) ? width - 1 : (x + vstep);
   uint top     = (y           <  hstep) ? 0         : (y - hstep);
-  uint bottom  = ((y + hstep) >= height)? height - 1: (y + hstep); 
+  uint bottom  = ((y + hstep) >= height)? height - 1: (y + hstep);
 
   // initializing wighted sum value
   float sumFX = 0;

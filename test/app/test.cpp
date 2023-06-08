@@ -137,7 +137,7 @@ typedef char** pf_pmc_argv(unsigned argc, const hsa_ven_amd_aqlprofile_event_t* 
 void thread_kernel(bool* ret_val, pf_pmc_argv pmc_argv, int events_count,
                    const hsa_ven_amd_aqlprofile_event_t* events) {
   *ret_val =
-      RunKernel<SimpleConvolution, TestPGenSpm>(events_count, pmc_argv(events_count, events));
+      RunKernel<simple_convolution, TestPGenSpm>(events_count, pmc_argv(events_count, events));
   test_done = true;
 
 }
@@ -216,7 +216,7 @@ int main(int argc, char* argv[]) {
   //}
 
   if (spm_enable) {
- 
+
    #if ENABLE_SPM
     {
 
@@ -256,7 +256,7 @@ int main(int argc, char* argv[]) {
   // Run simple convolution test
   if (pmc_enable) {
     if (argc > 1) {
-      ret_val = RunKernel<SimpleConvolution, TestPGenPmc<RUN_MODE> >(argc - 1, argv + 1);
+      ret_val = RunKernel<simple_convolution, TestPGenPmc<RUN_MODE> >(argc - 1, argv + 1);
     } else if (!scan_enable) {
       int events_count = 0;
       if (TestHsa::HsaAgentName() == "gfx9") {
@@ -297,7 +297,7 @@ int main(int argc, char* argv[]) {
         events_count = sizeof(events_arr1) / sizeof(hsa_ven_amd_aqlprofile_event_t);
         events_arr = events_arr1;
       }
-      ret_val = RunKernel<SimpleConvolution, TestPGenPmc<RUN_MODE> >(
+      ret_val = RunKernel<simple_convolution, TestPGenPmc<RUN_MODE> >(
           events_count, pmc_argv(events_count, events_arr));
     } else {
       const int block_index_max = 16;
@@ -309,7 +309,7 @@ int main(int argc, char* argv[]) {
             fprintf(stderr, " %d %d %d                 \r", i, j, k);
             fflush(stderr);
             hsa_ven_amd_aqlprofile_event_t event = {(hsa_ven_amd_aqlprofile_block_name_t)i, j, k};
-            if (!RunKernel<SimpleConvolution, TestPGenPmc<RUN_MODE> >(1, pmc_argv(1, &event))) {
+            if (!RunKernel<simple_convolution, TestPGenPmc<RUN_MODE> >(1, pmc_argv(1, &event))) {
               if (k == 0) {
                 k = event_id_max + 1;
                 if (j == 0) j = block_index_max + 1;
@@ -329,7 +329,7 @@ int main(int argc, char* argv[]) {
         {HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SDMA, 1, 19 /*MC_RD_COUNT*/},
     };
     events_count = sizeof(events_sdma) / sizeof(hsa_ven_amd_aqlprofile_event_t);
-    ret_val = RunKernel<SimpleConvolution, TestPGenPmc<SETUP_MODE> >(
+    ret_val = RunKernel<simple_convolution, TestPGenPmc<SETUP_MODE> >(
         events_count, pmc_argv(events_count, events_sdma));
   } else if (pmc_priv_enable) {
     int events_count = 0;
@@ -390,12 +390,12 @@ int main(int argc, char* argv[]) {
       events_count = sizeof(events_arr1) / sizeof(hsa_ven_amd_aqlprofile_event_t);
       events_arr = events_arr1;
     }
-    ret_val = RunKernel<SimpleConvolution, TestPGenPmc<RUN_MODE> >(
+    ret_val = RunKernel<simple_convolution, TestPGenPmc<RUN_MODE> >(
         events_count, pmc_argv(events_count, events_arr));
   } else if (sqtt_enable && TestHsa::HsaAgentName() != "gfx10") {
-    ret_val = RunKernel<SimpleConvolution, TestPGenSqtt>(argc, argv);
+    ret_val = RunKernel<simple_convolution, TestPGenSqtt>(argc, argv);
   } else if (pcsmp_enable && TestHsa::HsaAgentName() != "gfx10") {
-    ret_val = RunKernel<SimpleConvolution, TestPGenPcsmp>(argc, argv);
+    ret_val = RunKernel<simple_convolution, TestPGenPcsmp>(argc, argv);
   } else if (spm_enable) {
     #ifdef ENABLE_SPM
     int events_count = 0;
@@ -490,7 +490,7 @@ int main(int argc, char* argv[]) {
       // close spm sample binary file
       fclose(file);
     } else {
-      ret_val = RunKernel<SimpleConvolution, TestPGenSpm>(events_count,
+      ret_val = RunKernel<simple_convolution, TestPGenSpm>(events_count,
                                                           pmc_argv(events_count, events_spm));
 #if SPM_DEBUG_TRAP
       HSAKMT_STATUS status = hsaKmtDisableDebugTrap(gpu_node_id);
@@ -518,7 +518,7 @@ int main(int argc, char* argv[]) {
       std::cerr << "SPM test failed!" << std::endl;
    #endif
   } else {
-    ret_val = RunKernel<SimpleConvolution, TestAql>(argc, argv);
+    ret_val = RunKernel<simple_convolution, TestAql>(argc, argv);
   }
   TestHsa::HsaShutdown();
 

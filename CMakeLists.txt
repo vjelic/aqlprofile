@@ -102,7 +102,7 @@ if ( ENABLE_ASAN_PACKAGING )
   set ( CPACK_COMPONENTS_ALL asan )
 else()
   set ( CPACK_PACKAGE_NAME ${AQLPROFILE_NAME} )
-  set ( CPACK_COMPONENTS_ALL runtime )
+  set ( CPACK_COMPONENTS_ALL runtime tests )
 endif()
 set ( CPACK_PACKAGE_VENDOR "Advanced Micro Devices, Inc." )
 set ( CPACK_PACKAGE_VERSION_MAJOR ${BUILD_VERSION_MAJOR} )
@@ -179,9 +179,11 @@ endif ( )
 set(CPACK_DEB_COMPONENT_INSTALL ON)
 set(CPACK_DEBIAN_RUNTIME_PACKAGE_NAME "${AQLPROFILE_NAME}")
 set(CPACK_DEBIAN_ASAN_PACKAGE_NAME "${AQLPROFILE_NAME}-asan")
+set(CPACK_DEBIAN_TESTS_PACKAGE_NAME "${AQLPROFILE_NAME}-tests")
 set(CPACK_RPM_COMPONENT_INSTALL ON)
 set(CPACK_RPM_RUNTIME_PACKAGE_NAME "${AQLPROFILE_NAME}")
 set(CPACK_RPM_ASAN_PACKAGE_NAME "${AQLPROFILE_NAME}-asan")
+set(CPACK_RPM_TESTS_PACKAGE_NAME "${AQLPROFILE_NAME}-tests")
 # Add dependency on rocm-core if -DROCM_DEP_ROCMCORE=ON
 if(ROCM_DEP_ROCMCORE)
     set(CPACK_DEBIAN_PACKAGE_DEPENDS "rocm-core")
@@ -190,6 +192,8 @@ if(ROCM_DEP_ROCMCORE)
     set(CPACK_RPM_RUNTIME_PACKAGE_REQUIRES "rocm-core")
     set(CPACK_DEBIAN_ASAN_PACKAGE_DEPENDS "rocm-core-asan")
     set(CPACK_RPM_ASAN_PACKAGE_REQUIRES "rocm-core-asan")
+    set(CPACK_DEBIAN_TESTS_PACKAGE_DEPENDS "rocm-core")
+    set(CPACK_RPM_TESTS_PACKAGE_REQUIRES "rocm-core")
 endif()
 
 include ( CPack )
@@ -204,3 +208,9 @@ cpack_add_component(
     DISPLAY_NAME "ASAN"
     DESCRIPTION "ASAN libraries for the AQLProfile"
     DEPENDS asan)
+
+cpack_add_component(
+    tests
+    DISPLAY_NAME "Tests"
+    DESCRIPTION "Tests for the AQLProfile"
+    DEPENDS runtime)
