@@ -94,20 +94,26 @@ std::unordered_map<std::string, InstCategory> Trie::type_dict = {
     {"s_sext", InstCategory::SALU},
     {"s_bitset", InstCategory::SALU},
     {"s_cselect", InstCategory::SALU},
+    {"s_xor", InstCategory::SALU},
+    {"s_nand", InstCategory::SALU},
 
+    {"s_getpc", InstCategory::GETPC},
+    {"s_setpc", InstCategory::SETPC},
+    {"s_swappc", InstCategory::SWAPPC},
+
+    {"v_perm", InstCategory::VALU},
     {"v_add", InstCategory::VALU},
     {"v_sub", InstCategory::VALU},
+    {"v_med", InstCategory::VALU},
     {"v_mul", InstCategory::VALU},
     {"v_div", InstCategory::VALU},
-    {"v_sat", InstCategory::VALU},
+    {"v_sa", InstCategory::VALU},
     {"v_xad", InstCategory::VALU},
     {"v_pack", InstCategory::VALU},
     {"v_swap", InstCategory::VALU},
     {"v_cvt", InstCategory::VALU},
     {"v_and", InstCategory::VALU},
     {"v_or", InstCategory::VALU},
-    {"s_xor", InstCategory::SALU},
-    {"s_nand", InstCategory::SALU},
     {"v_cmp", InstCategory::VALU},
     {"v_mov", InstCategory::VALU},
     {"v_lsh", InstCategory::VALU},
@@ -122,7 +128,7 @@ std::unordered_map<std::string, InstCategory> Trie::type_dict = {
     {"v_cos", InstCategory::VALU},
     {"v_exp", InstCategory::VALU},
     {"v_log", InstCategory::VALU},
-    {"v_mqsad", InstCategory::VALU},
+    {"v_mq", InstCategory::VALU},
     {"v_qsad", InstCategory::VALU},
     {"v_rcp", InstCategory::VALU},
     {"v_rsq", InstCategory::VALU},
@@ -142,12 +148,8 @@ std::unordered_map<std::string, InstCategory> Trie::type_dict = {
     {"v_readfirstlane", InstCategory::VALU},
     {"v_xor", InstCategory::VALU},
     {"v_not", InstCategory::VALU},
-    // {"s_swappc", InstCategory::SMEM},
     {"v_readlane", InstCategory::LANE},
     {"v_writelane", InstCategory::LANE},
-    {"s_getpc", InstCategory::GETPC},
-    {"s_setpc", InstCategory::SETPC},
-    {"s_swappc", InstCategory::SWAPPC},
     {"v_mac_f32", InstCategory::VALU},
     {"v_accvgpr", InstCategory::VALU},
     {"v_dual_", InstCategory::VALU},
@@ -167,11 +169,17 @@ InstCategory Trie::type_from_trie(const std::string& inst) {
       trie = trie->paths[c];
       assert(trie != nullptr);
     }
-    if (trie->type != InstCategory::NEGATIVE) return trie->type;
+    if (trie->type != InstCategory::NEGATIVE)
+      return trie->type;
   }
 
-  // if (inst.size() > 0 && inst[0] != '_')
-  //  std::cout << ">>> Type not found for " << inst << std::endl;
+  if (inst.size() > 2) {
+    std::string sub = inst.substr(0,2);
+    if (sub == "v_")
+      return InstCategory::VALU;
+    else if (sub == "s_")
+      return InstCategory::SALU;
+  }
 
   return InstCategory::DONT_KNOW;
 }
