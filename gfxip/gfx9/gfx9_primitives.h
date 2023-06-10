@@ -30,6 +30,7 @@ class gfx9_cntx_prim {
 
   static const uint32_t SQ_PERFCOUNTER_CTRL_ADDR = mmSQ_PERFCOUNTER_CTRL;
   static const uint32_t SQ_PERFCOUNTER_CTRL2_ADDR = 0;
+  static const uint32_t COMPUTE_THREAD_TRACE_ENABLE_ADDR = 0;
   static const uint32_t SQ_PERFCOUNTER_MASK_ADDR = mmSQ_PERFCOUNTER_MASK;
   static const uint32_t SQ_THREAD_TRACE_MASK_ADDR = mmSQ_THREAD_TRACE_MASK;
   static const uint32_t SQ_THREAD_TRACE_PERF_MASK_ADDR = mmSQ_THREAD_TRACE_PERF_MASK;
