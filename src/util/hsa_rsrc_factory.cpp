@@ -244,15 +244,10 @@ const AgentInfo* HsaRsrcFactory::AddAgentInfo(const hsa_agent_t agent) {
     hsa_agent_get_info(agent, static_cast<hsa_agent_info_t>(HSA_AMD_AGENT_INFO_NUM_SHADER_ENGINES),
                        &agent_info->se_num);
 
-    // TODO: (sauverma) use hsa_agent_get_info_fn(HSA_AMD_AGENT_INFO_NUM_XCC)
-    // to get xcc_num once hsa headers are updated from rocr/hsa
-    //hsa_agent_get_info(agent, static_cast<hsa_agent_info_t>(HSA_AMD_AGENT_INFO_NUM_XCC),
-    //                    &agent_info->xcc_num);
-    std::string gpu_name = std::string(agent_info->name).substr(0,6);
-    if (gpu_name == "gfx940")
-      agent_info->xcc_num = 6;
-    else
-      agent_info->xcc_num = 1;
+    if (hsa_agent_get_info(agent, static_cast<hsa_agent_info_t>(HSA_AMD_AGENT_INFO_NUM_XCC),
+                        &agent_info->xcc_num) != HSA_STATUS_SUCCESS) {
+        agent_info->xcc_num = 1;
+    };
     hsa_agent_get_info(agent,
                        static_cast<hsa_agent_info_t>(HSA_AMD_AGENT_INFO_NUM_SHADER_ARRAYS_PER_SE),
                        &agent_info->shader_arrays_per_se);

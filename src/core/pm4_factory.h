@@ -313,7 +313,7 @@ inline gpu_id_t Pm4Factory::GetGpuId(const hsa_agent_t agent) {
     gpu_id = MI100_GPU_ID;
   } else if (strncmp(agent_name, "gfx90a", 6) == 0) {
     gpu_id = MI200_GPU_ID;
-  } else if (strncmp(agent_name, "gfx940", 6) == 0) {
+  } else if (strlen(agent_name) >= 6 && strncmp(agent_name, "gfx94", 5) == 0) {
     gpu_id = MI300_GPU_ID;
   } else if ((strncmp(agent_name, "gfx900", 6) == 0)
       || (strncmp(agent_name, "gfx902", 6) == 0)
