@@ -311,15 +311,15 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::CP_PERFMON_CNTL_ADDR,
                                           Primitives::cp_perfmon_cntl_stop_value());
       // After setting CP_PERFMON_CNTL_ADDR on GFX10, the first reg read is invalid if from SQ block
-      if (Primitives::GFXIP_LEVEL == 10 && counters_vec.size() && counters_vec[0].block_des.id == 12) {
-        const auto& reg_info = get_reg_table(counters_vec[0])[counters_vec[0].index];
+      // Find a GRBM counter and copy it first
+      if (Primitives::GFXIP_LEVEL == 10) for (auto& elem : counters_vec) {
+        if ((elem.block_info->attr & CounterBlockGRBMAttr) == 0) continue;
+        const auto& reg_info = get_reg_table(elem)[elem.index];
         Builder::BuildCopyCounterDataPacket(cmd_buffer, reg_info.register_addr_lo,
                                         reg_info.register_addr_hi, data_buffer, 3);
         Builder::BuildWriteWaitIdlePacket(cmd_buffer);
+        break;
       }
-      // Uncommenting this will cause the bug to happen again
-      //Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::CP_PERFMON_CNTL_ADDR,
-      //                                    Primitives::cp_perfmon_cntl_stop_value());
     }
     if (counters_vec.get_attr() & CounterBlockSrbmAttr)
       Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::SRBM_PERFMON_CNTL_ADDR,
