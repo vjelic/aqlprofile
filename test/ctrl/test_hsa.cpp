@@ -93,6 +93,9 @@ bool TestHsa::Initialize(int arg_cnt, char** arg_list) {
 
   // Obtain the code object file name
   std::string agentName(agent_info_->name);
+  if(agentName.find(":") != std::string::npos) {
+    agentName = agentName.substr(0, agentName.find(":"));
+  }
   brig_path_obj_.append(agentName + "_" + name_ + ".hsaco");
 
   return true;
