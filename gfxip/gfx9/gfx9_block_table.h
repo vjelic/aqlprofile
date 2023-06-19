@@ -602,7 +602,7 @@ static const GpuBlockInfo CbCounterBlockInfo = {"CB", CbCounterBlockId, CbCounte
 // Counter block DB
 static const GpuBlockInfo DbCounterBlockInfo = {"DB", DbCounterBlockId, DbCounterBlockNumInstances, DbCounterBlockMaxEvent, DbCounterBlockNumCounters, DbCounterRegAddr, gfx9_cntx_prim::select_value<regDB_PERFCOUNTER0_SELECT>, CounterBlockSeAttr|CounterBlockCleanAttr, DbBlockDelayInfo, SPM_SE_BLOCK_NAME_DB};
 // Counter block GRBM
-static const GpuBlockInfo GrbmCounterBlockInfo = {"GRBM", GrbmCounterBlockId, 1, GrbmCounterBlockMaxEvent, GrbmCounterBlockNumCounters, GrbmCounterRegAddr, gfx9_cntx_prim::select_value<regGRBM_PERFCOUNTER0_SELECT>, CounterBlockDfltAttr};
+static const GpuBlockInfo GrbmCounterBlockInfo = {"GRBM", GrbmCounterBlockId, 1, GrbmCounterBlockMaxEvent, GrbmCounterBlockNumCounters, GrbmCounterRegAddr, gfx9_cntx_prim::select_value<regGRBM_PERFCOUNTER0_SELECT>, CounterBlockDfltAttr|CounterBlockGRBMAttr};
 // Counter block GRBMSE
 static const GpuBlockInfo GrbmSeCounterBlockInfo = {"GRBM_SE", GrbmSeCounterBlockId, 1, GrbmSeCounterBlockMaxEvent, GrbmSeCounterBlockNumCounters, GrbmSeCounterRegAddr, gfx9_cntx_prim::select_value<regGRBM_SE0_PERFCOUNTER_SELECT>, CounterBlockDfltAttr};
 // Counter block PA_SU

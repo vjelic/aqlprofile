@@ -86,26 +86,27 @@ class Pm4Factory {
   // Return gpu id
   gpu_id_t GetGpuId() const { return gpu_id_; }
   // Is pmc to be profiled concurrently?
-  bool IsConcurrent() { return concurrent_mode_; }
+  bool IsConcurrent() const { return concurrent_mode_; }
   // Is getting SPM data using driver public API?
-  bool SpmKfdMode() { return spm_kfd_mode_; }
+  bool SpmKfdMode() const { return spm_kfd_mode_; }
 
   // Return PM4 command builder
-  pm4_builder::CmdBuilder* GetCmdBuilder() { return cmd_builder_; }
+  pm4_builder::CmdBuilder* GetCmdBuilder() const { return cmd_builder_; }
   // Return PMC PM4 packets builder
-  pm4_builder::PmcBuilder* GetPmcBuilder() { return pmc_builder_; }
+  pm4_builder::PmcBuilder* GetPmcBuilder() const { return pmc_builder_; }
   // Return SPM PM4 packets builder
-  pm4_builder::SpmBuilder* GetSpmBuilder() { return spm_builder_; }
+  pm4_builder::SpmBuilder* GetSpmBuilder() const { return spm_builder_; }
   // Return SQTT PM4 packets builder
-  pm4_builder::SqttBuilder* GetSqttBuilder() { return sqtt_builder_; }
+  pm4_builder::SqttBuilder* GetSqttBuilder() const { return sqtt_builder_; }
 
   // Return Shader Engines number
-  const uint32_t GetShaderEnginesNumber() { return agent_info_->se_num; }
+  uint32_t GetShaderEnginesNumber() const { return agent_info_->se_num; }
   // Return SQTT buffer alignment
-  const uint32_t GetSQTTBufferAlignment() { return 0x1000; }
-  const char* GetGFX() { return agent_info_->name; }
+  uint32_t GetSQTTBufferAlignment() const { return 0x1000; }
+  const char* GetGFX() const { return agent_info_->name; }
+  virtual bool IsGFX10() const { return false; } //return strncmp("gfx103", GetGFX(), 6); }
   // Return number of XCC on the GPU
-  const uint32_t GetXccNumber() { return agent_info_->xcc_num; }
+  uint32_t GetXccNumber() const { return agent_info_->xcc_num; }
 
   // Return block info foor a given event
   const GpuBlockInfo* GetBlockInfo(const event_t* event) const {

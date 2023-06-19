@@ -33,7 +33,9 @@ enum CounterBlockAttr {
   CounterBlockSpmGlobalAttr = 0x1000,
   CounterBlockSpmSeAttr = 0x2000,
   // GUS block
-  CounterBlockGusAttr = 0x4000
+  CounterBlockGusAttr = 0x4000,
+  // GRBM block
+  CounterBlockGRBMAttr = 0x8000
 };
 
 // Register address corresponding to each counter

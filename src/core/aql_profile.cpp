@@ -215,6 +215,18 @@ static inline pm4_builder::counters_vector CountersVec(const profile_t* profile,
 
     ++reg_index;
   }
+
+  if (pm4_factory->IsGFX10() && (vec.get_attr()&CounterBlockSqAttr) != 0 && (vec.get_attr()&CounterBlockGRBMAttr) == 0) {
+    event_t grbm_event{.block_name = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_GRBM, .block_index=0, .counter_id=0};
+    const GpuBlockInfo* block_info = pm4_factory->GetBlockInfo(&grbm_event);
+    if (block_info == nullptr)
+      return vec;
+    const block_des_t block_des = {block_info->id, 0};
+    const auto ret = index_map.insert({block_des, 0});
+    uint32_t& reg_index = ret.first->second;
+    vec.push_back({0, reg_index, block_des, block_info});
+    reg_index++;
+  }
   return vec;
 }
 
