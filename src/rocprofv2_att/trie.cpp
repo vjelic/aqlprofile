@@ -96,6 +96,7 @@ std::unordered_map<std::string, InstCategory> Trie::type_dict = {
     {"s_cselect", InstCategory::SALU},
     {"s_xor", InstCategory::SALU},
     {"s_nand", InstCategory::SALU},
+    {"s_delay", InstCategory::DONT_KNOW},
 
     {"s_getpc", InstCategory::GETPC},
     {"s_setpc", InstCategory::SETPC},
@@ -154,6 +155,7 @@ std::unordered_map<std::string, InstCategory> Trie::type_dict = {
     {"v_accvgpr", InstCategory::VALU},
     {"v_dual_", InstCategory::VALU},
     {"v_wmm", InstCategory::VALU},
+    {"v_bfi", InstCategory::VALU},
 };
 
 InstCategory Trie::type_from_trie(const std::string& inst) {
