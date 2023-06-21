@@ -38,66 +38,38 @@ struct wavedata_persist_t : public wavedata_t {
     Delete();
     std::memcpy(static_cast<void*>(this), static_cast<wavedata_t*>(&data), sizeof(wavedata_t));
 
-    std::stringstream timeline_stream;
-    for (auto& inst : data.timeline)
-      timeline_stream << '(' << inst.first << ", " << inst.second << "),";
+    timeline_size = data.timeline.size();
+    timeline_alloc = new std::pair<int64_t, int64_t>[timeline_size+4];
+    memcpy(timeline_alloc, data.timeline.data(), sizeof(timeline_alloc[0])*timeline_size);
+    timeline_alloc[timeline_size] = {-1, -1};
 
-    std::string time_string = timeline_stream.str();
-    if (time_string.size() == 0)
-      time_string = " ";  // assert size > 0
-    this->timeline_string = new char[time_string.size()];
-    std::memcpy(this->timeline_string, time_string.c_str(), time_string.size());
-    this->timeline_string[time_string.size()-1] = 0;  // Remove last comma, ensures null char
-
-    std::stringstream inst_stream;
-    for (instruction_t& inst : data.instructions) {
-      inst_stream << '(' << inst.time << ", " << static_cast<int>(inst.value) << ", "
-                  << inst.issue2inst << ", " << inst.last << "),";
-    }
-
-    std::string inst_string = inst_stream.str();
-    if (inst_string.size() == 0)
-      inst_string = " ";  // assert size > 0
-    this->instructions_string = new char[inst_string.size()];
-    std::memcpy(this->instructions_string, inst_string.c_str(), inst_string.size());
-    this->instructions_string[inst_string.size()-1] = 0;  // Remove last comma, ensures null char
+    instructions_size = data.instructions.size();
+    instructions_alloc = new instruction_t[instructions_size+4];
+    memcpy(instructions_alloc, data.instructions.data(), sizeof(instructions_alloc[0])*instructions_size);
+    instructions_alloc[instructions_size] = {0, WaveInstCategory::WAVE_END, 0, 0};
   }
 
   void Copy(gfx10wave_t& data) {
     Delete();
     std::memcpy(static_cast<void*>(this), static_cast<wavedata_t*>(&data), sizeof(wavedata_t));
 
-    std::stringstream timeline_stream;
-    for (auto& inst : data.timeline)
-      timeline_stream << '(' << inst.first << ", " << inst.second << "),";
+    timeline_size = data.timeline.size();
+    timeline_alloc = new std::pair<int64_t, int64_t>[timeline_size+4];
+    memcpy(timeline_alloc, data.timeline.data(), sizeof(timeline_alloc[0])*timeline_size);
+    timeline_alloc[timeline_size] = {-1, -1};
 
-    std::string time_string = timeline_stream.str();
-    if (time_string.size() == 0)
-      time_string = " ";  // assert size > 0
-    this->timeline_string = new char[time_string.size()];
-    std::memcpy(this->timeline_string, time_string.c_str(), time_string.size());
-    this->timeline_string[time_string.size()-1] = 0;  // Remove last comma, ensures null char
-
-    std::stringstream inst_stream;
-    for (instruction_t& inst : data.instructions) {
-      inst_stream << '(' << inst.time << ", " << static_cast<int>(inst.value) << ", "
-                  << inst.issue2inst << ", " << inst.last << "),";
-    }
-
-    std::string inst_string = inst_stream.str();
-    if (inst_string.size() == 0)
-      inst_string = " ";  // assert size > 0
-    this->instructions_string = new char[inst_string.size()];
-    std::memcpy(this->instructions_string, inst_string.c_str(), inst_string.size());
-    this->instructions_string[inst_string.size()-1] = 0;  // Remove last comma, ensures null char
+    instructions_size = data.instructions.size();
+    instructions_alloc = new instruction_t[instructions_size+4];
+    memcpy(instructions_alloc, data.instructions.data(), sizeof(instructions_alloc[0])*instructions_size);
+    instructions_alloc[instructions_size] = {0, WaveInstCategory::WAVE_END, 0, 0};
   }
 
   void Delete() {
-    if (this->instructions_string) delete[] this->instructions_string;
-    this->instructions_string = nullptr;
+    if (this->timeline_alloc) delete[] this->timeline_alloc;
+    this->timeline_alloc = nullptr;
 
-    if (this->timeline_string) delete[] this->timeline_string;
-    this->timeline_string = nullptr;
+    if (this->instructions_alloc) delete[] this->instructions_alloc;
+    this->instructions_alloc = nullptr;
   }
 
   ~wavedata_persist_t() { Delete(); }

@@ -60,7 +60,8 @@ struct gfx10wave_t : public wavedata_t {
   operator bool() const { return true; } // TODO: Change based on cur_state
 
   static constexpr uint64_t SQTT_CFG_WAVES = 32;
-  static int dp_rate;
+  static int dp_cycles;
+  static int dp_derate;
 
   typedef std::array<std::vector<gfx10wave_t>, SQTT_CFG_WAVES> WaveArray;
   static std::tuple<WaveArray, std::vector<perfevent_t>, std::vector<occupancy_info_t>>

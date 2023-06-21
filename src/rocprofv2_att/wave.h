@@ -44,7 +44,8 @@ enum class WaveInstCategory {
   JUMP = 7,
   NEXT = 8,
   IMMED = 9,
-  TRAP = 10
+  TRAP = 10,
+  WAVE_END,
 };
 
 typedef struct {
@@ -58,13 +59,14 @@ typedef struct {
 } perfevent_t;
 
 struct instruction_t {
+  instruction_t() = default;
   instruction_t(uint64_t time, WaveInstCategory value, uint64_t issue2inst, uint64_t last)
-      : time(time), issue2inst(issue2inst), last(last), value(value) {}
+      : time(time), issue2inst(issue2inst), last(last), value((uint64_t)value) {}
 
   uint64_t time;
+  uint64_t value;
   uint64_t issue2inst;
   uint64_t last;
-  WaveInstCategory value;
 };
 
 typedef struct {
@@ -100,8 +102,10 @@ typedef struct {
   uint64_t num_branch_taken_instrs = 0;
   uint64_t num_branch_stalls = 0;
 
-  char* timeline_string = 0;
-  char* instructions_string = 0;
+  std::pair<int64_t, int64_t>* timeline_alloc = nullptr;  // wave state in each cycle
+  instruction_t* instructions_alloc = nullptr;              // (time, instruction_category)*
+  size_t timeline_size = 0;
+  size_t instructions_size = 0;
 } wavedata_t;
 
 typedef struct {

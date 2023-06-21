@@ -279,7 +279,7 @@ int64_t wave_t::apply_issue(uint64_t wave_status, uint64_t token_time) {
       instructions.back().last = inst_issue_time;
 #else
   if (instructions.size()) {
-    if (instructions.back().value == WaveInstCategory::IMMED)
+    if (instructions.back().value == (uint64_t)WaveInstCategory::IMMED)
       instructions.back().last += inst_issue_time;
     else
       instructions.back().last = inst_issue_time;  // v_mul_lo_u32 gets 2 tokens

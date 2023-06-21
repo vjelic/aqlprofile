@@ -126,6 +126,8 @@ union header_type {
         uint64_t WSM : 2;
         uint64_t UCF : 1;
         uint64_t DPRate : 4;
+        uint64_t wv20 : 1;
+        uint64_t dp_derate : 3;
     };
     uint64_t raw;
 

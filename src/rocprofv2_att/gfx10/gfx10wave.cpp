@@ -28,7 +28,8 @@
 #include "gfx10wave.h"
 #include "../gfx11/gfx11wave.h"
 
-int gfx10wave_t::dp_rate = 1;
+int gfx10wave_t::dp_cycles = 1;
+int gfx10wave_t::dp_derate = 1;
 
 /*
 std::unordered_map<int, const char*> gfx10wave_t::INST_NAMES = {
@@ -114,6 +115,8 @@ enum EINST {
     valub_2,
     valub_4,
     valub_16,
+    valub_dfdp,
+    valub_dfdp_derate,
     vinterp=18,
     barrier,
     expreq_gds,
@@ -188,6 +191,8 @@ static std::unordered_map<EINST, std::pair<WaveInstCategory, uint16_t>> table_in
     {EINST::valub_2, {WaveInstCategory::VALU, 2}},
     {EINST::valub_4, {WaveInstCategory::VALU, 4}},
     {EINST::valub_16, {WaveInstCategory::VALU, 16}},
+    {EINST::valub_dfdp, {WaveInstCategory::VALU, 1}},
+    {EINST::valub_dfdp_derate, {WaveInstCategory::VALU, 1}},
     {EINST::vinterp, {WaveInstCategory::VALU, 1}},
     {EINST::barrier, {WaveInstCategory::IMMED, 1}},
     {EINST::flat_rd, {WaveInstCategory::FLAT, 1}},
@@ -300,7 +305,9 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
         header_type header { .raw = token.contents };
         target_wgp = header.DWGP;
         target_simd = header.DSIMD;
-        dp_rate = header.DPRate;
+        dp_cycles = header.DPRate & ((tt_version == 3) ? 0x7 : 0xF);
+        dp_cycles = (1<<dp_cycles)/2;
+        dp_derate = (tt_version == 3) ? (1<<header.dp_derate)/2 : 1;
         tt_version = header.version;
         //header.print();
         break;
@@ -477,10 +484,15 @@ void wave_t::apply_inst(Token token, inst_type inst, int tt_version) {
   if (mapped.first == WaveInstCategory::NONE)
     return;
 
-  if (inst.inst >= EINST::valu_1 && inst.inst <= EINST::valub_16)
-    mapped.second *= dp_rate;
+  if (inst.inst == EINST::valub_dfdp_derate)
+    mapped.second = dp_cycles*dp_derate;
+  else if (inst.inst == EINST::valub_dfdp)
+    mapped.second = dp_cycles;
+  else if (inst.inst == EINST::valub_16)
+    mapped.second *= dp_cycles;
   else if (inst.inst == EINST::jump)
     last_jump_inst = this->instructions.size();
+
 
   this->instructions.push_back({(uint64_t)token.time, mapped.first, 0, mapped.second});
   set_state_exec(token.time, mapped.second);
