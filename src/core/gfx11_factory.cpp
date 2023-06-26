@@ -80,7 +80,7 @@ const GpuBlockInfo* Gfx11Factory::block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUM
     NULL /*MC_XBAR*/,
     NULL /*&AtcCounterBlockInfo*/,
     NULL /*&AtcL2CounterBlockInfo*/,
-    NULL /*&GceaCounterBlockInfo*/,
+    &GceaCounterBlockInfo,
     NULL /*&RpbCounterBlockInfo*/,
     // System blocks
     NULL /*&SdmaCounterBlockInfo*/,
