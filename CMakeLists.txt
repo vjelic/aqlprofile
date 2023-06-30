@@ -161,6 +161,13 @@ else()
 endif()
 set( CPACK_RPM_PACKAGE_LICENSE "AMD Proprietary" )
 
+#Disable build id for rocprofiler as its creating transaction error
+set ( CPACK_RPM_SPEC_MORE_DEFINE "%define _build_id_links none
+                                    %global __strip ${CPACK_STRIP_EXECUTABLE}
+                                    %global __objdump ${CPACK_OBJDUMP_EXECUTABLE}
+                                    %global __objcopy ${CPACK_OBJCOPY_EXECUTABLE}
+                                    %global __readelf ${CPACK_READELF_EXECUTABLE}")
+
 ## 'dist' breaks manual builds on debian systems due to empty Provides
 execute_process( COMMAND rpm --eval %{?dist}
                  RESULT_VARIABLE PROC_RESULT
