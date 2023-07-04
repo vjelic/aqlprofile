@@ -11,7 +11,6 @@ if ( NOT DEFINED TEST_DIR )
   include ( env )
 endif ()
 
-
 ## Util sources
 file( GLOB UTIL_SRC "${TEST_DIR}/util/*.cpp" )
 
@@ -51,8 +50,16 @@ function(generate_hsaco TARGET_ID INPUT_FILE OUTPUT_FILE)
   set(HSACO_TARGET_LIST ${HSACO_TARGET_LIST} ${TEST_BINARY_DIR}/${OUTPUT_FILE} PARENT_SCOPE)
 endfunction(generate_hsaco)
 
-set(GPU_TARGETS "gfx900" "gfx906" "gfx908" "gfx90a" "gfx1030")
-foreach(target_id ${GPU_TARGETS})
+separate_arguments(GPU_TARGETS)
+list(LENGTH GPU_TARGETS list_count)
+if (${list_count} LESS_EQUAL 1)
+  string(REPLACE " " ";" GPU_LIST "${GPU_TARGETS}")
+  string(REPLACE "," ";" GPU_LIST "${GPU_TARGETS}")
+else()
+  set(GPU_LIST ${GPU_TARGETS})
+endif()
+
+foreach(target_id ${GPU_LIST})
   ## generate kernel bitcodes
   generate_hsaco(${target_id} ${TEST_DIR}/${TEST_NAME}/${TEST_NAME}.cl ${target_id}_${TEST_NAME}.hsaco)
 endforeach(target_id)
