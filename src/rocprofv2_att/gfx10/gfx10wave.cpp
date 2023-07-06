@@ -446,6 +446,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
     }
   }
 
+  if (alu_stack.size() == alu_exec_count)
   for (int a=0; a<alu_stack.size(); a++) {
     auto& alu = alu_stack[a];
     if (

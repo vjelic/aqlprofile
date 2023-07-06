@@ -618,6 +618,14 @@ class gfx11_cntx_prim {
   static uint16_t spm_timestamp_muxsel() {
     return 0xF0F0;
   }
+
+  enum ESQTT_STATUS_MASK {
+    // Mask to check if memory error was received
+    TT_CONTROL_UTC_ERR_MASK = 0x1000000,
+    // TODO: Navi has 2 full bits on status2, one for each buffer
+    TT_CONTROL_FULL_MASK = 0x0,
+    TT_WRITE_PTR_MASK = 0x1FFFFFFF
+  };
 };
 
 template <>

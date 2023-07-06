@@ -60,17 +60,6 @@ private:
   uint32_t xcc_number;
 };
 
-enum {
-  // Mask to check if memory error was received
-  TT_CONTROL_UTC_ERR_MASK = 0x10000000,
-  // Mask to check if SQTT buffer is wrapped
-  TT_CONTROL_FULL_MASK = 0x80000000,
-  // Move them as static variables later on
-  TT_WRITE_PTR_MASK = 0x3FFFFFFF,
-  // Size of block in bytesper increment in WPTR
-  TT_WRITE_PTR_BLK = 32
-};
-
 // Thread traces status register indices to determine
 // status of thread trace run
 enum {
@@ -99,6 +88,15 @@ class SqttBuilder {
   // disable a thread trace session, including the issue of an event
   // to stop currently ongoing thread session
   virtual void End(CmdBuffer* cmd_buffer, const ThreadTraceConfig* config) = 0;
+
+  // Returns TT_CONTROL_UTC_ERR_MASK
+  virtual size_t GetUTCErrorMask() = 0;
+  // Returns TT_CONTROL_FULL_MASK
+  virtual size_t GetBufferFullMask() = 0;
+  // Returns TT_WRITE_PTR_MASK
+  virtual size_t GetWritePtrMask() = 0;
+  // Returns size of block in bytes per increment in WPTR
+  virtual size_t GetWritePtrBlk() = 0;
 };
 
 template <typename Builder, typename Primitives>
@@ -106,6 +104,15 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
  public:
  explicit GpuSqttBuilder(const AgentInfo* agent_info)
       : Builder(), xcc_number_(agent_info->xcc_num) {}
+
+  // Returns TT_CONTROL_UTC_ERR_MASK
+  virtual size_t GetUTCErrorMask() override { return Primitives::TT_CONTROL_UTC_ERR_MASK; };
+  // Returns TT_CONTROL_FULL_MASK
+  virtual size_t GetBufferFullMask() override { return Primitives::TT_CONTROL_FULL_MASK; };
+  // Returns TT_WRITE_PTR_MASK
+  virtual size_t GetWritePtrMask() override { return Primitives::TT_WRITE_PTR_MASK; };
+  // Returns size of block in bytes per increment in WPTR
+  virtual size_t GetWritePtrBlk() { return 32; };
 
   void StartPerfMon(CmdBuffer* cmd_buffer, const ThreadTraceConfig* config) {
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_PERFMON_CLK_CNTL_ADDR, 1);
