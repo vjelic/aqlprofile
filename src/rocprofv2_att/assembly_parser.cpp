@@ -59,6 +59,7 @@ struct clean_lines_t {
     std::string line;
     std::string loc;
     std::string comment;
+    uint64_t address;
 };
 
 size_t get_comment_pos(const std::string& line) {
@@ -129,10 +130,16 @@ std::vector<clean_lines_t> clean_and_loc(std::vector<std::pair<int, std::string>
         int line_num = line_pair.first;
         std::string& line = line_pair.second;
 
+        if (line.size() > 1 && ';' == line[0]) {
+            loc = strip(line.substr(1));
+            continue;
+        }
+
         size_t comment_pos = get_comment_pos(line); //.find(";");
         std::string comment = "";
+
         if (comment_pos != std::string::npos) {
-            comment = line.substr(comment_pos);
+            comment = strip(line.substr(comment_pos));
             line = line.substr(0, comment_pos);
         }
 
@@ -151,7 +158,7 @@ std::vector<clean_lines_t> clean_and_loc(std::vector<std::pair<int, std::string>
             continue;
         }
 
-        results.push_back({line_num, std::move(line), std::move(loc), std::move(comment)});
+        results.push_back({line_num, strip(line), loc, std::move(comment)});
         loc = "";
     }
     return results;
@@ -266,9 +273,47 @@ InstCategory inst_type(const std::string& line) {
         return Trie::root_trie.type_from_trie(line.substr(0, line.find(' ')));
 }
 
+size_t clip_address(const std::string& comment) {
+    static std::string sequence = "// 000000";
+    size_t commapos = comment.find(':', sequence.size());
+    if (comment.substr(0, sequence.size()) == sequence && commapos != std::string::npos)
+        return stoul(comment.substr(sequence.size(), commapos-sequence.size()), 0, 16);
+
+    throw std::exception();
+}
+
+std::unordered_map<size_t, size_t> GetLineAdresses(std::vector<clean_lines_t>& raw) {
+    std::unordered_map<size_t, size_t> map;
+    for (size_t l=0; l<raw.size(); l++) {
+        try {
+            raw[l].address = clip_address(raw[l].comment);
+            map[raw[l].address] = l;
+        } catch (std::exception& e) {};
+    }
+    return map;
+}
+
+size_t GetOffsetAddress(
+    const std::string& comment,
+    const std::unordered_map<std::string, int>& jump_table,
+    const std::unordered_map<size_t, size_t>& addressmap,
+    const std::vector<clean_lines_t>& raw
+) {
+    try {
+        int endpos = (int)comment.find('+');
+        int startpos = (int)comment.find('<');
+        size_t reference = jump_table.at(comment.substr(startpos+1, endpos-startpos-1));
+        if (reference >= raw.size()) return 0;
+
+        size_t destination = raw[reference].address + stoul(comment.substr(endpos+1),0,16);
+        return addressmap.at(destination);
+    } catch (std::exception& e) {
+        return 0;
+    }
+}
+
 AsParseRetype as_parse(const char* assembly_file, const char* kernel) {
     std::unordered_map<std::string, int> jump_table;
-
     std::vector<clean_lines_t> raw = clean_and_loc(extract_kernel(assembly_file, kernel));
 
     for (uint64_t i = 0; i < raw.size(); i++) {
@@ -277,32 +322,36 @@ AsParseRetype as_parse(const char* assembly_file, const char* kernel) {
             jump_table[raw[i].line.substr(pos.first, pos.second)] = i + 1;
     }
 
+    std::unordered_map<size_t, size_t> addressmap = GetLineAdresses(raw);
     std::unordered_map<int, int> reverse_jump;
     std::vector<processed_t> processed;
 
     for (uint32_t i = 0; i < raw.size(); i++) {
         auto& line = raw[i].line;
+        auto loc = raw[i].loc + (raw[i].address ? "" : raw[i].comment);
         auto instruction_type = inst_type(line);
 
         if (instruction_type == InstCategory::BRANCH) {
             size_t bpos = line.find("branch"); // Todo: What happens with label named "branch"?
-            size_t label_begin_pos = line.find(" ", bpos);
+            size_t label_begin_pos = line.find(' ', bpos);
 
             if (label_begin_pos == std::string::npos)
                 continue;
 
-            size_t label_end_pos = line.find(" ", label_begin_pos+1);
+            size_t label_end_pos = line.find(' ', label_begin_pos+1);
 
             if (label_end_pos == std::string::npos)
                 label_end_pos = line.size();
 
             int to_line = jump_table[line.substr(label_begin_pos+1, label_end_pos-label_begin_pos-1)];
+            if (to_line == 0)
+                to_line = GetOffsetAddress(raw[i].comment, jump_table, addressmap, raw);
 
-            processed_t proc({line+raw[i].comment, InstCategory::BRANCH, to_line, raw[i].loc, i, raw[i].line_num});
+            processed_t proc({line, InstCategory::BRANCH, to_line, std::move(loc), i, raw[i].line_num});
             processed.push_back(std::move(proc));
             reverse_jump[to_line] = i;
         } else {
-            processed_t proc({line+raw[i].comment, instruction_type, -1, raw[i].loc, i, raw[i].line_num});
+            processed_t proc({line, instruction_type, -1, std::move(loc), i, raw[i].line_num});
             processed.push_back(std::move(proc));
         }
     }
