@@ -31,6 +31,14 @@
 int gfx10wave_t::dp_cycles = 1;
 int gfx10wave_t::dp_derate = 1;
 
+struct alu_user_inst_t {
+  uint8_t bValid;
+  uint16_t slot;
+  uint16_t wid;
+  uint64_t inst;
+  uint64_t time;
+};
+
 /*
 std::unordered_map<int, const char*> gfx10wave_t::INST_NAMES = {
     {0, "salu"},
@@ -287,10 +295,13 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
   std::vector<perfevent_t> perfEvents{};
   std::vector<occupancy_info_t> occupancy = {};
   std::array<int, 16> current_occupancy = {};
+  std::vector<alu_user_inst_t> alu_stack = {};
+  int alu_exec_count = 0;
 
   int target_wgp = 0;
   int target_simd = 0;
   int tt_version = 0;
+
 
   for (size_t t = 0; t<tokens.size(); t++) {
     Token& token = tokens[t];
@@ -348,14 +359,19 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
       }
       case gfx10type::INST: {
         inst_type inst { .raw = token.contents };
-        empty_wave_check(SIMD[inst.wid].size());
-        SIMD[inst.wid].back().apply_inst(token, inst, tt_version);
+        auto& simd = SIMD[inst.wid];
+        empty_wave_check(simd.size());
+        simd.back().apply_inst(token, inst, tt_version);
         break;
       }
       case gfx10type::VALU_INST: {
         valu_inst_type vinst { .raw = token.contents };
-        empty_wave_check(SIMD[vinst.wid].size());
-        SIMD[vinst.wid].back().apply_valu_inst(token, vinst);
+        auto& simd = SIMD[vinst.wid];
+        empty_wave_check(simd.size());
+        alu_stack.push_back(alu_user_inst_t{
+          true, (uint16_t)vinst.wid, uint16_t(simd.size()-1), simd.back().instructions.size()
+        });
+        simd.back().apply_valu_inst(token, vinst);
         break;
       }
       case gfx10type::IMM_ONE: {
@@ -369,6 +385,16 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
         for (int i=0; i<16; i++)
           if (SIMD[i].size() && (immed.waves & (1<<i)))
             SIMD[i].back().apply_immediate(token);
+        break;
+      }
+      case gfx10type::ALU_EXEC: {
+        alu_exec_type alux;
+        if (alu_exec_count >= alu_stack.size()) {
+          alu_exec_count = alu_stack.size();
+          alu_stack.push_back(alu_user_inst_t{false});
+        }
+        alu_stack[alu_exec_count].time = token.time;
+        alu_exec_count += 1;
         break;
       }
       /*
@@ -402,9 +428,6 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
       case gfx10type::VMEM_EXEC: {
         break;
       }
-      case gfx10type::ALU_EXEC: {
-        break;
-      }
       case gfx10type::WAVE_READY: {
         break;
       }
@@ -421,6 +444,25 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
       default:
         break;
     }
+  }
+
+  for (int a=0; a<alu_stack.size(); a++) {
+    auto& alu = alu_stack[a];
+    if (
+      !alu.bValid ||
+      alu.slot >= SIMD.size() ||
+      alu.wid >= SIMD[alu.slot].size() ||
+      alu.inst >= SIMD[alu.slot][alu.wid].instructions.size()
+    ) continue;
+
+    auto& inst_vector = SIMD[alu.slot][alu.wid].instructions;
+    auto& inst = inst_vector[alu.inst];
+    int64_t inst_time = inst.time;
+    int64_t delay_time = (int64_t)alu.time - inst_time;
+
+    if (alu.inst < inst_vector.size()-1)
+      delay_time = std::min(delay_time, (int64_t)inst_vector[alu.inst+1].time - inst_time);
+    inst.last = std::max(delay_time, (int64_t)inst.last);
   }
 
   if (bHasLostPackets)
@@ -492,7 +534,6 @@ void wave_t::apply_inst(Token token, inst_type inst, int tt_version) {
     mapped.second *= dp_cycles;
   else if (inst.inst == EINST::jump)
     last_jump_inst = this->instructions.size();
-
 
   this->instructions.push_back({(uint64_t)token.time, mapped.first, 0, mapped.second});
   set_state_exec(token.time, mapped.second);
