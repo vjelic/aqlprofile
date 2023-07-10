@@ -27,15 +27,17 @@ class counters_vector : public std::vector<counter_des_t> {
 struct TraceConfig {
   uint32_t targetCu;
   uint32_t vmIdMask;
-  uint32_t mask;
-  uint32_t tokenMask;
-  uint32_t tokenMask2;
+  uint32_t simd_sel;
+  uint32_t occupancy_mode;
+  uint32_t deprecated_mask;
+  uint32_t deprecated_tokenMask;
+  uint32_t deprecated_tokenMask2;
   // Sampling rate
   uint32_t sampleRate;
   // PERF
   uint32_t perfMASK;
   uint32_t perfCTRL;
-  uint32_t perfcounters[16];
+  uint32_t perfcounters[8];
   uint8_t n_perfcounters;
   // SPM mode
   bool spm_sq_32bit_mode;
@@ -48,11 +50,10 @@ struct TraceConfig {
 
   // SE number for tracing
   uint32_t se_number_total;
-  // SE mask for tracing; note -> replicated for all XCCs
-  uint32_t se_mask;
-
   // concurrent kernels mode
   uint32_t concurrent;
+  // SE mask for tracing; note -> replicated for all XCCs
+  uint64_t se_mask;
 };
 }  // namespace pm4_builder
 

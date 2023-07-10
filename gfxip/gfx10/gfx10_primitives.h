@@ -481,8 +481,7 @@ class gfx10_cntx_prim {
 
   // Enable all of the WTYPEs
   // Enable Shader Array (SH) at index Zero to be used for fine-grained data
-  //static uint32_t sqtt_mask_value_gfx10 (){
-  static uint32_t sqtt_mask_value(uint32_t wgp, uint32_t simd){
+  static uint32_t sqtt_mask_value(uint32_t wgp, uint32_t simd, uint32_t vmid){
 #if SQTT_PRIM_ENABLED
     regSQ_THREAD_TRACE_MASK mask{};
     mask.bits.SIMD_SEL = simd;
