@@ -30,6 +30,9 @@ BIN_PATH=`realpath $0`
 BIN_DIR=`dirname $0`
 cd $BIN_DIR
 
+#To enable symbol lookup in .dynsyn section after llvm-strip
+export LOADER_USE_DYNSYM=1
+
 # enable tools load failure reporting
 export HSA_TOOLS_REPORT_LOAD_FAILURE=1
 # paths to ROC profiler and other libraries
