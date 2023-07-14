@@ -600,6 +600,14 @@ class gfx9_cntx_prim {
   static uint16_t spm_timestamp_muxsel() {
     return 0xF0F0;
   }
+
+  enum ESQTT_STATUS_MASK {
+    // Mask to check if memory error was received
+    TT_CONTROL_UTC_ERR_MASK = 0x10000000,
+    // Mask to check if SQTT buffer is wrapped
+    TT_CONTROL_FULL_MASK = 0x80000000,
+    TT_WRITE_PTR_MASK = 0x3FFFFFFF
+  };
 };
 
 template <>

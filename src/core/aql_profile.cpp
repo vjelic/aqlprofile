@@ -801,6 +801,7 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
       }
 
       if (mode != 2) {  // SQTT trace data, or SQTT pc sampling
+        pm4_builder::SqttBuilder* sqttbuilder = pm4_factory->GetSqttBuilder();
         // Control buffer was allocated as the CmdBuffer prefix partition
         aql_profile::CommandBufferMgr cmd_buffer_mgr(profile);
         const char* const prefix_ptr = cmd_buffer_mgr.GetPrefix1();
@@ -811,16 +812,14 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
         for (unsigned i = 0; i < tnumber; ++i) {
           const uint32_t status_ind =
               (pm4_builder::TT_STATUS_IDX_MAX * i) + pm4_builder::TT_STATUS_IDX_STATUS;
-          if (control_ptr[status_ind] & pm4_builder::TT_CONTROL_UTC_ERR_MASK) {
+          if (control_ptr[status_ind] & sqttbuilder->GetUTCErrorMask()) {
             ERR_LOGGING << "SQTT memory error received, SE(" << i << ")";
-            return HSA_STATUS_ERROR;
-          }
-#if 0
-          if (control_ptr[status_ind] & pm4_builder::TT_CONTROL_FULL_MASK) {
+            status = HSA_STATUS_ERROR_EXCEPTION;
+          } else if (control_ptr[status_ind] & sqttbuilder->GetBufferFullMask()) {
             ERR2_LOGGING << "SQTT data buffer full, SE(" << i << ")";
-            return HSA_STATUS_ERROR;
+            if (status == HSA_STATUS_SUCCESS)
+              status = HSA_STATUS_ERROR_OUT_OF_RESOURCES;
           }
-#endif
         }
 
         // SQTT output buffer and capacity per ShaderEngine
@@ -836,40 +835,38 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
           // written by hardware. The index is incremented by size of 32 bytes.
           const uint32_t wptr_ind =
               (pm4_builder::TT_STATUS_IDX_MAX * i) + pm4_builder::TT_STATUS_IDX_WPTR;
-          uint64_t sample_size = (control_ptr[wptr_ind] & pm4_builder::TT_WRITE_PTR_MASK) *
-                                       pm4_builder::TT_WRITE_PTR_BLK;
+
+          uint64_t sample_size = (control_ptr[wptr_ind] & sqttbuilder->GetWritePtrMask()) *
+                                      sqttbuilder->GetWritePtrBlk();
 
           if (pm4_factory->GetGpuId() == aql_profile::GFX11_GPU_ID)
             sample_size = (sample_size - reinterpret_cast<uint64_t>(sample_ptr)) & ((1ull<<29)-1);
 
-          if (sample_size > sample_capacity)
+          if (sample_size >= sample_capacity) {
+            ERR_LOGGING << "SQTT data out of bounds, sample_id(" << i
+                        << ") size(" << sample_size << "/" << sample_capacity << ")";
             sample_size = sample_capacity;
-          /*if (sample_size > sample_capacity) { // WARNING! NOT TREATED BY ROCPROFILER!
-            ERR_LOGGING << "SQTT data out of bounds, sample_id(" << i << ") size(" << sample_size
-                        << "/" << sample_capacity << ")";
-            return HSA_STATUS_ERROR;
-          } */
+            if (status == HSA_STATUS_SUCCESS)
+              status = HSA_STATUS_ERROR_OUT_OF_RESOURCES;
+          }
 
+          hsa_status_t call_status;
           if (mode == 0) {  // SQTT trace
             hsa_ven_amd_aqlprofile_info_data_t sample_info;
             sample_info.sample_id = se_id;
             sample_info.trace_data.ptr = sample_ptr;
             sample_info.trace_data.size = sample_size;
-            status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, &sample_info, data);
+            call_status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, &sample_info, data);
           } else {  // PC sampling
             pcsmp_callback_data_t* pcsmp_data = reinterpret_cast<pcsmp_callback_data_t*>(data);
             pcsmp_data->id = se_id;
             pcsmp_data->cycle = 333;
             pcsmp_data->pc = 0x333;
-            status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, NULL, data);
+            call_status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, NULL, data);
           }
-          if (status == HSA_STATUS_INFO_BREAK) {
-            status = HSA_STATUS_SUCCESS;
-            break;
-          }
-          if (status != HSA_STATUS_SUCCESS) {
-            ERR_LOGGING << "SQTT data callback error, sample_id(" << i << ") status(" << status
-                        << ")";
+          if (call_status != HSA_STATUS_SUCCESS) {
+            if (call_status != HSA_STATUS_INFO_BREAK)
+              status = call_status;
             break;
           }
           sample_ptr = reinterpret_cast<char*>(sample_ptr) + sample_capacity;
