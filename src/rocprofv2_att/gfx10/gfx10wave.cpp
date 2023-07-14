@@ -332,10 +332,10 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
         wstart_type start { .raw = token.contents };
         if (start.wgp == target_wgp && start.simd == target_simd && start.sa == 0)
           SIMD[start.wid].push_back(wave_t(token, last_completed_wave_cycle[start.wid], start.simd));
-        current_occupancy[start.wgp & 0xF] += 1;
+        current_occupancy[(start.wgp & 0x7)*2 + start.sa] += 1;
         occupancy.push_back(occupancy_info_t{
           (uint64_t)start.wgp,
-          (uint64_t)current_occupancy[start.wgp & 0xF],
+          (uint64_t)current_occupancy[(start.wgp & 0x7)*2 + start.sa],
           (uint64_t)token.time
         });
         num_waves_started += 1;
@@ -348,10 +348,10 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
           SIMD[end.wid].back().complete_wave(token);
           last_completed_wave_cycle[end.wid] = token.time;
         }
-        current_occupancy[end.wgp & 0xF] -= 1;
+        current_occupancy[(end.wgp & 0x7)*2 + end.sa] -= 1;
         occupancy.push_back(occupancy_info_t{
           (uint64_t)end.wgp,
-          (uint64_t)current_occupancy[end.wgp & 0xF],
+          (uint64_t)current_occupancy[(end.wgp & 0x7)*2 + end.sa],
           (uint64_t)token.time
         });
         num_waves_completed += 1;
@@ -391,7 +391,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
         alu_exec_type alux;
         if (alu_exec_count >= alu_stack.size()) {
           alu_exec_count = alu_stack.size();
-          alu_stack.push_back(alu_user_inst_t{false});
+          alu_stack.push_back(alu_stack.size() ? alu_stack.back() : alu_user_inst_t{false});
         }
         alu_stack[alu_exec_count].time = token.time;
         alu_exec_count += 1;
@@ -459,11 +459,11 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
     auto& inst_vector = SIMD[alu.slot][alu.wid].instructions;
     auto& inst = inst_vector[alu.inst];
     int64_t inst_time = inst.time;
-    int64_t delay_time = (int64_t)alu.time - inst_time;
+    int64_t delay_time = inst.last + (int64_t)alu.time - inst_time;
 
     if (alu.inst < inst_vector.size()-1)
       delay_time = std::min(delay_time, (int64_t)inst_vector[alu.inst+1].time - inst_time);
-    inst.last = std::max(delay_time, (int64_t)inst.last);
+    inst.last = delay_time;
   }
 
   if (bHasLostPackets)
@@ -490,11 +490,25 @@ void wave_t::set_state_exec(int64_t time, int64_t duration) {
 }
 
 void wave_t::apply_valu_inst(Token token, valu_inst_type inst) {
+  update_immediate(token.time);
   set_state_exec(token.time, 1);
 
   this->instructions.push_back({(uint64_t)token.time, WaveInstCategory::VALU, 0, 1});
   num_issued_instrs += 1;
   num_valu_instrs += 1;
+}
+
+// Fix for Immediate token bug
+void wave_t::update_immediate(int64_t token_time) {
+  if (!this->instructions.size()) return;
+
+  auto& inst = this->instructions.back();
+  if (inst.value != (uint64_t)WaveInstCategory::IMMED) return;
+  inst.last = std::max(inst.last, std::max(token_time-inst.time,1ul)-1);
+
+  if (!this->timeline.size()) return;
+  this->timeline.back().second += std::max(token_time-last_state_cycle,1l)-1;
+  last_state_cycle = token_time - 1;
 }
 
 void wave_t::apply_immediate(Token token) {
@@ -536,6 +550,7 @@ void wave_t::apply_inst(Token token, inst_type inst, int tt_version) {
   else if (inst.inst == EINST::jump)
     last_jump_inst = this->instructions.size();
 
+  update_immediate(token.time);
   this->instructions.push_back({(uint64_t)token.time, mapped.first, 0, mapped.second});
   set_state_exec(token.time, mapped.second);
   num_issued_instrs += 1;

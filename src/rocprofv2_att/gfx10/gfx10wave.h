@@ -56,6 +56,7 @@ struct gfx10wave_t : public wavedata_t {
   void apply_inst(gfx10Token token, inst_type inst, int tt_version);
   void apply_valu_inst(gfx10Token token, valu_inst_type inst);
   void apply_immediate(gfx10Token token);
+  void update_immediate(int64_t token_time);
   void set_state_exec(int64_t time, int64_t duration);
   operator bool() const { return true; } // TODO: Change based on cur_state
 
