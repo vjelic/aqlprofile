@@ -25,10 +25,11 @@
 typedef struct {
     const char* line = 0;
     const char* loc = 0;
-    int value = -1;
     int to_line = -1;
+    int value = -1;
     int index = -1;
     int line_num = -1;
+    int64_t addr = -1;
 } code_wrapped_t;
 
 typedef struct {
@@ -69,7 +70,7 @@ size_t get_comment_pos(const std::string& line) {
     comment_pos = line.find("/*");
     if (comment_pos != std::string::npos)
         return comment_pos;
-    return line.find(";");
+    return line.find(';');
 }
 
 // Returns label name as (pos, size) of substr of line
@@ -135,7 +136,7 @@ std::vector<clean_lines_t> clean_and_loc(std::vector<std::pair<int, std::string>
             continue;
         }
 
-        size_t comment_pos = get_comment_pos(line); //.find(";");
+        size_t comment_pos = get_comment_pos(line);
         std::string comment = "";
 
         if (comment_pos != std::string::npos) {
@@ -143,8 +144,10 @@ std::vector<clean_lines_t> clean_and_loc(std::vector<std::pair<int, std::string>
             line = line.substr(0, comment_pos);
         }
 
-        if (line.size() == 0 || ';' == line[0]) continue;
-        if (std::regex_match(line, std::regex("^\\s*$"))) continue;
+        if (line.size() == 0) continue;
+        else if (';' == line[0] && line.find("; Begin ") == std::string::npos) continue;
+        else if (std::regex_match(line, std::regex("^\\s*$"))) continue;
+
         if ('.' == line[0] && line.rfind(".loc", 0) == 0) {
             loc = strip(comment.substr(1));
             if (first) {
@@ -195,7 +198,8 @@ bool MacroFill(
 
 std::vector<std::pair<int, std::string>> extract_kernel(
     const char* assembly_file,
-    const char* kernel_string_ptr
+    const char* kernel_string_ptr,
+    bool bAutoISA
 ) {
     std::ifstream file(assembly_file, std::ifstream::in);
 
@@ -211,13 +215,12 @@ std::vector<std::pair<int, std::string>> extract_kernel(
     std::unordered_map<std::string, int> macro_map;
     std::vector<std::vector<std::string>> defined_macros;
 
-    if (kernel_string_ptr == nullptr)
+    if (bAutoISA || kernel_string_ptr == nullptr)
         kernel_started = true;
 
     while (file.good()) {
         line_num += 1;
         getline(file, line);
-
         if (line.size() <= 1) continue;
 
         size_t comment_pos = get_comment_pos(line);
@@ -244,13 +247,14 @@ std::vector<std::pair<int, std::string>> extract_kernel(
             defined_macros.back().push_back(line);
             if (line.find(".endm") != std::string::npos)
                 bIsMacro = false;
-        } else if (IsMacro(line)) {
+        } else if (!bAutoISA && IsMacro(line)) {
             bIsMacro = true;
             std::string macname = getMacroName(line);
             defined_macros.push_back({(first_space < line.size()-1) ? line.substr(first_space+1) : line});
             macro_map[macname] = defined_macros.size();
         } else if (kernel_started) {
-            if (first_space != std::string::npos && defined_macros.size() &&
+            if (!bAutoISA &&
+                first_space != std::string::npos && defined_macros.size() &&
                 macro_map.find(line.substr(0, first_space)) != macro_map.end()
             )
                 MacroFill(defined_macros, macro_map, code, line, line_num, 0);
@@ -314,7 +318,8 @@ size_t GetOffsetAddress(
 
 AsParseRetype as_parse(const char* assembly_file, const char* kernel) {
     std::unordered_map<std::string, int> jump_table;
-    std::vector<clean_lines_t> raw = clean_and_loc(extract_kernel(assembly_file, kernel));
+
+    std::vector<clean_lines_t> raw = clean_and_loc(extract_kernel(assembly_file, kernel, false));
 
     for (uint64_t i = 0; i < raw.size(); i++) {
         auto pos = LabelName(raw[i].line);
@@ -347,21 +352,87 @@ AsParseRetype as_parse(const char* assembly_file, const char* kernel) {
             if (to_line == 0)
                 to_line = GetOffsetAddress(raw[i].comment, jump_table, addressmap, raw);
 
-            processed_t proc({line, InstCategory::BRANCH, to_line, std::move(loc), i, raw[i].line_num});
+            processed_t proc({line, InstCategory::BRANCH, to_line, std::move(loc), i, raw[i].line_num, 0});
             processed.push_back(std::move(proc));
             reverse_jump[to_line] = i;
         } else {
-            processed_t proc({line, instruction_type, -1, std::move(loc), i, raw[i].line_num});
+            processed_t proc({line, instruction_type, 0, std::move(loc), i, raw[i].line_num, 0});
             processed.push_back(std::move(proc));
         }
     }
     return std::make_pair(processed, reverse_jump);
 }
 
+AsParseRetype as_parse_auto(const char* assembly_file) {
+    std::vector<std::pair<int, std::string>> code = extract_kernel(assembly_file, nullptr, true);
+
+    std::string last_comment{};
+    std::vector<processed_t> processed{};
+    std::unordered_map<int, int> reverse_jump{};
+    std::unordered_map<int64_t, int> address_map{};
+
+    for (auto& [line_num, line] : code) {
+        if (!line.size() ||
+            (line[0] == ';' && line.find("; Begin ") == std::string::npos)
+        ) {
+            if (line.size() > 2)
+                last_comment = line.substr(2);
+            continue;
+        }
+        int64_t addr = -1;
+        size_t pos = line.find("// ");
+        if (pos != std::string::npos) {
+            try {
+                addr = stoll(line.substr(pos+3), 0, 16);
+                line = line.substr(0, pos);
+                address_map[addr] = processed.size();
+            } catch (...) {}
+        }
+        processed.push_back({
+            strip(line),
+            inst_type(line),
+            0,
+            std::move(last_comment),
+            (uint32_t)processed.size(),
+            line_num,
+            addr
+        });
+        last_comment = "";
+    }
+
+    for (int i=0; i<processed.size(); i++) {
+        processed_t& proc = processed[i];
+        if (proc.value != InstCategory::BRANCH) continue;
+
+        size_t space_pos = proc.line.find(' ');
+        if (space_pos == std::string::npos) continue;
+
+        try {
+            int64_t dest = (int64_t)stoi(proc.line.substr(space_pos+1));
+            if (dest >= 32768) dest -= 65536;
+            int64_t dst_addr = address_map.at(proc.addr + 4*dest + 4);
+            proc.to_line = dst_addr;
+            reverse_jump[dst_addr] = i;
+        } catch (...) {
+            std::cerr << "Could find destination for " << proc.line_num << ' ' << proc.line << std::endl;
+        }
+    }
+
+    return std::make_pair(processed, reverse_jump);
+}
+
+
 extern "C" {
 __attribute__((visibility("default")))
 return_assembly_info_t wrapped_parse_binary(const char* p_filename, const char* kernel) {
-    code_jumps = as_parse(p_filename, kernel);
+    bool bAutoISA = false;
+    if (kernel == nullptr)
+        bAutoISA = true;
+
+    if (bAutoISA)
+        code_jumps = as_parse_auto(p_filename);
+    else
+        code_jumps = as_parse(p_filename, kernel);
 
     std::vector<processed_t>& processed = code_jumps.first;
     std::unordered_map<int, int>& reverse_jump = code_jumps.second;
@@ -378,6 +449,7 @@ return_assembly_info_t wrapped_parse_binary(const char* p_filename, const char* 
         wrapper.loc = s.loc.data();
         wrapper.index = s.index;
         wrapper.line_num = s.line_num;
+        wrapper.addr = s.addr;
 
         code_wrapped.push_back(wrapper);
     }

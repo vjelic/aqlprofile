@@ -397,6 +397,12 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
         alu_exec_count += 1;
         break;
       }
+      case gfx10type::NEW_PC: {
+        new_pc_type pc { .raw = token.contents };
+        if (pc.wave < SIMD.size() && SIMD[pc.wave].size())
+          SIMD[pc.wave].back().new_pc((uint64_t)token.time, pc.pc);
+        break;
+      }
       /*
       case gfx10type::UTIL_COUNTER: {
         util_ctr_gfx10_type util { .raw = token.contents };
@@ -431,15 +437,6 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
       case gfx10type::WAVE_READY: {
         break;
       }
-      case gfx10type::NEW_PC: {
-        new_pc_type pc { .raw = token.contents };
-        //pc.print();
-        if (pc.wave >= SIMD.size() || !SIMD[pc.wave].size())
-          std::cout << "Invalid wave: " << pc.wave << std::endl;
-        else if(!SIMD[pc.wave].back().last_jump_inst)
-          std::cout << "Wave not registered a jump: " << pc.wave << std::endl;
-        break;
-      }
       */
       default:
         break;
@@ -470,6 +467,15 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
     std::cout << "Warning: Packet lost!" << std::endl;
 
   return std::make_tuple(SIMD, perfEvents, occupancy);
+}
+
+void wave_t::new_pc(uint64_t time, int64_t pc) {
+  instruction_t inst{time, WaveInstCategory::PCINFO, (uint64_t)pc<<2, 0};
+  if (last_jump_inst >= 0)
+    instructions.emplace(instructions.begin()+last_jump_inst+1, inst);
+  else
+    instructions.push_back(inst);
+  last_jump_inst = -1;
 }
 
 void wave_t::set_state_exec(int64_t time, int64_t duration) {

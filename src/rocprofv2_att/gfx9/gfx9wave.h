@@ -46,6 +46,7 @@ struct gfx9wave_t : public wavedata_t {
   uint64_t mem_access_started = 0;
   uint64_t issue_time = 0;  // use to calculate instruction cycles
   uint64_t inst_time = 0;   // use to calculate instruction cycles
+  int last_jump_inst = -1;
 
   typedef std::array<std::array<std::vector<gfx9wave_t>, SQTT_CFG_WAVES>, SQTT_CFG_SIMDS> WaveArray;
   static std::tuple<WaveArray, std::vector<perfevent_t>, std::vector<occupancy_info_t>>

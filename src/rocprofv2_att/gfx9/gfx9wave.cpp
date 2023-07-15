@@ -191,8 +191,16 @@ void wave_t::apply_inst(Token& token) {
       this->num_branch_taken_instrs += 1;
       this->instructions.push_back({token.time, WaveInstCategory::NEXT, issue2inst, 0});
     } else {
+      this->last_jump_inst = instructions.size();
       this->instructions.push_back({token.time, WaveInstCategory::JUMP, issue2inst, 0});
     }
+  } else if (token.inst_type == 7) {
+    auto inst = instruction_t{token.time, WaveInstCategory::PCINFO, token.pc, 0};
+    if (last_jump_inst >= 0)
+      instructions.emplace(instructions.begin()+last_jump_inst+1, inst);
+    else
+      instructions.push_back(inst);
+    this->last_jump_inst = -1;
   }
 }
 

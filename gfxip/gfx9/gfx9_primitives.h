@@ -527,7 +527,7 @@ class gfx9_cntx_prim {
   // @note: The field is defined in the spec incorrectly as a 16-bit value
   static uint32_t sqtt_token_mask2_value() {
     regSQ_THREAD_TRACE_TOKEN_MASK2 token_mask2{};
-    token_mask2.bits.INST_MASK = 0xFFFFFF7F;
+    token_mask2.bits.INST_MASK = 0xFFFFFFFF;
     return token_mask2.u32All;
   }
 

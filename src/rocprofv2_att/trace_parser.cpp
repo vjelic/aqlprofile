@@ -46,7 +46,7 @@ struct wavedata_persist_t : public wavedata_t {
     instructions_size = data.instructions.size();
     instructions_alloc = new instruction_t[instructions_size+4];
     memcpy(instructions_alloc, data.instructions.data(), sizeof(instructions_alloc[0])*instructions_size);
-    instructions_alloc[instructions_size] = {0, WaveInstCategory::WAVE_END, 0, 0};
+    instructions_alloc[instructions_size] = instruction_t{0, WaveInstCategory::WAVE_END, 0, 0};
   }
 
   void Copy(gfx10wave_t& data) {
