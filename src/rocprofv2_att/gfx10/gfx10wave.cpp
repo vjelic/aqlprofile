@@ -545,8 +545,6 @@ void wave_t::apply_inst(Token token, inst_type inst, int tt_version) {
     mapped.second = dp_cycles*dp_derate;
   else if (inst.inst == EINST::valub_dfdp)
     mapped.second = dp_cycles;
-  else if (inst.inst == EINST::valub_16)
-    mapped.second *= dp_cycles;
   else if (inst.inst == EINST::jump)
     last_jump_inst = this->instructions.size();
 
