@@ -114,6 +114,10 @@ void wave_t::apply_inst(Token& token) {
 
   // ISSUE stall type cannot be known until issue complete
   // SMEM RD/WR
+
+  if (instructions.size() && instructions.back().value == (uint64_t)WaveInstCategory::IMMED)
+    instructions.back().last = std::min(instructions.back().last, token.time-instructions.back().time);
+
   if (token.inst_type == 0 || token.inst_type == 16) {
     if (this->stall_started == 1) {
       this->num_smem_stalls += 1;
