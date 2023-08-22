@@ -99,6 +99,8 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
     // sdma performance monitor control value accumulator
     std::pair<reg_addr_t, uint32_t>
         sdma_select_accumulator[Primitives::SDMA_COUNTER_BLOCK_NUM_INSTANCES];
+    // umc performance monitor control address
+    reg_addr_t umc_control_accumulator[Primitives::UMC_COUNTER_BLOCK_NUM_INSTANCES];
     // Issue barrier command
     if (!concurrent) Builder::BuildWriteWaitIdlePacket(cmd_buffer);
     // Reset Grbm to its default state - broadcast
@@ -160,6 +162,8 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
 #endif
     // SDMA mask
     uint32_t sdma_mask = 0;
+    // UMC mask
+    uint32_t umc_mask = 0;
     // Programming perf counters
     for (const auto& counter_des : counters_vec) {
       const auto* block_info = counter_des.block_info;
@@ -219,6 +223,14 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
         sdma_select_accumulator[sdma_index].first = reg_info.select_addr;
         sdma_select_accumulator[sdma_index].second |= Primitives::sdma_select_value(counter_des);
       }
+      if (block_info->attr & CounterBlockUmcAttr) {
+        const auto umc_index = counter_des.block_des.index;
+        umc_mask |= 1u << umc_index;
+        umc_control_accumulator[umc_index] = reg_info.control_addr;
+	// umc counter select
+	Builder::BuildWritePConfigRegPacket(cmd_buffer, reg_info.select_addr,
+					    Primitives::umc_select_value(counter_des));
+      }
       // Start counters
       if (block_info->attr & CounterBlockMcAttr) {
         Builder::BuildWritePConfigRegPacket(cmd_buffer, reg_info.control_addr,
@@ -253,6 +265,20 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
                                               Primitives::sdma_disable_clear_value());
           Builder::BuildWritePConfigRegPacket(cmd_buffer, sdma_select_accumulator[sdma_index].first,
                                               sdma_select_accumulator[sdma_index].second);
+        }
+      }
+    }
+    // UMC start
+    if (umc_mask != 0) {
+      for (uint32_t umc_index = 0, mask = umc_mask; mask != 0; umc_index++, mask >>= 1) {
+	// each umc_mask bit represents a UMC block instance
+        if (mask & 1) {
+          // umc block level clear
+          Builder::BuildWritePConfigRegPacket(cmd_buffer, umc_control_accumulator[umc_index],
+                                              Primitives::umc_disable_clear_value());
+          // umc block level enable
+          Builder::BuildWritePConfigRegPacket(cmd_buffer, umc_control_accumulator[umc_index],
+                                              Primitives::umc_enable_value());
         }
       }
     }
@@ -312,14 +338,15 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
                                           Primitives::cp_perfmon_cntl_stop_value());
       // After setting CP_PERFMON_CNTL_ADDR on GFX10, the first reg read is invalid if from SQ block
       // Find a GRBM counter and copy it first
-      if (Primitives::GFXIP_LEVEL == 10) for (auto& elem : counters_vec) {
-        if ((elem.block_info->attr & CounterBlockGRBMAttr) == 0) continue;
-        const auto& reg_info = get_reg_table(elem)[elem.index];
-        Builder::BuildCopyCounterDataPacket(cmd_buffer, reg_info.register_addr_lo,
-                                        reg_info.register_addr_hi, data_buffer, 3);
-        Builder::BuildWriteWaitIdlePacket(cmd_buffer);
-        break;
-      }
+      if (Primitives::GFXIP_LEVEL == 10)
+        for (auto& elem : counters_vec) {
+          if ((elem.block_info->attr & CounterBlockGRBMAttr) == 0) continue;
+          const auto& reg_info = get_reg_table(elem)[elem.index];
+          Builder::BuildCopyCounterDataPacket(cmd_buffer, reg_info.register_addr_lo,
+                                              reg_info.register_addr_hi, data_buffer, 3);
+          Builder::BuildWriteWaitIdlePacket(cmd_buffer);
+          break;
+        }
     }
     if (counters_vec.get_attr() & CounterBlockSrbmAttr)
       Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::SRBM_PERFMON_CNTL_ADDR,
@@ -351,6 +378,8 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
 #endif
     // SDMA mask
     uint32_t sdma_mask = 0;
+    // UMC mask
+    uint32_t umc_mask = 0;
     // Iterate through the list of blocks to create PM4 packets to read counter values
     for (const auto& counter_des : counters_vec) {
       const auto* block_info = counter_des.block_info;
@@ -417,6 +446,20 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
           *reinterpret_cast<uint64_t*>(data) = 0;
         }
         Builder::BuildCopyCounterDataPacket(cmd_buffer, reg_info.register_addr_lo, 0x0, data, 0x1);
+        read_counter += 2;
+      } else if (block_info->attr & CounterBlockUmcAttr) {
+        // Stop UMC
+        const uint32_t mask = 1u << counter_des.block_des.index;
+        if ((umc_mask & mask) == 0) {
+          umc_mask |= mask;
+          Builder::BuildWritePConfigRegPacket(cmd_buffer, reg_info.control_addr, Primitives::umc_stop_value());
+        }
+        // Read UMC
+        uint32_t* data = reinterpret_cast<uint32_t*>(data_buffer) + read_counter;
+        if (data_buffer != 0) {
+          *reinterpret_cast<uint64_t*>(data) = 0;
+        }
+        Builder::BuildCopyCounterDataPacket(cmd_buffer, reg_info.register_addr_lo, reg_info.register_addr_hi, data, 3);
         read_counter += 2;
       } else {
         const uint32_t se_end_index = (block_info->attr & CounterBlockSeAttr) ? se_number_ : 1;

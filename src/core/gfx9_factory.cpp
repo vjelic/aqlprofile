@@ -1,27 +1,10 @@
-#include "core/pm4_factory.h"
+#include "core/gfx9_factory.h"
 #include "def/gfx9_def.h"
 #include "pm4/gfx9_cmd_builder.h"
 #include "pm4/pmc_builder.h"
 #include "pm4/sqtt_builder.h"
 
 namespace aql_profile {
-
-// Gfx9 factory class
-class Gfx9Factory : public Pm4Factory {
- public:
-  explicit Gfx9Factory(const AgentInfo* agent_info)
-      : Pm4Factory(BlockInfoMap(block_table_, sizeof(block_table_))) {
-    Init(agent_info);
-  }
-  Gfx9Factory(const GpuBlockInfo** table, const uint32_t& size, const AgentInfo* agent_info)
-      : Pm4Factory(BlockInfoMap(table, size)) {
-    Init(agent_info);
-  }
-
- protected:
-  void Init(const AgentInfo* agent_info);
-  static const GpuBlockInfo* block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER];
-};
 
 // Gfx factory init
 void Gfx9Factory::Init(const AgentInfo* agent_info) {
@@ -62,116 +45,13 @@ const GpuBlockInfo* Gfx9Factory::block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMB
     NULL /*MC_XBAR*/, &AtcCounterBlockInfo, &AtcL2CounterBlockInfo, &GceaCounterBlockInfo,
     &RpbCounterBlockInfo,
     // System blocks
-    &SdmaCounterBlockInfo};
-
-// Mi100 factory class
-class Mi100Factory : public Gfx9Factory {
- public:
-  explicit Mi100Factory(const AgentInfo* agent_info)
-      : Gfx9Factory(block_table_, sizeof(block_table_), agent_info) {
-    for (unsigned i = 0; i < HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER; ++i) {
-      const GpuBlockInfo* base_table_ptr = Gfx9Factory::block_table_[i];
-      if (base_table_ptr == NULL) continue;
-      GpuBlockInfo* block_info = new GpuBlockInfo(*base_table_ptr);
-      block_table_[i] = block_info;
-
-      // overwrite block info for any update from gfx9 to mi100
-      switch (block_info->id) {
-        case SqCounterBlockId:
-          block_info->event_id_max = 303;
-          break;
-        case TcpCounterBlockId:
-          block_info->event_id_max = 87;
-          break;
-        case TccCounterBlockId:
-          block_info->instance_count = 32;
-          block_info->event_id_max = 295;
-          break;
-        case TcaCounterBlockId:
-          block_info->instance_count = 32;
-          block_info->event_id_max = 58;
-          break;
-        case GceaCounterBlockId:
-          block_info->instance_count = 32;
-          block_info->event_id_max = 83;
-          break;
-        case SdmaCounterBlockId:
-          block_info->instance_count = gfx9_cntx_prim::SDMA_COUNTER_BLOCK_NUM_INSTANCES;
-          break;
-      }
-    }
-  }
-
- protected:
-  static const GpuBlockInfo* block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER];
-};
-
-const GpuBlockInfo* Mi100Factory::block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER] = {};
-
-// Mi200 factory class
-class Mi200Factory : public Mi100Factory {
- public:
-  explicit Mi200Factory(const AgentInfo* agent_info) : Mi100Factory(agent_info) {}
-};
-
-class Mi300Factory : public Mi100Factory {
- public:
-  explicit Mi300Factory(const AgentInfo* agent_info) : Mi100Factory(agent_info) {
-    for (unsigned i = 0; i < HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER; ++i) {
-      const GpuBlockInfo* base_table_ptr = Gfx9Factory::block_table_[i];
-      if (base_table_ptr == NULL) continue;
-      GpuBlockInfo* block_info = new GpuBlockInfo(*base_table_ptr);
-      block_table_[i] = block_info;
-      // overwrite block info for any update from gfx9 to mi100
-      switch (block_info->id) {
-        case SqCounterBlockId:
-          block_info->event_id_max = 373;
-          break;
-        case TcpCounterBlockId:
-          block_info->event_id_max = 84;
-          break;
-        case TccCounterBlockId:
-          block_info->instance_count = 16;
-          block_info->event_id_max = 199;
-          break;
-        case TcaCounterBlockId:
-          block_info->instance_count = 32;
-          block_info->event_id_max = 34;
-          break;
-        case GceaCounterBlockId:
-          block_info->instance_count = 32;
-          block_info->event_id_max = 82;
-          break;
-        case SdmaCounterBlockId:
-          block_info->instance_count = gfx9_cntx_prim::SDMA_COUNTER_BLOCK_NUM_INSTANCES;
-          break;
-      }
-    }
-  }
-};
+    &SdmaCounterBlockInfo, NULL/*GL1A*/, NULL/*GL1C*/, NULL/*GL2A*/, NULL/*GL2C*/, NULL/*GCR*/, NULL/*GUS*/,
+    &UmcCounterBlockInfo};
 
 // Pm4Factory create mathods
 Pm4Factory* Pm4Factory::Gfx9Create(const AgentInfo* agent_info) {
   auto p = new Gfx9Factory(agent_info);
   if (p == NULL) throw aql_profile_exc_msg("Gfx9Factory allocation failed");
-  return p;
-}
-
-Pm4Factory* Pm4Factory::Mi100Create(const AgentInfo* agent_info) {
-  auto p = new Mi100Factory(agent_info);
-  if (p == NULL) throw aql_profile_exc_msg("Mi100Factory allocation failed");
-  return p;
-}
-
-Pm4Factory* Pm4Factory::Mi200Create(const AgentInfo* agent_info) {
-  auto p = new Mi200Factory(agent_info);
-  if (p == NULL) throw aql_profile_exc_msg("Mi200Factory allocation failed");
-  return p;
-}
-
-Pm4Factory* Pm4Factory::Mi300Create(const AgentInfo* agent_info) {
-  auto p = new Mi300Factory(agent_info);
-  if (p == NULL) throw aql_profile_exc_msg("FijiFactory allocation failed");
   return p;
 }
 

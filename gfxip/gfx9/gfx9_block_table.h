@@ -594,6 +594,489 @@ static const CounterRegInfo SdmaCounterRegAddr[] = {
     {mmSDMA7_PERFMON_CNTL, 0, mmSDMA7_PERFCOUNTER1_RESULT, 0}
 };
 
+// UMC
+static const CounterRegInfo UmcCounterRegAddr[] = {
+    {mmUMCCH0_PerfMonCtl1,    mmUMCCH0_PerfMonCtlClk,  mmUMCCH0_PerfMonCtr1_Lo,    mmUMCCH0_PerfMonCtr1_Hi},
+    {mmUMCCH0_PerfMonCtl2,    mmUMCCH0_PerfMonCtlClk,  mmUMCCH0_PerfMonCtr2_Lo,    mmUMCCH0_PerfMonCtr2_Hi},
+    {mmUMCCH0_PerfMonCtl3,    mmUMCCH0_PerfMonCtlClk,  mmUMCCH0_PerfMonCtr3_Lo,    mmUMCCH0_PerfMonCtr3_Hi},
+    {mmUMCCH0_PerfMonCtl4,    mmUMCCH0_PerfMonCtlClk,  mmUMCCH0_PerfMonCtr4_Lo,    mmUMCCH0_PerfMonCtr4_Hi},
+    {mmUMCCH0_PerfMonCtl5,    mmUMCCH0_PerfMonCtlClk,  mmUMCCH0_PerfMonCtr5_Lo,    mmUMCCH0_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH0_PerfMonCtl6,    mmUMCCH0_PerfMonCtlClk,  mmUMCCH0_PerfMonCtr6_Lo,    mmUMCCH0_PerfMonCtr6_Hi},
+    {mmUMCCH0_PerfMonCtl7,    mmUMCCH0_PerfMonCtlClk,  mmUMCCH0_PerfMonCtr7_Lo,    mmUMCCH0_PerfMonCtr7_Hi},
+    {mmUMCCH0_PerfMonCtl8,    mmUMCCH0_PerfMonCtlClk,  mmUMCCH0_PerfMonCtr8_Lo,    mmUMCCH0_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH0_PerfMonCtl9,    mmUMCCH0_PerfMonCtlClk,  mmUMCCH0_PerfMonCtr9_Lo,    mmUMCCH0_PerfMonCtr9_Hi},
+    {mmUMCCH0_PerfMonCtl10,   mmUMCCH0_PerfMonCtlClk,  mmUMCCH0_PerfMonCtr10_Lo,   mmUMCCH0_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH0_PerfMonCtlClk,  mmUMCCH0_PerfMonCtlClk,  mmUMCCH0_PerfMonCtrClk_Lo,  mmUMCCH0_PerfMonCtrClk_Hi},
+    {mmUMCCH1_PerfMonCtl1,    mmUMCCH1_PerfMonCtlClk,  mmUMCCH1_PerfMonCtr1_Lo,    mmUMCCH1_PerfMonCtr1_Hi},
+    {mmUMCCH1_PerfMonCtl2,    mmUMCCH1_PerfMonCtlClk,  mmUMCCH1_PerfMonCtr2_Lo,    mmUMCCH1_PerfMonCtr2_Hi},
+    {mmUMCCH1_PerfMonCtl3,    mmUMCCH1_PerfMonCtlClk,  mmUMCCH1_PerfMonCtr3_Lo,    mmUMCCH1_PerfMonCtr3_Hi},
+    {mmUMCCH1_PerfMonCtl4,    mmUMCCH1_PerfMonCtlClk,  mmUMCCH1_PerfMonCtr4_Lo,    mmUMCCH1_PerfMonCtr4_Hi},
+    {mmUMCCH1_PerfMonCtl5,    mmUMCCH1_PerfMonCtlClk,  mmUMCCH1_PerfMonCtr5_Lo,    mmUMCCH1_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH1_PerfMonCtl6,    mmUMCCH1_PerfMonCtlClk,  mmUMCCH1_PerfMonCtr6_Lo,    mmUMCCH1_PerfMonCtr6_Hi},
+    {mmUMCCH1_PerfMonCtl7,    mmUMCCH1_PerfMonCtlClk,  mmUMCCH1_PerfMonCtr7_Lo,    mmUMCCH1_PerfMonCtr7_Hi},
+    {mmUMCCH1_PerfMonCtl8,    mmUMCCH1_PerfMonCtlClk,  mmUMCCH1_PerfMonCtr8_Lo,    mmUMCCH1_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH1_PerfMonCtl9,    mmUMCCH1_PerfMonCtlClk,  mmUMCCH1_PerfMonCtr9_Lo,    mmUMCCH1_PerfMonCtr9_Hi},
+    {mmUMCCH1_PerfMonCtl10,   mmUMCCH1_PerfMonCtlClk,  mmUMCCH1_PerfMonCtr10_Lo,   mmUMCCH1_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH1_PerfMonCtlClk,  mmUMCCH1_PerfMonCtlClk,  mmUMCCH1_PerfMonCtrClk_Lo,  mmUMCCH1_PerfMonCtrClk_Hi},
+    {mmUMCCH2_PerfMonCtl1,    mmUMCCH2_PerfMonCtlClk,  mmUMCCH2_PerfMonCtr1_Lo,    mmUMCCH2_PerfMonCtr1_Hi},
+    {mmUMCCH2_PerfMonCtl2,    mmUMCCH2_PerfMonCtlClk,  mmUMCCH2_PerfMonCtr2_Lo,    mmUMCCH2_PerfMonCtr2_Hi},
+    {mmUMCCH2_PerfMonCtl3,    mmUMCCH2_PerfMonCtlClk,  mmUMCCH2_PerfMonCtr3_Lo,    mmUMCCH2_PerfMonCtr3_Hi},
+    {mmUMCCH2_PerfMonCtl4,    mmUMCCH2_PerfMonCtlClk,  mmUMCCH2_PerfMonCtr4_Lo,    mmUMCCH2_PerfMonCtr4_Hi},
+    {mmUMCCH2_PerfMonCtl5,    mmUMCCH2_PerfMonCtlClk,  mmUMCCH2_PerfMonCtr5_Lo,    mmUMCCH2_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH2_PerfMonCtl6,    mmUMCCH2_PerfMonCtlClk,  mmUMCCH2_PerfMonCtr6_Lo,    mmUMCCH2_PerfMonCtr6_Hi},
+    {mmUMCCH2_PerfMonCtl7,    mmUMCCH2_PerfMonCtlClk,  mmUMCCH2_PerfMonCtr7_Lo,    mmUMCCH2_PerfMonCtr7_Hi},
+    {mmUMCCH2_PerfMonCtl8,    mmUMCCH2_PerfMonCtlClk,  mmUMCCH2_PerfMonCtr8_Lo,    mmUMCCH2_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH2_PerfMonCtl9,    mmUMCCH2_PerfMonCtlClk,  mmUMCCH2_PerfMonCtr9_Lo,    mmUMCCH2_PerfMonCtr9_Hi},
+    {mmUMCCH2_PerfMonCtl10,   mmUMCCH2_PerfMonCtlClk,  mmUMCCH2_PerfMonCtr10_Lo,   mmUMCCH2_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH2_PerfMonCtlClk,  mmUMCCH2_PerfMonCtlClk,  mmUMCCH2_PerfMonCtrClk_Lo,  mmUMCCH2_PerfMonCtrClk_Hi},
+    {mmUMCCH3_PerfMonCtl1,    mmUMCCH3_PerfMonCtlClk,  mmUMCCH3_PerfMonCtr1_Lo,    mmUMCCH3_PerfMonCtr1_Hi},
+    {mmUMCCH3_PerfMonCtl2,    mmUMCCH3_PerfMonCtlClk,  mmUMCCH3_PerfMonCtr2_Lo,    mmUMCCH3_PerfMonCtr2_Hi},
+    {mmUMCCH3_PerfMonCtl3,    mmUMCCH3_PerfMonCtlClk,  mmUMCCH3_PerfMonCtr3_Lo,    mmUMCCH3_PerfMonCtr3_Hi},
+    {mmUMCCH3_PerfMonCtl4,    mmUMCCH3_PerfMonCtlClk,  mmUMCCH3_PerfMonCtr4_Lo,    mmUMCCH3_PerfMonCtr4_Hi},
+    {mmUMCCH3_PerfMonCtl5,    mmUMCCH3_PerfMonCtlClk,  mmUMCCH3_PerfMonCtr5_Lo,    mmUMCCH3_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH3_PerfMonCtl6,    mmUMCCH3_PerfMonCtlClk,  mmUMCCH3_PerfMonCtr6_Lo,    mmUMCCH3_PerfMonCtr6_Hi},
+    {mmUMCCH3_PerfMonCtl7,    mmUMCCH3_PerfMonCtlClk,  mmUMCCH3_PerfMonCtr7_Lo,    mmUMCCH3_PerfMonCtr7_Hi},
+    {mmUMCCH3_PerfMonCtl8,    mmUMCCH3_PerfMonCtlClk,  mmUMCCH3_PerfMonCtr8_Lo,    mmUMCCH3_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH3_PerfMonCtl9,    mmUMCCH3_PerfMonCtlClk,  mmUMCCH3_PerfMonCtr9_Lo,    mmUMCCH3_PerfMonCtr9_Hi},
+    {mmUMCCH3_PerfMonCtl10,   mmUMCCH3_PerfMonCtlClk,  mmUMCCH3_PerfMonCtr10_Lo,   mmUMCCH3_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH3_PerfMonCtlClk,  mmUMCCH3_PerfMonCtlClk,  mmUMCCH3_PerfMonCtrClk_Lo,  mmUMCCH3_PerfMonCtrClk_Hi},
+    {mmUMCCH4_PerfMonCtl1,    mmUMCCH4_PerfMonCtlClk,  mmUMCCH4_PerfMonCtr1_Lo,    mmUMCCH4_PerfMonCtr1_Hi},
+    {mmUMCCH4_PerfMonCtl2,    mmUMCCH4_PerfMonCtlClk,  mmUMCCH4_PerfMonCtr2_Lo,    mmUMCCH4_PerfMonCtr2_Hi},
+    {mmUMCCH4_PerfMonCtl3,    mmUMCCH4_PerfMonCtlClk,  mmUMCCH4_PerfMonCtr3_Lo,    mmUMCCH4_PerfMonCtr3_Hi},
+    {mmUMCCH4_PerfMonCtl4,    mmUMCCH4_PerfMonCtlClk,  mmUMCCH4_PerfMonCtr4_Lo,    mmUMCCH4_PerfMonCtr4_Hi},
+    {mmUMCCH4_PerfMonCtl5,    mmUMCCH4_PerfMonCtlClk,  mmUMCCH4_PerfMonCtr5_Lo,    mmUMCCH4_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH4_PerfMonCtl6,    mmUMCCH4_PerfMonCtlClk,  mmUMCCH4_PerfMonCtr6_Lo,    mmUMCCH4_PerfMonCtr6_Hi},
+    {mmUMCCH4_PerfMonCtl7,    mmUMCCH4_PerfMonCtlClk,  mmUMCCH4_PerfMonCtr7_Lo,    mmUMCCH4_PerfMonCtr7_Hi},
+    {mmUMCCH4_PerfMonCtl8,    mmUMCCH4_PerfMonCtlClk,  mmUMCCH4_PerfMonCtr8_Lo,    mmUMCCH4_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH4_PerfMonCtl9,    mmUMCCH4_PerfMonCtlClk,  mmUMCCH4_PerfMonCtr9_Lo,    mmUMCCH4_PerfMonCtr9_Hi},
+    {mmUMCCH4_PerfMonCtl10,   mmUMCCH4_PerfMonCtlClk,  mmUMCCH4_PerfMonCtr10_Lo,   mmUMCCH4_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH4_PerfMonCtlClk,  mmUMCCH4_PerfMonCtlClk,  mmUMCCH4_PerfMonCtrClk_Lo,  mmUMCCH4_PerfMonCtrClk_Hi},
+    {mmUMCCH5_PerfMonCtl1,    mmUMCCH5_PerfMonCtlClk,  mmUMCCH5_PerfMonCtr1_Lo,    mmUMCCH5_PerfMonCtr1_Hi},
+    {mmUMCCH5_PerfMonCtl2,    mmUMCCH5_PerfMonCtlClk,  mmUMCCH5_PerfMonCtr2_Lo,    mmUMCCH5_PerfMonCtr2_Hi},
+    {mmUMCCH5_PerfMonCtl3,    mmUMCCH5_PerfMonCtlClk,  mmUMCCH5_PerfMonCtr3_Lo,    mmUMCCH5_PerfMonCtr3_Hi},
+    {mmUMCCH5_PerfMonCtl4,    mmUMCCH5_PerfMonCtlClk,  mmUMCCH5_PerfMonCtr4_Lo,    mmUMCCH5_PerfMonCtr4_Hi},
+    {mmUMCCH5_PerfMonCtl5,    mmUMCCH5_PerfMonCtlClk,  mmUMCCH5_PerfMonCtr5_Lo,    mmUMCCH5_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH5_PerfMonCtl6,    mmUMCCH5_PerfMonCtlClk,  mmUMCCH5_PerfMonCtr6_Lo,    mmUMCCH5_PerfMonCtr6_Hi},
+    {mmUMCCH5_PerfMonCtl7,    mmUMCCH5_PerfMonCtlClk,  mmUMCCH5_PerfMonCtr7_Lo,    mmUMCCH5_PerfMonCtr7_Hi},
+    {mmUMCCH5_PerfMonCtl8,    mmUMCCH5_PerfMonCtlClk,  mmUMCCH5_PerfMonCtr8_Lo,    mmUMCCH5_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH5_PerfMonCtl9,    mmUMCCH5_PerfMonCtlClk,  mmUMCCH5_PerfMonCtr9_Lo,    mmUMCCH5_PerfMonCtr9_Hi},
+    {mmUMCCH5_PerfMonCtl10,   mmUMCCH5_PerfMonCtlClk,  mmUMCCH5_PerfMonCtr10_Lo,   mmUMCCH5_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH5_PerfMonCtlClk,  mmUMCCH5_PerfMonCtlClk,  mmUMCCH5_PerfMonCtrClk_Lo,  mmUMCCH5_PerfMonCtrClk_Hi},
+    {mmUMCCH6_PerfMonCtl1,    mmUMCCH6_PerfMonCtlClk,  mmUMCCH6_PerfMonCtr1_Lo,    mmUMCCH6_PerfMonCtr1_Hi},
+    {mmUMCCH6_PerfMonCtl2,    mmUMCCH6_PerfMonCtlClk,  mmUMCCH6_PerfMonCtr2_Lo,    mmUMCCH6_PerfMonCtr2_Hi},
+    {mmUMCCH6_PerfMonCtl3,    mmUMCCH6_PerfMonCtlClk,  mmUMCCH6_PerfMonCtr3_Lo,    mmUMCCH6_PerfMonCtr3_Hi},
+    {mmUMCCH6_PerfMonCtl4,    mmUMCCH6_PerfMonCtlClk,  mmUMCCH6_PerfMonCtr4_Lo,    mmUMCCH6_PerfMonCtr4_Hi},
+    {mmUMCCH6_PerfMonCtl5,    mmUMCCH6_PerfMonCtlClk,  mmUMCCH6_PerfMonCtr5_Lo,    mmUMCCH6_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH6_PerfMonCtl6,    mmUMCCH6_PerfMonCtlClk,  mmUMCCH6_PerfMonCtr6_Lo,    mmUMCCH6_PerfMonCtr6_Hi},
+    {mmUMCCH6_PerfMonCtl7,    mmUMCCH6_PerfMonCtlClk,  mmUMCCH6_PerfMonCtr7_Lo,    mmUMCCH6_PerfMonCtr7_Hi},
+    {mmUMCCH6_PerfMonCtl8,    mmUMCCH6_PerfMonCtlClk,  mmUMCCH6_PerfMonCtr8_Lo,    mmUMCCH6_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH6_PerfMonCtl9,    mmUMCCH6_PerfMonCtlClk,  mmUMCCH6_PerfMonCtr9_Lo,    mmUMCCH6_PerfMonCtr9_Hi},
+    {mmUMCCH6_PerfMonCtl10,   mmUMCCH6_PerfMonCtlClk,  mmUMCCH6_PerfMonCtr10_Lo,   mmUMCCH6_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH6_PerfMonCtlClk,  mmUMCCH6_PerfMonCtlClk,  mmUMCCH6_PerfMonCtrClk_Lo,  mmUMCCH6_PerfMonCtrClk_Hi},
+    {mmUMCCH7_PerfMonCtl1,    mmUMCCH7_PerfMonCtlClk,  mmUMCCH7_PerfMonCtr1_Lo,    mmUMCCH7_PerfMonCtr1_Hi},
+    {mmUMCCH7_PerfMonCtl2,    mmUMCCH7_PerfMonCtlClk,  mmUMCCH7_PerfMonCtr2_Lo,    mmUMCCH7_PerfMonCtr2_Hi},
+    {mmUMCCH7_PerfMonCtl3,    mmUMCCH7_PerfMonCtlClk,  mmUMCCH7_PerfMonCtr3_Lo,    mmUMCCH7_PerfMonCtr3_Hi},
+    {mmUMCCH7_PerfMonCtl4,    mmUMCCH7_PerfMonCtlClk,  mmUMCCH7_PerfMonCtr4_Lo,    mmUMCCH7_PerfMonCtr4_Hi},
+    {mmUMCCH7_PerfMonCtl5,    mmUMCCH7_PerfMonCtlClk,  mmUMCCH7_PerfMonCtr5_Lo,    mmUMCCH7_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH7_PerfMonCtl6,    mmUMCCH7_PerfMonCtlClk,  mmUMCCH7_PerfMonCtr6_Lo,    mmUMCCH7_PerfMonCtr6_Hi},
+    {mmUMCCH7_PerfMonCtl7,    mmUMCCH7_PerfMonCtlClk,  mmUMCCH7_PerfMonCtr7_Lo,    mmUMCCH7_PerfMonCtr7_Hi},
+    {mmUMCCH7_PerfMonCtl8,    mmUMCCH7_PerfMonCtlClk,  mmUMCCH7_PerfMonCtr8_Lo,    mmUMCCH7_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH7_PerfMonCtl9,    mmUMCCH7_PerfMonCtlClk,  mmUMCCH7_PerfMonCtr9_Lo,    mmUMCCH7_PerfMonCtr9_Hi},
+    {mmUMCCH7_PerfMonCtl10,   mmUMCCH7_PerfMonCtlClk,  mmUMCCH7_PerfMonCtr10_Lo,   mmUMCCH7_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH7_PerfMonCtlClk,  mmUMCCH7_PerfMonCtlClk,  mmUMCCH7_PerfMonCtrClk_Lo,  mmUMCCH7_PerfMonCtrClk_Hi},
+    {mmUMCCH8_PerfMonCtl1,    mmUMCCH8_PerfMonCtlClk,  mmUMCCH8_PerfMonCtr1_Lo,    mmUMCCH8_PerfMonCtr1_Hi},
+    {mmUMCCH8_PerfMonCtl2,    mmUMCCH8_PerfMonCtlClk,  mmUMCCH8_PerfMonCtr2_Lo,    mmUMCCH8_PerfMonCtr2_Hi},
+    {mmUMCCH8_PerfMonCtl3,    mmUMCCH8_PerfMonCtlClk,  mmUMCCH8_PerfMonCtr3_Lo,    mmUMCCH8_PerfMonCtr3_Hi},
+    {mmUMCCH8_PerfMonCtl4,    mmUMCCH8_PerfMonCtlClk,  mmUMCCH8_PerfMonCtr4_Lo,    mmUMCCH8_PerfMonCtr4_Hi},
+    {mmUMCCH8_PerfMonCtl5,    mmUMCCH8_PerfMonCtlClk,  mmUMCCH8_PerfMonCtr5_Lo,    mmUMCCH8_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH8_PerfMonCtl6,    mmUMCCH8_PerfMonCtlClk,  mmUMCCH8_PerfMonCtr6_Lo,    mmUMCCH8_PerfMonCtr6_Hi},
+    {mmUMCCH8_PerfMonCtl7,    mmUMCCH8_PerfMonCtlClk,  mmUMCCH8_PerfMonCtr7_Lo,    mmUMCCH8_PerfMonCtr7_Hi},
+    {mmUMCCH8_PerfMonCtl8,    mmUMCCH8_PerfMonCtlClk,  mmUMCCH8_PerfMonCtr8_Lo,    mmUMCCH8_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH8_PerfMonCtl9,    mmUMCCH8_PerfMonCtlClk,  mmUMCCH8_PerfMonCtr9_Lo,    mmUMCCH8_PerfMonCtr9_Hi},
+    {mmUMCCH8_PerfMonCtl10,   mmUMCCH8_PerfMonCtlClk,  mmUMCCH8_PerfMonCtr10_Lo,   mmUMCCH8_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH8_PerfMonCtlClk,  mmUMCCH8_PerfMonCtlClk,  mmUMCCH8_PerfMonCtrClk_Lo,  mmUMCCH8_PerfMonCtrClk_Hi},
+    {mmUMCCH9_PerfMonCtl1,    mmUMCCH9_PerfMonCtlClk,  mmUMCCH9_PerfMonCtr1_Lo,    mmUMCCH9_PerfMonCtr1_Hi},
+    {mmUMCCH9_PerfMonCtl2,    mmUMCCH9_PerfMonCtlClk,  mmUMCCH9_PerfMonCtr2_Lo,    mmUMCCH9_PerfMonCtr2_Hi},
+    {mmUMCCH9_PerfMonCtl3,    mmUMCCH9_PerfMonCtlClk,  mmUMCCH9_PerfMonCtr3_Lo,    mmUMCCH9_PerfMonCtr3_Hi},
+    {mmUMCCH9_PerfMonCtl4,    mmUMCCH9_PerfMonCtlClk,  mmUMCCH9_PerfMonCtr4_Lo,    mmUMCCH9_PerfMonCtr4_Hi},
+    {mmUMCCH9_PerfMonCtl5,    mmUMCCH9_PerfMonCtlClk,  mmUMCCH9_PerfMonCtr5_Lo,    mmUMCCH9_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH9_PerfMonCtl6,    mmUMCCH9_PerfMonCtlClk,  mmUMCCH9_PerfMonCtr6_Lo,    mmUMCCH9_PerfMonCtr6_Hi},
+    {mmUMCCH9_PerfMonCtl7,    mmUMCCH9_PerfMonCtlClk,  mmUMCCH9_PerfMonCtr7_Lo,    mmUMCCH9_PerfMonCtr7_Hi},
+    {mmUMCCH9_PerfMonCtl8,    mmUMCCH9_PerfMonCtlClk,  mmUMCCH9_PerfMonCtr8_Lo,    mmUMCCH9_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH9_PerfMonCtl9,    mmUMCCH9_PerfMonCtlClk,  mmUMCCH9_PerfMonCtr9_Lo,    mmUMCCH9_PerfMonCtr9_Hi},
+    {mmUMCCH9_PerfMonCtl10,   mmUMCCH9_PerfMonCtlClk,  mmUMCCH9_PerfMonCtr10_Lo,   mmUMCCH9_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH9_PerfMonCtlClk,  mmUMCCH9_PerfMonCtlClk,  mmUMCCH9_PerfMonCtrClk_Lo,  mmUMCCH9_PerfMonCtrClk_Hi},
+    {mmUMCCH10_PerfMonCtl1,   mmUMCCH10_PerfMonCtlClk, mmUMCCH10_PerfMonCtr1_Lo,   mmUMCCH10_PerfMonCtr1_Hi},
+    {mmUMCCH10_PerfMonCtl2,   mmUMCCH10_PerfMonCtlClk, mmUMCCH10_PerfMonCtr2_Lo,   mmUMCCH10_PerfMonCtr2_Hi},
+    {mmUMCCH10_PerfMonCtl3,   mmUMCCH10_PerfMonCtlClk, mmUMCCH10_PerfMonCtr3_Lo,   mmUMCCH10_PerfMonCtr3_Hi},
+    {mmUMCCH10_PerfMonCtl4,   mmUMCCH10_PerfMonCtlClk, mmUMCCH10_PerfMonCtr4_Lo,   mmUMCCH10_PerfMonCtr4_Hi},
+    {mmUMCCH10_PerfMonCtl5,   mmUMCCH10_PerfMonCtlClk, mmUMCCH10_PerfMonCtr5_Lo,   mmUMCCH10_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH10_PerfMonCtl6,   mmUMCCH10_PerfMonCtlClk, mmUMCCH10_PerfMonCtr6_Lo,   mmUMCCH10_PerfMonCtr6_Hi},
+    {mmUMCCH10_PerfMonCtl7,   mmUMCCH10_PerfMonCtlClk, mmUMCCH10_PerfMonCtr7_Lo,   mmUMCCH10_PerfMonCtr7_Hi},
+    {mmUMCCH10_PerfMonCtl8,   mmUMCCH10_PerfMonCtlClk, mmUMCCH10_PerfMonCtr8_Lo,   mmUMCCH10_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH10_PerfMonCtl9,   mmUMCCH10_PerfMonCtlClk, mmUMCCH10_PerfMonCtr9_Lo,   mmUMCCH10_PerfMonCtr9_Hi},
+    {mmUMCCH10_PerfMonCtl10,  mmUMCCH10_PerfMonCtlClk, mmUMCCH10_PerfMonCtr10_Lo,  mmUMCCH10_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH10_PerfMonCtlClk, mmUMCCH10_PerfMonCtlClk, mmUMCCH10_PerfMonCtrClk_Lo, mmUMCCH10_PerfMonCtrClk_Hi},
+    {mmUMCCH11_PerfMonCtl1,   mmUMCCH11_PerfMonCtlClk, mmUMCCH11_PerfMonCtr1_Lo,   mmUMCCH11_PerfMonCtr1_Hi},
+    {mmUMCCH11_PerfMonCtl2,   mmUMCCH11_PerfMonCtlClk, mmUMCCH11_PerfMonCtr2_Lo,   mmUMCCH11_PerfMonCtr2_Hi},
+    {mmUMCCH11_PerfMonCtl3,   mmUMCCH11_PerfMonCtlClk, mmUMCCH11_PerfMonCtr3_Lo,   mmUMCCH11_PerfMonCtr3_Hi},
+    {mmUMCCH11_PerfMonCtl4,   mmUMCCH11_PerfMonCtlClk, mmUMCCH11_PerfMonCtr4_Lo,   mmUMCCH11_PerfMonCtr4_Hi},
+    {mmUMCCH11_PerfMonCtl5,   mmUMCCH11_PerfMonCtlClk, mmUMCCH11_PerfMonCtr5_Lo,   mmUMCCH11_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH11_PerfMonCtl6,   mmUMCCH11_PerfMonCtlClk, mmUMCCH11_PerfMonCtr6_Lo,   mmUMCCH11_PerfMonCtr6_Hi},
+    {mmUMCCH11_PerfMonCtl7,   mmUMCCH11_PerfMonCtlClk, mmUMCCH11_PerfMonCtr7_Lo,   mmUMCCH11_PerfMonCtr7_Hi},
+    {mmUMCCH11_PerfMonCtl8,   mmUMCCH11_PerfMonCtlClk, mmUMCCH11_PerfMonCtr8_Lo,   mmUMCCH11_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH11_PerfMonCtl9,   mmUMCCH11_PerfMonCtlClk, mmUMCCH11_PerfMonCtr9_Lo,   mmUMCCH11_PerfMonCtr9_Hi},
+    {mmUMCCH11_PerfMonCtl10,  mmUMCCH11_PerfMonCtlClk, mmUMCCH11_PerfMonCtr10_Lo,  mmUMCCH11_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH11_PerfMonCtlClk, mmUMCCH11_PerfMonCtlClk, mmUMCCH11_PerfMonCtrClk_Lo, mmUMCCH11_PerfMonCtrClk_Hi},
+    {mmUMCCH12_PerfMonCtl1,   mmUMCCH12_PerfMonCtlClk, mmUMCCH12_PerfMonCtr1_Lo,   mmUMCCH12_PerfMonCtr1_Hi},
+    {mmUMCCH12_PerfMonCtl2,   mmUMCCH12_PerfMonCtlClk, mmUMCCH12_PerfMonCtr2_Lo,   mmUMCCH12_PerfMonCtr2_Hi},
+    {mmUMCCH12_PerfMonCtl3,   mmUMCCH12_PerfMonCtlClk, mmUMCCH12_PerfMonCtr3_Lo,   mmUMCCH12_PerfMonCtr3_Hi},
+    {mmUMCCH12_PerfMonCtl4,   mmUMCCH12_PerfMonCtlClk, mmUMCCH12_PerfMonCtr4_Lo,   mmUMCCH12_PerfMonCtr4_Hi},
+    {mmUMCCH12_PerfMonCtl5,   mmUMCCH12_PerfMonCtlClk, mmUMCCH12_PerfMonCtr5_Lo,   mmUMCCH12_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH12_PerfMonCtl6,   mmUMCCH12_PerfMonCtlClk, mmUMCCH12_PerfMonCtr6_Lo,   mmUMCCH12_PerfMonCtr6_Hi},
+    {mmUMCCH12_PerfMonCtl7,   mmUMCCH12_PerfMonCtlClk, mmUMCCH12_PerfMonCtr7_Lo,   mmUMCCH12_PerfMonCtr7_Hi},
+    {mmUMCCH12_PerfMonCtl8,   mmUMCCH12_PerfMonCtlClk, mmUMCCH12_PerfMonCtr8_Lo,   mmUMCCH12_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH12_PerfMonCtl9,   mmUMCCH12_PerfMonCtlClk, mmUMCCH12_PerfMonCtr9_Lo,   mmUMCCH12_PerfMonCtr9_Hi},
+    {mmUMCCH12_PerfMonCtl10,  mmUMCCH12_PerfMonCtlClk, mmUMCCH12_PerfMonCtr10_Lo,  mmUMCCH12_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH12_PerfMonCtlClk, mmUMCCH12_PerfMonCtlClk, mmUMCCH12_PerfMonCtrClk_Lo, mmUMCCH12_PerfMonCtrClk_Hi},
+    {mmUMCCH13_PerfMonCtl1,   mmUMCCH13_PerfMonCtlClk, mmUMCCH13_PerfMonCtr1_Lo,   mmUMCCH13_PerfMonCtr1_Hi},
+    {mmUMCCH13_PerfMonCtl2,   mmUMCCH13_PerfMonCtlClk, mmUMCCH13_PerfMonCtr2_Lo,   mmUMCCH13_PerfMonCtr2_Hi},
+    {mmUMCCH13_PerfMonCtl3,   mmUMCCH13_PerfMonCtlClk, mmUMCCH13_PerfMonCtr3_Lo,   mmUMCCH13_PerfMonCtr3_Hi},
+    {mmUMCCH13_PerfMonCtl4,   mmUMCCH13_PerfMonCtlClk, mmUMCCH13_PerfMonCtr4_Lo,   mmUMCCH13_PerfMonCtr4_Hi},
+    {mmUMCCH13_PerfMonCtl5,   mmUMCCH13_PerfMonCtlClk, mmUMCCH13_PerfMonCtr5_Lo,   mmUMCCH13_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH13_PerfMonCtl6,   mmUMCCH13_PerfMonCtlClk, mmUMCCH13_PerfMonCtr6_Lo,   mmUMCCH13_PerfMonCtr6_Hi},
+    {mmUMCCH13_PerfMonCtl7,   mmUMCCH13_PerfMonCtlClk, mmUMCCH13_PerfMonCtr7_Lo,   mmUMCCH13_PerfMonCtr7_Hi},
+    {mmUMCCH13_PerfMonCtl8,   mmUMCCH13_PerfMonCtlClk, mmUMCCH13_PerfMonCtr8_Lo,   mmUMCCH13_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH13_PerfMonCtl9,   mmUMCCH13_PerfMonCtlClk, mmUMCCH13_PerfMonCtr9_Lo,   mmUMCCH13_PerfMonCtr9_Hi},
+    {mmUMCCH13_PerfMonCtl10,  mmUMCCH13_PerfMonCtlClk, mmUMCCH13_PerfMonCtr10_Lo,  mmUMCCH13_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH13_PerfMonCtlClk, mmUMCCH13_PerfMonCtlClk, mmUMCCH13_PerfMonCtrClk_Lo, mmUMCCH13_PerfMonCtrClk_Hi},
+    {mmUMCCH14_PerfMonCtl1,   mmUMCCH14_PerfMonCtlClk, mmUMCCH14_PerfMonCtr1_Lo,   mmUMCCH14_PerfMonCtr1_Hi},
+    {mmUMCCH14_PerfMonCtl2,   mmUMCCH14_PerfMonCtlClk, mmUMCCH14_PerfMonCtr2_Lo,   mmUMCCH14_PerfMonCtr2_Hi},
+    {mmUMCCH14_PerfMonCtl3,   mmUMCCH14_PerfMonCtlClk, mmUMCCH14_PerfMonCtr3_Lo,   mmUMCCH14_PerfMonCtr3_Hi},
+    {mmUMCCH14_PerfMonCtl4,   mmUMCCH14_PerfMonCtlClk, mmUMCCH14_PerfMonCtr4_Lo,   mmUMCCH14_PerfMonCtr4_Hi},
+    {mmUMCCH14_PerfMonCtl5,   mmUMCCH14_PerfMonCtlClk, mmUMCCH14_PerfMonCtr5_Lo,   mmUMCCH14_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH14_PerfMonCtl6,   mmUMCCH14_PerfMonCtlClk, mmUMCCH14_PerfMonCtr6_Lo,   mmUMCCH14_PerfMonCtr6_Hi},
+    {mmUMCCH14_PerfMonCtl7,   mmUMCCH14_PerfMonCtlClk, mmUMCCH14_PerfMonCtr7_Lo,   mmUMCCH14_PerfMonCtr7_Hi},
+    {mmUMCCH14_PerfMonCtl8,   mmUMCCH14_PerfMonCtlClk, mmUMCCH14_PerfMonCtr8_Lo,   mmUMCCH14_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH14_PerfMonCtl9,   mmUMCCH14_PerfMonCtlClk, mmUMCCH14_PerfMonCtr9_Lo,   mmUMCCH14_PerfMonCtr9_Hi},
+    {mmUMCCH14_PerfMonCtl10,  mmUMCCH14_PerfMonCtlClk, mmUMCCH14_PerfMonCtr10_Lo,  mmUMCCH14_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH14_PerfMonCtlClk, mmUMCCH14_PerfMonCtlClk, mmUMCCH14_PerfMonCtrClk_Lo, mmUMCCH14_PerfMonCtrClk_Hi},
+    {mmUMCCH15_PerfMonCtl1,   mmUMCCH15_PerfMonCtlClk, mmUMCCH15_PerfMonCtr1_Lo,   mmUMCCH15_PerfMonCtr1_Hi},
+    {mmUMCCH15_PerfMonCtl2,   mmUMCCH15_PerfMonCtlClk, mmUMCCH15_PerfMonCtr2_Lo,   mmUMCCH15_PerfMonCtr2_Hi},
+    {mmUMCCH15_PerfMonCtl3,   mmUMCCH15_PerfMonCtlClk, mmUMCCH15_PerfMonCtr3_Lo,   mmUMCCH15_PerfMonCtr3_Hi},
+    {mmUMCCH15_PerfMonCtl4,   mmUMCCH15_PerfMonCtlClk, mmUMCCH15_PerfMonCtr4_Lo,   mmUMCCH15_PerfMonCtr4_Hi},
+    {mmUMCCH15_PerfMonCtl5,   mmUMCCH15_PerfMonCtlClk, mmUMCCH15_PerfMonCtr5_Lo,   mmUMCCH15_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH15_PerfMonCtl6,   mmUMCCH15_PerfMonCtlClk, mmUMCCH15_PerfMonCtr6_Lo,   mmUMCCH15_PerfMonCtr6_Hi},
+    {mmUMCCH15_PerfMonCtl7,   mmUMCCH15_PerfMonCtlClk, mmUMCCH15_PerfMonCtr7_Lo,   mmUMCCH15_PerfMonCtr7_Hi},
+    {mmUMCCH15_PerfMonCtl8,   mmUMCCH15_PerfMonCtlClk, mmUMCCH15_PerfMonCtr8_Lo,   mmUMCCH15_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH15_PerfMonCtl9,   mmUMCCH15_PerfMonCtlClk, mmUMCCH15_PerfMonCtr9_Lo,   mmUMCCH15_PerfMonCtr9_Hi},
+    {mmUMCCH15_PerfMonCtl10,  mmUMCCH15_PerfMonCtlClk, mmUMCCH15_PerfMonCtr10_Lo,  mmUMCCH15_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH15_PerfMonCtlClk, mmUMCCH15_PerfMonCtlClk, mmUMCCH15_PerfMonCtrClk_Lo, mmUMCCH15_PerfMonCtrClk_Hi},
+    {mmUMCCH16_PerfMonCtl1,   mmUMCCH16_PerfMonCtlClk, mmUMCCH16_PerfMonCtr1_Lo,   mmUMCCH16_PerfMonCtr1_Hi},
+    {mmUMCCH16_PerfMonCtl2,   mmUMCCH16_PerfMonCtlClk, mmUMCCH16_PerfMonCtr2_Lo,   mmUMCCH16_PerfMonCtr2_Hi},
+    {mmUMCCH16_PerfMonCtl3,   mmUMCCH16_PerfMonCtlClk, mmUMCCH16_PerfMonCtr3_Lo,   mmUMCCH16_PerfMonCtr3_Hi},
+    {mmUMCCH16_PerfMonCtl4,   mmUMCCH16_PerfMonCtlClk, mmUMCCH16_PerfMonCtr4_Lo,   mmUMCCH16_PerfMonCtr4_Hi},
+    {mmUMCCH16_PerfMonCtl5,   mmUMCCH16_PerfMonCtlClk, mmUMCCH16_PerfMonCtr5_Lo,   mmUMCCH16_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH16_PerfMonCtl6,   mmUMCCH16_PerfMonCtlClk, mmUMCCH16_PerfMonCtr6_Lo,   mmUMCCH16_PerfMonCtr6_Hi},
+    {mmUMCCH16_PerfMonCtl7,   mmUMCCH16_PerfMonCtlClk, mmUMCCH16_PerfMonCtr7_Lo,   mmUMCCH16_PerfMonCtr7_Hi},
+    {mmUMCCH16_PerfMonCtl8,   mmUMCCH16_PerfMonCtlClk, mmUMCCH16_PerfMonCtr8_Lo,   mmUMCCH16_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH16_PerfMonCtl9,   mmUMCCH16_PerfMonCtlClk, mmUMCCH16_PerfMonCtr9_Lo,   mmUMCCH16_PerfMonCtr9_Hi},
+    {mmUMCCH16_PerfMonCtl10,  mmUMCCH16_PerfMonCtlClk, mmUMCCH16_PerfMonCtr10_Lo,  mmUMCCH16_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH16_PerfMonCtlClk, mmUMCCH16_PerfMonCtlClk, mmUMCCH16_PerfMonCtrClk_Lo, mmUMCCH16_PerfMonCtrClk_Hi},
+    {mmUMCCH17_PerfMonCtl1,   mmUMCCH17_PerfMonCtlClk, mmUMCCH17_PerfMonCtr1_Lo,   mmUMCCH17_PerfMonCtr1_Hi},
+    {mmUMCCH17_PerfMonCtl2,   mmUMCCH17_PerfMonCtlClk, mmUMCCH17_PerfMonCtr2_Lo,   mmUMCCH17_PerfMonCtr2_Hi},
+    {mmUMCCH17_PerfMonCtl3,   mmUMCCH17_PerfMonCtlClk, mmUMCCH17_PerfMonCtr3_Lo,   mmUMCCH17_PerfMonCtr3_Hi},
+    {mmUMCCH17_PerfMonCtl4,   mmUMCCH17_PerfMonCtlClk, mmUMCCH17_PerfMonCtr4_Lo,   mmUMCCH17_PerfMonCtr4_Hi},
+    {mmUMCCH17_PerfMonCtl5,   mmUMCCH17_PerfMonCtlClk, mmUMCCH17_PerfMonCtr5_Lo,   mmUMCCH17_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH17_PerfMonCtl6,   mmUMCCH17_PerfMonCtlClk, mmUMCCH17_PerfMonCtr6_Lo,   mmUMCCH17_PerfMonCtr6_Hi},
+    {mmUMCCH17_PerfMonCtl7,   mmUMCCH17_PerfMonCtlClk, mmUMCCH17_PerfMonCtr7_Lo,   mmUMCCH17_PerfMonCtr7_Hi},
+    {mmUMCCH17_PerfMonCtl8,   mmUMCCH17_PerfMonCtlClk, mmUMCCH17_PerfMonCtr8_Lo,   mmUMCCH17_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH17_PerfMonCtl9,   mmUMCCH17_PerfMonCtlClk, mmUMCCH17_PerfMonCtr9_Lo,   mmUMCCH17_PerfMonCtr9_Hi},
+    {mmUMCCH17_PerfMonCtl10,  mmUMCCH17_PerfMonCtlClk, mmUMCCH17_PerfMonCtr10_Lo,  mmUMCCH17_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH17_PerfMonCtlClk, mmUMCCH17_PerfMonCtlClk, mmUMCCH17_PerfMonCtrClk_Lo, mmUMCCH17_PerfMonCtrClk_Hi},
+    {mmUMCCH18_PerfMonCtl1,   mmUMCCH18_PerfMonCtlClk, mmUMCCH18_PerfMonCtr1_Lo,   mmUMCCH18_PerfMonCtr1_Hi},
+    {mmUMCCH18_PerfMonCtl2,   mmUMCCH18_PerfMonCtlClk, mmUMCCH18_PerfMonCtr2_Lo,   mmUMCCH18_PerfMonCtr2_Hi},
+    {mmUMCCH18_PerfMonCtl3,   mmUMCCH18_PerfMonCtlClk, mmUMCCH18_PerfMonCtr3_Lo,   mmUMCCH18_PerfMonCtr3_Hi},
+    {mmUMCCH18_PerfMonCtl4,   mmUMCCH18_PerfMonCtlClk, mmUMCCH18_PerfMonCtr4_Lo,   mmUMCCH18_PerfMonCtr4_Hi},
+    {mmUMCCH18_PerfMonCtl5,   mmUMCCH18_PerfMonCtlClk, mmUMCCH18_PerfMonCtr5_Lo,   mmUMCCH18_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH18_PerfMonCtl6,   mmUMCCH18_PerfMonCtlClk, mmUMCCH18_PerfMonCtr6_Lo,   mmUMCCH18_PerfMonCtr6_Hi},
+    {mmUMCCH18_PerfMonCtl7,   mmUMCCH18_PerfMonCtlClk, mmUMCCH18_PerfMonCtr7_Lo,   mmUMCCH18_PerfMonCtr7_Hi},
+    {mmUMCCH18_PerfMonCtl8,   mmUMCCH18_PerfMonCtlClk, mmUMCCH18_PerfMonCtr8_Lo,   mmUMCCH18_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH18_PerfMonCtl9,   mmUMCCH18_PerfMonCtlClk, mmUMCCH18_PerfMonCtr9_Lo,   mmUMCCH18_PerfMonCtr9_Hi},
+    {mmUMCCH18_PerfMonCtl10,  mmUMCCH18_PerfMonCtlClk, mmUMCCH18_PerfMonCtr10_Lo,  mmUMCCH18_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH18_PerfMonCtlClk, mmUMCCH18_PerfMonCtlClk, mmUMCCH18_PerfMonCtrClk_Lo, mmUMCCH18_PerfMonCtrClk_Hi},
+    {mmUMCCH19_PerfMonCtl1,   mmUMCCH19_PerfMonCtlClk, mmUMCCH19_PerfMonCtr1_Lo,   mmUMCCH19_PerfMonCtr1_Hi},
+    {mmUMCCH19_PerfMonCtl2,   mmUMCCH19_PerfMonCtlClk, mmUMCCH19_PerfMonCtr2_Lo,   mmUMCCH19_PerfMonCtr2_Hi},
+    {mmUMCCH19_PerfMonCtl3,   mmUMCCH19_PerfMonCtlClk, mmUMCCH19_PerfMonCtr3_Lo,   mmUMCCH19_PerfMonCtr3_Hi},
+    {mmUMCCH19_PerfMonCtl4,   mmUMCCH19_PerfMonCtlClk, mmUMCCH19_PerfMonCtr4_Lo,   mmUMCCH19_PerfMonCtr4_Hi},
+    {mmUMCCH19_PerfMonCtl5,   mmUMCCH19_PerfMonCtlClk, mmUMCCH19_PerfMonCtr5_Lo,   mmUMCCH19_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH19_PerfMonCtl6,   mmUMCCH19_PerfMonCtlClk, mmUMCCH19_PerfMonCtr6_Lo,   mmUMCCH19_PerfMonCtr6_Hi},
+    {mmUMCCH19_PerfMonCtl7,   mmUMCCH19_PerfMonCtlClk, mmUMCCH19_PerfMonCtr7_Lo,   mmUMCCH19_PerfMonCtr7_Hi},
+    {mmUMCCH19_PerfMonCtl8,   mmUMCCH19_PerfMonCtlClk, mmUMCCH19_PerfMonCtr8_Lo,   mmUMCCH19_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH19_PerfMonCtl9,   mmUMCCH19_PerfMonCtlClk, mmUMCCH19_PerfMonCtr9_Lo,   mmUMCCH19_PerfMonCtr9_Hi},
+    {mmUMCCH19_PerfMonCtl10,  mmUMCCH19_PerfMonCtlClk, mmUMCCH19_PerfMonCtr10_Lo,  mmUMCCH19_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH19_PerfMonCtlClk, mmUMCCH19_PerfMonCtlClk, mmUMCCH19_PerfMonCtrClk_Lo, mmUMCCH19_PerfMonCtrClk_Hi},
+    {mmUMCCH20_PerfMonCtl1,   mmUMCCH20_PerfMonCtlClk, mmUMCCH20_PerfMonCtr1_Lo,   mmUMCCH20_PerfMonCtr1_Hi},
+    {mmUMCCH20_PerfMonCtl2,   mmUMCCH20_PerfMonCtlClk, mmUMCCH20_PerfMonCtr2_Lo,   mmUMCCH20_PerfMonCtr2_Hi},
+    {mmUMCCH20_PerfMonCtl3,   mmUMCCH20_PerfMonCtlClk, mmUMCCH20_PerfMonCtr3_Lo,   mmUMCCH20_PerfMonCtr3_Hi},
+    {mmUMCCH20_PerfMonCtl4,   mmUMCCH20_PerfMonCtlClk, mmUMCCH20_PerfMonCtr4_Lo,   mmUMCCH20_PerfMonCtr4_Hi},
+    {mmUMCCH20_PerfMonCtl5,   mmUMCCH20_PerfMonCtlClk, mmUMCCH20_PerfMonCtr5_Lo,   mmUMCCH20_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH20_PerfMonCtl6,   mmUMCCH20_PerfMonCtlClk, mmUMCCH20_PerfMonCtr6_Lo,   mmUMCCH20_PerfMonCtr6_Hi},
+    {mmUMCCH20_PerfMonCtl7,   mmUMCCH20_PerfMonCtlClk, mmUMCCH20_PerfMonCtr7_Lo,   mmUMCCH20_PerfMonCtr7_Hi},
+    {mmUMCCH20_PerfMonCtl8,   mmUMCCH20_PerfMonCtlClk, mmUMCCH20_PerfMonCtr8_Lo,   mmUMCCH20_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH20_PerfMonCtl9,   mmUMCCH20_PerfMonCtlClk, mmUMCCH20_PerfMonCtr9_Lo,   mmUMCCH20_PerfMonCtr9_Hi},
+    {mmUMCCH20_PerfMonCtl10,  mmUMCCH20_PerfMonCtlClk, mmUMCCH20_PerfMonCtr10_Lo,  mmUMCCH20_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH20_PerfMonCtlClk, mmUMCCH20_PerfMonCtlClk, mmUMCCH20_PerfMonCtrClk_Lo, mmUMCCH20_PerfMonCtrClk_Hi},
+    {mmUMCCH21_PerfMonCtl1,   mmUMCCH21_PerfMonCtlClk, mmUMCCH21_PerfMonCtr1_Lo,   mmUMCCH21_PerfMonCtr1_Hi},
+    {mmUMCCH21_PerfMonCtl2,   mmUMCCH21_PerfMonCtlClk, mmUMCCH21_PerfMonCtr2_Lo,   mmUMCCH21_PerfMonCtr2_Hi},
+    {mmUMCCH21_PerfMonCtl3,   mmUMCCH21_PerfMonCtlClk, mmUMCCH21_PerfMonCtr3_Lo,   mmUMCCH21_PerfMonCtr3_Hi},
+    {mmUMCCH21_PerfMonCtl4,   mmUMCCH21_PerfMonCtlClk, mmUMCCH21_PerfMonCtr4_Lo,   mmUMCCH21_PerfMonCtr4_Hi},
+    {mmUMCCH21_PerfMonCtl5,   mmUMCCH21_PerfMonCtlClk, mmUMCCH21_PerfMonCtr5_Lo,   mmUMCCH21_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH21_PerfMonCtl6,   mmUMCCH21_PerfMonCtlClk, mmUMCCH21_PerfMonCtr6_Lo,   mmUMCCH21_PerfMonCtr6_Hi},
+    {mmUMCCH21_PerfMonCtl7,   mmUMCCH21_PerfMonCtlClk, mmUMCCH21_PerfMonCtr7_Lo,   mmUMCCH21_PerfMonCtr7_Hi},
+    {mmUMCCH21_PerfMonCtl8,   mmUMCCH21_PerfMonCtlClk, mmUMCCH21_PerfMonCtr8_Lo,   mmUMCCH21_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH21_PerfMonCtl9,   mmUMCCH21_PerfMonCtlClk, mmUMCCH21_PerfMonCtr9_Lo,   mmUMCCH21_PerfMonCtr9_Hi},
+    {mmUMCCH21_PerfMonCtl10,  mmUMCCH21_PerfMonCtlClk, mmUMCCH21_PerfMonCtr10_Lo,  mmUMCCH21_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH21_PerfMonCtlClk, mmUMCCH21_PerfMonCtlClk, mmUMCCH21_PerfMonCtrClk_Lo, mmUMCCH21_PerfMonCtrClk_Hi},
+    {mmUMCCH22_PerfMonCtl1,   mmUMCCH22_PerfMonCtlClk, mmUMCCH22_PerfMonCtr1_Lo,   mmUMCCH22_PerfMonCtr1_Hi},
+    {mmUMCCH22_PerfMonCtl2,   mmUMCCH22_PerfMonCtlClk, mmUMCCH22_PerfMonCtr2_Lo,   mmUMCCH22_PerfMonCtr2_Hi},
+    {mmUMCCH22_PerfMonCtl3,   mmUMCCH22_PerfMonCtlClk, mmUMCCH22_PerfMonCtr3_Lo,   mmUMCCH22_PerfMonCtr3_Hi},
+    {mmUMCCH22_PerfMonCtl4,   mmUMCCH22_PerfMonCtlClk, mmUMCCH22_PerfMonCtr4_Lo,   mmUMCCH22_PerfMonCtr4_Hi},
+    {mmUMCCH22_PerfMonCtl5,   mmUMCCH22_PerfMonCtlClk, mmUMCCH22_PerfMonCtr5_Lo,   mmUMCCH22_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH22_PerfMonCtl6,   mmUMCCH22_PerfMonCtlClk, mmUMCCH22_PerfMonCtr6_Lo,   mmUMCCH22_PerfMonCtr6_Hi},
+    {mmUMCCH22_PerfMonCtl7,   mmUMCCH22_PerfMonCtlClk, mmUMCCH22_PerfMonCtr7_Lo,   mmUMCCH22_PerfMonCtr7_Hi},
+    {mmUMCCH22_PerfMonCtl8,   mmUMCCH22_PerfMonCtlClk, mmUMCCH22_PerfMonCtr8_Lo,   mmUMCCH22_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH22_PerfMonCtl9,   mmUMCCH22_PerfMonCtlClk, mmUMCCH22_PerfMonCtr9_Lo,   mmUMCCH22_PerfMonCtr9_Hi},
+    {mmUMCCH22_PerfMonCtl10,  mmUMCCH22_PerfMonCtlClk, mmUMCCH22_PerfMonCtr10_Lo,  mmUMCCH22_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH22_PerfMonCtlClk, mmUMCCH22_PerfMonCtlClk, mmUMCCH22_PerfMonCtrClk_Lo, mmUMCCH22_PerfMonCtrClk_Hi},
+    {mmUMCCH23_PerfMonCtl1,   mmUMCCH23_PerfMonCtlClk, mmUMCCH23_PerfMonCtr1_Lo,   mmUMCCH23_PerfMonCtr1_Hi},
+    {mmUMCCH23_PerfMonCtl2,   mmUMCCH23_PerfMonCtlClk, mmUMCCH23_PerfMonCtr2_Lo,   mmUMCCH23_PerfMonCtr2_Hi},
+    {mmUMCCH23_PerfMonCtl3,   mmUMCCH23_PerfMonCtlClk, mmUMCCH23_PerfMonCtr3_Lo,   mmUMCCH23_PerfMonCtr3_Hi},
+    {mmUMCCH23_PerfMonCtl4,   mmUMCCH23_PerfMonCtlClk, mmUMCCH23_PerfMonCtr4_Lo,   mmUMCCH23_PerfMonCtr4_Hi},
+    {mmUMCCH23_PerfMonCtl5,   mmUMCCH23_PerfMonCtlClk, mmUMCCH23_PerfMonCtr5_Lo,   mmUMCCH23_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH23_PerfMonCtl6,   mmUMCCH23_PerfMonCtlClk, mmUMCCH23_PerfMonCtr6_Lo,   mmUMCCH23_PerfMonCtr6_Hi},
+    {mmUMCCH23_PerfMonCtl7,   mmUMCCH23_PerfMonCtlClk, mmUMCCH23_PerfMonCtr7_Lo,   mmUMCCH23_PerfMonCtr7_Hi},
+    {mmUMCCH23_PerfMonCtl8,   mmUMCCH23_PerfMonCtlClk, mmUMCCH23_PerfMonCtr8_Lo,   mmUMCCH23_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH23_PerfMonCtl9,   mmUMCCH23_PerfMonCtlClk, mmUMCCH23_PerfMonCtr9_Lo,   mmUMCCH23_PerfMonCtr9_Hi},
+    {mmUMCCH23_PerfMonCtl10,  mmUMCCH23_PerfMonCtlClk, mmUMCCH23_PerfMonCtr10_Lo,  mmUMCCH23_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH23_PerfMonCtlClk, mmUMCCH23_PerfMonCtlClk, mmUMCCH23_PerfMonCtrClk_Lo, mmUMCCH23_PerfMonCtrClk_Hi},
+    {mmUMCCH24_PerfMonCtl1,   mmUMCCH24_PerfMonCtlClk, mmUMCCH24_PerfMonCtr1_Lo,   mmUMCCH24_PerfMonCtr1_Hi},
+    {mmUMCCH24_PerfMonCtl2,   mmUMCCH24_PerfMonCtlClk, mmUMCCH24_PerfMonCtr2_Lo,   mmUMCCH24_PerfMonCtr2_Hi},
+    {mmUMCCH24_PerfMonCtl3,   mmUMCCH24_PerfMonCtlClk, mmUMCCH24_PerfMonCtr3_Lo,   mmUMCCH24_PerfMonCtr3_Hi},
+    {mmUMCCH24_PerfMonCtl4,   mmUMCCH24_PerfMonCtlClk, mmUMCCH24_PerfMonCtr4_Lo,   mmUMCCH24_PerfMonCtr4_Hi},
+    {mmUMCCH24_PerfMonCtl5,   mmUMCCH24_PerfMonCtlClk, mmUMCCH24_PerfMonCtr5_Lo,   mmUMCCH24_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH24_PerfMonCtl6,   mmUMCCH24_PerfMonCtlClk, mmUMCCH24_PerfMonCtr6_Lo,   mmUMCCH24_PerfMonCtr6_Hi},
+    {mmUMCCH24_PerfMonCtl7,   mmUMCCH24_PerfMonCtlClk, mmUMCCH24_PerfMonCtr7_Lo,   mmUMCCH24_PerfMonCtr7_Hi},
+    {mmUMCCH24_PerfMonCtl8,   mmUMCCH24_PerfMonCtlClk, mmUMCCH24_PerfMonCtr8_Lo,   mmUMCCH24_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH24_PerfMonCtl9,   mmUMCCH24_PerfMonCtlClk, mmUMCCH24_PerfMonCtr9_Lo,   mmUMCCH24_PerfMonCtr9_Hi},
+    {mmUMCCH24_PerfMonCtl10,  mmUMCCH24_PerfMonCtlClk, mmUMCCH24_PerfMonCtr10_Lo,  mmUMCCH24_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH24_PerfMonCtlClk, mmUMCCH24_PerfMonCtlClk, mmUMCCH24_PerfMonCtrClk_Lo, mmUMCCH24_PerfMonCtrClk_Hi},
+    {mmUMCCH25_PerfMonCtl1,   mmUMCCH25_PerfMonCtlClk, mmUMCCH25_PerfMonCtr1_Lo,   mmUMCCH25_PerfMonCtr1_Hi},
+    {mmUMCCH25_PerfMonCtl2,   mmUMCCH25_PerfMonCtlClk, mmUMCCH25_PerfMonCtr2_Lo,   mmUMCCH25_PerfMonCtr2_Hi},
+    {mmUMCCH25_PerfMonCtl3,   mmUMCCH25_PerfMonCtlClk, mmUMCCH25_PerfMonCtr3_Lo,   mmUMCCH25_PerfMonCtr3_Hi},
+    {mmUMCCH25_PerfMonCtl4,   mmUMCCH25_PerfMonCtlClk, mmUMCCH25_PerfMonCtr4_Lo,   mmUMCCH25_PerfMonCtr4_Hi},
+    {mmUMCCH25_PerfMonCtl5,   mmUMCCH25_PerfMonCtlClk, mmUMCCH25_PerfMonCtr5_Lo,   mmUMCCH25_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH25_PerfMonCtl6,   mmUMCCH25_PerfMonCtlClk, mmUMCCH25_PerfMonCtr6_Lo,   mmUMCCH25_PerfMonCtr6_Hi},
+    {mmUMCCH25_PerfMonCtl7,   mmUMCCH25_PerfMonCtlClk, mmUMCCH25_PerfMonCtr7_Lo,   mmUMCCH25_PerfMonCtr7_Hi},
+    {mmUMCCH25_PerfMonCtl8,   mmUMCCH25_PerfMonCtlClk, mmUMCCH25_PerfMonCtr8_Lo,   mmUMCCH25_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH25_PerfMonCtl9,   mmUMCCH25_PerfMonCtlClk, mmUMCCH25_PerfMonCtr9_Lo,   mmUMCCH25_PerfMonCtr9_Hi},
+    {mmUMCCH25_PerfMonCtl10,  mmUMCCH25_PerfMonCtlClk, mmUMCCH25_PerfMonCtr10_Lo,  mmUMCCH25_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH25_PerfMonCtlClk, mmUMCCH25_PerfMonCtlClk, mmUMCCH25_PerfMonCtrClk_Lo, mmUMCCH25_PerfMonCtrClk_Hi},
+    {mmUMCCH26_PerfMonCtl1,   mmUMCCH26_PerfMonCtlClk, mmUMCCH26_PerfMonCtr1_Lo,   mmUMCCH26_PerfMonCtr1_Hi},
+    {mmUMCCH26_PerfMonCtl2,   mmUMCCH26_PerfMonCtlClk, mmUMCCH26_PerfMonCtr2_Lo,   mmUMCCH26_PerfMonCtr2_Hi},
+    {mmUMCCH26_PerfMonCtl3,   mmUMCCH26_PerfMonCtlClk, mmUMCCH26_PerfMonCtr3_Lo,   mmUMCCH26_PerfMonCtr3_Hi},
+    {mmUMCCH26_PerfMonCtl4,   mmUMCCH26_PerfMonCtlClk, mmUMCCH26_PerfMonCtr4_Lo,   mmUMCCH26_PerfMonCtr4_Hi},
+    {mmUMCCH26_PerfMonCtl5,   mmUMCCH26_PerfMonCtlClk, mmUMCCH26_PerfMonCtr5_Lo,   mmUMCCH26_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH26_PerfMonCtl6,   mmUMCCH26_PerfMonCtlClk, mmUMCCH26_PerfMonCtr6_Lo,   mmUMCCH26_PerfMonCtr6_Hi},
+    {mmUMCCH26_PerfMonCtl7,   mmUMCCH26_PerfMonCtlClk, mmUMCCH26_PerfMonCtr7_Lo,   mmUMCCH26_PerfMonCtr7_Hi},
+    {mmUMCCH26_PerfMonCtl8,   mmUMCCH26_PerfMonCtlClk, mmUMCCH26_PerfMonCtr8_Lo,   mmUMCCH26_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH26_PerfMonCtl9,   mmUMCCH26_PerfMonCtlClk, mmUMCCH26_PerfMonCtr9_Lo,   mmUMCCH26_PerfMonCtr9_Hi},
+    {mmUMCCH26_PerfMonCtl10,  mmUMCCH26_PerfMonCtlClk, mmUMCCH26_PerfMonCtr10_Lo,  mmUMCCH26_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH26_PerfMonCtlClk, mmUMCCH26_PerfMonCtlClk, mmUMCCH26_PerfMonCtrClk_Lo, mmUMCCH26_PerfMonCtrClk_Hi},
+    {mmUMCCH27_PerfMonCtl1,   mmUMCCH27_PerfMonCtlClk, mmUMCCH27_PerfMonCtr1_Lo,   mmUMCCH27_PerfMonCtr1_Hi},
+    {mmUMCCH27_PerfMonCtl2,   mmUMCCH27_PerfMonCtlClk, mmUMCCH27_PerfMonCtr2_Lo,   mmUMCCH27_PerfMonCtr2_Hi},
+    {mmUMCCH27_PerfMonCtl3,   mmUMCCH27_PerfMonCtlClk, mmUMCCH27_PerfMonCtr3_Lo,   mmUMCCH27_PerfMonCtr3_Hi},
+    {mmUMCCH27_PerfMonCtl4,   mmUMCCH27_PerfMonCtlClk, mmUMCCH27_PerfMonCtr4_Lo,   mmUMCCH27_PerfMonCtr4_Hi},
+    {mmUMCCH27_PerfMonCtl5,   mmUMCCH27_PerfMonCtlClk, mmUMCCH27_PerfMonCtr5_Lo,   mmUMCCH27_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH27_PerfMonCtl6,   mmUMCCH27_PerfMonCtlClk, mmUMCCH27_PerfMonCtr6_Lo,   mmUMCCH27_PerfMonCtr6_Hi},
+    {mmUMCCH27_PerfMonCtl7,   mmUMCCH27_PerfMonCtlClk, mmUMCCH27_PerfMonCtr7_Lo,   mmUMCCH27_PerfMonCtr7_Hi},
+    {mmUMCCH27_PerfMonCtl8,   mmUMCCH27_PerfMonCtlClk, mmUMCCH27_PerfMonCtr8_Lo,   mmUMCCH27_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH27_PerfMonCtl9,   mmUMCCH27_PerfMonCtlClk, mmUMCCH27_PerfMonCtr9_Lo,   mmUMCCH27_PerfMonCtr9_Hi},
+    {mmUMCCH27_PerfMonCtl10,  mmUMCCH27_PerfMonCtlClk, mmUMCCH27_PerfMonCtr10_Lo,  mmUMCCH27_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH27_PerfMonCtlClk, mmUMCCH27_PerfMonCtlClk, mmUMCCH27_PerfMonCtrClk_Lo, mmUMCCH27_PerfMonCtrClk_Hi},
+    {mmUMCCH28_PerfMonCtl1,   mmUMCCH28_PerfMonCtlClk, mmUMCCH28_PerfMonCtr1_Lo,   mmUMCCH28_PerfMonCtr1_Hi},
+    {mmUMCCH28_PerfMonCtl2,   mmUMCCH28_PerfMonCtlClk, mmUMCCH28_PerfMonCtr2_Lo,   mmUMCCH28_PerfMonCtr2_Hi},
+    {mmUMCCH28_PerfMonCtl3,   mmUMCCH28_PerfMonCtlClk, mmUMCCH28_PerfMonCtr3_Lo,   mmUMCCH28_PerfMonCtr3_Hi},
+    {mmUMCCH28_PerfMonCtl4,   mmUMCCH28_PerfMonCtlClk, mmUMCCH28_PerfMonCtr4_Lo,   mmUMCCH28_PerfMonCtr4_Hi},
+    {mmUMCCH28_PerfMonCtl5,   mmUMCCH28_PerfMonCtlClk, mmUMCCH28_PerfMonCtr5_Lo,   mmUMCCH28_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH28_PerfMonCtl6,   mmUMCCH28_PerfMonCtlClk, mmUMCCH28_PerfMonCtr6_Lo,   mmUMCCH28_PerfMonCtr6_Hi},
+    {mmUMCCH28_PerfMonCtl7,   mmUMCCH28_PerfMonCtlClk, mmUMCCH28_PerfMonCtr7_Lo,   mmUMCCH28_PerfMonCtr7_Hi},
+    {mmUMCCH28_PerfMonCtl8,   mmUMCCH28_PerfMonCtlClk, mmUMCCH28_PerfMonCtr8_Lo,   mmUMCCH28_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH28_PerfMonCtl9,   mmUMCCH28_PerfMonCtlClk, mmUMCCH28_PerfMonCtr9_Lo,   mmUMCCH28_PerfMonCtr9_Hi},
+    {mmUMCCH28_PerfMonCtl10,  mmUMCCH28_PerfMonCtlClk, mmUMCCH28_PerfMonCtr10_Lo,  mmUMCCH28_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH28_PerfMonCtlClk, mmUMCCH28_PerfMonCtlClk, mmUMCCH28_PerfMonCtrClk_Lo, mmUMCCH28_PerfMonCtrClk_Hi},
+    {mmUMCCH29_PerfMonCtl1,   mmUMCCH29_PerfMonCtlClk, mmUMCCH29_PerfMonCtr1_Lo,   mmUMCCH29_PerfMonCtr1_Hi},
+    {mmUMCCH29_PerfMonCtl2,   mmUMCCH29_PerfMonCtlClk, mmUMCCH29_PerfMonCtr2_Lo,   mmUMCCH29_PerfMonCtr2_Hi},
+    {mmUMCCH29_PerfMonCtl3,   mmUMCCH29_PerfMonCtlClk, mmUMCCH29_PerfMonCtr3_Lo,   mmUMCCH29_PerfMonCtr3_Hi},
+    {mmUMCCH29_PerfMonCtl4,   mmUMCCH29_PerfMonCtlClk, mmUMCCH29_PerfMonCtr4_Lo,   mmUMCCH29_PerfMonCtr4_Hi},
+    {mmUMCCH29_PerfMonCtl5,   mmUMCCH29_PerfMonCtlClk, mmUMCCH29_PerfMonCtr5_Lo,   mmUMCCH29_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH29_PerfMonCtl6,   mmUMCCH29_PerfMonCtlClk, mmUMCCH29_PerfMonCtr6_Lo,   mmUMCCH29_PerfMonCtr6_Hi},
+    {mmUMCCH29_PerfMonCtl7,   mmUMCCH29_PerfMonCtlClk, mmUMCCH29_PerfMonCtr7_Lo,   mmUMCCH29_PerfMonCtr7_Hi},
+    {mmUMCCH29_PerfMonCtl8,   mmUMCCH29_PerfMonCtlClk, mmUMCCH29_PerfMonCtr8_Lo,   mmUMCCH29_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH29_PerfMonCtl9,   mmUMCCH29_PerfMonCtlClk, mmUMCCH29_PerfMonCtr9_Lo,   mmUMCCH29_PerfMonCtr9_Hi},
+    {mmUMCCH29_PerfMonCtl10,  mmUMCCH29_PerfMonCtlClk, mmUMCCH29_PerfMonCtr10_Lo,  mmUMCCH29_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH29_PerfMonCtlClk, mmUMCCH29_PerfMonCtlClk, mmUMCCH29_PerfMonCtrClk_Lo, mmUMCCH29_PerfMonCtrClk_Hi},
+    {mmUMCCH30_PerfMonCtl1,   mmUMCCH30_PerfMonCtlClk, mmUMCCH30_PerfMonCtr1_Lo,    mmUMCCH30_PerfMonCtr1_Hi},
+    {mmUMCCH30_PerfMonCtl2,   mmUMCCH30_PerfMonCtlClk, mmUMCCH30_PerfMonCtr2_Lo,    mmUMCCH30_PerfMonCtr2_Hi},
+    {mmUMCCH30_PerfMonCtl3,   mmUMCCH30_PerfMonCtlClk, mmUMCCH30_PerfMonCtr3_Lo,    mmUMCCH30_PerfMonCtr3_Hi},
+    {mmUMCCH30_PerfMonCtl4,   mmUMCCH30_PerfMonCtlClk, mmUMCCH30_PerfMonCtr4_Lo,    mmUMCCH30_PerfMonCtr4_Hi},
+    {mmUMCCH30_PerfMonCtl5,   mmUMCCH30_PerfMonCtlClk, mmUMCCH30_PerfMonCtr5_Lo,    mmUMCCH30_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH30_PerfMonCtl6,   mmUMCCH30_PerfMonCtlClk, mmUMCCH30_PerfMonCtr6_Lo,    mmUMCCH30_PerfMonCtr6_Hi},
+    {mmUMCCH30_PerfMonCtl7,   mmUMCCH30_PerfMonCtlClk, mmUMCCH30_PerfMonCtr7_Lo,    mmUMCCH30_PerfMonCtr7_Hi},
+    {mmUMCCH30_PerfMonCtl8,   mmUMCCH30_PerfMonCtlClk, mmUMCCH30_PerfMonCtr8_Lo,    mmUMCCH30_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH30_PerfMonCtl9,   mmUMCCH30_PerfMonCtlClk, mmUMCCH30_PerfMonCtr9_Lo,   mmUMCCH30_PerfMonCtr9_Hi},
+    {mmUMCCH30_PerfMonCtl10,  mmUMCCH30_PerfMonCtlClk, mmUMCCH30_PerfMonCtr10_Lo,  mmUMCCH30_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH30_PerfMonCtlClk, mmUMCCH30_PerfMonCtlClk, mmUMCCH30_PerfMonCtrClk_Lo,  mmUMCCH30_PerfMonCtrClk_Hi},
+    {mmUMCCH31_PerfMonCtl1,   mmUMCCH31_PerfMonCtlClk, mmUMCCH31_PerfMonCtr1_Lo,    mmUMCCH31_PerfMonCtr1_Hi},
+    {mmUMCCH31_PerfMonCtl2,   mmUMCCH31_PerfMonCtlClk, mmUMCCH31_PerfMonCtr2_Lo,    mmUMCCH31_PerfMonCtr2_Hi},
+    {mmUMCCH31_PerfMonCtl3,   mmUMCCH31_PerfMonCtlClk, mmUMCCH31_PerfMonCtr3_Lo,    mmUMCCH31_PerfMonCtr3_Hi},
+    {mmUMCCH31_PerfMonCtl4,   mmUMCCH31_PerfMonCtlClk, mmUMCCH31_PerfMonCtr4_Lo,    mmUMCCH31_PerfMonCtr4_Hi},
+    {mmUMCCH31_PerfMonCtl5,   mmUMCCH31_PerfMonCtlClk, mmUMCCH31_PerfMonCtr5_Lo,    mmUMCCH31_PerfMonCtr5_Hi},
+#if defined(_mi200_OFFSET_HEADER) || defined(_mi300_OFFSET_HEADER)
+    {mmUMCCH31_PerfMonCtl6,   mmUMCCH31_PerfMonCtlClk, mmUMCCH31_PerfMonCtr6_Lo,    mmUMCCH31_PerfMonCtr6_Hi},
+    {mmUMCCH31_PerfMonCtl7,   mmUMCCH31_PerfMonCtlClk, mmUMCCH31_PerfMonCtr7_Lo,    mmUMCCH31_PerfMonCtr7_Hi},
+    {mmUMCCH31_PerfMonCtl8,   mmUMCCH31_PerfMonCtlClk, mmUMCCH31_PerfMonCtr8_Lo,    mmUMCCH31_PerfMonCtr8_Hi},
+#endif
+#ifdef _mi300_OFFSET_HEADER
+    {mmUMCCH31_PerfMonCtl9,   mmUMCCH31_PerfMonCtlClk, mmUMCCH31_PerfMonCtr9_Lo,   mmUMCCH31_PerfMonCtr9_Hi},
+    {mmUMCCH31_PerfMonCtl10,  mmUMCCH31_PerfMonCtlClk, mmUMCCH31_PerfMonCtr10_Lo,  mmUMCCH31_PerfMonCtr10_Hi},
+#endif
+    {mmUMCCH31_PerfMonCtlClk, mmUMCCH31_PerfMonCtlClk, mmUMCCH31_PerfMonCtrClk_Lo,  mmUMCCH31_PerfMonCtrClk_Hi}};
+
 // Counter block info table
 // SPM global blocks: CPG, CPC, CPF, GDS, TCC, TCA, IA, TCS
 // SPM shader engine blocks: CB, DB, SC, SX, TA, TD, TCP, VGT, SQG, SPI, PA
@@ -654,6 +1137,8 @@ static const GpuBlockInfo GceaCounterBlockInfo = {"GCEA", GceaCounterBlockId, Gc
 static const GpuBlockInfo RpbCounterBlockInfo = {"RPB", RpbCounterBlockId, 1, RpbCounterBlockMaxEvent, RpbCounterBlockNumCounters, RpbCounterRegAddr, gfx9_cntx_prim::mc_select_value<regRPB_PERFCOUNTER0_CFG>, CounterBlockMcAttr};
 // Counter block SDMA
 static const GpuBlockInfo SdmaCounterBlockInfo = {"SDMA", SdmaCounterBlockId, SdmaCounterBlockNumInstances, SdmaCounterBlockMaxEvent, SdmaCounterBlockNumCounters, SdmaCounterRegAddr, NULL, CounterBlockSdmaAttr|CounterBlockExplInstAttr};
+// Counter block UMC
+static const GpuBlockInfo UmcCounterBlockInfo = {"UMC", UmcCounterBlockId, UmcCounterBlockNumInstances, UmcCounterBlockMaxEvent, UmcCounterBlockNumCounters, UmcCounterRegAddr, NULL, CounterBlockUmcAttr|CounterBlockExplInstAttr};
 }  // namespace gfx9
 }  // namespace gfxip
 

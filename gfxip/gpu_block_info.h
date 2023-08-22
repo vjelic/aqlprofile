@@ -36,6 +36,8 @@ enum CounterBlockAttr {
   CounterBlockGusAttr = 0x4000,
   // GRBM block
   CounterBlockGRBMAttr = 0x8000
+  // UMC blocks
+  CounterBlockUmcAttr = 0x10000
 };
 
 // Register address corresponding to each counter

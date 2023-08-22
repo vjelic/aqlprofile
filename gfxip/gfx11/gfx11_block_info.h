@@ -51,6 +51,8 @@ enum CounterBlockId {
   // SDMA block
   Sdma0CounterBlockId,
   Sdma1CounterBlockId,
+  // UMC block
+  UmcCounterBlockId,
 
   // Counters retrieved by KFD
   IommuV2CounterBlockId,
@@ -102,6 +104,7 @@ static const uint32_t TccCounterBlockNumInstances   = 16;
 static const uint32_t SdmaCounterBlockNumInstances  = 2;
 // MI100 has 8 SDMA instances
 static const uint32_t SdmaCounterBlockMaxInstances  = 8;
+static const uint32_t UmcCounterBlockMaxInstances   = 32;
 static const uint32_t RmiCounterBlockNumInstances   = 8;
 static const uint32_t GceaCounterBlockNumInstances  = 16;
 
@@ -119,6 +122,7 @@ static const uint32_t PaSuCounterBlockNumCounters   = 4;
 static const uint32_t PaScCounterBlockNumCounters   = 8;
 static const uint32_t RlcCounterBlockNumCounters    = 2;
 static const uint32_t SdmaCounterBlockNumCounters   = 2;
+static const uint32_t UmcCounterBlockNumCounters    = 5;
 static const uint32_t SpiCounterBlockNumCounters    = 6;
 static const uint32_t SqCounterBlockNumCounters     = 8;
 static const uint32_t SxCounterBlockNumCounters     = 4;

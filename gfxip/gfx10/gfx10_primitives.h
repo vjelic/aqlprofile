@@ -17,7 +17,6 @@ class gfx10_cntx_prim {
   static const uint32_t RLC_PERFMON_CLK_CNTL_ADDR = mmRLC_PERFMON_CLK_CNTL;
   static const uint32_t CP_PERFMON_CNTL_ADDR = mmCP_PERFMON_CNTL;
   static const uint32_t SRBM_PERFMON_CNTL_ADDR = 0;
-
   static const uint32_t COMPUTE_THREAD_TRACE_ENABLE_ADDR = mmCOMPUTE_THREAD_TRACE_ENABLE;
 
   static const uint32_t MC_CONFIG_MCD_ADDR = 0;
@@ -55,6 +54,7 @@ class gfx10_cntx_prim {
   static const uint32_t GUS_PERFCOUNTER_RSLT_CNTL_ADDR = mmGUS_PERFCOUNTER_RSLT_CNTL;
 
   static const uint32_t SDMA_COUNTER_BLOCK_NUM_INSTANCES = SdmaCounterBlockMaxInstances;
+  static const uint32_t UMC_COUNTER_BLOCK_NUM_INSTANCES = UmcCounterBlockMaxInstances;
 
   static const uint32_t RLC_SPM_PERFMON_CNTL__ADDR = mmRLC_SPM_PERFMON_CNTL;
   static const uint32_t RLC_SPM_MC_CNTL__ADDR = mmRLC_SPM_MC_CNTL;
@@ -423,6 +423,46 @@ class gfx10_cntx_prim {
   static uint32_t sdma_stop_value() {
     regSDMA0_PERFMON_CNTL sdma_perfmon_cntl{};
     return sdma_perfmon_cntl.u32All;
+  }
+
+  // UMC primitives
+  static uint32_t umc_disable_clear_value() {
+    // register: PERFMONCTLCLK
+    uint32_t disable_clear_value = 0;
+    // clear - GlblReset
+    disable_clear_value |= 1 << 24;
+    return disable_clear_value;
+  }
+
+  static uint32_t umc_enable_value() {
+    // register: PERFMONCTLCLK
+    uint32_t enable_value = 0;
+    // global enable
+    enable_value |= 1 << 25;
+    return enable_value;
+  }
+
+  static uint32_t umc_select_value(const counter_des_t& counter_des) {
+    // register: PERFMONCTR1-4
+    uint32_t select_value = 0;
+    // enable counter
+    select_value |= 1 << 31;
+    // perf select
+    select_value |= counter_des.id;
+    return select_value;
+  }
+
+  static uint32_t umc_select_cycle() {
+    // register: PERFMONCTR1-4
+    uint32_t select_cycle = 0;
+    // enable cycle
+    select_cycle |= 1 << 31;
+    return select_cycle;
+  }
+
+  static uint32_t umc_stop_value() {
+    // register: PERFMONCTR1-4/CLK
+    return 0;
   }
 
   // SPM trace routines
