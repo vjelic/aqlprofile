@@ -58,6 +58,7 @@ struct gfx9wave_t : public wavedata_t {
 
   void complete_wave(gfx9Token& token);
   void apply_inst(gfx9Token& token);
+  void apply_pc(gfx9Token& token);
   int64_t apply_issue(uint64_t wave_status, uint64_t token_time);
   static int64_t array_apply_issue(gfx9Token& token, WaveArray& SIMD);
 };

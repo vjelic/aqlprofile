@@ -77,6 +77,7 @@ const uint64_t SQTT_ISSUE_IMMED = 3;
 const uint64_t SQTT_TOKEN_WAVE_START = 3;
 const uint64_t SQTT_TOKEN_WAVE_END = 6;
 const uint64_t SQTT_TOKEN_INST = 10;
+const uint64_t SQTT_INST_PC = 11;
 const uint64_t SQTT_TOKEN_ISSUE = 13;
 const uint64_t SQTT_PERFCOUNTER_TOKEN = 14;
 
@@ -191,16 +192,13 @@ void wave_t::apply_inst(Token& token) {
       this->num_branch_taken_instrs += 1;
       this->instructions.push_back({token.time, WaveInstCategory::NEXT, issue2inst, 0});
     } else {
-      this->last_jump_inst = instructions.size();
       this->instructions.push_back({token.time, WaveInstCategory::JUMP, issue2inst, 0});
     }
   } else if (token.inst_type == 7) {
-    auto inst = instruction_t{token.time, WaveInstCategory::PCINFO, token.pc, 0};
-    if (last_jump_inst >= 0)
-      instructions.emplace(instructions.begin()+last_jump_inst+1, inst);
-    else
-      instructions.push_back(inst);
-    this->last_jump_inst = -1;
+    instructions.push_back(instruction_t{token.time, WaveInstCategory::SALU, 0, 4});
+    auto inst = instruction_t{token.time, WaveInstCategory::PCINFO, 0, 0};
+    this->last_jump_inst = instructions.size();
+    instructions.push_back(inst);
   }
 }
 
@@ -264,7 +262,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
     } else if (token.type == SQTT_TOKEN_ISSUE) {
       int64_t active_cycles = array_apply_issue(token, SIMD);
       total_num_issue_cycles += active_cycles;
-    } else if (token.type == SQTT_PERFCOUNTER_TOKEN)
+    } else if (token.type == SQTT_PERFCOUNTER_TOKEN) {
       perfEvents.push_back(perfevent_t{
         token.time - 4*token.cu,
         (uint16_t)token.cntr[0],
@@ -274,12 +272,24 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
         (uint8_t)token.cu,
         (uint8_t)token.cntr_bank
       });
+    } else if (token.type == SQTT_INST_PC) {
+      empty_wave_check(SIMD[token.simd][token.wave].size());
+      SIMD[token.simd][token.wave].back().apply_pc(token);
+    }
   }
 
   if (bHasLostPackets)
     std::cout << "Warning: Packet lost!" << std::endl;
 
   return std::make_tuple(SIMD, perfEvents, occupancy);
+}
+
+void wave_t::apply_pc(Token& token) {
+  if (last_jump_inst >= 0 && last_jump_inst < instructions.size())
+    instructions[last_jump_inst].issue2inst = token.pc<<2;
+  else
+    std::cout << "Invalid PC!" << std::endl;
+  this->last_jump_inst = -1;
 }
 
 int64_t wave_t::apply_issue(uint64_t wave_status, uint64_t token_time) {
