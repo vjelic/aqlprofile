@@ -544,8 +544,7 @@ class gfx11_cntx_prim {
 
   // Enable all of the WTYPEs
   // Enable Shader Array (SH) at index Zero to be used for fine-grained data
-  //static uint32_t sqtt_mask_value_gfx10 (){
-  static uint32_t sqtt_mask_value(uint32_t wgp, uint32_t simd){
+  static uint32_t sqtt_mask_value(uint32_t wgp, uint32_t simd, uint32_t vmid){
 #if SQTT_PRIM_ENABLED
     regSQ_THREAD_TRACE_MASK mask{};
     mask.bits.SIMD_SEL = simd;
@@ -568,6 +567,7 @@ class gfx11_cntx_prim {
 #if SQTT_PRIM_ENABLED
     regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
     token_mask.bits.REG_EXCLUDE = 0x7;
+    token_mask.bits.TOKEN_EXCLUDE = 0x2C9;
     return token_mask.u32All;
 #else
     return 0;
@@ -578,6 +578,7 @@ class gfx11_cntx_prim {
     regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
     token_mask.bits.REG_EXCLUDE = 0x7;
     token_mask.bits.INST_EXCLUDE = 0x3;
+    //token_mask.bits.TOKEN_EXCLUDE = 0x3EF;
     token_mask.bits.TOKEN_EXCLUDE = 0x7FF;
     return token_mask.u32All;
 #else

@@ -385,19 +385,24 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
         }
       }
       assert(data_size <= profile->output_buffer.size);
+
+      
     } else if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_TRACE) {
       pm4_builder::TraceConfig trace_config{};
-      memset(trace_config.perfcounters, 0, sizeof(trace_config.perfcounters));
+      memset((char*)&trace_config, 0, sizeof(pm4_builder::TraceConfig));
+      trace_config.vmIdMask = 0xF;
+      trace_config.simd_sel = 0xF;
+      trace_config.perfMASK = (1<<16)-1;
+      trace_config.se_mask = 0x3;
 
       const uint32_t se_number_total = pm4_factory->GetShaderEnginesNumber();
-      uint32_t se_mask = (uint64_t(1) << se_number_total) - uint64_t(1);
 
       if (profile->parameters) {
         for (const hsa_ven_amd_aqlprofile_parameter_t* p = profile->parameters;
              p < (profile->parameters + profile->parameter_count); ++p) {
           switch (p->parameter_name) {
             case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_SE_MASK:
-              se_mask = p->value;
+              trace_config.se_mask = p->value;
               break;
             case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_COMPUTE_UNIT_TARGET:
               if (p->value > 15)
@@ -406,26 +411,23 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
               trace_config.targetCu = p->value;
               break;
             case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_VM_ID_MASK:
-              if (p->value > 2)
-                throw aql_profile::aql_profile_exc_val<uint32_t>(
-                    "ThreadTraceConfig: VmId must be between 0 and 2, VmIdMask", p->value);
               trace_config.vmIdMask = p->value;
               break;
             case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_MASK:
               if ((p->value & 0x50) != 0)
                 throw aql_profile::aql_profile_exc_val<uint32_t>(
                     "ThreadTraceConfig: Mask should have bits [4,6] set to Zero, Mask", p->value);
-              trace_config.mask = p->value;
+              trace_config.deprecated_mask = p->value;
               break;
             case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_TOKEN_MASK:
               if ((p->value & 0xFF000000) != 0)
                 throw aql_profile::aql_profile_exc_val<uint32_t>(
                     "ThreadTraceConfig: TokenMask should have bits [31:25] set to Zero, TokenMask",
                     p->value);
-              trace_config.tokenMask = p->value;
+              trace_config.deprecated_tokenMask = p->value;
               break;
             case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_TOKEN_MASK2:
-              trace_config.tokenMask2 = p->value;
+              trace_config.deprecated_tokenMask2 = p->value;
               break;
             case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_SAMPLE_RATE:
               trace_config.sampleRate = p->value;
@@ -435,14 +437,22 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
               break;
             default:
               switch (hsa_ven_amd_aqlprofile_parameter_name_ext_t(p->parameter_name)) {
+                case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_SIMD_SELECT:
+                  trace_config.simd_sel = p->value & 0xF;
+                  break;
+                case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_OCCUPANCY:
+                  trace_config.occupancy_mode = p->value ? 1 : 0;
+                  break;
+                case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_BUFFER_SIZE:
+                  break;
                 case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERF_MASK:
                   trace_config.perfMASK = p->value;
                   break;
                 case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERF_CTRL:
-                  trace_config.perfCTRL = p->value;
+                  trace_config.perfCTRL = (p->value & 0x31) | 0x7F;
                   break;
                 case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERFCOUNTER:
-                  if(trace_config.n_perfcounters < 16) {
+                  if(trace_config.n_perfcounters < 8) {
                     trace_config.perfcounters[trace_config.n_perfcounters] = p->value;
                     trace_config.n_perfcounters ++;
                   } else {
@@ -474,7 +484,6 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
 
       trace_config.spm_sq_32bit_mode = true;
       trace_config.se_number_total = pm4_factory->GetShaderEnginesNumber();
-      trace_config.se_mask = se_mask;
       trace_config.sampleRate = 10000;//tbd
       trace_config.control_buffer_ptr = control_ptr;
       trace_config.data_buffer_ptr = profile->output_buffer.ptr;

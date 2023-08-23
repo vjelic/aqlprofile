@@ -10,9 +10,12 @@
 // Extension for hsa_ven_amd_aqlprofile_parameter_name_t in hsa_ven_amd_aqlprofile.h
 typedef enum {
   // Trace applicable parameters
-  HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERF_MASK = 240,
-  HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERF_CTRL = 241,
-  HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERFCOUNTER = 242
+  HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_SIMD_SELECT = 8,    //! Set SIMD Mask (GFX9) or SIMD ID for collection (Navi)
+  HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_OCCUPANCY = 9,      //! Set true for occupancy collection only.
+  HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_BUFFER_SIZE = 10,   //! ATT collection max data size, in MB. Shared among shader engines.
+  HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERF_MASK = 240,    //! Mask of which compute units to generate perfcounters. GFX9 only.
+  HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERF_CTRL = 241,    //! Select collection period for perfcounters. GFX9 only.
+  HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERFCOUNTER = 242,  //! Select perfcounter ID (SQ block) for collection. GFX9 only.
 } hsa_ven_amd_aqlprofile_parameter_name_ext_t;
 
 namespace pm4_builder {
@@ -122,16 +125,14 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::CP_PERFMON_CNTL_ADDR,
                                         Primitives::cp_perfmon_cntl_reset_value());
 
-    for (int perf = 0; perf < config->n_perfcounters && perf < 16; perf++) {
+    for (int perf = 0; perf < config->n_perfcounters && perf < 8; perf++) {
       Builder::BuildWriteConfigRegPacket(cmd_buffer, Primitives::sqtt_perfcounter_addr(perf),
                                         config->perfcounters[perf]);
     }
-    uint32_t perfmask = config->perfMASK ? config->perfMASK : 0xFFFFFFFF;
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_PERFCOUNTER_MASK_ADDR,
-                                        perfmask);
-    uint32_t perfctrl = config->perfCTRL ? config->perfCTRL : 0xFFFF0F7F;
+                                        config->perfMASK);
     Builder::BuildWriteConfigRegPacket(cmd_buffer, Primitives::SQ_PERFCOUNTER_CTRL_ADDR,
-                                        perfctrl);
+                                        config->perfCTRL);
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::CP_PERFMON_CNTL_ADDR,
                                         Primitives::cp_perfmon_cntl_start_value());
     Builder::BuildWriteWaitIdlePacket(cmd_buffer);
@@ -156,6 +157,10 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
     const uint32_t sqtt_size = base_step_nal >> Primitives::TT_BUFF_ALIGN_SHIFT;
     const uint32_t base_step = sqtt_size << Primitives::TT_BUFF_ALIGN_SHIFT;
 
+    const bool legacy_mode = config->deprecated_mask &&
+                             config->deprecated_tokenMask &&
+                             config->deprecated_tokenMask2;
+
     if (Primitives::GFXIP_LEVEL == 9) {
       // Program Grbm to broadcast messages to all shader engines
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
@@ -165,26 +170,26 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
       if (config->concurrent == 0) Builder::BuildWriteWaitIdlePacket(cmd_buffer);
       // Program the thread trace mask - specifies SH, CU, SIMD and
       // VM Id masks to apply. Enabling SQ/SPI/REG_STALL_EN bits
-      const uint32_t mask_value = (config->mask) ? config->mask :
-                      Primitives::sqtt_mask_value(config->targetCu, config->vmIdMask);
+      const uint32_t mask_value = (legacy_mode) ? config->deprecated_mask :
+                Primitives::sqtt_mask_value(config->targetCu, config->simd_sel, config->vmIdMask);
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_MASK_ADDR,
                                           mask_value);
       // Program the thread trace Perf mask
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_PERF_MASK_ADDR,
                                           Primitives::sqtt_perf_mask_value());
 
-      if (config->n_perfcounters) StartPerfMon(cmd_buffer, config);
+      if (config->n_perfcounters && config->perfCTRL) StartPerfMon(cmd_buffer, config);
 
       // Program the thread trace token mask
-      const uint32_t token_mask_value =
-          (config->tokenMask) ? config->tokenMask : Primitives::sqtt_token_mask_on_value();
+      uint32_t token_mask_value = (config->occupancy_mode) ?
+                              Primitives::sqtt_token_mask_off_value() :
+                              Primitives::sqtt_token_mask_on_value();
+      if (legacy_mode) token_mask_value = config->deprecated_tokenMask;
+
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_TOKEN_MASK_ADDR,
                                           token_mask_value);
       // Program the thread trace token mask2 to specify the list of instruction
       // tokens to record. Disabling INST_PC instruction tokens
-      const uint32_t token_mask2_value = (config->tokenMask2) ? Primitives::sqtt_token_mask2_value() : 0;
-      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_TOKEN_MASK2_ADDR,
-                                          token_mask2_value);
 
       // Program the thread trace mode register, mode OFF
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_MODE_ADDR,
@@ -194,18 +199,27 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
         Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_HIWATER_ADDR,
                                             Primitives::SQ_THREAD_TRACE_HIWATER_VAL);
       }
-      for (unsigned se_index_total = 0; se_index_total < config->se_number_total; se_index_total++) {
-        if ( ((1 << se_index_total) & config->se_mask) == 0 )
-          continue;
+      for (unsigned se_index = 0; se_index < config->se_number_total; se_index++) {
+          if ( ((1 << se_index) & config->se_mask) == 0 && !config->occupancy_mode)
+            continue;
 
-          unsigned xcc_index = se_index_total / se_number_xcc;
-          unsigned se_index = se_index_total % se_number_xcc;
+          uint32_t token_mask2_value = Primitives::sqtt_token_mask2_value();
+          if (legacy_mode)
+            token_mask2_value = config->deprecated_tokenMask2;
+          else if ( ((1 << se_index) & config->se_mask) == 0 )
+            token_mask2_value = 0;
+
+          unsigned xcc_index = se_index / se_number_xcc;
+          unsigned se_index_xcc = se_index % se_number_xcc;
 
           XCC_Packet_Lock<Builder> lock(this, cmd_buffer, GetXCCNumber(), xcc_index);
 
           // Program Grbm to direct writes to one SE
           Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
-                                              Primitives::grbm_se_sh_index_value(se_index, 0));
+                                              Primitives::grbm_se_sh_index_value(se_index_xcc, 0));
+          // Program tokenmask2
+          Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_TOKEN_MASK2_ADDR,
+                                              token_mask2_value);
           // Set SQTT STATUS to 0
           Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_STATUS_ADDR, 0);
           // Program base address of buffer to use for thread trace
@@ -219,16 +233,16 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
           // Program the thread trace ctrl register
           Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_CTRL_ADDR,
                                               Primitives::sqtt_ctrl_value());
+          // Issue a CSPartialFlush cmd including cache flush
+          if (config->concurrent == 0) Builder::BuildWriteWaitIdlePacket(cmd_buffer);
+          // Program the thread trace mode register, mode ON
+          Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_MODE_ADDR,
+                                          Primitives::sqtt_mode_on_value());
           base_addr += base_step;
       }
       // Reset the GRBM to broadcast mode
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
                                           Primitives::grbm_broadcast_value());
-      // Issue a CSPartialFlush cmd including cache flush
-      if (config->concurrent == 0) Builder::BuildWriteWaitIdlePacket(cmd_buffer);
-      // Program the thread trace mode register, mode ON
-      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_MODE_ADDR,
-                                          Primitives::sqtt_mode_on_value());
       // Issue a CSPartialFlush cmd including cache flush
       if (config->concurrent == 0) Builder::BuildWriteWaitIdlePacket(cmd_buffer);
     } else {
@@ -246,13 +260,13 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
         Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_BASE_ADDR, baddr_lo);
 
         // Program the thread trace mask
-        const uint32_t simd_sel = (config->mask >> 8) & 0x3;
-        const uint32_t mask_value = Primitives::sqtt_mask_value(config->mask & 0xF, simd_sel);
+        const uint32_t mask_value = Primitives::sqtt_mask_value(config->targetCu, config->simd_sel, config->vmIdMask);
         Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_MASK_ADDR, mask_value);
 
-        const uint32_t token_mask = ((1 << index) & config->se_mask) ?
-                                    Primitives::sqtt_token_mask_on_value():
-                                    Primitives::sqtt_token_mask_off_value();
+        uint32_t token_mask = ((1 << index) & config->se_mask) ?
+                                Primitives::sqtt_token_mask_on_value():
+                                Primitives::sqtt_token_mask_off_value();
+        if (config->occupancy_mode) token_mask &= ~((1<<10) | (1<<4));
         Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_TOKEN_MASK_ADDR, token_mask);
 
         if (config->concurrent == 0) Builder::BuildWriteWaitIdlePacket(cmd_buffer);
@@ -290,18 +304,18 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
 
       // Iterate through the list of SE's and read the Status, Counter and
       // Write Pointer registers of Thread Trace subsystem
-      for (unsigned se_index_total = 0; se_index_total < config->se_number_total; se_index_total++) {
-        if ( ((1 << se_index_total) & config->se_mask) == 0 )
+      for (unsigned se_index = 0; se_index < config->se_number_total; se_index++) {
+        if ( ((1 << se_index) & config->se_mask) == 0 )
           continue;
 
-        unsigned xcc_index = se_index_total / se_number_xcc;
-        unsigned se_index = se_index_total % se_number_xcc;
+        unsigned xcc_index = se_index / se_number_xcc;
+        unsigned se_index_xcc = se_index % se_number_xcc;
 
         XCC_Packet_Lock<Builder> lock(this, cmd_buffer, GetXCCNumber(), xcc_index);
 
         // Program Grbm to direct writes to one SE
         Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
-                                            Primitives::grbm_se_sh_index_value(se_index, 0));
+                                            Primitives::grbm_se_sh_index_value(se_index_xcc, 0));
 
         // Issue WaitRegMem command to wait until SQTT event has completed
         const bool func_eq = false;
@@ -312,7 +326,7 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
         Builder::BuildWaitRegMemCommand(cmd_buffer, mem_space, status_offset, func_eq, mask_val,
                                         wait_val);
 
-        ReadValues(cmd_buffer, config, se_index_total);
+        ReadValues(cmd_buffer, config, se_index);
       }
       // Reset the GRBM to broadcast mode
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,

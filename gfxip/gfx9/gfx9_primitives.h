@@ -526,10 +526,10 @@ class gfx9_cntx_prim {
   // @note: Not enabling REG_STALL_EN, SPI_STALL_EN and SQ_STALL_EN bits. They
   // are useful if we wish to program buffer throttling.
   //
-  static uint32_t sqtt_mask_value(uint32_t targetCu, uint32_t vmIdMask) {
+  static uint32_t sqtt_mask_value(uint32_t targetCu, uint32_t simd, uint32_t vmIdMask) {
     regSQ_THREAD_TRACE_MASK mask{};
     mask.bits.SH_SEL = 0x0;
-    mask.bits.SIMD_EN = 0xF;
+    mask.bits.SIMD_EN = simd;
     mask.bits.CU_SEL = targetCu;
     mask.bits.SQ_STALL_EN = 0x1;
     mask.bits.SPI_STALL_EN = 0x1;
@@ -550,13 +550,19 @@ class gfx9_cntx_prim {
   // Indicate the different TT tokens that specify register operations to be logged
   static uint32_t sqtt_token_mask_on_value() {
     regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
-    token_mask.bits.REG_MASK = 0xFF;
-    token_mask.bits.TOKEN_MASK = 0xFFFF;
+    token_mask.bits.REG_MASK = 0x0;
+    token_mask.bits.TOKEN_MASK = 0x344B;
     token_mask.bits.REG_DROP_ON_STALL = 0x1;
     return token_mask.u32All;
   }
 
-  static uint32_t sqtt_token_mask_off_value() { return 0; }
+  static uint32_t sqtt_token_mask_off_value() {
+    regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
+    token_mask.bits.REG_MASK = 0x0;
+    token_mask.bits.TOKEN_MASK = 0x104A;
+    token_mask.bits.REG_DROP_ON_STALL = 0x1;
+    return token_mask.u32All;
+  }
 
   // Indicate the different TT tokens that specify instruction operations to be logged
   // Disabling specifically instruction operations updating Program Counter (PC).
