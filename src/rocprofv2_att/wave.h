@@ -45,6 +45,7 @@ enum class WaveInstCategory {
   NEXT = 8,
   IMMED = 9,
   TRAP = 10,
+  PCINFO = 15,
   WAVE_END,
 };
 

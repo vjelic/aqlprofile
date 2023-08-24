@@ -48,7 +48,7 @@ struct gfx10wave_t : public wavedata_t {
   int64_t issue_time = 0;  // use to calculate instruction cycles
   int64_t inst_time = 0;   // use to calculate instruction cycles */
 
-  uint64_t last_jump_inst = 0;
+  int last_jump_inst = -1;
   int target_simd = 0;
   bool ImmFromBranch = false;
 
@@ -58,6 +58,7 @@ struct gfx10wave_t : public wavedata_t {
   void apply_immediate(gfx10Token token);
   void update_immediate(int64_t token_time);
   void set_state_exec(int64_t time, int64_t duration);
+  void new_pc(uint64_t time, int64_t pc_value);
   operator bool() const { return true; } // TODO: Change based on cur_state
 
   static constexpr uint64_t SQTT_CFG_WAVES = 32;

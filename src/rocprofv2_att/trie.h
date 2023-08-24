@@ -73,6 +73,7 @@ typedef struct {
   std::string loc;
   uint32_t index;
   int line_num;
+  int64_t addr;
 } processed_t;
 
 typedef std::pair<std::vector<processed_t>, std::unordered_map<int, int>> AsParseRetype;
