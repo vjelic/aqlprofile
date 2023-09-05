@@ -91,6 +91,14 @@ class TestPGenSqtt : public TestPGen {
     TEST_ASSERT((reinterpret_cast<uintptr_t>(profile_.command_buffer.ptr) &
                  (command_buffer_alignment - 1)) == 0);
 
+    this->parameters = {
+      {HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_COMPUTE_UNIT_TARGET, 1},
+      {HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_SE_MASK, 0xFFFFFF},
+      {static_cast<hsa_ven_amd_aqlprofile_parameter_name_t>(8), 0xF},
+    };
+    profile_.parameters = parameters.data();
+    profile_.parameter_count = parameters.size();
+
     // Application is allocating the output buffer
     // AllocateLocal(output_buffer_alignment, output_buffer_size,
     //               MODE_DEV_ACC)
@@ -119,6 +127,7 @@ class TestPGenSqtt : public TestPGen {
   bool DumpData() {
     std::clog << "TestPGenSqtt::DumpData :" << std::endl;
 
+    bool bSomeSECollected = false;
     callback_data_t data;
     api_->hsa_ven_amd_aqlprofile_iterate_data(&profile_, TestPGenSqttCallback, &data);
     for (callback_data_t::iterator it = data.begin(); it != data.end(); ++it) {
@@ -126,6 +135,7 @@ class TestPGenSqtt : public TestPGen {
                 << it->trace_data.size << ") ptr(" << std::hex << it->trace_data.ptr << ")"
                 << std::endl;
 
+      if (it->trace_data.size == 0) continue;
       void* sys_buf = GetRsrcFactory()->AllocateSysMemory(GetAgentInfo(), it->trace_data.size);
       TEST_ASSERT(sys_buf != NULL);
       if (sys_buf == NULL) return false;
@@ -148,7 +158,9 @@ class TestPGenSqtt : public TestPGen {
       }
 
       out_file.close();
+      bSomeSECollected = true;
     }
+    TEST_ASSERT(bSomeSECollected == true);
 
     return true;
   }
@@ -156,6 +168,7 @@ class TestPGenSqtt : public TestPGen {
   static const uint32_t buffer_alignment_ = 0x1000;  // 4K
   static const uint32_t buffer_size_ = 0x2000000;    // 32M
 
+  std::vector<hsa_ven_amd_aqlprofile_parameter_t> parameters;
   hsa_ven_amd_aqlprofile_profile_t profile_;
 };
 
