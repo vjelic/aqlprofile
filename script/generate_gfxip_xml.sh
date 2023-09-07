@@ -17,8 +17,8 @@ if [ "$#" != "1" ] && [ "$#" != "2" ] ; then
 fi
 
 # check the input gfxip; supported versions are gfx9/gfx906/gfx908....
-if [[ ! "$gfxip" =~ ^(gfx9|gfx906|gfx908|gfx90a|gfx1030|gfx1031|gfx1032|gfx1100|gfx1101)$ ]]; then
-    printf "Unknown GFXIP version \"$gfxip\", supported: gfx9/gfx906/gfx908/gfx90a/gfx1030|gfx1031|gfx1032|gfx1100|gfx1101\n"
+if [[ ! "$gfxip" =~ ^(gfx9|gfx906|gfx908|gfx90a|gfx940|gfx1030|gfx1031|gfx1032|gfx1100|gfx1101)$ ]]; then
+    printf "Unknown GFXIP version \"$gfxip\", supported: gfx9/gfx906/gfx908/gfx90a/gfx940/gfx1030|gfx1031|gfx1032|gfx1100|gfx1101\n"
     exit
 fi
 
