@@ -40,10 +40,10 @@ public:
             timestamp_gfx11_type stamp { .raw = contents };
             if (stamp.type <= 1)
                 return stamp.time + cur_time;
-            else if (!bInitTime && stamp.time >= cur_time) {
+            /*else if (!bInitTime && stamp.time >= cur_time) {
                 bInitTime = true;
                 return stamp.time;
-            }
+            }*/
             return cur_time;
         }
         return getDelta(type, contents) + cur_time;

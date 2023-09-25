@@ -28,7 +28,7 @@
 
 struct gfx10wave_t : public wavedata_t {
   gfx10wave_t() = default;
-  gfx10wave_t(class gfx10Token&, int64_t last_completed_wave_cycle, int tg_simd);
+  gfx10wave_t(class gfx10Token&, int tg_simd, uint64_t start_addr);
 
   std::vector<std::pair<uint64_t, uint64_t>> timeline;  // wave state in each cycle
   std::vector<instruction_t> instructions;              // (time, instruction_category)*
@@ -61,13 +61,17 @@ struct gfx10wave_t : public wavedata_t {
   void new_pc(uint64_t time, int64_t pc_value);
   operator bool() const { return true; } // TODO: Change based on cur_state
 
-  static constexpr uint64_t SQTT_CFG_WAVES = 32;
+  static constexpr uint64_t SQTT_CFG_WAVES = 16;
   static int dp_cycles;
   static int dp_derate;
 
   typedef std::array<std::vector<gfx10wave_t>, SQTT_CFG_WAVES> WaveArray;
-  static std::tuple<WaveArray, std::vector<perfevent_t>, std::vector<occupancy_info_t>>
-                    sqtt_simd_analysis(std::vector<gfx10Token>& tokens, int target_cu = 1);
+  static std::tuple<
+    WaveArray,
+    std::vector<perfevent_t>,
+    std::vector<occupancy_info_t>,
+    std::vector<uint64_t>
+  > sqtt_simd_analysis(std::vector<gfx10Token>& tokens, int target_cu = 1);
 
   //static std::unordered_map<int, const char*> INST_NAMES;
   static std::pair<WaveInstCategory, uint16_t> inst_map_to_gfx9(int einst);

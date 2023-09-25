@@ -51,12 +51,11 @@ class gfx9Token {
 
   void CheckWave() {
     if (wave < 10) return;
-    //std::cout << "Invalid wave slot: " << wave << std::endl;
     type = 0;
     misc_type = 2;
   }
 
-  void timestamp() { time = get_bits(16, 63); }  // std::cout << time << std::endl; exit(0); }
+  void timestamp() { time = get_bits(16, 63); }
   uint64_t time;
 
   void misc() {
@@ -100,7 +99,7 @@ class gfx9Token {
 
   void msg_reg() {
     delta = get_bits(4, 4);
-    pip = get_bits(5, 6);
+    pipe = get_bits(5, 6);
     me = get_bits(7, 8);
     reg_dropped_prev = get_bits(9, 9);
     reg_type = get_bits(10, 12);
@@ -109,11 +108,12 @@ class gfx9Token {
     regaddr = get_bits(16, 31);
     regdata = get_bits(32, 63);
   }
-  int16_t pip, me, reg_dropped_prev, reg_type, reg_priv, reg_op, regaddr, regdata;
+  uint32_t regdata;
+  int16_t pipe, me, reg_dropped_prev, reg_type, reg_priv, reg_op, regaddr;
 
   void msg_reg_cs() {
     delta = get_bits(4, 4);
-    pip = get_bits(5, 6);
+    pipe = get_bits(5, 6);
     me = get_bits(7, 8);
     regaddr = get_bits(9, 15);
     regdata = get_bits(16, 47);

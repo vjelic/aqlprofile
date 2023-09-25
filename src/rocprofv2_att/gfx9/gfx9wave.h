@@ -28,7 +28,7 @@
 
 struct gfx9wave_t : public wavedata_t {
   gfx9wave_t() = default;
-  gfx9wave_t(class gfx9Token&);
+  gfx9wave_t(class gfx9Token&, uint64_t addr);
 
   static constexpr uint64_t SQTT_CFG_SIMDS = 4;
   static constexpr uint64_t SQTT_CFG_WAVES = 10;
@@ -49,8 +49,12 @@ struct gfx9wave_t : public wavedata_t {
   int last_jump_inst = -1;
 
   typedef std::array<std::array<std::vector<gfx9wave_t>, SQTT_CFG_WAVES>, SQTT_CFG_SIMDS> WaveArray;
-  static std::tuple<WaveArray, std::vector<perfevent_t>, std::vector<occupancy_info_t>>
-                    sqtt_simd_analysis(std::vector<gfx9Token>& tokens, int target_cu = 1);
+  static std::tuple<
+    WaveArray,
+    std::vector<perfevent_t>,
+    std::vector<occupancy_info_t>,
+    std::vector<uint64_t>
+  > sqtt_simd_analysis(std::vector<gfx9Token>& tokens, int target_cu = 1);
 
   static std::unordered_map<int, std::string> inst_type_dict;
   static std::unordered_map<int, std::string> token_name_dict;

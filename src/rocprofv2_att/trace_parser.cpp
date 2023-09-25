@@ -78,6 +78,7 @@ struct wavedata_persist_t : public wavedata_t {
 std::vector<wavedata_persist_t> wavedata;
 std::vector<perfevent_t> perfevents;
 std::vector<occupancy_info_t> occupancy;
+std::vector<uint64_t> kernel_ids_addr;
 
 
 return_info_t AnalyseBinary_GFX9(const uint8_t* tokendata, int buffersize, int target_cu) {
@@ -85,7 +86,6 @@ return_info_t AnalyseBinary_GFX9(const uint8_t* tokendata, int buffersize, int t
 
   gfx9Token::patch_time(tokens);
   auto result = gfx9wave_t::sqtt_simd_analysis(tokens, target_cu);
-  occupancy = std::get<2>(result);
 
   int num_waves = 0;
   for (auto& Wave_j : std::get<0>(result))
@@ -104,6 +104,8 @@ return_info_t AnalyseBinary_GFX9(const uint8_t* tokendata, int buffersize, int t
       }
 
   perfevents = std::move(std::get<1>(result));
+  kernel_ids_addr = std::move(std::get<3>(result));
+  occupancy = std::move(std::get<2>(result));
 
   return_info_t info;
   info.wavedata = wavedata.data();
@@ -112,7 +114,12 @@ return_info_t AnalyseBinary_GFX9(const uint8_t* tokendata, int buffersize, int t
   info.num_events = perfevents.size();
   info.occupancy = occupancy.data();
   info.num_occupancy = occupancy.size();
-  info.flags = _output_flags_t{ .isNavi = false };
+  info.kernel_id_addr = kernel_ids_addr.data();
+  info.num_kernel_ids = kernel_ids_addr.size();
+
+  info.flags.isNavi = false;
+  info.flags.npiWaveData = true;
+  info.flags.version = 1;
   return info;
 }
 
@@ -120,7 +127,6 @@ return_info_t AnalyseBinary_GFX10(const uint8_t* tokendata, int buffersize, int 
   std::vector<gfx10Token> tokens = gfx10Token::parse(tokendata, buffersize);
 
   auto result = gfx10wave_t::sqtt_simd_analysis(tokens, target_cu);
-  occupancy = std::get<2>(result);
 
   int num_waves = 0;
     for (auto& Wave_ij : std::get<0>(result)) num_waves += Wave_ij.size();
@@ -138,6 +144,8 @@ return_info_t AnalyseBinary_GFX10(const uint8_t* tokendata, int buffersize, int 
   }
 
   perfevents = std::move(std::get<1>(result));
+  kernel_ids_addr = std::move(std::get<3>(result));
+  occupancy = std::move(std::get<2>(result));
 
   return_info_t info;
   info.wavedata = wavedata.data();
@@ -146,7 +154,13 @@ return_info_t AnalyseBinary_GFX10(const uint8_t* tokendata, int buffersize, int 
   info.num_events = perfevents.size();
   info.occupancy = occupancy.data();
   info.num_occupancy = occupancy.size();
-  info.flags = _output_flags_t{ .isNavi = true };
+  info.kernel_id_addr = kernel_ids_addr.data();
+  info.num_kernel_ids = kernel_ids_addr.size();
+
+  info.flags.isNavi = true;
+  info.flags.npiWaveData = true;
+  info.flags.version = 1;
+
   return info;
 }
 
@@ -154,7 +168,6 @@ return_info_t AnalyseBinary_GFX11(const uint8_t* tokendata, int buffersize, int 
   std::vector<gfx10Token> tokens = gfx11Token::parse(tokendata, buffersize);
 
   auto result = gfx11wave_t::sqtt_simd_analysis(tokens, target_cu);
-  occupancy = std::get<2>(result);
 
   int num_waves = 0;
   for (auto& Wave_ij : std::get<0>(result)) num_waves += Wave_ij.size();
@@ -172,6 +185,8 @@ return_info_t AnalyseBinary_GFX11(const uint8_t* tokendata, int buffersize, int 
   }
 
   perfevents = std::move(std::get<1>(result));
+  occupancy = std::move(std::get<2>(result));
+  kernel_ids_addr = std::move(std::get<3>(result));
 
   return_info_t info;
   info.wavedata = wavedata.data();
@@ -180,7 +195,12 @@ return_info_t AnalyseBinary_GFX11(const uint8_t* tokendata, int buffersize, int 
   info.num_events = perfevents.size();
   info.occupancy = occupancy.data();
   info.num_occupancy = occupancy.size();
-  info.flags = _output_flags_t{ .isNavi = true };
+  info.kernel_id_addr = kernel_ids_addr.data();
+  info.num_kernel_ids = kernel_ids_addr.size();
+
+  info.flags.isNavi = true;
+  info.flags.npiWaveData = true;
+  info.flags.version = 1;
   return info;
 }
 

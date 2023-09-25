@@ -542,13 +542,8 @@ class gfx10_cntx_prim {
   static uint32_t sqtt_token_mask_on_value() {
 #if SQTT_PRIM_ENABLED
     regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
-    /*token_mask.bits.REG_INCLUDE = SQ_TT_TOKEN_MASK_SQDEC_BIT |
-                                  SQ_TT_TOKEN_MASK_SHDEC_BIT |
-                                  SQ_TT_TOKEN_MASK_GFXUDEC_BIT |
-                                  SQ_TT_TOKEN_MASK_COMP_BIT |
-                                  SQ_TT_TOKEN_MASK_CONTEXT_BIT |
-                                  SQ_TT_TOKEN_MASK_CONFIG_BIT; */
-    token_mask.bits.TOKEN_EXCLUDE = 0x800;  //token_exclude_perf
+    token_mask.bits.REG_INCLUDE = 0x8;
+    token_mask.bits.TOKEN_EXCLUDE = 0x689;
     return token_mask.u32All;
 #else
     return 0;
@@ -559,7 +554,7 @@ class gfx10_cntx_prim {
 #if SQTT_PRIM_ENABLED
     regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
     token_mask.bits.INST_EXCLUDE = 0x3;
-    token_mask.bits.TOKEN_EXCLUDE = 0xFFF;
+    token_mask.bits.TOKEN_EXCLUDE = 0x7FF;
     return token_mask.u32All;
 #else
     return 0;
