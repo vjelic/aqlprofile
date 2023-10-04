@@ -25,6 +25,7 @@
 #include <vector>
 #include <algorithm>
 #include <utility>
+#include <unordered_set>
 #include "gfx10wave.h"
 #include "../gfx11/gfx11wave.h"
 
@@ -263,15 +264,13 @@ std::pair<WaveInstCategory, uint16_t> gfx10wave_t::inst_map_to_gfx9(int einst) {
 
 #define empty_wave_check(waveslot_size) if (waveslot_size == 0) { continue; }
 
-wave_t::gfx10wave_t(Token& token, int64_t last_completed_wave_cycle, int tg_simd) {
+wave_t::gfx10wave_t(Token& token, int tg_simd, uint64_t start_addr) {
   this->begin_time = token.time;
   this->last_state_cycle = token.time;
   this->target_simd = tg_simd;
 
-  //timeline.push_back(std::make_pair(WAVESLOT_STATE::WS_EMPTY, token.time));
-  //int64_t num_cycles = token.time - last_completed_wave_cycle;
-  //if (num_cycles > 0)
-  //  timeline.push_back(std::make_pair(WAVESLOT_STATE::WS_EMPTY, num_cycles));
+  instruction_t inst{this->begin_time, WaveInstCategory::PCINFO, start_addr, 0};
+  instructions.push_back(inst);
 }
 
 void wave_t::complete_wave(Token& token) {
@@ -283,7 +282,12 @@ void wave_t::complete_wave(Token& token) {
   num_mem_instrs = num_lds_instrs + num_smem_instrs + num_vmem_instrs + num_flat_instrs;
 }
 
-std::tuple<WaveArray, std::vector<perfevent_t>, std::vector<occupancy_info_t>>
+std::tuple<
+  WaveArray,
+  std::vector<perfevent_t>,
+  std::vector<occupancy_info_t>,
+  std::vector<uint64_t>
+>
 wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
   bool bHasLostPackets = false;
   WaveArray SIMD;
@@ -291,10 +295,9 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
   int num_waves_started = 0;
   int num_waves_completed = 0;
   bool bInitBeginTime = false;
-  std::array<int64_t, SQTT_CFG_WAVES> last_completed_wave_cycle{};
+
   std::vector<perfevent_t> perfEvents{};
   std::vector<occupancy_info_t> occupancy = {};
-  std::array<int, 16> current_occupancy = {};
   std::vector<alu_user_inst_t> alu_stack = {};
   int alu_exec_count = 0;
 
@@ -302,6 +305,28 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
   int target_simd = 0;
   int tt_version = 0;
 
+  std::array<std::array<std::array<uint64_t, 2>, 4>, 2> wave_start_addr{};
+
+  static int current_kernel_unique_id = 1;
+  // kernel_addr -> kernel_ID
+  static auto kernelID = std::unordered_map<uint64_t, uint64_t>{{0,0}};
+  // kernel_addr -> SA -> WGP
+  auto current_occupancy = std::vector<std::array<int, 16>>(current_kernel_unique_id);
+  // data from all waves
+  auto running_waves = std::unordered_map<uint64_t, uint64_t>{};
+
+  {
+    occupancy_info_t occ;
+    occ.kernel_id = 0;
+    occ.time = 0;
+    occ.value = 0;
+    for (int cu=0; cu<16; cu++) {
+      occ.cu = (uint64_t)cu;
+      occupancy.push_back(occ);
+    }
+  }
+
+  auto retroactive_occ_waves = std::array<std::vector<uint32_t>, 16>{};
 
   for (size_t t = 0; t<tokens.size(); t++) {
     Token& token = tokens[t];
@@ -320,25 +345,33 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
         dp_cycles = (1<<dp_cycles)/2;
         dp_derate = (tt_version == 3) ? (1<<header.dp_derate)/2 : 1;
         tt_version = header.version;
-        //header.print();
         break;
       }
-      case gfx10type::WAVE_START: {
-        if (!bInitBeginTime) {
-          bInitBeginTime = true;
-          for (int i=0; i<SQTT_CFG_WAVES; i++)
-            last_completed_wave_cycle[i] = token.time;
-        }
+      case gfx10type::WAVE_START:
+      {
         wstart_type start { .raw = token.contents };
-        if (start.wgp == target_wgp && start.simd == target_simd && start.sa == 0)
-          SIMD[start.wid].push_back(wave_t(token, last_completed_wave_cycle[start.wid], start.simd));
-        current_occupancy[(start.wgp & 0x7)*2 + start.sa] += 1;
+        auto& pipe = wave_start_addr[start.me&1][start.pipe];
+        uint64_t wave_addr = ((pipe[0] << 8) | ((pipe[1] & 0xFF) << 40));
+
+        if (kernelID.find(wave_addr) == kernelID.end()) {
+          kernelID[wave_addr] = current_kernel_unique_id;
+          current_kernel_unique_id += 1;
+          current_occupancy.push_back({});
+        }
+        uint64_t kid = kernelID[wave_addr];
+        running_waves[start.getGPULocation()] = kid;
+
+        current_occupancy[kid][start.SACU()] += 1;
         occupancy.push_back(occupancy_info_t{
-          (uint64_t)start.wgp,
-          (uint64_t)current_occupancy[(start.wgp & 0x7)*2 + start.sa],
-          (uint64_t)token.time
+          .kernel_id = (uint64_t)kid,
+          .value = (uint64_t)current_occupancy[kid][start.SACU()],
+          .cu = (uint64_t)start.SACU(),
+          .time = (uint64_t)token.time/16,
         });
         num_waves_started += 1;
+
+        if (start.wgp == target_wgp && start.simd == target_simd && start.sa == 0)
+          SIMD[start.wid].push_back(wave_t(token, start.simd, wave_addr));
         break;
       }
       case gfx10type::WAVE_END: {
@@ -346,15 +379,32 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
         if (end.wgp == target_wgp && end.simd == target_simd && end.sa == 0) {
           empty_wave_check(SIMD[end.wid].size());
           SIMD[end.wid].back().complete_wave(token);
-          last_completed_wave_cycle[end.wid] = token.time;
         }
-        current_occupancy[(end.wgp & 0x7)*2 + end.sa] -= 1;
-        occupancy.push_back(occupancy_info_t{
-          (uint64_t)end.wgp,
-          (uint64_t)current_occupancy[(end.wgp & 0x7)*2 + end.sa],
-          (uint64_t)token.time
-        });
-        num_waves_completed += 1;
+
+        if (running_waves.find(end.getGPULocation()) != running_waves.end())
+        {
+          num_waves_completed += 1;
+          uint64_t kid = running_waves[end.getGPULocation()];
+          assert(current_occupancy.size() > kid);
+          current_occupancy[kid][end.SACU()] -= 1;
+
+          occupancy.push_back(occupancy_info_t{
+            .kernel_id = (uint64_t)kid,
+            .value = (uint64_t)current_occupancy[kid][end.SACU()],
+            .cu = (uint64_t)end.SACU(),
+            .time = (uint64_t)token.time/16,
+          });
+        }
+        else
+        {
+          retroactive_occ_waves[end.SACU()].push_back(occupancy.size());
+          occupancy.push_back(occupancy_info_t{
+            .kernel_id = (uint64_t)0,
+            .value = (uint64_t)current_occupancy[0][end.SACU()],
+            .cu = (uint64_t)end.SACU(),
+            .time = (uint64_t)token.time/16,
+          });
+        }
         break;
       }
       case gfx10type::INST: {
@@ -403,7 +453,19 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
           SIMD[pc.wave].back().new_pc((uint64_t)token.time, pc.pc);
         break;
       }
+      case gfx10type::REG: {
+        reg_write_type reg { .raw = token.contents };
+        reg.addr &= 0xFF;
+        if (reg.CS && reg.addr >= 0xC && reg.addr <= 0xD)
+          wave_start_addr[reg.me&0x1][reg.pipe][reg.addr - 0xC] = reg.data;
+        break;
+      }
       /*
+      case gfx10type::REG_INIT: {
+        reg_init_type reg { .raw = token.contents };
+        reg.print();
+        break;
+      }
       case gfx10type::UTIL_COUNTER: {
         util_ctr_gfx10_type util { .raw = token.contents };
         if (util.cID == 0) {
@@ -443,6 +505,21 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
     }
   }
 
+  // Fix occupancy for wave_end that does not have a wave_start token
+  for (int cu=0; cu<retroactive_occ_waves.size(); cu++)
+  {
+    int last_index = 0;
+    auto& retro = retroactive_occ_waves[cu];
+
+    for (int j=0; j<retro.size(); j++)
+    {
+      for (int k=last_index; k<retro[j]; k++)
+        if (occupancy[k].kernel_id == 0 && occupancy[k].cu == cu)
+          occupancy[k].value += retro.size()-j;
+      last_index = retro[j];
+    }
+  }
+
   if (alu_stack.size() == alu_exec_count)
   for (int a=0; a<alu_stack.size(); a++) {
     auto& alu = alu_stack[a];
@@ -466,7 +543,13 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
   if (bHasLostPackets)
     std::cout << "Warning: Packet lost!" << std::endl;
 
-  return std::make_tuple(SIMD, perfEvents, occupancy);
+  std::unordered_map<uint64_t, uint64_t> rev_map;
+  for (auto& kv : kernelID) rev_map.insert({kv.second, kv.first});
+
+  std::vector<uint64_t> kid_map;
+  for (int key = 0; key < current_occupancy.size(); key++) kid_map.push_back(rev_map[key]);
+
+  return std::make_tuple(SIMD, perfEvents, occupancy, kid_map);
 }
 
 void wave_t::new_pc(uint64_t time, int64_t pc) {

@@ -542,7 +542,6 @@ class gfx9_cntx_prim {
   static uint32_t sqtt_perf_mask_value() {
     regSQ_THREAD_TRACE_PERF_MASK perf_mask{};
     perf_mask.bits.SH0_MASK = 0xFFFF;
-    perf_mask.bits.SH1_MASK = 0xFFFF;
     return perf_mask.u32All;
   }
 
@@ -550,9 +549,8 @@ class gfx9_cntx_prim {
   // Indicate the different TT tokens that specify register operations to be logged
   static uint32_t sqtt_token_mask_on_value() {
     regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
-    token_mask.bits.REG_MASK = 0x0;
-    token_mask.bits.TOKEN_MASK = 0x3C4B;
-    token_mask.bits.REG_DROP_ON_STALL = 0x1;
+    token_mask.bits.REG_MASK = 0xF;
+    token_mask.bits.TOKEN_MASK = 0xBC6B;
     return token_mask.u32All;
   }
 
@@ -560,7 +558,6 @@ class gfx9_cntx_prim {
     regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
     token_mask.bits.REG_MASK = 0x0;
     token_mask.bits.TOKEN_MASK = 0x104A;
-    token_mask.bits.REG_DROP_ON_STALL = 0x1;
     return token_mask.u32All;
   }
 

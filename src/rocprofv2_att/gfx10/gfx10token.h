@@ -82,16 +82,21 @@ union wstart_type {
         uint64_t simd : 2;
         uint64_t wgp : 3;
         uint64_t wid : 5;
-        uint64_t dispatcher : 7;
+        uint64_t queue : 3;
+        uint64_t pipe : 2;
+        uint64_t me : 1;
+        uint64_t dispatcher : 1;
         uint64_t count : 7;
     };
     uint64_t raw;
 
     void print() const {
-        /*std::cout << "WSTART - wgp:" << wgp << " simd:" << simd << " wid: "
-                  << wid << " sa:" << sa << " dispatch:" << dispatcher << std::endl;*/
+        /*std::cout << std::dec << "WSTART - wgp:" << wgp << " simd:" << simd << " wid: " << wid << " sa:"
+                  << sa << " qid:" << queue_id << " me:" << me_id << " pipe:" << pipe_id << std::endl; */
     }
-    int CU() const { return 4*wgp + simd; }
+    int SACU() const { return sa*8 + wgp; }
+    int CUSIMD() const { return 4*SACU() + simd; }
+    uint64_t getGPULocation() const { return (sa<<10) | (CUSIMD()<<5) | wid; };
 };
 
 union wend_type {
@@ -109,7 +114,9 @@ union wend_type {
     void print() const {
         /*std::cout << "WEND - wgp:" << wgp << " simd:" << simd << " wid: " << wid << " sa:" << sa << std::endl;*/
     }
-    int CU() const { return 4*wgp + simd; }
+    int SACU() const { return sa*8 + wgp; }
+    int CUSIMD() const { return 4*SACU() + simd; }
+    uint64_t getGPULocation() const { return (sa<<10) | (CUSIMD()<<5) | wid; };
 };
 
 union header_type {
@@ -333,6 +340,50 @@ union new_pc_type {
     };
     uint64_t raw;
     void print() const { /*std::cout << "NEW PC: w" << wave << " 0x" << std::hex << pc << " 0x" << (pc<<2) << std::dec << std::endl;*/ }
+};
+
+
+union reg_write_type {
+    struct {
+        uint64_t header : 4;
+        uint64_t tm : 3;
+        uint64_t pipe : 2;
+        uint64_t me : 2;
+        uint64_t RDP : 1;
+        uint64_t context : 3;
+        uint64_t CS : 1;
+        uint64_t addr : 16;
+        uint64_t data : 32;
+    };
+    uint64_t raw;
+    void print() const {
+        /*
+        std::cout << "reg_write : -pipe/addr/data " << pipe << std::hex << " " << addr << " " << data << std::dec << std::endl;
+        //*/
+    }
+};
+
+union reg_init_type {
+    struct {
+        uint64_t header : 7;
+        uint64_t tm : 3;
+        uint64_t vmid : 4;
+        uint64_t pipe : 2;
+        uint64_t me : 2;
+        uint64_t type : 2;
+        uint64_t data : 24;
+        uint64_t context : 3;
+        uint64_t data2 : 5;
+        uint64_t sync_id : 10;
+        uint64_t rsvd : 2;
+    };
+    uint64_t raw;
+    void print() const {
+        /*
+        std::cout << "reg_init : -pipe " << pipe << " -type " << type << " -context " << context
+                  << std::hex << " -data " << data << " -data2 " << data2 << std::dec << std::endl;
+        //*/
+    }
 };
 
 class gfx10Token {

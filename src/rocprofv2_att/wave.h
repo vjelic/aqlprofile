@@ -110,15 +110,19 @@ typedef struct {
 } wavedata_t;
 
 typedef struct {
-  uint64_t cu : 8;
-  uint64_t value : 8;
-  uint64_t time : 48;
+  uint64_t kernel_id : 12;
+  uint64_t value : 7;
+  uint64_t cu : 4;
+  uint64_t time : 41; // Time_value/16
 } occupancy_info_t;
 
 typedef union {
-  uint64_t flags;
+  uint64_t raw;
   struct {
     uint64_t isNavi : 1;
+    uint64_t npiWaveData : 1;
+    uint64_t reserved : 14;
+    uint64_t version : 16;
   };
 } _output_flags_t;
 
@@ -130,4 +134,6 @@ typedef struct {
   void* occupancy;
   uint64_t num_occupancy;
   _output_flags_t flags;
+  void* kernel_id_addr;
+  uint64_t num_kernel_ids;
 } return_info_t;
