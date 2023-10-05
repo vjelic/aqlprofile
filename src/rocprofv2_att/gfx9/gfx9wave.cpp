@@ -63,7 +63,7 @@ std::unordered_map<int, std::string> wave_t::misc_token_type_dict = {
 }; 
 void print_token(Token& token) {
   std::cout << wave_t::token_name_dict[token.type];
-  if (token.type==0) std::cout << " misc:" << wave_t::misc_token_type_dict[token.misc_type] << std::endl;
+  if (token.type==0) std::cout << " misc:" << wave_t::misc_token_type_dict[token.misc_type] << stgfx9wave_td::endl;
   if (token.type==3) std::cout << " start: " << token.cu << " " << token.simd << " " << token.wave << std::endl;
 }
 //*/
@@ -84,15 +84,15 @@ const uint64_t SQTT_TOKEN_ISSUE = 13;
 const uint64_t SQTT_PERFCOUNTER_TOKEN = 14;
 const uint64_t SQTT_TOKEN_REG_CS_PRIV = 15;
 
-wave_t::gfx9wave_t(Token& token, uint64_t start_addr) {
+wave_t::gfx9wave_t(Token& token) {
   this->begin_time = token.time;
-  // State: EMPTY -> IDLE
   this->cur_state = WAVESLOT_STATE::WS_IDLE;
   this->state_start_cycle = token.time;
-
-  instruction_t inst{this->begin_time, WaveInstCategory::PCINFO, start_addr, 0};
-  instructions.push_back(inst);
+  this->simd = token.simd;
+  this->wave_id = token.wave;
+  this->end_time = 0;
 }
+
 
 void wave_t::complete_wave(Token& token) {
   uint64_t state_update_cycle = std::min(this->state_update_cycle, token.time);
@@ -113,7 +113,6 @@ void wave_t::complete_wave(Token& token) {
 
 
 void wave_t::apply_inst(Token& token) {
-  this->end_time = token.time;
   this->inst_time = token.time;
 
   this->state_update_cycle = token.time;
@@ -201,8 +200,8 @@ void wave_t::apply_inst(Token& token) {
       this->instructions.push_back({token.time, WaveInstCategory::JUMP, issue2inst, 0});
     }
   } else if (token.inst_type == 7) {
-    instructions.push_back(instruction_t{token.time, WaveInstCategory::SALU, 0, 4});
-    auto inst = instruction_t{token.time, WaveInstCategory::PCINFO, 0, 0};
+    instructions.push_back(Instruction{token.time, WaveInstCategory::SALU, 0, 4});
+    auto inst = Instruction{token.time, WaveInstCategory::PCINFO, 0, 0};
     this->last_jump_inst = instructions.size();
     instructions.push_back(inst);
   }
@@ -243,11 +242,8 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
   std::vector<perfevent_t> perfEvents{};
   std::vector<occupancy_info_t> occupancy = {};
 
-  static int current_kernel_unique_id = 1;
-  // kernel_addr -> kernel_ID
-  static auto kernelID = std::unordered_map<uint64_t, uint64_t>{{0, 0}};
   // kernel_addr -> SA -> WGP
-  auto current_occupancy = std::vector<std::array<int, 16>>(current_kernel_unique_id);
+  auto current_occupancy = std::vector<std::array<int, 16>>(current_kernel_unique_id.load());
   // data from all waves
   auto running_waves = std::unordered_map<uint64_t, uint64_t>{};
   std::array<std::array<std::array<uint64_t, 2>, 4>, 2> wave_start_addr{};
@@ -274,16 +270,18 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
       auto& pipe = wave_start_addr[1][token.dispatcher & 0x3];
       uint64_t wave_addr = ((pipe[0] << 8) | ((pipe[1] & 0xFF) << 40));
 
-      if ((int)token.cu == target_cu)
-        SIMD[token.simd][token.wave].push_back(wave_t(token, wave_addr));
-
-      if (kernelID.find(wave_addr) == kernelID.end())
+      if ((int)token.cu == target_cu && token.sh == 0)
       {
-        kernelID[wave_addr] = current_kernel_unique_id;
-        current_kernel_unique_id += 1;
-        current_occupancy.push_back({});
+        auto& wslot = SIMD[token.simd][token.wave];
+        if (!wslot.size() || wslot.back().end_time != 0)
+          wslot.push_back(wave_t(token));
+
+        Instruction inst{wslot.back().begin_time, WaveInstCategory::PCINFO, wave_addr, 0};
+        wslot.back().instructions.insert(wslot.back().instructions.begin(), inst);
       }
-      uint64_t kid = kernelID[wave_addr];
+
+      size_t kid = get_addr_unique_id(wave_addr);
+      while (current_occupancy.size() <= kid) current_occupancy.push_back({});
       running_waves[getGPULocation(token)] = kid;
 
       current_occupancy[kid][token.cu] += 1;
@@ -296,15 +294,16 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
 
       num_waves_started += 1;
     } else if (token.type == SQTT_TOKEN_WAVE_END) {  // Wave stop
-      if ((int)token.cu == target_cu) {
-        empty_wave_check(SIMD[token.simd][token.wave].size());
-        SIMD[token.simd][token.wave].back().complete_wave(token);
+      if ((int)token.cu == target_cu && token.sh == 0) {
+        auto& wslot = SIMD[token.simd][token.wave];
+        empty_wave_check(wslot.size());
+        wslot.back().complete_wave(token);
       }
 
       if (running_waves.find(getGPULocation(token)) != running_waves.end())
       {
         num_waves_completed += 1;
-        uint64_t kid = running_waves[getGPULocation(token)];
+        size_t kid = running_waves[getGPULocation(token)];
         assert(current_occupancy.size() > kid);
         current_occupancy[kid][token.cu] -= 1;
 
@@ -329,8 +328,10 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
 
       num_waves_completed += 1;
     } else if (token.type == SQTT_TOKEN_INST) {  // Update timestamp for executed inst
-      empty_wave_check(SIMD[token.simd][token.wave].size());
-      SIMD[token.simd][token.wave].back().apply_inst(token);
+      auto& wslot = SIMD[token.simd][token.wave];
+      if (!wslot.size() || wslot.back().end_time != 0)
+        wslot.push_back(wave_t(token));
+      wslot.back().apply_inst(token);
     } else if (token.type == SQTT_TOKEN_ISSUE) {
       int64_t active_cycles = array_apply_issue(token, SIMD);
       total_num_issue_cycles += active_cycles;

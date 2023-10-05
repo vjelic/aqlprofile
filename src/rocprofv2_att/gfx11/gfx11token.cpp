@@ -30,7 +30,7 @@
 
 #include "gfx11token.h"
 #include "gfx11parser.h"
-#include "../wave.h"
+#include "../trace_parser.hpp"
 
 typedef gfx11Token Token;
 
@@ -128,6 +128,5 @@ std::vector<gfx10Token> Token::parse(const uint8_t* buffer, const int BUFFER_SIZ
     }
 
     auto t2 = std::chrono::system_clock::now();
-    delete[] buffer;
     return tokens;
 }

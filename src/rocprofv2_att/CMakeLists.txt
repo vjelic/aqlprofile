@@ -33,11 +33,13 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 file(GLOB ROCMTOOLS_SUPPORT_FILES
-  ${ROCMTOOLS_DIR}/*.cpp
+  ${ROCMTOOLS_DIR}/assembly_parser.cpp
+  ${ROCMTOOLS_DIR}/trace_parser.cpp
+  ${ROCMTOOLS_DIR}/tracebranch.cpp
+  ${ROCMTOOLS_DIR}/trie.cpp
   ${ROCMTOOLS_DIR}/gfx9/*.cpp
   ${ROCMTOOLS_DIR}/gfx10/*.cpp
   ${ROCMTOOLS_DIR}/gfx11/*.cpp

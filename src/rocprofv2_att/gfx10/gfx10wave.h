@@ -23,15 +23,12 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
-#include "../wave.h"
+#include "../trace_parser.hpp"
 #include "gfx10parser.h"
 
-struct gfx10wave_t : public wavedata_t {
+struct gfx10wave_t : public WaveDataInternal {
   gfx10wave_t() = default;
-  gfx10wave_t(class gfx10Token&, int tg_simd, uint64_t start_addr);
-
-  std::vector<std::pair<uint64_t, uint64_t>> timeline;  // wave state in each cycle
-  std::vector<instruction_t> instructions;              // (time, instruction_category)*
+  gfx10wave_t(class gfx10Token&, uint64_t start_addr, int tg_simd, int slot);
 
   int64_t last_state_cycle = 0;   //  record the time of state transition
   int64_t last_state_duration = 0; // record minimum how long the state should last
@@ -49,7 +46,6 @@ struct gfx10wave_t : public wavedata_t {
   int64_t inst_time = 0;   // use to calculate instruction cycles */
 
   int last_jump_inst = -1;
-  int target_simd = 0;
   bool ImmFromBranch = false;
 
   void complete_wave(gfx10Token& token);
@@ -71,7 +67,7 @@ struct gfx10wave_t : public wavedata_t {
     std::vector<perfevent_t>,
     std::vector<occupancy_info_t>,
     std::vector<uint64_t>
-  > sqtt_simd_analysis(std::vector<gfx10Token>& tokens, int target_cu = 1);
+  > sqtt_simd_analysis(std::vector<gfx10Token>& tokens);
 
   //static std::unordered_map<int, const char*> INST_NAMES;
   static std::pair<WaveInstCategory, uint16_t> inst_map_to_gfx9(int einst);
