@@ -59,6 +59,7 @@ enum CounterBlockId {
   KernelDriverCounterBlockId,
 
   CpPipeStatsCounterBlockId,
+  TcpCounterBlockId,
   HwInfoCounterBlockId,
 
   FirstCounterBlockId = CbCounterBlockId,
@@ -176,6 +177,7 @@ static const uint32_t AtcL2CounterBlockMaxEvent     = 7;
 static const uint32_t RpbCounterBlockMaxEvent       = 62;
 static const uint32_t McVmL2CounterBlockMaxEvent    = 20;
 static const uint32_t RmiCounterBlockMaxEvent       = RMI_PERF_SEL_RMI_RB_EARLY_WRACK_CID3; //RMI_PERF_SEL_RMI_RB_EARLY_WRACK_NACK3;
+static const uint32_t TcpCounterBlockMaxEvent       = 61;
 static const uint32_t Gl1aCounterBlockMaxEvent      = 24;
 static const uint32_t Gl1cCounterBlockMaxEvent      = 84;
 static const uint32_t Gl2aCounterBlockMaxEvent      = 108;

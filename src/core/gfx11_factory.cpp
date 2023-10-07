@@ -69,7 +69,7 @@ const GpuBlockInfo* Gfx11Factory::block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUM
     &TaCounterBlockInfo,
     NULL /*&TcaCounterBlockInfo*/,
     NULL /*&TccCounterBlockInfo*/,
-    NULL /*&TcpCounterBlockInfo*/,
+    &TcpCounterBlockInfo,
     NULL /*&TdCounterBlockInfo*/,
     // MC blocks
     NULL /*MC_ARB*/,

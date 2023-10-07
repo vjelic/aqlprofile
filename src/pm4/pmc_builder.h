@@ -463,9 +463,14 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
         read_counter += 2;
       } else {
         const uint32_t se_end_index = (block_info->attr & CounterBlockSeAttr) ? se_number_ : 1;
-        for (uint32_t se_index = 0; se_index < se_end_index; ++se_index) {
+        const uint32_t sa_end_index = (block_info->attr & CounterBlockSaAttr) ? 2 : 1;
+        for (uint32_t se_index = 0; se_index < se_end_index; ++se_index)
+        for (uint32_t sarray = 0; sarray < sa_end_index; ++sarray)
+        {
           uint32_t grbm_value = Primitives::grbm_broadcast_value();
-          if ((block_info->instance_count > 1) && (block_info->attr & CounterBlockSeAttr)) {
+          if ((block_info->instance_count > 1) && (block_info->attr & CounterBlockSaAttr)) {
+            grbm_value = Primitives::grbm_inst_se_sh_index_value(block_des.index, se_index, sarray);
+          } else if ((block_info->instance_count > 1) && (block_info->attr & CounterBlockSeAttr)) {
             grbm_value = Primitives::grbm_inst_se_index_value(block_des.index, se_index);
           } else if (block_info->instance_count > 1) {
             grbm_value = Primitives::grbm_inst_index_value(block_des.index);
