@@ -67,7 +67,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       se_number_(agent_info->se_num / agent_info->xcc_num),
       xcc_number_(agent_info->xcc_num),
       sarrays_per_se(agent_info->shader_arrays_per_se) {
-        this->wgp_per_sa = agent_info->cu_num/sarrays_per_se/se_number_/2;
+        this->wgp_per_sa = (agent_info->cu_num/2+sarrays_per_se*se_number_-1)/(se_number_*sarrays_per_se);
   }
 
   int GetSQ_PMC_samples_per_SE() override {
