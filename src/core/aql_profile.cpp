@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <future>
 
 #include "core/logger.h"
 #include "core/pm4_factory.h"
@@ -38,8 +39,9 @@ struct pcsmp_callback_data_t {
   uint64_t pc;              // sample PC
 };
 
-namespace aql_profile {
+std::atomic<int> ATT_TARGET_CU{0};
 
+namespace aql_profile {
 // Command buffer partitioning manager
 // Supports Pre/Post commands partitioning
 // and prefix control partition
@@ -409,6 +411,7 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
                 throw aql_profile::aql_profile_exc_val<uint32_t>(
                     "ThreadTraceConfig: CuId must be between 0 and 15, TargetCu", p->value);
               trace_config.targetCu = p->value;
+              ATT_TARGET_CU.store(p->value);
               break;
             case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_VM_ID_MASK:
               trace_config.vmIdMask = p->value;
@@ -418,6 +421,8 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
                 throw aql_profile::aql_profile_exc_val<uint32_t>(
                     "ThreadTraceConfig: Mask should have bits [4,6] set to Zero, Mask", p->value);
               trace_config.deprecated_mask = p->value;
+              trace_config.targetCu = p->value & 0xF;
+              ATT_TARGET_CU.store(trace_config.targetCu);
               break;
             case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_TOKEN_MASK:
               if ((p->value & 0xFF000000) != 0)
@@ -835,6 +840,9 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
         void* sample_ptr = profile->output_buffer.ptr;
         const uint32_t sample_capacity =
             (profile->output_buffer.size / tnumber) & ~(pm4_factory->GetSQTTBufferAlignment() - 1);
+
+        std::vector<std::future<hsa_ven_amd_aqlprofile_info_data_t>> sample_data_vector;
+
         // The samples sizes are returned in the control buffer
         for (unsigned i = 0; i < tnumber; ++i) {
           const uint32_t se_id_ind =
@@ -858,27 +866,23 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
             if (status == HSA_STATUS_SUCCESS)
               status = HSA_STATUS_ERROR_OUT_OF_RESOURCES;
           }
-
-          hsa_status_t call_status;
-          if (mode == 0) {  // SQTT trace
-            hsa_ven_amd_aqlprofile_info_data_t sample_info;
-            sample_info.sample_id = se_id;
-            sample_info.trace_data.ptr = sample_ptr;
-            sample_info.trace_data.size = sample_size;
-            call_status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, &sample_info, data);
-          } else {  // PC sampling
-            pcsmp_callback_data_t* pcsmp_data = reinterpret_cast<pcsmp_callback_data_t*>(data);
-            pcsmp_data->id = se_id;
-            pcsmp_data->cycle = 333;
-            pcsmp_data->pc = 0x333;
-            call_status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, NULL, data);
-          }
-          if (call_status != HSA_STATUS_SUCCESS) {
-            if (call_status != HSA_STATUS_INFO_BREAK)
-              status = call_status;
-            break;
-          }
+          assert (mode == 0); // SQTT trace mode
+          sample_data_vector.push_back(std::async(
+            std::launch::async,
+            aql_profile::aqlprofile_sqttfilter_iterate_data,
+            sample_ptr,
+            sample_capacity,
+            sample_size,
+            se_id,
+            ATT_TARGET_CU.load()
+          ));
           sample_ptr = reinterpret_cast<char*>(sample_ptr) + sample_capacity;
+        }
+        for (auto& future : sample_data_vector) {
+          auto sample_info = future.get();
+          status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, &sample_info, data);
+          if (status != HSA_STATUS_SUCCESS)
+            break;
         }
       } else {  // SPM trace data
         if (pm4_factory->SpmKfdMode() == false) {

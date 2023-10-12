@@ -23,7 +23,7 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
-#include "../wave.h"
+#include "../trace_parser.hpp"
 #include "gfx11parser.h"
 #include "gfx11token.h"
 #include "../gfx10/gfx10wave.h"

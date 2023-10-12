@@ -28,7 +28,7 @@
 
 #include "gfx10token.h"
 #include "gfx10parser.h"
-#include "../wave.h"
+#include "../trace_parser.hpp"
 
 typedef gfx10Token Token;
 
@@ -208,6 +208,5 @@ std::vector<Token> Token::parse(const uint8_t* buffer, const int BUFFER_SIZE) {
     /*std::cout << "Read: " << (t1-t0).count()/1000.0f << std::endl;
     std::cout << "Parsed: " << (t2-t1).count()/1000.0f << std::endl;
     std::cout << "Num waves: " << num_waves << std::endl; */
-    delete[] buffer;
     return tokens;
 }

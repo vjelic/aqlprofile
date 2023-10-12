@@ -4,6 +4,7 @@
 set ( TARGET_LIB "${TARGET_NAME}" )
 set ( LIB_SRC
   ${LIB_DIR}/core/aql_profile.cpp
+  ${LIB_DIR}/core/sqttparser.cpp
   ${LIB_DIR}/core/spm_data.cpp
   ${LIB_DIR}/core/populate_aql.cpp
   ${LIB_DIR}/core/gfx9_factory.cpp
@@ -13,6 +14,15 @@ set ( LIB_SRC
   ${LIB_DIR}/core/gfx10_factory.cpp
   ${LIB_DIR}/core/gfx11_factory.cpp
   ${LIB_DIR}/util/hsa_rsrc_factory.cpp
+
+  ${LIB_DIR}/rocprofv2_att/trace_parser.cpp
+  ${LIB_DIR}/rocprofv2_att/tracebranch.cpp
+  ${LIB_DIR}/rocprofv2_att/gfx9/gfx9wave.cpp
+  ${LIB_DIR}/rocprofv2_att/gfx9/gfx9token.cpp
+  ${LIB_DIR}/rocprofv2_att/gfx10/gfx10wave.cpp
+  ${LIB_DIR}/rocprofv2_att/gfx10/gfx10token.cpp
+  ${LIB_DIR}/rocprofv2_att/gfx11/gfx11wave.cpp
+  ${LIB_DIR}/rocprofv2_att/gfx11/gfx11token.cpp
 )
 
 add_library ( ${TARGET_LIB} SHARED ${LIB_SRC} )

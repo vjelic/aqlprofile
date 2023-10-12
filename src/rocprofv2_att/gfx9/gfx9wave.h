@@ -24,17 +24,14 @@
 #include <string>
 #include <unordered_map>
 #include "gfx9token.h"
-#include "../wave.h"
+#include "../trace_parser.hpp"
 
-struct gfx9wave_t : public wavedata_t {
+struct gfx9wave_t : public WaveDataInternal {
   gfx9wave_t() = default;
-  gfx9wave_t(class gfx9Token&, uint64_t addr);
+  gfx9wave_t(class gfx9Token&);
 
   static constexpr uint64_t SQTT_CFG_SIMDS = 4;
   static constexpr uint64_t SQTT_CFG_WAVES = 10;
-
-  std::vector<std::pair<uint64_t, uint64_t>> timeline;  // wave state in each cycle
-  std::vector<instruction_t> instructions;              // (time, instruction_category)*
 
   uint64_t cur_state = 0;           // EMPTY, IDLE, EXEC, WAIT, STALL, initial state: EMPTY
   uint64_t state_start_cycle = 0;   // record the time of state transition

@@ -264,12 +264,13 @@ std::pair<WaveInstCategory, uint16_t> gfx10wave_t::inst_map_to_gfx9(int einst) {
 
 #define empty_wave_check(waveslot_size) if (waveslot_size == 0) { continue; }
 
-wave_t::gfx10wave_t(Token& token, int tg_simd, uint64_t start_addr) {
+wave_t::gfx10wave_t(Token& token, uint64_t start_addr, int tg_simd, int slot) {
   this->begin_time = token.time;
   this->last_state_cycle = token.time;
-  this->target_simd = tg_simd;
+  this->simd = tg_simd;
+  this->wave_id = slot;
 
-  instruction_t inst{this->begin_time, WaveInstCategory::PCINFO, start_addr, 0};
+  Instruction inst{this->begin_time, WaveInstCategory::PCINFO, start_addr, 0};
   instructions.push_back(inst);
 }
 
@@ -288,7 +289,7 @@ std::tuple<
   std::vector<occupancy_info_t>,
   std::vector<uint64_t>
 >
-wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
+wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
   bool bHasLostPackets = false;
   WaveArray SIMD;
   int64_t total_num_issue_cycles = 0;
@@ -307,13 +308,10 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
 
   std::array<std::array<std::array<uint64_t, 2>, 4>, 2> wave_start_addr{};
 
-  static int current_kernel_unique_id = 1;
-  // kernel_addr -> kernel_ID
-  static auto kernelID = std::unordered_map<uint64_t, uint64_t>{{0,0}};
   // kernel_addr -> SA -> WGP
-  auto current_occupancy = std::vector<std::array<int, 16>>(current_kernel_unique_id);
+  auto current_occupancy = std::vector<std::array<int, 16>>(current_kernel_unique_id.load());
   // data from all waves
-  auto running_waves = std::unordered_map<uint64_t, uint64_t>{};
+  auto running_waves = std::unordered_map<uint64_t, size_t>{};
 
   {
     occupancy_info_t occ;
@@ -353,12 +351,8 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
         auto& pipe = wave_start_addr[start.me&1][start.pipe];
         uint64_t wave_addr = ((pipe[0] << 8) | ((pipe[1] & 0xFF) << 40));
 
-        if (kernelID.find(wave_addr) == kernelID.end()) {
-          kernelID[wave_addr] = current_kernel_unique_id;
-          current_kernel_unique_id += 1;
-          current_occupancy.push_back({});
-        }
-        uint64_t kid = kernelID[wave_addr];
+        size_t kid = get_addr_unique_id(wave_addr);
+        while (current_occupancy.size() <= kid) current_occupancy.push_back({});
         running_waves[start.getGPULocation()] = kid;
 
         current_occupancy[kid][start.SACU()] += 1;
@@ -371,7 +365,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
         num_waves_started += 1;
 
         if (start.wgp == target_wgp && start.simd == target_simd && start.sa == 0)
-          SIMD[start.wid].push_back(wave_t(token, start.simd, wave_addr));
+          SIMD[start.wid].push_back(wave_t(token, wave_addr, start.simd, start.wid));
         break;
       }
       case gfx10type::WAVE_END: {
@@ -384,7 +378,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
         if (running_waves.find(end.getGPULocation()) != running_waves.end())
         {
           num_waves_completed += 1;
-          uint64_t kid = running_waves[end.getGPULocation()];
+          size_t kid = running_waves[end.getGPULocation()];
           assert(current_occupancy.size() > kid);
           current_occupancy[kid][end.SACU()] -= 1;
 
@@ -553,7 +547,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
 }
 
 void wave_t::new_pc(uint64_t time, int64_t pc) {
-  instruction_t inst{time, WaveInstCategory::PCINFO, (uint64_t)pc<<2, 0};
+  Instruction inst{time, WaveInstCategory::PCINFO, (uint64_t)pc<<2, 0};
   if (last_jump_inst >= 0)
     instructions.emplace(instructions.begin()+last_jump_inst+1, inst);
   else

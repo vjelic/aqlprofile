@@ -186,7 +186,6 @@ bool MacroFill(
     auto& macro_vector = defined_macros[macro_id-1];
 
     code.push_back({line_num, ".macro " + macro_vector[0]});
-    for (auto& v : macro_vector)
     for (size_t i=1; i<macro_vector.size(); i++) {
         if (macro_map.find(macro_vector[i]) != macro_map.end())
             MacroFill(defined_macros, macro_map, code, macro_vector[i], line_num, depth+1);
