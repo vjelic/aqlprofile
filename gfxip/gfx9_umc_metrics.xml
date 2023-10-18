@@ -1,0 +1,187 @@
+<gfx940>
+  <metric name="SdpPh" block=UMC event=1 descr="Incoming SDP request hits a page already in DCQ. Counter is 32B granularity."></metric>
+  <metric name="SdpPm" block=UMC event=2 descr="Incoming SDP request does not match any pages already in DCQ. Counter is 32B granularity. For a 64B miss; PM+1 and PH+1"></metric>
+  <metric name="SdpPc" block=UMC event=3 descr="Incoming SDP request conflicts with a page already in DCQ and does not hit any. Counter is 32B granularity. For a 64B conflict; PC+1 and PH+1."></metric>
+  <metric name="ActCmd" block=UMC event=5 descr="ACTIVATE command"></metric>
+  <metric name="PchgCmd" block=UMC event=6 descr="PRECHARGE command sent due to conflict. Not usable with SPM."></metric>
+  <metric name="SpecPchgCmd" block=UMC event=7 descr="PRECHARGE due to idle cycle timeout. Not usable with SPM."></metric>
+  <metric name="PchgAllCmd" block=UMC event=8 descr="PRECHARGE ALL command sent. Not usable with SPM."></metric>
+  <metric name="OtherPchgCmd" block=UMC event=9 descr="PRECHARGE due to other events. Not usable with SPM."></metric>
+  <metric name="CasCmd" block=UMC event=10 descr="CAS command sent. 32B granularity."></metric>
+  <metric name="CasWithAP" block=UMC event=11 descr="CAS command with Auto Precharge."></metric>
+  <metric name="TurnRndRdWr" block=UMC event=13 descr="Read to Write Turn Arounds."></metric>
+  <metric name="CmdSlotClks" block=UMC event=19 descr="# of clocks valid command sent."></metric>
+  <metric name="DataSlotClks" block=UMC event=20 descr="# of clocks data bus is utilized."></metric>
+  <metric name="CmdError" block=UMC event=22 descr="# of Parity errors."></metric>
+  <metric name="DataError" block=UMC event=23 descr="# of data errors WRCRC or WR EDC and RD EDC."></metric>
+  <metric name="RetryParity" block=UMC event=24 descr="# times parity retry."></metric>
+  <metric name="RetryCRC" block=UMC event=25 descr="# times CRC retry."></metric>
+  <metric name="BypassSat" block=UMC event=26 descr="# of times Bypass Saturation is reached."></metric>
+  <metric name="PrechagePwrDownClks" block=UMC event=27 descr="# of clocks any channel is in precharge power down mode. Not usable with SPM."></metric>
+  <metric name="ThermalThrottleClks" block=UMC event=28 descr="# of clocks in when thermal throttle is enabled."></metric>
+  <metric name="DcqOccupancy" block=UMC event=29 descr="# of entries in DCQ is over or under ThreshCnt."></metric>
+  <metric name="SelfRefreshClks" block=UMC event=34 descr="# of clocks in Self Refresh. Size is used as a filter; 00=Cstate 01=Pstate 10=PSR 11=Other Not usable with SPM."></metric>
+  <metric name="PendReqCnt" block=UMC event=36 descr="Accumulating count of pending requests."></metric>
+  <metric name="AutoRefCnt" block=UMC event=37 descr="Number of auto refresh sent Rd/Wr bits used as pb/ab filter"></metric>
+  <metric name="BeqRdWrCmd" block=UMC event=38 descr="Number of Rd/Wr Beq sent"></metric>
+  <metric name="BeqEdcErr" block=UMC event=39 descr="Number of Edc Err (G6 only)"></metric>
+  <metric name="ArbRdWrPhase" block=UMC event=43 descr="Count clocks where ARB is in Read/Write phase."></metric>
+  <metric name="ArbRefReqClks" block=UMC event=44 descr="AUTOREFREQ clks sent to ARB; used to compare with UrgRefStBklks"></metric>
+  <metric name="UrgRefStBkClks" block=UMC event=45 descr="UrgRefStatusBank Clks sent to ARB; used to estimate cycles which block ACT during Intermediate Refresh"></metric>
+  <metric name="RtCalEvtCnt" block=UMC event=48 descr="Runtime calibration event triggered during operation"></metric>
+  <metric name="RtCalBlockClks" block=UMC event=49 descr="UrgRefStatusAllBank and StallArbDurCtrUpd CLKS sent to ARB; used to estimate cycles which block arb ACT when doing RtCalib; use SubChanMask to Mask AllBank(chan0) or StallArb(chan1)"></metric>
+  <metric name="SdpCoherent" block=UMC event=51 descr="Incoming SDP request triggered address coherency logic."></metric>
+  <metric name="SdpChngPri" block=UMC event=52 descr="Incoming SDP priority change requests"></metric>
+  <metric name="SdpCancel" block=UMC event=53 descr="Incoming SDP cancel requests."></metric>
+  <metric name="SdpBurstLength" block=UMC event=54 descr="Incoming SDP request burst length accumulator. Count incoming bursts of requests matching the bank filter and threshold size."></metric>
+  <metric name="SdpBurstCnt" block=UMC event=55 descr="Incoming SDP request burst counter. Used with SdpBurstLength to measure average incoming SDP burst lengths."></metric>
+  <metric name="SdpGapLen" block=UMC event=56 descr="Accumulate gaps between incoming SDP requests to measure request density."></metric>
+  <metric name="SdpGapCnt" block=UMC event=57 descr="Count number of gaps of no SDP requests. Use with SdpGapLen to measure average length of no request gaps."></metric>
+  <metric name="CasCmdWSM" block=UMC event=58 descr="CAS write with single mask commands"></metric>
+  <metric name="CasCmdWDM" block=UMC event=59 descr="CAS write with double mask commands"></metric>
+  <metric name="CasBurstLength" block=UMC event=60 descr="CAS command burst length accumulator to measure CAS bursts per bank."></metric>
+  <metric name="CasBurstCnt" block=UMC event=61 descr="CAS burst count. Use with CasBurstLength to measure average length of bursts."></metric>
+  <metric name="CasCmdCW" block=UMC event=62 descr="CAS commands for GECC checkword data"></metric>
+  <metric name="TurnRndRdWr_noRd" block=UMC event=63 descr="Turn to write due to no reads."></metric>
+  <metric name="TurnRndRdWr_RdThresh" block=UMC event=64 descr="Turn to write due to read threshold met."></metric>
+  <metric name="TurnRndWrRd_noWr" block=UMC event=65 descr="Turn to read due to no writes."></metric>
+  <metric name="TurnRndWrRd_WrThresh" block=UMC event=66 descr="Turn to read due to write threshold met."></metric>
+  <metric name="TurnRndWrRd_RdUrg" block=UMC event=67 descr="Turn to read due to urgent read."></metric>
+  <metric name="PrechargePwrDownEntry" block=UMC event=68 descr="Precharge powerdown entry count."></metric>
+  <metric name="ThermalThrottleEntry" block=UMC event=69 descr="Thermal throttle entry count"></metric>
+  <metric name="PgtActiveBanksCnt" block=UMC event=70 descr="Count number of cycles where the number of active banks is > or < the threshold value."></metric>
+  <metric name="SelfRefreshEntry" block=UMC event=71 descr="Count the number of times we enter self-refresh."></metric>
+  <metric name="RdRspBusyNoCrdt" block=UMC event=72 descr="Count number of cycles where we have something to return in read response buffer but cannot due to no return credits available."></metric>
+  <metric name="RdstallRdRspBuf" block=UMC event=73 descr="NotRdy Count number of cycles ARB is stalled from issuing further reads due to the read response buffer being full."></metric>
+  <metric name="RdrspBusyVdciNotRdy" block=UMC event=74 descr="Count number of cycles where we have something to return in read response buffer but VDCI is not accepting responses."></metric>
+  <metric name="DfiLpReq" block=UMC event=75 descr="Count number of DFI LP entry requests."></metric>
+  <metric name="DfiLpCyc" block=UMC event=76 descr="Count number of cycles in DFI LP mode."></metric>
+  <metric name="BubbleOverall" block=UMC event=77 descr="Count any bubble cycles where a pending CAS cannot be issued other than Tccds reasons."></metric>
+  <metric name="BeqEdcErrB0" block=UMC event=78 descr="# of EDC errors on byte 0"></metric>
+  <metric name="BeqEdcErrB1" block=UMC event=79 descr="# of EDC errors on byte 1"></metric>
+  <metric name="BeqEdcErrB2" block=UMC event=80 descr="# of EDC errors on byte 2"></metric>
+  <metric name="BeqEdcErrB3" block=UMC event=81 descr="# of EDC errors on byte 3"></metric>
+  <metric name="TempOverThresh" block=UMC event=82 descr="Count UCLKs where HBM temperature is over a certain threshold set in ThreshCnt."></metric>
+  <metric name="TempCnt" block=UMC event=83 descr="Accumulate temperature to calculate average temp."></metric>
+  <metric name="ReqFullEntry" block=UMC event=84 descr="Number of ReqFull entries. VC filter is available when DisVCComp=0."></metric>
+  <metric name="NumReqs" block=UMC event=85 descr="Number of requests filled in the entry when it is dealloced. NumReqs divided by number of CasWithDeAlloc can get average requests filled in an entry. VC filter is available when DisVCComp0."></metric>
+  <metric name="CasWithDeAlloc" block=UMC event=86 descr="CAS to remove DCQ entry. (CAS32B+CAS64B/2)/ CASWithDeAlloc can also get the average number of stacked requests."></metric>
+  <metric name="RfmCmd" block=UMC event=87 descr="Number of RFM commands sent. Rd/Wr used as Pb/Ab filter. Priority bit used as urgent filter."></metric>
+  <metric name="SdpNewEntry" block=UMC event=88 descr="Number of SDP requests filled into a new DCQ entry."></metric>
+  <metric name="SdpHitEntry" block=UMC event=89 descr="Number of SDP requests filled into a page hit DCQ entry."></metric>
+  <metric name="PatrolScrub" block=UMC event=90 descr="PatrolScrub requests."></metric>
+  <metric name="RedirectScrub" block=UMC event=91 descr="RedirectScrub requests."></metric>
+  <metric name="PoisonScrub" block=UMC event=92 descr="PoisonScrub requests."></metric>
+  <metric name="MemClear" block=UMC event=93 descr="MemClear requests."></metric>
+  <metric name="DroppedRedirectScrub" block=UMC event=94 descr="RedirectScrub requests dropped."></metric>
+  <metric name="DroppedPoisonScrub" block=UMC event=95 descr="PoisonScrub requests dropped."></metric>
+  <metric name="DroppedScrubWrite" block=UMC event=96 descr="ScrubWrites dropped."></metric>
+  <metric name="RfmBlockClk" block=UMC event=97 descr="RFM blocking cycle count. Bank selects specific bank."></metric>
+  <metric name="NoRefOverThres" block=UMC event=98 descr="NoRefCtr over specific threshold."></metric>
+  <metric name="StoredRefOverThres" block=UMC event=99 descr="StoredRefCtr over specific threshold."></metric>
+  <metric name="PptRunning" block=UMC event=100 descr="Number of cycles PPT has run."></metric>
+  <metric name="PptTrig" block=UMC event=101 descr="Number of times PPT has triggered."></metric>
+  <metric name="PptMinWin" block=UMC event=102 descr="Number of times PPT has hit the minimum window size. G6 only. Uses VcSel to select the bit to monitor: 0=dq0 1=dq1 … 15-dq15 16=dbi0 17=dbi1."></metric>
+  <metric name="CrcErr" block=UMC event=103 descr="HBM3 CRC error. Uses RdWrMask to filter normal vs poison. Bit 0: CrcErr Mask. Bit 1: CrcPoison Mask."></metric>
+  <metric name="EccErr" block=UMC event=104 descr="HBM3 OD-ECC error. Uses priority filter for SBE/MBE/UE. Bit 0: SBE Mask. Bit 1: MBE Mask. Bit 2: UE Mask."></metric>
+  <metric name="DroopCmdThrot" block=UMC event=105 descr="HBM3 Droop throttle cycles."></metric>
+  <metric name="DroopDetAtWin" block=UMC event=106 descr="HBM3 Droop detected at window check."></metric>
+  <metric name="DroopDetect" block=UMC event=107 descr="HBM3 Droop detected cycles."></metric>
+  <metric name="ClockCount" block=UMC event=255 descr="Counts cycles."></metric>
+</gfx940>
+
+
+<gfx940_expr>
+  <metric name="SdpPh_sum" expr=sum(SdpPh,32) descr="SdpPh. Sum across all instances"></metric>
+  <metric name="SdpPm_sum" expr=sum(SdpPm,32) descr="SdpPm. Sum across all instances"></metric>
+  <metric name="SdpPc_sum" expr=sum(SdpPc,32) descr="SdpPc. Sum across all instances"></metric>
+  <metric name="ActCmd_sum" expr=sum(ActCmd,32) descr="ActCmd. Sum across all instances"></metric>
+  <metric name="PchgCmd_sum" expr=sum(PchgCmd,32) descr="PchgCmd. Sum across all instances"></metric>
+  <metric name="SpecPchgCmd_sum" expr=sum(SpecPchgCmd,32) descr="SpecPchgCmd. Sum across all instances"></metric>
+  <metric name="PchgAllCmd_sum" expr=sum(PchgAllCmd,32) descr="PchgAllCmd. Sum across all instances"></metric>
+  <metric name="OtherPchgCmd_sum" expr=sum(OtherPchgCmd,32) descr="OtherPchgCmd. Sum across all instances"></metric>
+  <metric name="CasCmd_sum" expr=sum(CasCmd,32) descr="CasCmd. Sum across all instances"></metric>
+  <metric name="CasWithAP_sum" expr=sum(CasWithAP,32) descr="CasWithAP. Sum across all instances"></metric>
+  <metric name="TurnRndRdWr_sum" expr=sum(TurnRndRdWr,32) descr="TurnRndRdWr. Sum across all instances"></metric>
+  <metric name="CmdSlotClks_sum" expr=sum(CmdSlotClks,32) descr="CmdSlotClks. Sum across all instances"></metric>
+  <metric name="DataSlotClks_sum" expr=sum(DataSlotClks,32) descr="DataSlotClks. Sum across all instances"></metric>
+  <metric name="CmdError_sum" expr=sum(CmdError,32) descr="CmdError. Sum across all instances"></metric>
+  <metric name="DataError_sum" expr=sum(DataError,32) descr="DataError. Sum across all instances"></metric>
+  <metric name="RetryParity_sum" expr=sum(RetryParity,32) descr="RetryParity. Sum across all instances"></metric>
+  <metric name="RetryCRC_sum" expr=sum(RetryCRC,32) descr="RetryCRC. Sum across all instances"></metric>
+  <metric name="BypassSat_sum" expr=sum(BypassSat,32) descr="BypassSat. Sum across all instances"></metric>
+  <metric name="PrechagePwrDownClks_sum" expr=sum(PrechagePwrDownClks,32) descr="PrechagePwrDownClks. Sum across all instances"></metric>
+  <metric name="ThermalThrottleClks_sum" expr=sum(ThermalThrottleClks,32) descr="ThermalThrottleClks. Sum across all instances"></metric>
+  <metric name="DcqOccupancy_sum" expr=sum(DcqOccupancy,32) descr="DcqOccupancy. Sum across all instances"></metric>
+  <metric name="SelfRefreshClks_sum" expr=sum(SelfRefreshClks,32) descr="SelfRefreshClks. Sum across all instances"></metric>
+  <metric name="PendReqCnt_sum" expr=sum(PendReqCnt,32) descr="PendReqCnt. Sum across all instances"></metric>
+  <metric name="AutoRefCnt_sum" expr=sum(AutoRefCnt,32) descr="AutoRefCnt. Sum across all instances"></metric>
+  <metric name="BeqRdWrCmd_sum" expr=sum(BeqRdWrCmd,32) descr="BeqRdWrCmd. Sum across all instances"></metric>
+  <metric name="BeqEdcErr_sum" expr=sum(BeqEdcErr,32) descr="BeqEdcErr. Sum across all instances"></metric>
+  <metric name="ArbRdWrPhase_sum" expr=sum(ArbRdWrPhase,32) descr="ArbRdWrPhase. Sum across all instances"></metric>
+  <metric name="ArbRefReqClks_sum" expr=sum(ArbRefReqClks,32) descr="ArbRefReqClks. Sum across all instances"></metric>
+  <metric name="UrgRefStBkClks_sum" expr=sum(UrgRefStBkClks,32) descr="UrgRefStBkClks. Sum across all instances"></metric>
+  <metric name="RtCalEvtCnt_sum" expr=sum(RtCalEvtCnt,32) descr="RtCalEvtCnt. Sum across all instances"></metric>
+  <metric name="RtCalBlockClks_sum" expr=sum(RtCalBlockClks,32) descr="RtCalBlockClks. Sum across all instances"></metric>
+  <metric name="SdpCoherent_sum" expr=sum(SdpCoherent,32) descr="SdpCoherent. Sum across all instances"></metric>
+  <metric name="SdpChngPri_sum" expr=sum(SdpChngPri,32) descr="SdpChngPri. Sum across all instances"></metric>
+  <metric name="SdpCancel_sum" expr=sum(SdpCancel,32) descr="SdpCancel. Sum across all instances"></metric>
+  <metric name="SdpBurstLength_sum" expr=sum(SdpBurstLength,32) descr="SdpBurstLength. Sum across all instances"></metric>
+  <metric name="SdpBurstCnt_sum" expr=sum(SdpBurstCnt,32) descr="SdpBurstCnt. Sum across all instances"></metric>
+  <metric name="SdpGapLen_sum" expr=sum(SdpGapLen,32) descr="SdpGapLen. Sum across all instances"></metric>
+  <metric name="SdpGapCnt_sum" expr=sum(SdpGapCnt,32) descr="SdpGapCnt. Sum across all instances"></metric>
+  <metric name="CasCmdWSM_sum" expr=sum(CasCmdWSM,32) descr="CasCmdWSM. Sum across all instances"></metric>
+  <metric name="CasCmdWDM_sum" expr=sum(CasCmdWDM,32) descr="CasCmdWDM. Sum across all instances"></metric>
+  <metric name="CasBurstLength_sum" expr=sum(CasBurstLength,32) descr="CasBurstLength. Sum across all instances"></metric>
+  <metric name="CasBurstCnt_sum" expr=sum(CasBurstCnt,32) descr="CasBurstCnt. Sum across all instances"></metric>
+  <metric name="CasCmdCW_sum" expr=sum(CasCmdCW,32) descr="CasCmdCW. Sum across all instances"></metric>
+  <metric name="TurnRndRdWr_noRd_sum" expr=sum(TurnRndRdWr_noRd,32) descr="TurnRndRdWr_noRd. Sum across all instances"></metric>
+  <metric name="TurnRndRdWr_RdThresh_sum" expr=sum(TurnRndRdWr_RdThresh,32) descr="TurnRndRdWr_RdThresh. Sum across all instances"></metric>
+  <metric name="TurnRndWrRd_noWr_sum" expr=sum(TurnRndWrRd_noWr,32) descr="TurnRndWrRd_noWr. Sum across all instances"></metric>
+  <metric name="TurnRndWrRd_WrThresh_sum" expr=sum(TurnRndWrRd_WrThresh,32) descr="TurnRndWrRd_WrThresh. Sum across all instances"></metric>
+  <metric name="TurnRndWrRd_RdUrg_sum" expr=sum(TurnRndWrRd_RdUrg,32) descr="TurnRndWrRd_RdUrg. Sum across all instances"></metric>
+  <metric name="PrechargePwrDownEntry_sum" expr=sum(PrechargePwrDownEntry,32) descr="PrechargePwrDownEntry. Sum across all instances"></metric>
+  <metric name="ThermalThrottleEntry_sum" expr=sum(ThermalThrottleEntry,32) descr="ThermalThrottleEntry. Sum across all instances"></metric>
+  <metric name="PgtActiveBanksCnt_sum" expr=sum(PgtActiveBanksCnt,32) descr="PgtActiveBanksCnt. Sum across all instances"></metric>
+  <metric name="SelfRefreshEntry_sum" expr=sum(SelfRefreshEntry,32) descr="SelfRefreshEntry. Sum across all instances"></metric>
+  <metric name="RdRspBusyNoCrdt_sum" expr=sum(RdRspBusyNoCrdt,32) descr="RdRspBusyNoCrdt. Sum across all instances"></metric>
+  <metric name="RdstallRdRspBuf_sum" expr=sum(RdstallRdRspBuf,32) descr="RdstallRdRspBuf. Sum across all instances"></metric>
+  <metric name="RdrspBusyVdciNotRdy_sum" expr=sum(RdrspBusyVdciNotRdy,32) descr="RdrspBusyVdciNotRdy. Sum across all instances"></metric>
+  <metric name="DfiLpReq_sum" expr=sum(DfiLpReq,32) descr="DfiLpReq. Sum across all instances"></metric>
+  <metric name="DfiLpCyc_sum" expr=sum(DfiLpCyc,32) descr="DfiLpCyc. Sum across all instances"></metric>
+  <metric name="BubbleOverall_sum" expr=sum(BubbleOverall,32) descr="BubbleOverall. Sum across all instances"></metric>
+  <metric name="BeqEdcErrB0_sum" expr=sum(BeqEdcErrB0,32) descr="BeqEdcErrB0. Sum across all instances"></metric>
+  <metric name="BeqEdcErrB1_sum" expr=sum(BeqEdcErrB1,32) descr="BeqEdcErrB1. Sum across all instances"></metric>
+  <metric name="BeqEdcErrB2_sum" expr=sum(BeqEdcErrB2,32) descr="BeqEdcErrB2. Sum across all instances"></metric>
+  <metric name="BeqEdcErrB3_sum" expr=sum(BeqEdcErrB3,32) descr="BeqEdcErrB3. Sum across all instances"></metric>
+  <metric name="TempOverThresh_sum" expr=sum(TempOverThresh,32) descr="TempOverThresh. Sum across all instances"></metric>
+  <metric name="TempCnt_sum" expr=sum(TempCnt,32) descr="TempCnt. Sum across all instances"></metric>
+  <metric name="ReqFullEntry_sum" expr=sum(ReqFullEntry,32) descr="ReqFullEntry. Sum across all instances"></metric>
+  <metric name="NumReqs_sum" expr=sum(NumReqs,32) descr="NumReqs. Sum across all instances"></metric>
+  <metric name="CasWithDeAlloc_sum" expr=sum(CasWithDeAlloc,32) descr="CasWithDeAlloc. Sum across all instances"></metric>
+  <metric name="RfmCmd_sum" expr=sum(RfmCmd,32) descr="RfmCmd. Sum across all instances"></metric>
+  <metric name="SdpNewEntry_sum" expr=sum(SdpNewEntry,32) descr="SdpNewEntry. Sum across all instances"></metric>
+  <metric name="SdpHitEntry_sum" expr=sum(SdpHitEntry,32) descr="SdpHitEntry. Sum across all instances"></metric>
+  <metric name="PatrolScrub_sum" expr=sum(PatrolScrub,32) descr="PatrolScrub. Sum across all instances"></metric>
+  <metric name="RedirectScrub_sum" expr=sum(RedirectScrub,32) descr="RedirectScrub. Sum across all instances"></metric>
+  <metric name="PoisonScrub_sum" expr=sum(PoisonScrub,32) descr="PoisonScrub. Sum across all instances"></metric>
+  <metric name="MemClear_sum" expr=sum(MemClear,32) descr="MemClear. Sum across all instances"></metric>
+  <metric name="DroppedRedirectScrub_sum" expr=sum(DroppedRedirectScrub,32) descr="DroppedRedirectScrub. Sum across all instances"></metric>
+  <metric name="DroppedPoisonScrub_sum" expr=sum(DroppedPoisonScrub,32) descr="DroppedPoisonScrub. Sum across all instances"></metric>
+  <metric name="DroppedScrubWrite_sum" expr=sum(DroppedScrubWrite,32) descr="DroppedScrubWrite. Sum across all instances"></metric>
+  <metric name="RfmBlockClk_sum" expr=sum(RfmBlockClk,32) descr="RfmBlockClk. Sum across all instances"></metric>
+  <metric name="NoRefOverThres_sum" expr=sum(NoRefOverThres,32) descr="NoRefOverThres. Sum across all instances"></metric>
+  <metric name="StoredRefOverThres_sum" expr=sum(StoredRefOverThres,32) descr="StoredRefOverThres. Sum across all instances"></metric>
+  <metric name="PptRunning_sum" expr=sum(PptRunning,32) descr="PptRunning. Sum across all instances"></metric>
+  <metric name="PptTrig_sum" expr=sum(PptTrig,32) descr="PptTrig. Sum across all instances"></metric>
+  <metric name="PptMinWin_sum" expr=sum(PptMinWin,32) descr="PptMinWin. Sum across all instances"></metric>
+  <metric name="CrcErr_sum" expr=sum(CrcErr,32) descr="CrcErr. Sum across all instances"></metric>
+  <metric name="EccErr_sum" expr=sum(EccErr,32) descr="EccErr. Sum across all instances"></metric>
+  <metric name="DroopCmdThrot_sum" expr=sum(DroopCmdThrot,32) descr="DroopCmdThrot. Sum across all instances"></metric>
+  <metric name="DroopDetAtWin_sum" expr=sum(DroopDetAtWin,32) descr="DroopDetAtWin. Sum across all instances"></metric>
+  <metric name="DroopDetect_sum" expr=sum(DroopDetect,32) descr="DroopDetect. Sum across all instances"></metric>
+  <metric name="ClockCount_sum" expr=sum(ClockCount,32) descr="ClockCount. Sum across all instances"></metric>
+</gfx940_expr>
+
+
+<gfx940 base="gfx940_expr"></gfx940>
