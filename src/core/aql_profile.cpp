@@ -1,10 +1,10 @@
 #include "core/aql_profile.h"
 
 #include <cstdint>
+#include <future>
 #include <map>
 #include <string>
 #include <vector>
-#include <future>
 
 #include "core/logger.h"
 #include "core/pm4_factory.h"
@@ -218,11 +218,12 @@ static inline pm4_builder::counters_vector CountersVec(const profile_t* profile,
     ++reg_index;
   }
 
-  if (pm4_factory->IsGFX10() && (vec.get_attr()&CounterBlockSqAttr) != 0 && (vec.get_attr()&CounterBlockGRBMAttr) == 0) {
-    event_t grbm_event{.block_name = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_GRBM, .block_index=0, .counter_id=0};
+  if (pm4_factory->IsGFX10() && (vec.get_attr() & CounterBlockSqAttr) != 0 &&
+      (vec.get_attr() & CounterBlockGRBMAttr) == 0) {
+    event_t grbm_event{
+        .block_name = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_GRBM, .block_index = 0, .counter_id = 0};
     const GpuBlockInfo* block_info = pm4_factory->GetBlockInfo(&grbm_event);
-    if (block_info == nullptr)
-      return vec;
+    if (block_info == nullptr) return vec;
     const block_des_t block_des = {block_info->id, 0};
     const auto ret = index_map.insert({block_des, 0});
     uint32_t& reg_index = ret.first->second;
@@ -388,13 +389,12 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
       }
       assert(data_size <= profile->output_buffer.size);
 
-      
     } else if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_TRACE) {
       pm4_builder::TraceConfig trace_config{};
       memset((char*)&trace_config, 0, sizeof(pm4_builder::TraceConfig));
       trace_config.vmIdMask = 0xF;
       trace_config.simd_sel = 0xF;
-      trace_config.perfMASK = (1<<16)-1;
+      trace_config.perfMASK = (1 << 16) - 1;
       trace_config.se_mask = 0x3;
 
       const uint32_t se_number_total = pm4_factory->GetShaderEnginesNumber();
@@ -457,9 +457,9 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
                   trace_config.perfCTRL = (p->value & 0x31) | 0x7F;
                   break;
                 case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERFCOUNTER:
-                  if(trace_config.n_perfcounters < 8) {
+                  if (trace_config.n_perfcounters < 8) {
                     trace_config.perfcounters[trace_config.n_perfcounters] = p->value;
-                    trace_config.n_perfcounters ++;
+                    trace_config.n_perfcounters++;
                   } else {
                     ERR_LOGGING << "Maximum number of perfcounters reached!";
                   }
@@ -489,7 +489,7 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
 
       trace_config.spm_sq_32bit_mode = true;
       trace_config.se_number_total = pm4_factory->GetShaderEnginesNumber();
-      trace_config.sampleRate = 10000;//tbd
+      trace_config.sampleRate = 10000;  // tbd
       trace_config.control_buffer_ptr = control_ptr;
       trace_config.data_buffer_ptr = profile->output_buffer.ptr;
       trace_config.data_buffer_size = profile->output_buffer.size;
@@ -498,10 +498,10 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
         *reinterpret_cast<uint32_t*>(prefix_ptr) = tnumber;
         uint32_t i = 0;
         uint32_t se_per_xcc = pm4_factory->GetShaderEnginesNumber() / pm4_factory->GetXccNumber();
-        for (uint32_t t=0; t<se_number_total; t++) {
-          if (true) { //if (se_mask & (1<<t)) {
-            const uint32_t se_id_ind = (pm4_builder::TT_STATUS_IDX_MAX * i)
-                                        + pm4_builder::TT_STATUS_IDX_ID;
+        for (uint32_t t = 0; t < se_number_total; t++) {
+          if (true) {  // if (se_mask & (1<<t)) {
+            const uint32_t se_id_ind =
+                (pm4_builder::TT_STATUS_IDX_MAX * i) + pm4_builder::TT_STATUS_IDX_ID;
             control_ptr[se_id_ind] = t % se_per_xcc;
             i += 1;
           }
@@ -743,11 +743,11 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
       uint64_t* samples = reinterpret_cast<uint64_t*>(profile->output_buffer.ptr);
       const uint32_t sample_count = profile->output_buffer.size / (sizeof(uint64_t) * xcc_num);
 
-      for(uint32_t xcc_index = 0; xcc_index < xcc_num; xcc_index++) {
+      for (uint32_t xcc_index = 0; xcc_index < xcc_num; xcc_index++) {
         uint32_t sample_index = 0;
         uint32_t sample_location = 0;
         for (const hsa_ven_amd_aqlprofile_event_t* p = profile->events;
-            p < profile->events + profile->event_count; ++p) {
+             p < profile->events + profile->event_count; ++p) {
           // A perfcounter data sample per ShaderEngine
           const uint32_t block_samples_count =
               (pm4_factory->GetBlockInfo(p)->attr & CounterBlockSeAttr) ? se_number : 1;
@@ -765,14 +765,17 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
             sample_info.sample_id = i;
             sample_info.pmc_data.event = *p;
             uint64_t val = 0;
-            for (int wgp=0; wgp<samples_per_sq; wgp++) {
+            for (int wgp = 0; wgp < samples_per_sq; wgp++) {
               if (sample_location >= sample_count) break;
               val += samples[sample_location];
-  #if DEBUG_TRACE == 2
-              printf("DATA: sample index(%u) loc(%u) id(%u) bloc id(%u) index(%u) counter id(%u) res(%lu)\n", sample_index,
-                  sample_location, i, p->block_name, p->block_index, p->counter_id, samples[sample_location]);
-  #endif
-              sample_location ++;
+#if DEBUG_TRACE == 2
+              printf(
+                  "DATA: sample index(%u) loc(%u) id(%u) bloc id(%u) index(%u) counter id(%u) "
+                  "res(%lu)\n",
+                  sample_index, sample_location, i, p->block_name, p->block_index, p->counter_id,
+                  samples[sample_location]);
+#endif
+              sample_location++;
             }
 
             if (is_concurrent) {
@@ -831,8 +834,7 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
             status = HSA_STATUS_ERROR_EXCEPTION;
           } else if (control_ptr[status_ind] & sqttbuilder->GetBufferFullMask()) {
             ERR2_LOGGING << "SQTT data buffer full, SE(" << i << ")";
-            if (status == HSA_STATUS_SUCCESS)
-              status = HSA_STATUS_ERROR_OUT_OF_RESOURCES;
+            if (status == HSA_STATUS_SUCCESS) status = HSA_STATUS_ERROR_OUT_OF_RESOURCES;
           }
         }
 
@@ -854,35 +856,36 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
               (pm4_builder::TT_STATUS_IDX_MAX * i) + pm4_builder::TT_STATUS_IDX_WPTR;
 
           uint64_t sample_size = (control_ptr[wptr_ind] & sqttbuilder->GetWritePtrMask()) *
-                                      sqttbuilder->GetWritePtrBlk();
+                                 sqttbuilder->GetWritePtrBlk();
 
           if (pm4_factory->GetGpuId() == aql_profile::GFX11_GPU_ID)
-            sample_size = (sample_size - reinterpret_cast<uint64_t>(sample_ptr)) & ((1ull<<29)-1);
+            sample_size =
+                (sample_size - reinterpret_cast<uint64_t>(sample_ptr)) & ((1ull << 29) - 1);
 
           if (sample_size >= sample_capacity) {
-            ERR_LOGGING << "SQTT data out of bounds, sample_id(" << i
-                        << ") size(" << sample_size << "/" << sample_capacity << ")";
+            ERR_LOGGING << "SQTT data out of bounds, sample_id(" << i << ") size(" << sample_size
+                        << "/" << sample_capacity << ")";
             sample_size = sample_capacity;
-            if (status == HSA_STATUS_SUCCESS)
-              status = HSA_STATUS_ERROR_OUT_OF_RESOURCES;
+            if (status == HSA_STATUS_SUCCESS) status = HSA_STATUS_ERROR_OUT_OF_RESOURCES;
           }
-          assert (mode == 0); // SQTT trace mode
-          sample_data_vector.push_back(std::async(
-            std::launch::async,
-            aql_profile::aqlprofile_sqttfilter_iterate_data,
-            sample_ptr,
-            sample_capacity,
-            sample_size,
-            se_id,
-            ATT_TARGET_CU.load()
-          ));
-          sample_ptr = reinterpret_cast<char*>(sample_ptr) + sample_capacity;
+          hsa_status_t call_status;
+          if (mode == 0) {  // SQTT trace
+            sample_data_vector.push_back(
+                std::async(std::launch::async, aql_profile::aqlprofile_sqttfilter_iterate_data,
+                           sample_ptr, sample_capacity, sample_size, se_id, ATT_TARGET_CU.load()));
+            sample_ptr = reinterpret_cast<char*>(sample_ptr) + sample_capacity;
+          } else {  // PC sampling
+            pcsmp_callback_data_t* pcsmp_data = reinterpret_cast<pcsmp_callback_data_t*>(data);
+            pcsmp_data->id = se_id;
+            pcsmp_data->cycle = 333;
+            pcsmp_data->pc = 0x333;
+            call_status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, NULL, data);
+          }
         }
         for (auto& future : sample_data_vector) {
           auto sample_info = future.get();
           status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, &sample_info, data);
-          if (status != HSA_STATUS_SUCCESS)
-            break;
+          if (status != HSA_STATUS_SUCCESS) break;
         }
       } else {  // SPM trace data
         if (pm4_factory->SpmKfdMode() == false) {
