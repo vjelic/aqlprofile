@@ -113,8 +113,11 @@ struct InstructionExt
     uint64_t cycles;
 
     // TODO: Compare PCs
-    bool operator==(const Instruction& other) const { return this->value == other.value; };
-    bool operator!=(const Instruction& other) const { return this->value != other.value; };
+    bool operator==(const Instruction& other) const { return !(*this != other); };
+    bool operator!=(const Instruction& other) const {
+        return this->value != other.value ||
+            (value == (uint64_t)WaveInstCategory::PCINFO && cycles != other.issue2inst);
+    };
     InstructionExt& operator+=(const Instruction& other) {
         num_waves += 1;
         if (value != (uint64_t)WaveInstCategory::PCINFO)

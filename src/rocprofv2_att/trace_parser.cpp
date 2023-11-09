@@ -305,10 +305,10 @@ size_t CppReturnInfo::Serialize(char* const buffer, size_t buffersize) const
 }
 
 #define READ_INC(datacopyptr, sizeofdata, numelements) {                              \
-    spaceleft -= sizeofdata*numelements;                                              \
-    numelements = std::min<uint64_t>(numelements, spaceleft / sizeofdata);            \
-    std::memcpy(datacopyptr, buffer+offset, numelements*sizeofdata);                  \
+    auto avail_elem = std::min<uint64_t>(numelements, spaceleft / sizeofdata);        \
+    std::memcpy(datacopyptr, buffer+offset, avail_elem*sizeofdata);                   \
     offset += numelements*sizeofdata;                                                 \
+    spaceleft -= numelements*sizeofdata;                                              \
     if (spaceleft <= 0) return ret;                                                   \
 }
 
@@ -334,7 +334,7 @@ std::unique_ptr<CppReturnInfo> CppReturnInfo::UnSerialize(const char* buffer, si
 
     for (size_t tsize : ret->tracesizes)
     {
-        ret->traces.push_back(std::vector<InstructionExt>(tsize));
+        ret->traces.push_back(std::vector<InstructionExt>(tsize, {WaveInstCategory::NONE,0,0}));
         ret->tracedata.push_back(ret->traces.back().data());
         READ_INC(ret->tracedata.back(), sizeof(InstructionExt), tsize);
     }
