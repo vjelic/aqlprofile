@@ -108,9 +108,9 @@ struct InstructionExt
     InstructionExt(const Instruction& inst):
         num_waves(1), value(inst.value), cycles(std::max(inst.last, inst.issue2inst)) {};
 
-    uint64_t num_waves;
-    uint64_t value;
-    uint64_t cycles;
+    uint64_t num_waves = 0;
+    uint64_t value = 0;
+    uint64_t cycles = 0;
 
     // TODO: Compare PCs
     bool operator==(const Instruction& other) const { return !(*this != other); };
