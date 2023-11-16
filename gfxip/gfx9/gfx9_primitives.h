@@ -46,8 +46,7 @@ class gfx9_cntx_prim {
   static const uint32_t SQ_THREAD_TRACE_STATUS_ADDR = mmSQ_THREAD_TRACE_STATUS;
   static const uint32_t SQ_THREAD_TRACE_CNTR_ADDR = mmSQ_THREAD_TRACE_CNTR;
   static const uint32_t SQ_THREAD_TRACE_WPTR_ADDR = mmSQ_THREAD_TRACE_WPTR;
-  static const uint32_t SQ_THREAD_TRACE_STATUS_OFFSET =
-      mmSQ_THREAD_TRACE_STATUS - UCONFIG_SPACE_START;
+  static const uint32_t SQ_THREAD_TRACE_STATUS_OFFSET = mmSQ_THREAD_TRACE_STATUS - UCONFIG_SPACE_START;
   static const uint32_t TT_BUFF_ALIGN_SHIFT = 12;
 
   static const uint32_t SDMA_COUNTER_BLOCK_NUM_INSTANCES = SdmaCounterBlockMaxInstances;
@@ -66,6 +65,11 @@ class gfx9_cntx_prim {
   static const uint32_t RLC_SPM_SE_MUXSEL_DATA__ADDR = mmRLC_SPM_SE_MUXSEL_DATA;
   static const uint32_t RLC_SPM_COUNTERS_PER_LINE = 16;
   static const uint32_t RLC_SPM_TIMESTAMP_SIZE16 = 4;
+
+  static const uint32_t SQ_THREAD_TRACE_USERDATA_0 = mmSQ_THREAD_TRACE_USERDATA_0;
+  static const uint32_t SQ_THREAD_TRACE_USERDATA_1 = mmSQ_THREAD_TRACE_USERDATA_1;
+  static const uint32_t SQ_THREAD_TRACE_USERDATA_2 = mmSQ_THREAD_TRACE_USERDATA_2;
+  static const uint32_t SQ_THREAD_TRACE_USERDATA_3 = mmSQ_THREAD_TRACE_USERDATA_3;
 
   static uint32_t sqtt_perfcounter_addr(uint32_t index) {
     static constexpr uint32_t SQTT_PERFCOUNTERS_SELECT[16] = {

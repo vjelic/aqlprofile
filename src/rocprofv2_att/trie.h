@@ -29,6 +29,7 @@
 #include <fstream>
 #include <cassert>
 #include <utility>
+#include <string_view>
 
 enum class InstCategory {
   COMMENT = 0,
@@ -53,10 +54,17 @@ class Trie {
   Trie() = default;
   ~Trie();
 
-  InstCategory type_from_trie(const std::string& inst);
+  InstCategory type_from_trie(const std::string_view inst);
 
   static Trie root_trie;
   static std::unordered_map<std::string, InstCategory> type_dict;
+
+  static InstCategory inst_type(const std::string_view line) {
+    if (line.find("branch") != std::string::npos)
+        return InstCategory::BRANCH;
+    else
+        return root_trie.type_from_trie(line.substr(0, line.find(' ')));
+  }
 
  private:
   void add_type(const std::string& inst_header, InstCategory type);

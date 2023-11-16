@@ -452,6 +452,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
         reg.addr &= 0xFF;
         if (reg.CS && reg.addr >= 0xC && reg.addr <= 0xD)
           wave_start_addr[reg.me&0x1][reg.pipe][reg.addr - 0xC] = reg.data;
+        //else if (reg.CS && reg.addr >= 0x42 && reg.addr <= 0x43)
         break;
       }
       /*

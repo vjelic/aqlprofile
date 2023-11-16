@@ -269,13 +269,6 @@ std::vector<std::pair<int, std::string>> extract_kernel(
     return code;
 }
 
-InstCategory inst_type(const std::string& line) {
-    if (line.find("branch") != std::string::npos)
-        return InstCategory::BRANCH;
-    else
-        return Trie::root_trie.type_from_trie(line.substr(0, line.find(' ')));
-}
-
 size_t clip_address(const std::string& comment) {
     static std::string sequence = "// 000000";
     size_t commapos = comment.find(':', sequence.size());
@@ -333,7 +326,7 @@ AsParseRetype as_parse(const char* assembly_file, const char* kernel) {
     for (uint32_t i = 0; i < raw.size(); i++) {
         auto& line = raw[i].line;
         auto loc = raw[i].loc + (raw[i].address ? "" : raw[i].comment);
-        auto instruction_type = inst_type(line);
+        auto instruction_type = Trie::inst_type(line);
 
         if (instruction_type == InstCategory::BRANCH) {
             size_t bpos = line.find("branch"); // Todo: What happens with label named "branch"?
@@ -389,7 +382,7 @@ AsParseRetype as_parse_auto(const char* assembly_file) {
         }
         processed.push_back({
             strip(line),
-            inst_type(line),
+            Trie::inst_type(line),
             0,
             std::move(last_comment),
             (uint32_t)processed.size(),
@@ -465,5 +458,10 @@ return_assembly_info_t wrapped_parse_binary(const char* p_filename, const char* 
     info.jumps = jumps_wrapped.data();
 
     return info;
+}
+__attribute__((visibility("default")))
+int classify_asm_line(const char* line, size_t size)
+{
+    return static_cast<int>(Trie::inst_type({line, size}));
 }
 }

@@ -158,7 +158,7 @@ std::unordered_map<std::string, InstCategory> Trie::type_dict = {
     {"v_bfi", InstCategory::VALU},
 };
 
-InstCategory Trie::type_from_trie(const std::string& inst) {
+InstCategory Trie::type_from_trie(const std::string_view inst) {
   assert(this == &root_trie);
   if (!bInit) {
     bInit = true;
@@ -176,7 +176,7 @@ InstCategory Trie::type_from_trie(const std::string& inst) {
   }
 
   if (inst.size() > 2) {
-    std::string sub = inst.substr(0,2);
+    std::string_view sub = inst.substr(0,2);
     if (sub == "v_")
       return InstCategory::VALU;
     else if (sub == "s_")
