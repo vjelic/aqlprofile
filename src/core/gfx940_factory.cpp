@@ -14,7 +14,7 @@ class Mi300Factory : public Mi100Factory {
       if (base_table_ptr == NULL) continue;
       GpuBlockInfo* block_info = new GpuBlockInfo(*base_table_ptr);
       block_table_[i] = block_info;
-      // overwrite block info for any update from gfx9 to mi100
+      // overwrite block info for any update from gfx9 to mi300
       switch (block_info->id) {
       case SqCounterBlockId:
         block_info->event_id_max = 373;
@@ -39,6 +39,7 @@ class Mi300Factory : public Mi100Factory {
         break;
       case UmcCounterBlockId:
         block_info->counter_count = 11;
+        block_info->instance_count = 128;
         break;
       }
     }

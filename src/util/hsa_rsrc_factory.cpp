@@ -245,8 +245,8 @@ const AgentInfo* HsaRsrcFactory::AddAgentInfo(const hsa_agent_t agent) {
                        &agent_info->se_num);
 
     if (hsa_agent_get_info(agent, static_cast<hsa_agent_info_t>(HSA_AMD_AGENT_INFO_NUM_XCC),
-                        &agent_info->xcc_num) != HSA_STATUS_SUCCESS) {
-        agent_info->xcc_num = 1;
+                           &agent_info->xcc_num) != HSA_STATUS_SUCCESS) {
+      agent_info->xcc_num = 1;
     };
     hsa_agent_get_info(agent,
                        static_cast<hsa_agent_info_t>(HSA_AMD_AGENT_INFO_NUM_SHADER_ARRAYS_PER_SE),
@@ -555,6 +555,7 @@ bool HsaRsrcFactory::PrintGpuAgents(const std::string& header) {
     std::clog << ">> HSAIL profile : " << agent_info->profile << std::endl;
     std::clog << ">> Max Wave Size : " << agent_info->max_wave_size << std::endl;
     std::clog << ">> Max Queue Size : " << agent_info->max_queue_size << std::endl;
+    std::clog << ">> XCC number : " << agent_info->xcc_num << std::endl;
     std::clog << ">> CU number : " << agent_info->cu_num << std::endl;
     std::clog << ">> Waves per CU : " << agent_info->waves_per_cu << std::endl;
     std::clog << ">> SIMDs per CU : " << agent_info->simds_per_cu << std::endl;

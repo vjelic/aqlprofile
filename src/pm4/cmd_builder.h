@@ -144,6 +144,11 @@ class CmdBuilder {
   virtual void BuildCopyRegDataPacket(CmdBuffer* cmdbuf, uint32_t src_reg_addr,
                                       const void* dst_addr, uint32_t size, bool wait) = 0;
 
+  /// @brief Same as the above function but with 64-bit src_reg_addr.
+  virtual void BuildCopyRegDataPacket(CmdBuffer* cmdbuf, uint64_t src_reg_addr,
+                                      const void* dst_addr, uint32_t size, bool wait)
+  {}
+
   /// @brief Builds the Gpu command to reference indirectly a stream
   /// of other Gpu commands. The launch command is then copied into
   /// the command buffer parameter.

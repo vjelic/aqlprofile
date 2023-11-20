@@ -426,6 +426,7 @@ class gfx9_cntx_prim {
     regUMCCH_PerfMonCtlClk perfmon_ctl_clk{};
     // clear - GlblReset
     perfmon_ctl_clk.bits.GlblReset = 1;
+    perfmon_ctl_clk.bits.GlblResetMsk = 0xFFF;
     return perfmon_ctl_clk.u32All;
   }
 
@@ -434,6 +435,7 @@ class gfx9_cntx_prim {
     regUMCCH_PerfMonCtlClk perfmon_ctl_clk{};
     // global enable
     perfmon_ctl_clk.bits.GlblMonEn = 1;
+    perfmon_ctl_clk.bits.CtrClkEn = 1;
     return perfmon_ctl_clk.u32All;
   }
 

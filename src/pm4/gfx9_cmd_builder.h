@@ -175,7 +175,7 @@ class Gfx9CmdBuilder : public CmdBuilder {
     APPEND_COMMAND_WRAPPER(cmdbuf, set_uconfig_reg, value);
   }
 
-  void BuildWritePConfigRegPacket(CmdBuffer* cmdbuf, uint32_t addr, uint32_t value) {
+  void BuildWritePConfigRegPacket(CmdBuffer* cmdbuf, uint64_t addr, uint32_t value) {
     PM4MEC_COPY_DATA copy_data{};
 
     // Initialize the command header
@@ -195,8 +195,9 @@ class Gfx9CmdBuilder : public CmdBuilder {
 
     copy_data.imm_data = value;
 
-    // extend register address to all 32-bit
-    copy_data.ordinal5 = addr;
+    // extend register address to all 64-bit
+    copy_data.ordinal5 = Low32(addr);
+    copy_data.dst_addr_hi = High32(addr);
 
     // Append the built command into output Command Buffer
     APPEND_COMMAND_WRAPPER(cmdbuf, copy_data);
@@ -207,10 +208,8 @@ class Gfx9CmdBuilder : public CmdBuilder {
                                        : BuildWriteUConfigRegPacket(cmdbuf, addr, value);
   }
 #ifndef SRC_PM4_GFX10_CMD_BUILDER_H_
-  void BuildCopyRegDataPacket(CmdBuffer* cmdbuf, uint32_t src_reg_addr, const void* dst_addr,
-                              uint32_t size, bool wait) {
-    PM4MEC_COPY_DATA copy_data{};
-
+  inline void build_pm4_copy_data(PM4MEC_COPY_DATA& copy_data, uint64_t src_reg_addr, const void* dst_addr,
+                                  uint32_t size, bool wait) {
     // Initialize the command header
     copy_data.header = MakePacket3Header(IT_COPY_DATA, sizeof(copy_data));
 
@@ -226,8 +225,9 @@ class Gfx9CmdBuilder : public CmdBuilder {
     copy_data.bitfields2.count_sel = (size == 0) ? count_sel__mec_copy_data__32_bits_of_data
                                                  : count_sel__mec_copy_data__64_bits_of_data;
 
-    // Specify the source register offset
-    copy_data.bitfields3a.src_reg_offset = src_reg_addr;
+    // Specify the source register offset - extended to 64-bit
+    copy_data.ordinal3 = Low32(src_reg_addr);
+    copy_data.ordinal4 = High32(src_reg_addr);
 
     // Specify the destination memory address
     copy_data.dst_addr_hi = PtrHigh32(dst_addr);
@@ -236,13 +236,28 @@ class Gfx9CmdBuilder : public CmdBuilder {
     } else {
       copy_data.bitfields5c.dst_64b_addr_lo = (PtrLow32(dst_addr) >> 3);
     }
+  }
+
+  void BuildCopyRegDataPacket(CmdBuffer* cmdbuf, uint32_t src_reg_addr, const void* dst_addr,
+                              uint32_t size, bool wait) {
+    PM4MEC_COPY_DATA copy_data{};
+    build_pm4_copy_data(copy_data, (uint64_t)src_reg_addr, dst_addr, size, wait);
+
+    // Append the built command into output Command Buffer
+    APPEND_COMMAND_WRAPPER(cmdbuf, copy_data);
+  }
+
+  void BuildCopyRegDataPacket(CmdBuffer* cmdbuf, uint64_t src_reg_addr, const void* dst_addr,
+                              uint32_t size, bool wait) {
+    PM4MEC_COPY_DATA copy_data{};
+    build_pm4_copy_data(copy_data, src_reg_addr, dst_addr, size, wait);
 
     // Append the built command into output Command Buffer
     APPEND_COMMAND_WRAPPER(cmdbuf, copy_data);
   }
 #endif
-  uint32_t BuildCopyCounterDataPacket(CmdBuffer* cmdbuf, uint32_t src_reg_addr_lo,
-                                      uint32_t src_reg_addr_hi, const void* dst_addr,
+  uint32_t BuildCopyCounterDataPacket(CmdBuffer* cmdbuf, uint64_t src_reg_addr_lo,
+                                      uint64_t src_reg_addr_hi, const void* dst_addr,
                                       uint32_t dw_mask) {
     uint32_t read_counter = 0;
     if (dw_mask & 0x1) {
