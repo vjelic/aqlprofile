@@ -419,3 +419,19 @@ extern "C"
         map_globalstate.erase(id);
     }
 }
+
+
+uint64_t ToPcV2(uint64_t pc, CodeobjTableTranslator& table)
+{
+  pcinfo_t pcinfo;
+  try {
+    const address_range_t& codeobj = table.find_codeobj_in_range(pc);
+    pcinfo.codeobj.header = 1;
+    pcinfo.codeobj.id = codeobj.id;
+    pcinfo.codeobj.offset = pc - codeobj.vbegin;
+  } catch (std::string& e) {
+    pcinfo.addr.header = 0;
+    pcinfo.addr.addr = pc;
+  }
+  return pcinfo.raw;
+}

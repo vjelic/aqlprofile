@@ -28,6 +28,7 @@
 #include <unordered_set>
 #include "gfx10wave.h"
 #include "../gfx11/gfx11wave.h"
+#include "../segment.hpp"
 
 int gfx10wave_t::dp_cycles = 1;
 int gfx10wave_t::dp_derate = 1;
@@ -39,6 +40,13 @@ struct alu_user_inst_t {
   uint64_t inst;
   uint64_t time;
 };
+
+#define COMPUTE_PGM_LO 0xC
+#define COMPUTE_PGM_HI 0xD
+#define USERDATA_ADDR_0 0x40
+#define USERDATA_ADDR_1 0x41
+#define USERDATA_ADDR_2 0x42
+#define USERDATA_ADDR_3 0x43
 
 /*
 std::unordered_map<int, const char*> gfx10wave_t::INST_NAMES = {
@@ -306,12 +314,11 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
   int target_simd = 0;
   int tt_version = 0;
 
-  std::array<std::array<std::array<uint64_t, 2>, 4>, 2> wave_start_addr{};
-
   // kernel_addr -> SA -> WGP
   auto current_occupancy = std::vector<std::array<int, 16>>(current_kernel_unique_id.load());
   // data from all waves
   auto running_waves = std::unordered_map<uint64_t, size_t>{};
+  auto retroactive_occ_waves = std::array<std::vector<uint32_t>, 16>{};
 
   {
     occupancy_info_t occ;
@@ -324,7 +331,12 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
     }
   }
 
-  auto retroactive_occ_waves = std::array<std::vector<uint32_t>, 16>{};
+  PipeArray64 wave_start_addr{};
+
+  CodeobjTableTranslator table;
+  std::unordered_set<uint32_t> active_codeobj_id{};
+  PipeArray32 current_codeobj_size{};
+  PipeArray64 current_codeobj_addr{};
 
   for (size_t t = 0; t<tokens.size(); t++) {
     Token& token = tokens[t];
@@ -348,8 +360,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
       case gfx10type::WAVE_START:
       {
         wstart_type start { .raw = token.contents };
-        auto& pipe = wave_start_addr[start.me&1][start.pipe];
-        uint64_t wave_addr = ((pipe[0] << 8) | ((pipe[1] & 0xFF) << 40));
+        uint64_t wave_addr = ToPcV2((wave_start_addr.at_reg(start) << 8) & ((1ul<<48)-1), table);
 
         size_t kid = get_addr_unique_id(wave_addr);
         while (current_occupancy.size() <= kid) current_occupancy.push_back({});
@@ -444,15 +455,47 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
       case gfx10type::NEW_PC: {
         new_pc_type pc { .raw = token.contents };
         if (pc.wave < SIMD.size() && SIMD[pc.wave].size())
-          SIMD[pc.wave].back().new_pc((uint64_t)token.time, pc.pc);
+          SIMD[pc.wave].back().new_pc((uint64_t)token.time, pc.pc, table);
         break;
       }
       case gfx10type::REG: {
         reg_write_type reg { .raw = token.contents };
         reg.addr &= 0xFF;
-        if (reg.CS && reg.addr >= 0xC && reg.addr <= 0xD)
-          wave_start_addr[reg.me&0x1][reg.pipe][reg.addr - 0xC] = reg.data;
-        //else if (reg.CS && reg.addr >= 0x42 && reg.addr <= 0x43)
+
+        if (reg.CS) {
+          if (reg.addr == COMPUTE_PGM_LO)
+            wave_start_addr.setlo(reg, reg.data);
+          else if (reg.addr == COMPUTE_PGM_HI)
+            wave_start_addr.sethi(reg, reg.data);
+        }
+        else if (reg.addr >= USERDATA_ADDR_0 && reg.addr <= USERDATA_ADDR_3)
+        {
+          if (reg.addr == USERDATA_ADDR_1)
+            current_codeobj_size.at_reg(reg) = reg.data;
+          if (reg.addr == USERDATA_ADDR_2)
+            current_codeobj_addr.setlo(reg, reg.data);
+          if (reg.addr == USERDATA_ADDR_3)
+            current_codeobj_addr.sethi(reg, reg.data);
+          if (reg.addr == USERDATA_ADDR_0)
+          {
+            uint32_t id = reg.data >> 2;
+            uint32_t type = reg.data & 0x3;
+            uint64_t base_addr = current_codeobj_addr.at_reg(reg);
+
+            auto it = active_codeobj_id.find(id);
+            if (type == 0 && it == active_codeobj_id.end())
+            {
+              active_codeobj_id.insert(id);
+              address_range_t arange = {base_addr, current_codeobj_size.at_reg(reg), id};
+              table.insert(arange);
+            }
+            else if (type == 1 && it != active_codeobj_id.end())
+            {
+              active_codeobj_id.erase(id);
+              table.remove(base_addr);
+            }
+          }
+        }
         break;
       }
       /*
@@ -547,8 +590,8 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
   return std::make_tuple(SIMD, perfEvents, occupancy, kid_map);
 }
 
-void wave_t::new_pc(uint64_t time, int64_t pc) {
-  Instruction inst{time, WaveInstCategory::PCINFO, (uint64_t)pc<<2, 0};
+void wave_t::new_pc(uint64_t time, int64_t pc, CodeobjTableTranslator& table) {
+  Instruction inst{time, WaveInstCategory::PCINFO, ToPcV2(pc<<2, table), 0};
   if (last_jump_inst >= 0)
     instructions.emplace(instructions.begin()+last_jump_inst+1, inst);
   else

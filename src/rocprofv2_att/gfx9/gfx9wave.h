@@ -63,4 +63,3 @@ struct gfx9wave_t : public WaveDataInternal {
   int64_t apply_issue(uint64_t wave_status, uint64_t token_time);
   static int64_t array_apply_issue(gfx9Token& token, WaveArray& SIMD);
 };
-

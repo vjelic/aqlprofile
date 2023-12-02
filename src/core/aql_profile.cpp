@@ -248,14 +248,15 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
       trace_config.perfMASK = (1 << 16) - 1;
       trace_config.se_mask = 0x11111111;
 
-      const uint32_t se_number_total = pm4_factory->GetShaderEnginesNumber();
+      const uint64_t se_number_total = pm4_factory->GetShaderEnginesNumber();
 
       if (profile->parameters) {
         for (const hsa_ven_amd_aqlprofile_parameter_t* p = profile->parameters;
              p < (profile->parameters + profile->parameter_count); ++p) {
-          switch (p->parameter_name) {
+          switch (p->parameter_name)
+          {
             case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_SE_MASK:
-              trace_config.se_mask = p->value;
+              trace_config.se_mask = p->value & ((1ull << se_number_total) - 1);
               break;
             case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_COMPUTE_UNIT_TARGET:
               if (p->value > 15)
@@ -291,34 +292,29 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
             case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_K_CONCURRENT:
               trace_config.concurrent = p->value;
               break;
-            default:
-              switch (hsa_ven_amd_aqlprofile_parameter_name_ext_t(p->parameter_name)) {
-                case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_SIMD_SELECT:
-                  trace_config.simd_sel = p->value & 0xF;
-                  break;
-                case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_OCCUPANCY:
-                  trace_config.occupancy_mode = p->value ? 1 : 0;
-                  break;
-                case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_BUFFER_SIZE:
-                  break;
-                case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERF_MASK:
-                  trace_config.perfMASK = p->value;
-                  break;
-                case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERF_CTRL:
-                  trace_config.perfCTRL = ((p->value & 0x1F) << 8) | 0x7F;
-                  break;
-                case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERFCOUNTER:
-                  if (trace_config.n_perfcounters < 8) {
-                    trace_config.perfcounters[trace_config.n_perfcounters] = p->value;
-                    trace_config.n_perfcounters++;
-                  } else {
-                    ERR_LOGGING << "Maximum number of perfcounters reached!";
-                  }
-                  break;
-                default:
-                  ERR_LOGGING << "Bad trace parameter name (" << p->parameter_name << ")";
-                  return HSA_STATUS_ERROR_INVALID_ARGUMENT;
+            case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_SIMD_SELECTION:
+              trace_config.simd_sel = p->value & 0xF;
+              break;
+            case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_OCCUPANCY_MODE:
+              trace_config.occupancy_mode = p->value ? 1 : 0;
+              break;
+            case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_ATT_BUFFER_SIZE:
+              break;
+            case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERFCOUNTER_MASK:
+              trace_config.perfMASK = p->value;
+              break;
+            case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERFCOUNTER_CTRL:
+              trace_config.perfCTRL = (p->value & 0x31) | 0x7F;
+              break;
+            case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERFCOUNTER_NAME:
+              if (trace_config.n_perfcounters < 8) {
+                trace_config.perfcounters[trace_config.n_perfcounters] = p->value;
+                trace_config.n_perfcounters++;
               }
+              break;
+            default:
+              ERR_LOGGING << "Bad trace parameter name (" << p->parameter_name << ")";
+              return HSA_STATUS_ERROR_INVALID_ARGUMENT;
           }
         }
       }
@@ -332,7 +328,7 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
           reinterpret_cast<pm4_builder::ControlType*>(prefix_ptr + sizeof(uint32_t));
 
       trace_config.spm_sq_32bit_mode = true;
-      trace_config.se_number_total = pm4_factory->GetShaderEnginesNumber();
+      trace_config.se_number_total = se_number_total;
       trace_config.sampleRate = 10000;  // tbd
       trace_config.control_buffer_ptr = control_ptr;
       trace_config.data_buffer_ptr = profile->output_buffer.ptr;
@@ -683,29 +679,20 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
         }
 
         // SQTT output buffer and capacity per ShaderEngine
-        void* sample_ptr = profile->output_buffer.ptr;
-        uint32_t se_mask = 0x11111111;
-
-        if (profile->parameters)
-        for (size_t i=0; i<profile->parameter_count; i++)
-        if (profile->parameters[i].parameter_name == HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_SE_MASK)
-          se_mask = profile->parameters[i].value;
-
-        const uint32_t capacity_per_se = sqttbuilder->GetBaseStep(profile->output_buffer.size, se_mask);
-
         std::vector<std::future<hsa_ven_amd_aqlprofile_info_data_t>> sample_data_vector;
 
         // The samples sizes are returned in the control buffer
-        for (unsigned i = 0; i < tnumber; ++i)
+        for (uint64_t se_index = 0; se_index < tnumber; se_index++)
         {
-          bool bMaskedIn = (se_mask>>i) & 1;
-          uint32_t sample_capacity = bMaskedIn ? capacity_per_se : (1<<sqttbuilder->BufferAligment());
-          uint32_t se_id_ind = (pm4_builder::TT_STATUS_IDX_MAX * i) + pm4_builder::TT_STATUS_IDX_ID;
+          bool bMaskedIn = sqttbuilder->GetTargetCU(se_index) >= 0;
+          uint64_t sample_capacity = sqttbuilder->GetCapacity(se_index);
+          void* sample_ptr = reinterpret_cast<void*>(sqttbuilder->GetSEBaseAddr(se_index));
+          uint32_t se_id_ind = (pm4_builder::TT_STATUS_IDX_MAX * se_index) + pm4_builder::TT_STATUS_IDX_ID;
 
           const uint32_t se_id = control_ptr[se_id_ind];
           // WPTR specifies the index in thread trace buffer where next token will be
           // written by hardware. The index is incremented by size of 32 bytes.
-          uint32_t wptr_ind = (pm4_builder::TT_STATUS_IDX_MAX * i) + pm4_builder::TT_STATUS_IDX_WPTR;
+          uint32_t wptr_ind = (pm4_builder::TT_STATUS_IDX_MAX * se_index) + pm4_builder::TT_STATUS_IDX_WPTR;
 
           uint64_t sample_size = (control_ptr[wptr_ind] & sqttbuilder->GetWritePtrMask()) *
                                  sqttbuilder->GetWritePtrBlk();
@@ -716,7 +703,7 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
           }
 
           if (sample_size >= sample_capacity) {
-            ERR_LOGGING << "SQTT data out of bounds, sample_id(" << i << ") size(" << sample_size
+            ERR_LOGGING << "SQTT data out of bounds, sample_id(" << se_index << ") size(" << sample_size
                         << "/" << sample_capacity << ")";
             sample_size = sample_capacity;
             if (status == HSA_STATUS_SUCCESS) status = HSA_STATUS_ERROR_OUT_OF_RESOURCES;
@@ -732,14 +719,13 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
                   sample_ptr,
                   sample_capacity,
                   sample_size,
-                  se_id,
+                  se_index,
                   ATT_TARGET_CU.load()
               ));
             }
-            sample_ptr = reinterpret_cast<char*>(sample_ptr) + sample_capacity;
           } else {  // PC sampling
             pcsmp_callback_data_t* pcsmp_data = reinterpret_cast<pcsmp_callback_data_t*>(data);
-            pcsmp_data->id = se_id;
+            pcsmp_data->id = se_index;
             pcsmp_data->cycle = 333;
             pcsmp_data->pc = 0x333;
             call_status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, NULL, data);

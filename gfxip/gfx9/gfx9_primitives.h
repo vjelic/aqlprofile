@@ -555,14 +555,14 @@ class gfx9_cntx_prim {
   static uint32_t sqtt_token_mask_on_value() {
     regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
     token_mask.bits.REG_MASK = 0xF;
-    token_mask.bits.TOKEN_MASK = 0xBC6B;
+    token_mask.bits.TOKEN_MASK = 0xBC6F;
     return token_mask.u32All;
   }
 
   static uint32_t sqtt_token_mask_off_value() {
     regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
     token_mask.bits.REG_MASK = 0x0;
-    token_mask.bits.TOKEN_MASK = 0x104A;
+    token_mask.bits.TOKEN_MASK = 0x104E;
     return token_mask.u32All;
   }
 

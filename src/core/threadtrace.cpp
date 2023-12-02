@@ -15,8 +15,6 @@
 
 #define PUBLIC_API __attribute__((visibility("default")))
 
-#if 0
-
 extern "C" {
 
 // Method to populate the provided AQL packet with ATT Markers
@@ -35,7 +33,8 @@ hsa_ven_amd_aqlprofile_att_marker(
   pm4_builder::CmdBuffer commands;
 
   // Generate start commands
-  sqtt_builder->InsertMarker(&commands, data, channel);
+  auto status = sqtt_builder->InsertMarker(&commands, data, channel);
+  if (status != HSA_STATUS_SUCCESS) return status;
   aql_profile::descriptor_t& cmdbuffer = profile->command_buffer;
 
   size_t cmd_size = cmdbuffer.size;
@@ -52,5 +51,3 @@ hsa_ven_amd_aqlprofile_att_marker(
 }
 
 }  // extern "C"
-
-#endif

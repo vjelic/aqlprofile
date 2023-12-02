@@ -28,9 +28,12 @@
 #include <atomic>
 #include <mutex>
 #include <shared_mutex>
+#include <array>
+#include "segment.hpp"
+#include <iostream>
 
 //#define AMD_AQLPROFILE_SQTT_NPI
-#define SQTT_PARSER_VERSION 2
+#define SQTT_PARSER_VERSION 3
 
 enum WAVESLOT_STATE
 {
@@ -58,6 +61,15 @@ enum class WaveInstCategory
     PCINFO = 15,
     WAVE_END,
 };
+
+enum WaveTrapStatus
+{
+    TRAP_RESTORED = 0,
+    TRAP_REQUEST = 1,
+    TRAP_SAVED = 1,
+    TRAP_STANDBY = 2
+};
+
 
 typedef struct {
     uint64_t time;
@@ -128,38 +140,42 @@ struct InstructionExt
 
 struct WaveDataBase
 {
-    uint64_t simd;
-    uint64_t wave_id;
+    uint8_t simd;
+    uint8_t wave_id;
+    uint8_t trap_status = WaveTrapStatus::TRAP_RESTORED;
+    uint8_t reserved;
+
+    // VMEM Pipeline: instrs and stalls
+    uint32_t num_vmem_instrs = 0;
+    uint32_t num_vmem_stalls = 0;
+    // FLAT instrs and stalls
+    uint32_t num_flat_instrs = 0;
+    uint32_t num_flat_stalls = 0;
+
+    // LDS instr and stalls
+    uint32_t num_lds_instrs = 0;
+    uint32_t num_lds_stalls = 0;
+
+    // SCA instrs stalls
+    uint32_t num_salu_instrs = 0;
+    uint32_t num_smem_instrs = 0;
+    uint32_t num_salu_stalls = 0;
+    uint32_t num_smem_stalls = 0;
+
+    // Branch
+    uint32_t num_branch_instrs = 0;
+    uint32_t num_branch_taken_instrs = 0;
+    uint32_t num_branch_stalls = 0;
+
+    // total VMEM/FLAT/LDS/SMEM instructions issued
+    uint32_t num_mem_instrs = 0;     // total issued memory instructions
+    uint32_t num_valu_stalls = 0;
+    uint64_t num_valu_instrs = 0;
+    uint64_t num_issued_instrs = 0;  // total issued instructions (compute + memory)
+
     uint64_t begin_time = 0;  // Begin and end cycle
     uint64_t end_time = 0;
     int64_t traceID = -1;
-
-    // total VMEM/FLAT/LDS/SMEM instructions issued
-    uint64_t num_mem_instrs = 0;     // total issued memory instructions
-    uint64_t num_issued_instrs = 0;  // total issued instructions (compute + memory)
-    uint64_t num_valu_instrs = 0;
-    uint64_t num_valu_stalls = 0;
-    // VMEM Pipeline: instrs and stalls
-    uint64_t num_vmem_instrs = 0;
-    uint64_t num_vmem_stalls = 0;
-    // FLAT instrs and stalls
-    uint64_t num_flat_instrs = 0;
-    uint64_t num_flat_stalls = 0;
-
-    // LDS instr and stalls
-    uint64_t num_lds_instrs = 0;
-    uint64_t num_lds_stalls = 0;
-
-    // SCA instrs stalls
-    uint64_t num_salu_instrs = 0;
-    uint64_t num_smem_instrs = 0;
-    uint64_t num_salu_stalls = 0;
-    uint64_t num_smem_stalls = 0;
-
-    // Branch
-    uint64_t num_branch_instrs = 0;
-    uint64_t num_branch_taken_instrs = 0;
-    uint64_t num_branch_stalls = 0;
 
     uint64_t timeline_size = 0;
     uint64_t instructions_size = 0;
@@ -295,3 +311,45 @@ struct fileoffset_info_t
 
 std::unique_ptr<CppReturnInfo>
 AnalyseBinary_internal(const uint8_t* buffer, int BUFFER_SIZE, int target_cu);
+
+typedef union {
+    uint64_t raw;
+    struct {
+        uint64_t addr : 62;
+        uint64_t header : 2;
+    } addr;
+    struct {
+        uint64_t offset : 30;
+        uint64_t id : 32;
+        uint64_t header : 2;
+    } codeobj;
+} pcinfo_t;
+
+
+uint64_t ToPcV2(uint64_t pc, class CodeobjTableTranslator& table);
+
+
+template<typename Type>
+class PipeArray : public std::array<std::array<Type, 4>, 2>
+{
+public:
+  template<typename T2>
+  Type& at_reg(const T2& token) { return this->at(token.me&0x1).at(token.pipe); }
+};
+
+typedef PipeArray<uint32_t> PipeArray32;
+
+class PipeArray64 : public PipeArray<uint64_t>
+{
+public:
+  template<typename T2>
+  void setlo(const T2& token, uint64_t lo) {
+    uint64_t& elem = at_reg(token);
+    elem = (elem & ~((1ul<<32)-1)) | lo;
+  }
+  template<typename T2>
+  void sethi(const T2& token, uint64_t hi) {
+    uint64_t& elem = at_reg(token);
+    elem = (elem & ((1ul<<32)-1)) | (hi<<32);
+  }
+};

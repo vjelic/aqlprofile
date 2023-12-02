@@ -54,7 +54,7 @@ struct gfx10wave_t : public WaveDataInternal {
   void apply_immediate(gfx10Token token);
   void update_immediate(int64_t token_time);
   void set_state_exec(int64_t time, int64_t duration);
-  void new_pc(uint64_t time, int64_t pc_value);
+  void new_pc(uint64_t time, int64_t pc_value, class CodeobjTableTranslator& table);
   operator bool() const { return true; } // TODO: Change based on cur_state
 
   static constexpr uint64_t SQTT_CFG_WAVES = 16;

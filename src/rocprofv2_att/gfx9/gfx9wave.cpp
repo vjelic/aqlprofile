@@ -24,6 +24,15 @@
 #include <utility>
 #include "gfx9wave.h"
 
+#define COMPUTE_PGM_LO 0xC
+#define COMPUTE_PGM_HI 0xD
+#define USERDATA_ADDR_0 0xC340
+#define USERDATA_ADDR_1 0xC341
+#define USERDATA_ADDR_2 0xC342
+#define USERDATA_ADDR_3 0xC343
+
+#define SQTT_REG_TYPE_USERDATA 3
+
 typedef gfx9Token Token;
 
 #define empty_wave_check(waveslot_size) if (waveslot_size == 0) { continue; }
@@ -112,7 +121,9 @@ void wave_t::complete_wave(Token& token) {
 }
 
 
-void wave_t::apply_inst(Token& token) {
+void wave_t::apply_inst(Token& token)
+{
+  if (this->trap_status != WaveTrapStatus::TRAP_RESTORED) return;
   this->inst_time = token.time;
 
   this->state_update_cycle = token.time;
@@ -246,8 +257,6 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
   auto current_occupancy = std::vector<std::array<int, 16>>(current_kernel_unique_id.load());
   // data from all waves
   auto running_waves = std::unordered_map<uint64_t, uint64_t>{};
-  std::array<std::array<std::array<uint64_t, 2>, 4>, 2> wave_start_addr{};
-
   auto retroactive_occ_waves = std::array<std::vector<uint32_t>, 32>{};
 
   {
@@ -261,17 +270,47 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
     }
   }
 
-  for (size_t t = 0; t<tokens.size(); t++) {
+  PipeArray64 wave_start_addr{};
+
+  CodeobjTableTranslator table;
+  std::unordered_set<uint32_t> active_codeobj_id{};
+  PipeArray32 current_codeobj_size{};
+  PipeArray64 current_codeobj_addr{};
+
+  for (size_t t = 0; t<tokens.size(); t++)
+  {
     Token& token = tokens[t];
 
-    if (token.type == 0 && token.misc_type == 2) {// Packet lost
-      bHasLostPackets = true;
-    } else if (token.type == SQTT_TOKEN_WAVE_START) {  // Wave start
-      auto& pipe = wave_start_addr[1][token.dispatcher & 0x3];
-      uint64_t wave_addr = ((pipe[0] << 8) | ((pipe[1] & 0xFF) << 40));
+    if (token.type == 0)
+    {
+      if (token.misc_type == 2)
+        bHasLostPackets = true;
+      else if (token.misc_type == 6)
+      {
+        for (auto& simd : SIMD)
+        for (auto& slot : simd)
+        if (slot.size() && slot.back().end_time == 0)
+          slot.back().trap_status = WaveTrapStatus::TRAP_REQUEST;
+      }
+    }
+    else if (token.type == SQTT_TOKEN_WAVE_START) // Wave start
+    {
+      uint64_t wave_addr = ToPcV2((wave_start_addr.at_reg(token) << 8) & ((1ul<<48)-1), table);
 
       if ((int)token.cu == target_cu && token.sh == 0)
       {
+        if (token.count > 64)
+        {
+          if (!SIMD[token.simd][token.wave].size()) continue;
+          auto& wave = SIMD[token.simd][token.wave].back();
+
+          if (wave.trap_status == WaveTrapStatus::TRAP_REQUEST || WaveTrapStatus::TRAP_SAVED)
+            wave.trap_status = WaveTrapStatus::TRAP_STANDBY;
+          else if(wave.trap_status == WaveTrapStatus::TRAP_STANDBY)
+            wave.trap_status = WaveTrapStatus::TRAP_RESTORED;
+          continue;
+        }
+
         auto& wslot = SIMD[token.simd][token.wave];
         if (!wslot.size() || wslot.back().end_time != 0)
           wslot.push_back(wave_t(token));
@@ -293,7 +332,9 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
       });
 
       num_waves_started += 1;
-    } else if (token.type == SQTT_TOKEN_WAVE_END) {  // Wave stop
+    }
+    else if (token.type == SQTT_TOKEN_WAVE_END)
+    {  // Wave stop
       if ((int)token.cu == target_cu && token.sh == 0) {
         auto& wslot = SIMD[token.simd][token.wave];
         empty_wave_check(wslot.size());
@@ -327,15 +368,21 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
       }
 
       num_waves_completed += 1;
-    } else if (token.type == SQTT_TOKEN_INST) {  // Update timestamp for executed inst
+    }
+    else if (token.type == SQTT_TOKEN_INST)
+    {  // Update timestamp for executed inst
       auto& wslot = SIMD[token.simd][token.wave];
       if (!wslot.size() || wslot.back().end_time != 0)
         wslot.push_back(wave_t(token));
       wslot.back().apply_inst(token);
-    } else if (token.type == SQTT_TOKEN_ISSUE) {
+    }
+    else if (token.type == SQTT_TOKEN_ISSUE)
+    {
       int64_t active_cycles = array_apply_issue(token, SIMD);
       total_num_issue_cycles += active_cycles;
-    } else if (token.type == SQTT_PERFCOUNTER_TOKEN) {
+    }
+    else if (token.type == SQTT_PERFCOUNTER_TOKEN)
+    {
       perfEvents.push_back(perfevent_t{
         token.time - 4*token.cu,
         (uint16_t)token.cntr[0],
@@ -345,12 +392,49 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
         (uint8_t)token.cu,
         (uint8_t)token.cntr_bank
       });
-    } else if (token.type == SQTT_INST_PC) {
+    }
+    else if (token.type == SQTT_INST_PC)
+    {
       empty_wave_check(SIMD[token.simd][token.wave].size());
       SIMD[token.simd][token.wave].back().apply_pc(token);
-    } else if (token.type == SQTT_TOKEN_REG_CS || token.type == SQTT_TOKEN_REG_CS_PRIV) {
-      if (token.regaddr == 0xC || token.regaddr == 0xD) // COMPUTE_PGM_LO, COMPUTE_PGM_HI
-        wave_start_addr[1][token.pipe][token.regaddr - 0xC] = token.regdata;
+    }
+    else if (token.type == SQTT_TOKEN_REG_CS || token.type == SQTT_TOKEN_REG_CS_PRIV)
+    {
+      if (token.regaddr == COMPUTE_PGM_LO)
+        wave_start_addr.setlo(token, token.regdata);
+      else if (token.regaddr == COMPUTE_PGM_HI)
+        wave_start_addr.sethi(token, token.regdata);
+    }
+    else if(token.type == SQTT_TOKEN_REG)
+    {
+      if (token.regaddr >= USERDATA_ADDR_0 && token.regaddr <= USERDATA_ADDR_3)
+      {
+        if (token.regaddr == USERDATA_ADDR_1)
+          current_codeobj_size.at_reg(token) = token.regdata;
+        if (token.regaddr == USERDATA_ADDR_2)
+          current_codeobj_addr.setlo(token, token.regdata);
+        if (token.regaddr == USERDATA_ADDR_3)
+          current_codeobj_addr.sethi(token, token.regdata);
+        if (token.regaddr == USERDATA_ADDR_0)
+        {
+          uint32_t id = token.regdata >> 2;
+          uint32_t type = token.regdata & 0x3;
+          uint64_t base_addr = current_codeobj_addr.at_reg(token);
+
+          auto it = active_codeobj_id.find(id);
+          if (type == 0 && it == active_codeobj_id.end())
+          {
+            active_codeobj_id.insert(id);
+            address_range_t arange = {base_addr, current_codeobj_size.at_reg(token), id};
+            table.insert(arange);
+          }
+          else if (type == 1 && it != active_codeobj_id.end())
+          {
+            active_codeobj_id.erase(id);
+            table.remove(base_addr);
+          }
+        }
+      }
     }
   }
 
@@ -381,13 +465,25 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
   return std::make_tuple(SIMD, perfEvents, occupancy, kid_map);
 }
 
-void wave_t::apply_pc(Token& token) {
+void wave_t::apply_pc(Token& token)
+{
+  if (trap_status != WaveTrapStatus::TRAP_RESTORED || token.pc <= 0x100000)
+  {
+    this->trap_status = WaveTrapStatus::TRAP_SAVED;
+    //if (last_jump_inst+1 == instructions.size())
+    //  instructions[last_jump_inst].issue2inst = token.time - instructions[last_jump_inst].time;
+    return;
+  }
+
   if (last_jump_inst >= 0 && last_jump_inst < instructions.size())
     instructions[last_jump_inst].issue2inst = token.pc<<2;
   this->last_jump_inst = -1;
 }
 
-int64_t wave_t::apply_issue(uint64_t wave_status, uint64_t token_time) {
+int64_t wave_t::apply_issue(uint64_t wave_status, uint64_t token_time)
+{
+  if (this->trap_status != WaveTrapStatus::TRAP_RESTORED) return 0;
+
   int64_t active_issue_cycle = 0;
   uint64_t inst_issue_time = token_time - std::min(this->inst_time, token_time);
 
@@ -402,6 +498,7 @@ int64_t wave_t::apply_issue(uint64_t wave_status, uint64_t token_time) {
       instructions.back().last = inst_issue_time;  // v_mul_lo_u32 gets 2 tokens
   }
 #endif
+
   if (wave_status == SQTT_ISSUE_IMMED) {
 #if 0
     instructions.push_back({this->inst_time, WaveInstCategory::IMMED, 0, 0});

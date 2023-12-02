@@ -90,17 +90,19 @@ class gfx9Token {
   void wave_start() {
     delta = get_bits(4, 4);
     _group_id();
-    dispatcher = get_bits(16, 20);
+    pipe = get_bits(16, 17);
+    me = get_bits(18, 19);
+    ring_type = get_bits(20, 20);
     na = get_bits(21, 21);
     count = get_bits(22, 28);
     tg = get_bits(29, 31);
   }
-  int16_t dispatcher, na, count, tg;
+  int16_t ring_type, na, count, tg;
 
   void msg_reg() {
     delta = get_bits(4, 4);
     pipe = get_bits(5, 6);
-    me = get_bits(7, 8);
+    me = (get_bits(7, 8)+1)&0x1;
     reg_dropped_prev = get_bits(9, 9);
     reg_type = get_bits(10, 12);
     reg_priv = get_bits(14, 14);
@@ -109,12 +111,12 @@ class gfx9Token {
     regdata = get_bits(32, 63);
   }
   uint32_t regdata;
-  int16_t pipe, me, reg_dropped_prev, reg_type, reg_priv, reg_op, regaddr;
+  uint16_t pipe, me, reg_dropped_prev, reg_type, reg_priv, reg_op, regaddr;
 
   void msg_reg_cs() {
     delta = get_bits(4, 4);
     pipe = get_bits(5, 6);
-    me = get_bits(7, 8);
+    me = (get_bits(7, 8)+1)&0x1;
     regaddr = get_bits(9, 15);
     regdata = get_bits(16, 47);
   }

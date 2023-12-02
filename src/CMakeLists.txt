@@ -4,6 +4,7 @@
 set ( TARGET_LIB "${TARGET_NAME}" )
 set ( LIB_SRC
   ${LIB_DIR}/core/aql_profile.cpp
+  ${LIB_DIR}/core/threadtrace.cpp
   ${LIB_DIR}/core/sqttparser.cpp
   ${LIB_DIR}/core/spm_data.cpp
   ${LIB_DIR}/core/populate_aql.cpp
