@@ -201,7 +201,10 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
       }
       for (unsigned se_index = 0; se_index < config->se_number_total; se_index++) {
           if ( ((1 << se_index) & config->se_mask) == 0 && !config->occupancy_mode)
+          {
+            base_addr += base_step;
             continue;
+          }
 
           uint32_t token_mask2_value = Primitives::sqtt_token_mask2_value();
           if (legacy_mode)

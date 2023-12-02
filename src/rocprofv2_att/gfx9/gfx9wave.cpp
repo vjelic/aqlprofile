@@ -384,8 +384,6 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
 void wave_t::apply_pc(Token& token) {
   if (last_jump_inst >= 0 && last_jump_inst < instructions.size())
     instructions[last_jump_inst].issue2inst = token.pc<<2;
-  else
-    std::cout << "Invalid PC!" << std::endl;
   this->last_jump_inst = -1;
 }
 

@@ -473,13 +473,6 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
       }
 
       const uint32_t tnumber = se_number_total;
-      /*
-      uint32_t tnumber = 0;
-      for (unsigned i = 0; i < se_number; ++i) {
-        if (se_mask & (1<<i))
-          ++tnumber;
-      }
-      std::cout << "tnumber " << tnumber << std::endl; //*/
 
       const uint32_t control_size =
           pm4_builder::TT_STATUS_IDX_MAX * sizeof(pm4_builder::ControlType) * tnumber;
@@ -499,7 +492,7 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
         uint32_t i = 0;
         uint32_t se_per_xcc = pm4_factory->GetShaderEnginesNumber() / pm4_factory->GetXccNumber();
         for (uint32_t t = 0; t < se_number_total; t++) {
-          if (true) {  // if (se_mask & (1<<t)) {
+          if (true) {
             const uint32_t se_id_ind =
                 (pm4_builder::TT_STATUS_IDX_MAX * i) + pm4_builder::TT_STATUS_IDX_ID;
             control_ptr[se_id_ind] = t % se_per_xcc;
