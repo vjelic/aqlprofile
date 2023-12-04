@@ -7,6 +7,8 @@
 #include <algorithm>
 #include "pm4/cmd_config.h"
 
+#define SQTT_PERFCOUNTER_TOKEN 14
+
 // Extension for hsa_ven_amd_aqlprofile_parameter_name_t in hsa_ven_amd_aqlprofile.h
 typedef enum {
   // Trace applicable parameters
@@ -170,8 +172,9 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
       if (config->concurrent == 0) Builder::BuildWriteWaitIdlePacket(cmd_buffer);
       // Program the thread trace mask - specifies SH, CU, SIMD and
       // VM Id masks to apply. Enabling SQ/SPI/REG_STALL_EN bits
-      const uint32_t mask_value = (legacy_mode) ? config->deprecated_mask :
+      uint32_t mask_value = (legacy_mode) ? config->deprecated_mask :
                 Primitives::sqtt_mask_value(config->targetCu, config->simd_sel, config->vmIdMask);
+      if (config->n_perfcounters && config->perfCTRL) mask_value |= 1 << SQTT_PERFCOUNTER_TOKEN;
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_MASK_ADDR,
                                           mask_value);
       // Program the thread trace Perf mask

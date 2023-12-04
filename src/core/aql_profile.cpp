@@ -454,7 +454,7 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
                   trace_config.perfMASK = p->value;
                   break;
                 case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERF_CTRL:
-                  trace_config.perfCTRL = (p->value & 0x31) | 0x7F;
+                  trace_config.perfCTRL = ((p->value & 0x1F) << 8) | 0x7F;
                   break;
                 case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERFCOUNTER:
                   if (trace_config.n_perfcounters < 8) {

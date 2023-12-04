@@ -542,6 +542,7 @@ class gfx9_cntx_prim {
   static uint32_t sqtt_perf_mask_value() {
     regSQ_THREAD_TRACE_PERF_MASK perf_mask{};
     perf_mask.bits.SH0_MASK = 0xFFFF;
+    perf_mask.bits.SH1_MASK = 0xFFFF;
     return perf_mask.u32All;
   }
 
