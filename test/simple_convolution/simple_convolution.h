@@ -90,11 +90,9 @@ class simple_convolution : public TestKernel {
   // Mask dimensions
   uint32_t mask_height_;
 
-  // Randomize input data
-  unsigned randomize_seed_;
-
   // Input data
-  static const uint32_t input_data_[];
+  std::vector<uint32_t> input_data_;
+  static std::vector<uint32_t> get_input_data(size_t width, size_t height);
 };
 
 #endif  // TEST_SIMPLE_CONVOLUTION_SIMPLE_CONVOLUTION_H_

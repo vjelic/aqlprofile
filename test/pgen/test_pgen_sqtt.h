@@ -35,6 +35,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "pgen/test_pgen.h"
 #include "util/test_assert.h"
+#include "parser_test.hpp"
 
 typedef std::vector<hsa_ven_amd_aqlprofile_info_data_t> callback_data_t;
 
@@ -93,8 +94,8 @@ class TestPGenSqtt : public TestPGen {
 
     this->parameters = {
       {HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_COMPUTE_UNIT_TARGET, 1},
-      {HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_SE_MASK, 0xFFFFFF},
-      {static_cast<hsa_ven_amd_aqlprofile_parameter_name_t>(8), 0xF},
+      {HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_SE_MASK, 0x55555555},
+      {static_cast<hsa_ven_amd_aqlprofile_parameter_name_t>(8), 0x1},
     };
     profile_.parameters = parameters.data();
     profile_.parameter_count = parameters.size();
@@ -128,12 +129,13 @@ class TestPGenSqtt : public TestPGen {
     std::clog << "TestPGenSqtt::DumpData :" << std::endl;
 
     bool bSomeSECollected = false;
+    bool bSomeSEFailed = false;
     callback_data_t data;
     api_->hsa_ven_amd_aqlprofile_iterate_data(&profile_, TestPGenSqttCallback, &data);
     for (callback_data_t::iterator it = data.begin(); it != data.end(); ++it) {
       std::cout << "sample(" << std::dec << it->sample_id << ") size(" << std::dec
                 << it->trace_data.size << ") ptr(" << std::hex << it->trace_data.ptr << ")"
-                << std::endl;
+                << std::dec << std::endl;
 
       if (it->trace_data.size == 0) continue;
       void* sys_buf = GetRsrcFactory()->AllocateSysMemory(GetAgentInfo(), it->trace_data.size);
@@ -144,23 +146,36 @@ class TestPGenSqtt : public TestPGen {
       TEST_ASSERT(status == HSA_STATUS_SUCCESS);
       if (status != HSA_STATUS_SUCCESS) return false;
 
-      std::string file_name;
-      file_name.append("sqtt_dump_");
-      file_name.append(std::to_string(it->sample_id));
-      file_name.append(".txt");
-      std::ofstream out_file;
-      out_file.open(file_name);
+      {
+        std::ofstream out_file("sqtt_dump_" + std::to_string(it->sample_id) + ".txt");
+        std::cout << std::hex;
 
-      // Write the buffer in terms of shorts (16 bits)
-      uint16_t* trace_data = (uint16_t*)sys_buf;
-      for (unsigned i = 0; i < (it->trace_data.size / sizeof(uint16_t)); ++i) {
-        out_file << std::setw(4) << std::setfill('0') << std::hex << trace_data[i] << "\n";
+        // Write the buffer in terms of shorts (16 bits)
+        uint16_t* trace_data = (uint16_t*)sys_buf;
+        for (unsigned i = 0; i < (it->trace_data.size / sizeof(uint16_t)); ++i)
+          out_file << std::setw(4) << std::setfill('0') << trace_data[i] << "\n";
+        std::cout << std::dec;
+      }
+      {
+        std::ofstream out_file("sqtt_dump_" + std::to_string(it->sample_id) + ".bin", std::ios::binary);
+        out_file.write(static_cast<const char*>(sys_buf), it->trace_data.size);
       }
 
-      out_file.close();
-      bSomeSECollected = true;
+      try {
+        bSomeSECollected |= test_buffer(static_cast<const char*>(sys_buf), it->trace_data.size);
+      } catch(std::string& s) {
+          std::cerr << "SQTT Parser for " << it->sample_id << " string test error: " << s << std::endl;
+          bSomeSEFailed = true;
+      } catch(const char* s) {
+          std::cerr << "SQTT Parser for " << it->sample_id << " string test error: " << s << std::endl;
+          bSomeSEFailed = true;
+      } catch(std::exception& e) {
+          std::cerr << "SQTT Parser for " << it->sample_id << " generic test error. " << e.what() << std::endl;
+          bSomeSEFailed = true;
+      }
     }
     TEST_ASSERT(bSomeSECollected == true);
+    TEST_ASSERT(bSomeSEFailed == false);
 
     return true;
   }

@@ -58,7 +58,7 @@ HsaRsrcFactory* TestHsa::HsaInstantiate(const uint32_t agent_ind) {
 
     // Create an instance of Aql Queue
     if (hsa_queue_ == NULL) {
-      uint32_t num_pkts = 128;
+      uint32_t num_pkts = 1024;
       if (hsa_rsrc_->CreateQueue(agent_info_, num_pkts, &hsa_queue_) == false) {
         hsa_queue_ = NULL;
         TEST_ASSERT(false);

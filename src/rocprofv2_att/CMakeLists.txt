@@ -48,7 +48,6 @@ file(GLOB ROCMTOOLS_SUPPORT_FILES
 add_library(rocprofv2_att SHARED ${ROCMTOOLS_SUPPORT_FILES})
 
 target_include_directories(rocprofv2_att PUBLIC
-   ${ROCM_PATH}/include/rocmtools
    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/inc>
    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -65,4 +64,3 @@ install(
    TARGETS rocprofv2_att LIBRARY
    DESTINATION ${CMAKE_INSTALL_LIBDIR}/${CMAKE_PROJECT_NAME}
    COMPONENT runtime)
-
