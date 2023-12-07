@@ -19,6 +19,7 @@ class Gfx11Factory : public Pm4Factory {
   {
     Init(agent_info);
   }
+  bool IsGFX11() const override { return true; }
 
  protected:
   //void ConstructTable(const AgentInfo* agent_info);

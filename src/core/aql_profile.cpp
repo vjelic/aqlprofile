@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include "core/counter_dimensions.hpp"
+
 #include "core/logger.h"
 #include "core/pm4_factory.h"
 #include "pm4/cmd_builder.h"
@@ -25,6 +27,9 @@
       return err;                 \
     }                             \
   }
+
+std::vector<std::string> EventDimension::dimension_list;
+std::unordered_map<std::string, size_t> EventDimension::dimension_table;
 
 // Getting SPM data using driver API
 namespace spm_kfd_namespace {
@@ -567,6 +572,47 @@ hsa_ven_amd_aqlprofile_get_info(const hsa_ven_amd_aqlprofile_profile_t* profile,
   return status;
 }
 
+
+PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_iterate_event_ids(
+  hsa_ven_amd_aqlprofile_eventname_callback_t callback
+) {
+  try {
+    EventDimension::init();
+    for (auto& [name, id] : EventDimension::dimension_table)
+      callback(id, name.c_str());
+  } catch(...) {
+    return HSA_STATUS_ERROR;
+  }
+  return HSA_STATUS_SUCCESS;
+}
+
+PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_iterate_event_coord(
+  hsa_agent_t agent,
+  hsa_ven_amd_aqlprofile_event_t event,
+  uint32_t sample_id,
+  hsa_ven_amd_aqlprofile_coordinate_callback_t callback,
+  void* userdata
+) {
+  try
+  {
+    const EventAttribDimension& attrib = EventAttribDimension::get(agent, event);
+
+    std::vector<uint8_t> coord;
+    coord.resize(attrib.get_num());
+    attrib.get_coordinates(coord.data(), sample_id);
+
+    for (size_t i=0; i<attrib.get_num(); i++)
+    {
+      EventDimension dim = attrib.get_dim(i);
+      callback(i, dim.id, dim.extent, coord[i], dim.name.data(), userdata);
+    }
+  }
+  catch(...) {
+    return HSA_STATUS_ERROR;
+  }
+  return HSA_STATUS_SUCCESS;
+}
+
 // Method for iterating the events output data
 PUBLIC_API hsa_status_t
 hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* profile,
@@ -596,29 +642,32 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
       uint32_t xcc_sample_count = (profile->output_buffer.size - umc_sample_count *  pm4_builder::UMC_SAMPLE_BYTE_SIZE) /
         (sizeof(uint64_t) * xcc_num);
 
-      for (uint32_t xcc_index = 0; xcc_index < xcc_num; xcc_index++) {
+      for (uint32_t xcc_index = 0; xcc_index < xcc_num; xcc_index++)
+      {
         const uint32_t sample_count = (xcc_index == 0) ? (umc_sample_count + xcc_sample_count) : xcc_sample_count;
         uint32_t sample_index = 0;
-        uint32_t sample_location = 0;
+
         for (const hsa_ven_amd_aqlprofile_event_t* p = profile->events;
-             p < profile->events + profile->event_count; ++p) {
-          if ((xcc_num > 1) && (pm4_factory->GetBlockInfo(p)->attr & CounterBlockUmcAttr)) {
+             p < profile->events + profile->event_count; ++p)
+        {
+          if ((xcc_num > 1) && (pm4_factory->GetBlockInfo(p)->attr & CounterBlockUmcAttr))
+          {
             // MI300A-AID counter event
-            if (xcc_index == 0) {
+            if (xcc_index == 0)
+            {
               // Process an MI300 UMC event for XCC 0 ONLY
               auto sample_id = p->block_index; // sample id is the event block_index or the UMCCH id
               hsa_ven_amd_aqlprofile_info_data_t sample_info;
               sample_info.sample_id = sample_id;
               sample_info.pmc_data.event = *p;
-              sample_info.pmc_data.result = samples[sample_location];
+              sample_info.pmc_data.result = samples[sample_index];
 #if DEBUG_TRACE == 2
               printf(
-                     "DATA: sample index(%u) loc(%u) id(%u) bloc id(%u) index(%u) counter id(%u) "
+                     "DATA: sample index(%u) id(%u) bloc id(%u) index(%u) counter id(%u) "
                      "res(%lu)\n",
-                     sample_index, sample_location, sample_id, p->block_name, p->block_index, p->counter_id,
-                     samples[sample_location]);
+                     sample_index, sample_id, p->block_name, p->block_index, p->counter_id,
+                     samples[sample_index]);
 #endif
-              ++ sample_location;
 
               status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_PMC_DATA, &sample_info, data);
               if (status == HSA_STATUS_INFO_BREAK) {
@@ -632,39 +681,38 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
               }
               ++sample_index;
             }
-          } else {
-            // non-MI300A-AID counter event
-            // A perfcounter data sample per ShaderEngine
-            const uint32_t block_samples_count =
-              (pm4_factory->GetBlockInfo(p)->attr & CounterBlockSeAttr) ? se_number : 1;
-            const bool IsSqCounter = bool(pm4_factory->GetBlockInfo(p)->attr & CounterBlockSqAttr);
-            const uint32_t samples_per_sq = IsSqCounter ? pm4_factory->GetSQ_PMC_samples_per_SE() : 1;
+          }
+          else
+          {
+            // non-MI300A-AID counter event.
+            uint32_t block_samples_count = 1;
+            if (pm4_factory->GetBlockInfo(p)->attr & CounterBlockSeAttr)
+              block_samples_count *= se_number;
+            if (pm4_factory->GetBlockInfo(p)->attr & CounterBlockSaAttr)
+              block_samples_count *= 2;
+            if (pm4_factory->GetBlockInfo(p)->attr & CounterBlockSqAttr)
+              block_samples_count *= pm4_factory->GetNumWGPs();
 
-            for (uint32_t i = 0; i < block_samples_count; ++i) {
-              assert(sample_index < sample_count);
+            for (uint32_t blk = 0; blk < block_samples_count; ++blk)
+            {
               if (sample_index >= sample_count) {
                 ERR_LOGGING << "Bad sample index (" << sample_index << "/" << sample_count << ")";
                 return HSA_STATUS_ERROR;
               }
+              assert(sample_index < sample_count);
 
               hsa_ven_amd_aqlprofile_info_data_t sample_info;
-              sample_info.sample_id = i;
+              sample_info.sample_id = blk;
               sample_info.pmc_data.event = *p;
-              uint64_t val = 0;
-              for (int wgp = 0; wgp < samples_per_sq; wgp++) {
-                if (sample_location >= sample_count) break;
-                val += samples[sample_location];
-#if DEBUG_TRACE == 2
+              uint64_t val = samples[sample_index];
+  #if DEBUG_TRACE == 2
                 printf(
-                       "DATA: sample index(%u) loc(%u) id(%u) bloc id(%u) index(%u) counter id(%u) "
-                       "res(%lu)\n",
-                       sample_index, sample_location, i, p->block_name, p->block_index, p->counter_id,
-                       samples[sample_location]);
-#endif
-                sample_location++;
-              }
-
-              if (is_concurrent) {
+                    "DATA: xcc(%u) sample index(%u) id(%u) bloc id(%u) index(%u) counter id(%u) "
+                    "res(%lu)\n",
+                    xcc_index, sample_index, blk, p->block_name, p->block_index, p->counter_id, val);
+  #endif
+              if (is_concurrent)
+              {
                 uint64_t start_val = samples[sample_index + sample_count / 2];
                 if (val < start_val) {
                   ERR_LOGGING << "Bad values (end=" << val << " < start=" << start_val
@@ -682,7 +730,7 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
                 break;
               }
               if (status != HSA_STATUS_SUCCESS) {
-                ERR_LOGGING << "PMC data callback error, sample_id(" << i << ") status(" << status
+                ERR_LOGGING << "PMC data callback error, sample_id(" << blk << ") status(" << status
                             << ")";
                 break;
               }

@@ -101,10 +101,14 @@ class Pm4Factory {
 
   // Return Shader Engines number
   uint32_t GetShaderEnginesNumber() const { return agent_info_->se_num; }
+  uint32_t GetShaderArraysNumber() const { return agent_info_->shader_arrays_per_se; }
+  uint32_t GetComputeUnitNumber() const { return agent_info_->cu_num; }
   // Return SQTT buffer alignment
   uint32_t GetSQTTBufferAlignment() const { return 0x1000; }
   const char* GetGFX() const { return agent_info_->name; }
-  virtual bool IsGFX10() const { return false; } //return strncmp("gfx103", GetGFX(), 6); }
+  virtual bool IsGFX9() const { return false; }
+  virtual bool IsGFX10() const { return false; }
+  virtual bool IsGFX11() const { return false; }
   // Return number of XCC on the GPU
   uint32_t GetXccNumber() const { return agent_info_->xcc_num; }
 
@@ -132,9 +136,9 @@ class Pm4Factory {
   uint32_t FindBlock(const char* name) const { return block_map_.Find(name); }
 
   /// Workaround for GFX11. PMC Builder overrides this.
-  virtual int GetSQ_PMC_samples_per_SE() {
+  virtual int GetNumWGPs() {
     if (pmc_builder_)
-      return pmc_builder_->GetSQ_PMC_samples_per_SE();
+      return pmc_builder_->GetNumWGPs();
     return 1;
   };
 

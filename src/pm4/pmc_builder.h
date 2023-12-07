@@ -87,7 +87,7 @@ class PmcBuilder {
   // Return actual required data buffer size.
   virtual uint32_t Read(CmdBuffer* cmd_buffer, const counters_vector& counters_vec,
                         void* data_buffer) = 0;
-  virtual int GetSQ_PMC_samples_per_SE() = 0;//{ return 1; };
+  virtual int GetNumWGPs() = 0;
 };
 
 // PMC PM4 commands builder template
@@ -131,9 +131,9 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
         this->wgp_per_sa = (agent_info->cu_num/2+sarrays_per_se*se_number_-1)/(se_number_*sarrays_per_se);
   }
 
-  int GetSQ_PMC_samples_per_SE() override {
+  int GetNumWGPs() override {
     if (Primitives::GFXIP_LEVEL == 11)
-      return sarrays_per_se*wgp_per_sa;
+      return wgp_per_sa;
     return 1;
   };
 
@@ -550,10 +550,10 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
           bool bIsWGPcounter = Primitives::GFXIP_LEVEL == 11 && (block_info->attr & CounterBlockSqAttr);
 
           if (bIsWGPcounter) {
-            for (int sa=0; sa<sarrays_per_se; sa++) for (int wgp=0; wgp<wgp_per_sa; wgp++) {
+            for (int wgp=0; wgp<wgp_per_sa; wgp++) {
               if (data_buffer)
                 memset(reinterpret_cast<uint32_t*>(data_buffer)+read_counter, 0, sizeof(uint64_t));
-              grbm_value = Primitives::grbm_se_sh_wgp_index_value(se_index, wgp, sa);
+              grbm_value = Primitives::grbm_se_sh_wgp_index_value(se_index, wgp, sarray);
               Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR, grbm_value);
               Builder::BuildCopyCounterDataPacket(
                   cmd_buffer, reg_info.register_addr_lo, reg_info.register_addr_hi,

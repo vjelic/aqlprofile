@@ -16,6 +16,8 @@ class Gfx9Factory : public Pm4Factory {
     Init(agent_info);
   }
 
+  bool IsGFX9() const override { return true; }
+
  protected:
   void Init(const AgentInfo* agent_info);
   static const GpuBlockInfo* block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER];

@@ -174,13 +174,13 @@ static const GpuBlockInfo SxCounterBlockInfo = {"SX", SxCounterBlockId, 1, SxCou
 // Counter block GCEA
 static const GpuBlockInfo GceaCounterBlockInfo = {"GCEA", GceaCounterBlockId, GceaCounterBlockNumInstances, GceaCounterBlockMaxEvent, GceaCounterBlockNumCounters, GceaCounterRegAddr, gfx10_cntx_prim::mc_select_value<regGCEA_PERFCOUNTER0_CFG>, CounterBlockMcAttr};
 // Counter block GL1A
-static const GpuBlockInfo Gl1aCounterBlockInfo = {"GL1A", Gl1aCounterBlockId, 16, Gl1aCounterBlockMaxEvent, Gl1aCounterBlockNumCounters, Gl1aCounterRegAddr, gfx10_cntx_prim::select_value<regTCP_PERFCOUNTER0_SELECT>, CounterBlockSeAttr|CounterBlockSaAttr};
+static const GpuBlockInfo Gl1aCounterBlockInfo = {"GL1A", Gl1aCounterBlockId, 8, Gl1aCounterBlockMaxEvent, Gl1aCounterBlockNumCounters, Gl1aCounterRegAddr, gfx10_cntx_prim::select_value<regTCP_PERFCOUNTER0_SELECT>, CounterBlockSeAttr|CounterBlockSaAttr|CounterBlockTcAttr};
 // Counter block GL1C
-static const GpuBlockInfo Gl1cCounterBlockInfo = {"GL1C", Gl1cCounterBlockId, 16, Gl1cCounterBlockMaxEvent, Gl1cCounterBlockNumCounters, Gl1cCounterRegAddr, gfx10_cntx_prim::select_value<regTCP_PERFCOUNTER0_SELECT>, CounterBlockSeAttr|CounterBlockSaAttr};
+static const GpuBlockInfo Gl1cCounterBlockInfo = {"GL1C", Gl1cCounterBlockId, 8, Gl1cCounterBlockMaxEvent, Gl1cCounterBlockNumCounters, Gl1cCounterRegAddr, gfx10_cntx_prim::select_value<regTCP_PERFCOUNTER0_SELECT>, CounterBlockSeAttr|CounterBlockSaAttr|CounterBlockTcAttr};
 // Counter block GL2A
-static const GpuBlockInfo Gl2aCounterBlockInfo = {"GL2A", Gl2aCounterBlockId, 16, Gl2aCounterBlockMaxEvent, Gl2aCounterBlockNumCounters, Gl2aCounterRegAddr, gfx10_cntx_prim::select_value<regTCP_PERFCOUNTER0_SELECT>, CounterBlockTcAttr};
+static const GpuBlockInfo Gl2aCounterBlockInfo = {"GL2A", Gl2aCounterBlockId, 32, Gl2aCounterBlockMaxEvent, Gl2aCounterBlockNumCounters, Gl2aCounterRegAddr, gfx10_cntx_prim::select_value<regTCP_PERFCOUNTER0_SELECT>, CounterBlockTcAttr};
 // Counter block GL2C
-static const GpuBlockInfo Gl2cCounterBlockInfo = {"GL2C", Gl2cCounterBlockId, 16, Gl2cCounterBlockMaxEvent, Gl2cCounterBlockNumCounters, Gl2cCounterRegAddr, gfx10_cntx_prim::select_value<regTCP_PERFCOUNTER0_SELECT>, CounterBlockTcAttr};
+static const GpuBlockInfo Gl2cCounterBlockInfo = {"GL2C", Gl2cCounterBlockId, 32, Gl2cCounterBlockMaxEvent, Gl2cCounterBlockNumCounters, Gl2cCounterRegAddr, gfx10_cntx_prim::select_value<regTCP_PERFCOUNTER0_SELECT>, CounterBlockTcAttr};
 // Counter block GCR
 static const GpuBlockInfo GcrCounterBlockInfo = {"GCR", GcrCounterBlockId, 1, GcrCounterBlockMaxEvent, GcrCounterBlockNumCounters, GcrCounterRegAddr, gfx10_cntx_prim::select_value<regTCP_PERFCOUNTER0_SELECT>, CounterBlockTcAttr};
 // Counter block GUS
