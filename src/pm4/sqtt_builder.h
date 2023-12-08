@@ -172,9 +172,8 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
       if (config->concurrent == 0) Builder::BuildWriteWaitIdlePacket(cmd_buffer);
       // Program the thread trace mask - specifies SH, CU, SIMD and
       // VM Id masks to apply. Enabling SQ/SPI/REG_STALL_EN bits
-      uint32_t mask_value = (legacy_mode) ? config->deprecated_mask :
+      const uint32_t mask_value = (legacy_mode) ? config->deprecated_mask :
                 Primitives::sqtt_mask_value(config->targetCu, config->simd_sel, config->vmIdMask);
-      if (config->n_perfcounters && config->perfCTRL) mask_value |= 1 << SQTT_PERFCOUNTER_TOKEN;
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_MASK_ADDR,
                                           mask_value);
       // Program the thread trace Perf mask
@@ -187,6 +186,8 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
       uint32_t token_mask_value = (config->occupancy_mode) ?
                               Primitives::sqtt_token_mask_off_value() :
                               Primitives::sqtt_token_mask_on_value();
+      if (config->n_perfcounters && config->perfCTRL)
+        token_mask_value |= 1 << SQTT_PERFCOUNTER_TOKEN;
       if (legacy_mode) token_mask_value = config->deprecated_tokenMask;
 
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_TOKEN_MASK_ADDR,
