@@ -2,9 +2,10 @@
 #define SRC_PM4_SQTT_BUILDER_H_
 
 #include <stdint.h>
-
 #include <iostream>
 #include <algorithm>
+#include <unordered_map>
+
 #include "pm4/cmd_config.h"
 
 #define SQTT_PERFCOUNTER_TOKEN 14
