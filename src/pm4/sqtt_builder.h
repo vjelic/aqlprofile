@@ -8,7 +8,7 @@
 
 #include "pm4/cmd_config.h"
 
-#define SQTT_PERFCOUNTER_TOKEN 14
+#define SQTT_PERFCOUNTER_TOKEN (1u << 14)
 
 namespace pm4_builder {
 class CmdBuffer;
@@ -219,10 +219,9 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
 
       // Program the thread trace token mask
       uint32_t token_mask_value = (config->occupancy_mode) ?
-                              Primitives::sqtt_token_mask_off_value() :
+                              Primitives::sqtt_token_mask_occupancy_value() :
                               Primitives::sqtt_token_mask_on_value();
-      if (config->n_perfcounters && config->perfCTRL)
-        token_mask_value |= 1 << SQTT_PERFCOUNTER_TOKEN;
+      if (config->n_perfcounters && config->perfCTRL) token_mask_value |= SQTT_PERFCOUNTER_TOKEN;
       if (legacy_mode) token_mask_value = config->deprecated_tokenMask;
 
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_TOKEN_MASK_ADDR,
@@ -313,10 +312,12 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
         const uint32_t mask_value = Primitives::sqtt_mask_value(config->targetCu, config->simd_sel, config->vmIdMask);
         Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_MASK_ADDR, mask_value);
 
-        uint32_t token_mask = ((1 << index) & config->se_mask) ?
-                                Primitives::sqtt_token_mask_on_value():
-                                Primitives::sqtt_token_mask_off_value();
-        if (config->occupancy_mode) token_mask &= ~((1<<10) | (1<<4));
+        uint32_t token_mask = (config->occupancy_mode) ?
+                                Primitives::sqtt_token_mask_occupancy_value():
+                                Primitives::sqtt_token_mask_on_value();
+        if ((1 << index) & config->se_mask == 0)
+          token_mask = Primitives::sqtt_token_mask_off_value();
+
         Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_TOKEN_MASK_ADDR, token_mask);
 
         if (config->concurrent == 0) Builder::BuildWriteWaitIdlePacket(cmd_buffer);
@@ -363,7 +364,7 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
         Select_GRBM_SE_SH0(cmd_buffer, se_index_xcc);
 
         // Issue WaitRegMem command to wait until SQTT event has completed
-        const uint32_t mask_val = 0x40000000L;
+        const uint32_t mask_val = Primitives::sqtt_busy_mask();
         const uint32_t status_offset = Primitives::SQ_THREAD_TRACE_STATUS_OFFSET;
         Builder::BuildWaitRegMemCommand(cmd_buffer, false, status_offset, false, mask_val, 1);
 
@@ -392,7 +393,7 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
 
       {
         // Wait until SQTT_BUSY is 0
-        const uint32_t mask_val = 1<<25;
+        const uint32_t mask_val = Primitives::sqtt_busy_mask();
         const uint32_t status_offset = Primitives::SQ_THREAD_TRACE_STATUS_ADDR;
         Builder::BuildWaitRegMemCommand(cmd_buffer, false, status_offset, false, mask_val, 0);
       }
