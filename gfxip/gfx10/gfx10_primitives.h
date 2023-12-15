@@ -542,13 +542,23 @@ class gfx10_cntx_prim {
   // not supported in gfx10
   static uint32_t sqtt_perf_mask_value() { return 0; }
 
+  static const uint32_t SQTT_TOKEN_REG_USERDATA = 1<<3;
+  static const uint32_t SQTT_TOKEN_VALU = 1<<1;
+  static const uint32_t SQTT_TOKEN_ALUEXEC = 1<<2;
+  static const uint32_t SQTT_TOKEN_WAVE = 1<<4;
+  static const uint32_t SQTT_TOKEN_REG = 1<<5;
+  static const uint32_t SQTT_TOKEN_IMMED = 1<<6;
+  static const uint32_t SQTT_TOKEN_INST = 1<<8;
+
   // Indicate the different TT messages/tokens that should be enabled/logged
   // Indicate the different TT tokens that specify register operations to be logged
   static uint32_t sqtt_token_mask_on_value() {
 #if SQTT_PRIM_ENABLED
     regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
-    token_mask.bits.REG_INCLUDE = 0x8;
-    token_mask.bits.TOKEN_EXCLUDE = 0x689;
+    token_mask.bits.REG_INCLUDE = SQTT_TOKEN_REG_USERDATA;
+    token_mask.bits.TOKEN_EXCLUDE = (SQTT_TOKEN_VALU | SQTT_TOKEN_ALUEXEC
+                                  | SQTT_TOKEN_WAVE | SQTT_TOKEN_REG
+                                  | SQTT_TOKEN_IMMED | SQTT_TOKEN_INST) ^ 0x7FF;
     return token_mask.u32All;
 #else
     return 0;
@@ -558,6 +568,19 @@ class gfx10_cntx_prim {
   static uint32_t sqtt_token_mask_off_value() {
 #if SQTT_PRIM_ENABLED
     regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
+    token_mask.bits.REG_INCLUDE = SQTT_TOKEN_REG_USERDATA;
+    token_mask.bits.INST_EXCLUDE = 0x3;
+    token_mask.bits.TOKEN_EXCLUDE = 0x7FF;
+    return token_mask.u32All;
+#else
+    return 0;
+#endif
+  }
+
+  static uint32_t sqtt_token_mask_occupancy_value() {
+#if SQTT_PRIM_ENABLED
+    regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
+    token_mask.bits.REG_INCLUDE = SQTT_TOKEN_REG_USERDATA;
     token_mask.bits.INST_EXCLUDE = 0x3;
     token_mask.bits.TOKEN_EXCLUDE = 0x7FF;
     return token_mask.u32All;
@@ -650,6 +673,11 @@ class gfx10_cntx_prim {
     TT_CONTROL_FULL_MASK = 0x0,
     TT_WRITE_PTR_MASK = 0x1FFFFFFF
   };
+
+  static uint32_t sqtt_busy_mask() {
+    const uint32_t BUSY_BIT = 25;
+    return 1u << BUSY_BIT;
+  }
 };
 
 template <>

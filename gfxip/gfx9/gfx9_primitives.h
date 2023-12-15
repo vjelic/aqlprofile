@@ -554,17 +554,45 @@ class gfx9_cntx_prim {
 
   // Indicate the different TT messages/tokens that should be enabled/logged
   // Indicate the different TT tokens that specify register operations to be logged
+
+  static const uint32_t SQTT_TOKEN_MISC = 1<<0;
+  static const uint32_t SQTT_TOKEN_TIME = 1<<1;
+  static const uint32_t SQTT_TOKEN_REG = 1<<2;
+  static const uint32_t SQTT_TOKEN_WAVE_START = 1<<3;
+  static const uint32_t SQTT_TOKEN_REG_CS = 1<<5;
+  static const uint32_t SQTT_TOKEN_WAVE_END = 1<<6;
+  static const uint32_t SQTT_TOKEN_INST = 1<<10;
+  static const uint32_t SQTT_TOKEN_INST_PC = 1<<11;
+  static const uint32_t SQTT_TOKEN_USERDATA = 1<<12;
+  static const uint32_t SQTT_TOKEN_ISSUE = 1<<13;
+  static const uint32_t SQTT_TOKEN_REG_CS_PRIV = 1<<15;
+
   static uint32_t sqtt_token_mask_on_value() {
     regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
     token_mask.bits.REG_MASK = 0xF;
-    token_mask.bits.TOKEN_MASK = 0xBC6F;
+    token_mask.bits.TOKEN_MASK =  SQTT_TOKEN_MISC | SQTT_TOKEN_TIME
+                                | SQTT_TOKEN_REG | SQTT_TOKEN_WAVE_START
+                                | SQTT_TOKEN_WAVE_END | SQTT_TOKEN_INST
+                                | SQTT_TOKEN_INST_PC | SQTT_TOKEN_USERDATA
+                                | SQTT_TOKEN_ISSUE | SQTT_TOKEN_REG_CS
+                                | SQTT_TOKEN_REG_CS_PRIV;
     return token_mask.u32All;
   }
 
   static uint32_t sqtt_token_mask_off_value() {
     regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
     token_mask.bits.REG_MASK = 0x0;
-    token_mask.bits.TOKEN_MASK = 0x104E;
+    token_mask.bits.TOKEN_MASK = 0xF;
+    return token_mask.u32All;
+  }
+
+  static uint32_t sqtt_token_mask_occupancy_value() {
+    regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
+    token_mask.bits.REG_MASK = 0xF;
+    token_mask.bits.TOKEN_MASK =  SQTT_TOKEN_MISC | SQTT_TOKEN_TIME
+                                | SQTT_TOKEN_REG | SQTT_TOKEN_WAVE_START
+                                | SQTT_TOKEN_WAVE_END | SQTT_TOKEN_REG_CS_PRIV
+                                | SQTT_TOKEN_REG_CS | SQTT_TOKEN_USERDATA;
     return token_mask.u32All;
   }
 
@@ -660,6 +688,12 @@ class gfx9_cntx_prim {
     TT_CONTROL_FULL_MASK = 0x80000000,
     TT_WRITE_PTR_MASK = 0x3FFFFFFF
   };
+
+  static uint32_t sqtt_busy_mask() {
+    const uint32_t BUSY_BIT = 30;
+    return 1u << BUSY_BIT;
+  }
+
 };
 
 template <>
