@@ -64,7 +64,7 @@ struct gfx10wave_t : public WaveDataInternal {
   typedef std::array<std::vector<gfx10wave_t>, SQTT_CFG_WAVES> WaveArray;
   static std::tuple<
     WaveArray,
-    std::vector<perfevent_t>,
+    std::vector<att_perfevent_t>,
     std::vector<occupancy_info_t>,
     std::vector<uint64_t>
   > sqtt_simd_analysis(std::vector<gfx10Token>& tokens);

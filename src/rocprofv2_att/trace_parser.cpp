@@ -30,6 +30,7 @@
 #include "gfx11/gfx11wave.h"
 #include "gfx11/gfx11token.h"
 #include "tracebranch.hpp"
+#include "stitch/stitch.hpp"
 
 std::shared_mutex WaveDataInternal::mutex;
 std::unordered_map<uint64_t, size_t> WaveDataInternal::kernelID{{0,0}};
@@ -234,7 +235,7 @@ python_return_info_t CppReturnInfo::fromCppReturn() const
     info.tracesizes = const_cast<uint64_t*>(tracesizes.data());
     info.tracedata = const_cast<InstructionExt**>(tracedata.data());
 
-    info.perfevents = const_cast<perfevent_t*>(perfevents.data());
+    info.perfevents = const_cast<att_perfevent_t*>(perfevents.data());
     info.num_events = perfevents.size();
     info.occupancy = const_cast<occupancy_info_t*>(occupancy.data());
     info.num_occupancy = occupancy.size();
@@ -260,7 +261,7 @@ size_t CppReturnInfo::GetMemoryNeededForSerialization() const
 {
     size_t needed_data = sizeof(fileoffset_info_t)
     + traces.size()*(sizeof(uint64_t)+sizeof(int64_t))
-    + perfevents.size()*sizeof(perfevent_t)
+    + perfevents.size()*sizeof(att_perfevent_t)
     + occupancy.size()*sizeof(occupancy_info_t)
     + kernel_ids_addr.size()*sizeof(void*);
 
@@ -339,8 +340,8 @@ std::unique_ptr<CppReturnInfo> CppReturnInfo::UnSerialize(const char* buffer, si
         READ_INC(ret->tracedata.back(), sizeof(InstructionExt), tsize);
     }
 
-    ret->perfevents = std::vector<perfevent_t>(info.num_events);
-    READ_INC(ret->perfevents.data(), sizeof(perfevent_t), info.num_events);
+    ret->perfevents = std::vector<att_perfevent_t>(info.num_events);
+    READ_INC(ret->perfevents.data(), sizeof(att_perfevent_t), info.num_events);
 
     ret->occupancy = std::vector<occupancy_info_t>(info.num_occupancy);
     READ_INC(ret->occupancy.data(), sizeof(occupancy_info_t), info.num_occupancy);
@@ -354,7 +355,6 @@ std::mutex globalstate_lock;
 
 extern "C"
 {
-#ifdef AMD_AQLPROFILE_SQTT_NPI
     __attribute__((visibility("default")))
     python_return_info_t AnalyseBinary(const char* filename)
     {
@@ -382,36 +382,6 @@ extern "C"
         }
         return info;
     }
-#else
-    __attribute__((visibility("default")))
-    python_return_info_t AnalyseBinary(const char* filename)
-    {
-        const int BUFFER_SIZE = filesize(filename);
-
-        if (BUFFER_SIZE < 16) {
-            std::cout << "Invalid filename: " << filename << std::endl;
-            return {};
-        }
-
-        std::ifstream file(filename, std::ios::binary);
-        assert(file.good());
-
-        std::vector<char> buffer(BUFFER_SIZE+8, 0);
-        file.read(buffer.data(), BUFFER_SIZE);
-
-        auto globalstate = CppReturnInfo::UnSerialize(buffer.data()+8, BUFFER_SIZE-8);
-        python_return_info_t info = globalstate->fromCppReturn();
-
-        {
-            std::lock_guard<std::mutex> maplock(globalstate_lock);
-            map_globalstate[globalstate_unique_id] = std::move(globalstate);
-            info.id = globalstate_unique_id;
-            globalstate_unique_id += 1;
-        }
-        return info;
-    }
-#endif
-
     __attribute__((visibility("default")))
     void FreeBinary(uint64_t id)
     {

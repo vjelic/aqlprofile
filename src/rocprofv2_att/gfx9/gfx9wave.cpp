@@ -225,7 +225,7 @@ static uint64_t getGPULocation(const Token& token) {
 
 std::tuple<
   WaveArray,
-  std::vector<perfevent_t>,
+  std::vector<att_perfevent_t>,
   std::vector<occupancy_info_t>,
   std::vector<uint64_t>
 >
@@ -237,7 +237,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
   int64_t total_num_issue_cycles = 0;
   int num_waves_started = 0;
   int num_waves_completed = 0;
-  std::vector<perfevent_t> perfEvents{};
+  std::vector<att_perfevent_t> perfEvents{};
   std::vector<occupancy_info_t> occupancy = {};
 
   // data from all waves
@@ -331,7 +331,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
 #ifdef AMD_AQLPROFILE_SQTT_NPI
     else if (token.type == SQTT_PERFCOUNTER_TOKEN && token.sh == 0)
     {
-      perfEvents.push_back(perfevent_t{
+      perfEvents.push_back(att_perfevent_t{
         token.time - 4*token.cu,
         (uint16_t)token.cntr[0],
         (uint16_t)token.cntr[1],

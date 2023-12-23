@@ -5,7 +5,7 @@
 #include <sstream>
 
 #include "core/amd_aql_pm4_ib_packet.h"
-#include "core/aql_profile.h"
+#include "core/aql_profile.hpp"
 #include "pm4/cmd_builder.h"
 
 namespace aql_profile {

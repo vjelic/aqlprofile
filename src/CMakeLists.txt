@@ -4,6 +4,7 @@
 set ( TARGET_LIB "${TARGET_NAME}" )
 set ( LIB_SRC
   ${LIB_DIR}/core/aql_profile.cpp
+  ${LIB_DIR}/core/counters.cpp
   ${LIB_DIR}/core/threadtrace.cpp
   ${LIB_DIR}/core/sqttparser.cpp
   ${LIB_DIR}/core/spm_data.cpp
@@ -24,6 +25,12 @@ set ( LIB_SRC
   ${LIB_DIR}/rocprofv2_att/gfx10/gfx10token.cpp
   ${LIB_DIR}/rocprofv2_att/gfx11/gfx11wave.cpp
   ${LIB_DIR}/rocprofv2_att/gfx11/gfx11token.cpp
+
+  ${LIB_DIR}/rocprofv2_att/stitch/pctranslator.cpp
+  ${LIB_DIR}/rocprofv2_att/stitch/stitch.cpp
+  ${LIB_DIR}/rocprofv2_att/stitch/codeservice.cpp
+  ${LIB_DIR}/rocprofv2_att/assembly_parser.cpp
+  ${LIB_DIR}/rocprofv2_att/trie.cpp
 )
 
 add_library ( ${TARGET_LIB} SHARED ${LIB_SRC} )

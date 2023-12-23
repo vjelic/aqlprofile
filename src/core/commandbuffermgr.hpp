@@ -8,7 +8,7 @@
 
 #include "core/aql_profile_exception.h"
 #include "core/aql_profile_exception.h"
-#include "core/aql_profile.h"
+#include "core/aql_profile.hpp"
 
 namespace aql_profile {
 class CommandBufferMgr {
@@ -24,6 +24,7 @@ class CommandBufferMgr {
 
   CommandBufferMgr(void* ptr, const uint32_t& size) { Init(descriptor_t{ptr, size}, false); }
   explicit CommandBufferMgr(const profile_t* profile) { Init(profile->command_buffer, true); }
+  explicit CommandBufferMgr(aqlprofile_buffer_descriptor_t desc) { Init({desc.ptr, (uint32_t)desc.size}, true); }
 
   char* GetPrefix() { return reinterpret_cast<char*>(buffer_.ptr); }
   char* GetPrefix1() { return reinterpret_cast<char*>(buffer_.ptr) + sizeof(info_t); }

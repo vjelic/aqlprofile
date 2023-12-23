@@ -45,16 +45,6 @@ std::vector<code_wrapped_t> code_wrapped;
 std::vector<std::pair<int, int>> jumps_wrapped;
 AsParseRetype code_jumps;
 
-std::string strip(const std::string& inpt) {
-    auto start_it = inpt.begin();
-    auto end_it = inpt.rbegin();
-    while (start_it != inpt.end() && std::isspace(*start_it)) ++start_it;
-    if (start_it == inpt.end()) return "";
-
-    while (end_it != inpt.rend() && std::isspace(*end_it)) ++end_it;
-    return std::string(start_it, end_it.base());
-}
-
 struct clean_lines_t {
     int line_num;
     std::string line;
@@ -163,7 +153,7 @@ std::vector<clean_lines_t> clean_and_loc(std::vector<std::pair<int, std::string>
             continue;
         }
 
-        results.push_back({line_num, strip(line), loc, std::move(comment)});
+        results.push_back({line_num, std::string(strip(line)), loc, std::move(comment)});
         loc = "";
     }
     return results;
@@ -383,7 +373,7 @@ AsParseRetype as_parse_auto(const char* assembly_file) {
             } catch (...) {}
         }
         processed.push_back({
-            strip(line),
+            std::string(strip(line)),
             Trie::inst_type(line),
             0,
             std::move(last_comment),
@@ -461,6 +451,7 @@ return_assembly_info_t wrapped_parse_binary(const char* p_filename, const char* 
 
     return info;
 }
+
 __attribute__((visibility("default")))
 int classify_asm_line(const char* line, size_t size)
 {

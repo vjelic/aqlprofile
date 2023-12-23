@@ -1,4 +1,5 @@
-#include "core/aql_profile.h"
+#include "core/aql_profile.hpp"
+#include "core/include/aql_profile_v2.h"
 
 #include <cstdint>
 #include <map>
@@ -6,55 +7,154 @@
 #include <vector>
 #include "../rocprofv2_att/tracebranch.hpp"
 #include "../rocprofv2_att/trace_parser.hpp"
+#include "../rocprofv2_att/stitch/stitch.hpp"
 
-// Method for iterating the events output data
+class CodeService: public ICodeServicer
+{
+public:
+    CodeService() = delete;
+    CodeService(
+        aqlprofile_att_isa_length_callback_t isa_len,
+        aqlprofile_att_isa_string_callback_t isa_str,
+        void* _userdata
+    ):  isa_length_cb(isa_len), isa_string_cb(isa_str), userdata(_userdata) {};
 
+    virtual assemblyLine GetInstruction(uint64_t pc_addr) override
+    {
+        pcinfo_t pc{ .raw = pc_addr };
+        uint32_t id = (pc.codeobj.header != 0) ? pc.codeobj.id : 0;
+        uint64_t addr = (pc.codeobj.header != 0) ? pc.codeobj.offset : pc_addr;
+
+        uint64_t isa_len = 0, source_len = 0;
+
+        {
+            auto it = isa_lengths.find(id);
+            if (it == isa_lengths.end())
+            {
+                auto status = isa_length_cb(id, userdata, &isa_len, &source_len);
+                if (status != HSA_STATUS_SUCCESS)
+                    throw "ISA Length Callback returned error " + std::to_string(status);
+                isa_lengths[id] = {isa_len, source_len};
+            }
+            else
+            {
+                isa_len = it->second.first;
+                source_len = it->second.second;
+            }
+        }
+
+        assemblyLine isa;
+        isa.addr = pc_addr;
+        isa.line.resize(isa_len);
+        isa.loc.resize(source_len);
+        uint64_t memsize;
+
+        auto status = isa_string_cb(id, addr, userdata, &memsize, isa.line.data(), &isa_len, isa.loc.data(), &source_len);
+        if (status != HSA_STATUS_SUCCESS)
+            throw "ISA Callback returned error " + std::to_string(status);
+
+        isa.next = isa.addr + memsize;
+        isa.cat = Trie::inst_type(isa.line);
+
+        isa.line.resize(isa_len);
+        isa.loc.resize(source_len);
+        return isa;
+    };
+
+    virtual void forget(uint32_t id) override { isa_lengths.erase(id); };
+
+private:
+    aqlprofile_att_isa_length_callback_t const isa_length_cb;
+    aqlprofile_att_isa_string_callback_t const isa_string_cb;
+    void* const userdata;
+
+    std::unordered_map<uint32_t, std::pair<uint64_t, uint64_t>> isa_lengths;
+};
+
+
+/*
+att_output_flags_t flags;
+    std::vector<uint64_t> kernel_ids_addr;
+    std::vector<int64_t> traceIDs;
+    std::vector<uint64_t> tracesizes;
+    std::vector<InstructionExt*> tracedata;
+    std::vector<std::vector<InstructionExt>> traces;
+    std::vector<occupancy_info_t> occupancy;
+    std::vector<att_perfevent_t> perfevents;
 #ifdef AMD_AQLPROFILE_SQTT_NPI
-
-hsa_ven_amd_aqlprofile_info_data_t aql_profile::aqlprofile_sqttfilter_iterate_data(
-  void* sample_ptr,
-  uint64_t sample_capacity,
-  uint64_t sample_size,
-  uint32_t se_id,
-  int att_target_cu
-) {
-  hsa_ven_amd_aqlprofile_info_data_t sample_info;
-  sample_info.sample_id = se_id;
-  sample_info.trace_data.ptr = sample_ptr;
-  sample_info.trace_data.size = sample_size;
-  return sample_info;
-}
-
-#else
-
-hsa_ven_amd_aqlprofile_info_data_t aql_profile::aqlprofile_sqttfilter_iterate_data(
-  void* sample_ptr,
-  uint64_t sample_capacity,
-  uint64_t sample_size,
-  uint32_t se_id,
-  int att_target_cu
-) {
-  void* newdata = calloc(sample_size/8+4, 8);
-  hsa_memory_copy(newdata, sample_ptr, sample_size);
-  auto ret = AnalyseBinary_internal((uint8_t*)newdata, sample_size, att_target_cu);
-  free(newdata);
-
-  size_t needed_data = ret->GetMemoryNeededForSerialization();
-  needed_data = std::max(needed_data, sample_size);
-
-  char* dataptr = (char*)calloc(needed_data/8+1, 8);
-  size_t size_used = ret->Serialize(dataptr, needed_data);
-
-  size_t data_size = std::min(needed_data, sample_capacity);
-  hsa_memory_copy(sample_ptr, dataptr, data_size);
-  free(dataptr);
-
-  hsa_ven_amd_aqlprofile_info_data_t info;
-  info.sample_id = se_id;
-  info.trace_data.ptr = sample_ptr;
-  info.trace_data.size = data_size;
-
-  return info;
-}
-
+    std::vector<WaveDataNPI> waves;
 #endif
+
+    python_return_info_t fromCppReturn() const;
+    size_t GetMemoryNeededForSerialization() const;
+    size_t Serialize(char* buffer, size_t buffersize) const;
+    static std::unique_ptr<CppReturnInfo> UnSerialize(const char* buffer, size_t buffersize);
+
+
+    typedef hsa_status_t(*aqlprofile_att_trace_callback_t)(
+    int trace_type_id,
+    int correlation_id,
+    void* trace_events,
+    uint64_t trace_size,
+    void* userdata
+);
+
+*/
+
+std::unordered_map<std::string, int> trace_type_ids = {
+    {"kernel_ids_addr",  1},
+    {"traceIDs",         2},
+    {"tracedata",        3},
+    {"occupancy",        4},
+    {"perfevents",       5},
+    {"waves",            6},
+    {"wave_instruction", 7},
+    {"wave_timeline",    8},
+};
+
+__attribute__((visibility("default"))) hsa_status_t aqlprofile_att_parse_data(
+    aqlprofile_att_se_data_callback_t se_data_callback,
+    aqlprofile_att_trace_callback_t trace_callback,
+    aqlprofile_att_isa_length_callback_t isa_length_callback,
+    aqlprofile_att_isa_string_callback_t isa_string_callback,
+    void* userdata
+) {
+    std::shared_ptr<ICodeServicer> service = std::make_shared<CodeService>(
+        isa_length_callback,
+        isa_string_callback,
+        userdata
+    );
+    std::unique_ptr<Stitcher> stitcher{nullptr};
+    std::vector<uint8_t> buffer(1<<24);
+
+    int shader = -1;
+    int prev_shader = -1;
+    size_t buffer_size = se_data_callback(&shader, buffer.data(), buffer.size(), userdata);
+
+    while (shader >= 0 && buffer_size != 0)
+    {
+        auto ret = AnalyseBinary_internal(buffer.data(), buffer_size, -1);
+
+        if (!stitcher)
+            stitcher = std::make_unique<Stitcher>(service, !ret->flags.isNavi);
+
+        for (size_t t=0; t<ret->traces.size(); t++) if (ret->traces[t].size())
+        {
+            auto stitched = stitcher->stitch(ret->traces[t]);
+            trace_callback(trace_type_ids["tracedata"], t, (void*)stitched.data(), stitched.size(), userdata);
+        }
+
+        size_t buffer_size = se_data_callback(&shader, buffer.data(), buffer.size(), userdata);
+
+        if (shader != prev_shader)
+        {
+            trace_callback(trace_type_ids["occupancy"], 0, (void*)ret->occupancy.data(), ret->occupancy.size(), userdata);
+            trace_callback(trace_type_ids["kernel_ids_addr"], 0, (void*)ret->kernel_ids_addr.data(), ret->kernel_ids_addr.size(), userdata);
+        }
+
+
+        prev_shader = shader;
+    }
+
+    return HSA_STATUS_SUCCESS;
+};

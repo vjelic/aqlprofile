@@ -1,4 +1,4 @@
-#include "core/aql_profile.h"
+#include "core/aql_profile.hpp"
 #include "core/include/aql_profile_v2.h"
 
 #include <cstdint>
@@ -28,9 +28,6 @@
       return err;                 \
     }                             \
   }
-
-std::vector<std::string> EventDimension::dimension_list;
-std::unordered_map<std::string, size_t> EventDimension::dimension_table;
 
 // Getting SPM data using driver API
 namespace spm_kfd_namespace {
@@ -587,20 +584,6 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_iterate_event_ids(
   return HSA_STATUS_SUCCESS;
 }
 
-PUBLIC_API hsa_status_t aqlprofile_iterate_event_ids(aqlprofile_eventname_callback_t callback,
-                                                     void* user_data) {
-  try {
-    EventDimension::init();
-    for (auto& [name, id] : EventDimension::dimension_table) {
-      if (auto ret = callback(id, name.c_str(), user_data); ret != HSA_STATUS_SUCCESS) {
-        return ret;
-      }
-    }
-  } catch(...) {
-    return HSA_STATUS_ERROR;
-  }
-  return HSA_STATUS_SUCCESS;
-}
 
 PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_iterate_event_coord(
   hsa_agent_t agent,
@@ -791,9 +774,6 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
           }
         }
 
-        // SQTT output buffer and capacity per ShaderEngine
-        std::vector<std::future<hsa_ven_amd_aqlprofile_info_data_t>> sample_data_vector;
-
         // The samples sizes are returned in the control buffer
         for (uint64_t se_index = 0; se_index < tnumber; se_index++)
         {
@@ -826,15 +806,13 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
           {  // SQTT trace
             if (bMaskedIn)
             {
-              sample_data_vector.push_back(std::async(
-                  std::launch::async,
-                  aql_profile::aqlprofile_sqttfilter_iterate_data,
-                  sample_ptr,
-                  sample_capacity,
-                  sample_size,
-                  se_index,
-                  ATT_TARGET_CU.load()
-              ));
+              hsa_ven_amd_aqlprofile_info_data_t info;
+              info.sample_id = se_index;
+              info.trace_data.ptr = sample_ptr;
+              info.trace_data.size = sample_size;
+#ifdef AMD_AQLPROFILE_SQTT_NPI
+              status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, &info, data);
+#endif
             }
           } else {  // PC sampling
             pcsmp_callback_data_t* pcsmp_data = reinterpret_cast<pcsmp_callback_data_t*>(data);
@@ -843,11 +821,6 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
             pcsmp_data->pc = 0x333;
             call_status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, NULL, data);
           }
-        }
-        for (auto& future : sample_data_vector) {
-          auto sample_info = future.get();
-          status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, &sample_info, data);
-          if (status != HSA_STATUS_SUCCESS) break;
         }
       } else {  // SPM trace data
         if (pm4_factory->SpmKfdMode() == false) {

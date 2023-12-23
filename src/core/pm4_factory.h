@@ -12,7 +12,7 @@
 #include <sstream>
 #include <string>
 
-#include "core/aql_profile.h"
+#include "core/aql_profile.hpp"
 #include "core/aql_profile_exception.h"
 #include "def/gpu_block_info.h"
 #include "pm4/cmd_builder.h"

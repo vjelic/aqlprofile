@@ -50,6 +50,9 @@ enum class InstCategory {
   NEGATIVE = -1
 };
 
+inline bool operator==(const InstCategory& cat, uint64_t value) { return static_cast<uint64_t>(cat) == value; }
+inline bool operator==(uint64_t value, const InstCategory& cat) { return static_cast<uint64_t>(cat) == value; }
+
 class Trie {
  public:
   Trie() = default;
@@ -86,3 +89,14 @@ typedef struct {
 } processed_t;
 
 typedef std::pair<std::vector<processed_t>, std::unordered_map<int, int>> AsParseRetype;
+
+inline std::string_view strip(std::string_view input)
+{
+  if (input.size() == 0) return input; 
+  const char* start_it = input.data();
+  const char* end_it = input.data()+input.size()-1;
+
+  while (start_it != end_it && std::isspace(*start_it)) ++start_it;
+  while (end_it != start_it && std::isspace(*end_it)) --end_it;
+  return std::string_view(start_it, static_cast<uint64_t>(end_it+1-start_it));
+}

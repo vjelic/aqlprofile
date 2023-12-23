@@ -116,6 +116,11 @@ class TestPGenSqtt : public TestPGen {
   bool BuildPackets() { return true; }
 
   bool DumpData() {
+#ifndef AMD_AQLPROFILE_SQTT_NPI
+    TEST_ASSERT(true);
+    return true;
+#endif
+
     std::clog << "TestPGenSqtt::DumpData :" << std::endl;
 
     bool bSomeSECollected = false;

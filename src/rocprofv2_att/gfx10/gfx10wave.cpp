@@ -287,7 +287,7 @@ void wave_t::complete_wave(Token& token) {
 
 std::tuple<
   WaveArray,
-  std::vector<perfevent_t>,
+  std::vector<att_perfevent_t>,
   std::vector<occupancy_info_t>,
   std::vector<uint64_t>
 >
@@ -299,7 +299,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
   int num_waves_completed = 0;
   bool bInitBeginTime = false;
 
-  std::vector<perfevent_t> perfEvents{};
+  std::vector<att_perfevent_t> perfEvents{};
   std::vector<occupancy_info_t> occupancy = {};
   std::vector<alu_user_inst_t> alu_stack = {};
   int alu_exec_count = 0;
@@ -438,7 +438,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
       case gfx10type::UTIL_COUNTER: {
         util_ctr_gfx10_type util { .raw = token.contents };
         if (util.cID == 0) {
-          perfEvents.push_back( perfevent_t{
+          perfEvents.push_back( att_perfevent_t{
             uint64_t(token.time),
             uint16_t(util.spi_busy_or_lds1),
             uint16_t(util.vdata0+util.vdata1),
@@ -451,7 +451,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
       case gfx10type::UTIL_COUNTER_GFX11: {
         util_ctr_gfx11_type util { .raw = token.contents };
         if (util.cID == 0) {
-          perfEvents.push_back( perfevent_t{
+          perfEvents.push_back( att_perfevent_t{
             uint64_t(token.time),
             uint16_t(util.spi_busy),
             uint16_t(util.vdata0+util.vdata1),
