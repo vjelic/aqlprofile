@@ -462,6 +462,8 @@ return_assembly_info_t wrapped_parse_binary(const char* p_filename, const char* 
 __attribute__((visibility("default")))
 int classify_asm_line(const char* line, size_t size)
 {
-    return static_cast<int>(Trie::inst_type({line, size}));
+    std::string_view lineview(line);
+    assert(lineview.size() == size+1);
+    return static_cast<int>(Trie::inst_type(lineview));
 }
 }

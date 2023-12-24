@@ -28,7 +28,7 @@ std::unordered_map<std::string, InstCategory> Trie::type_dict = {
     {"s_sendmsg", InstCategory::IMMED},
     {"s_setprio", InstCategory::IMMED},
     {"s_trap", InstCategory::IMMED},
-    {"s_barrier", InstCategory::IMMED},
+    {"s_barrie", InstCategory::IMMED},
     {"s_endpgm", InstCategory::IMMED},
     {"s_icache_inv", InstCategory::IMMED},
     {"s_dcache_inv", InstCategory::IMMED},
