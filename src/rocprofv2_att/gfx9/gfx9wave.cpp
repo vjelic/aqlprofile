@@ -24,15 +24,6 @@
 #include <utility>
 #include "gfx9wave.h"
 
-#define COMPUTE_PGM_LO 0xC
-#define COMPUTE_PGM_HI 0xD
-#define USERDATA_ADDR_0 0xC340
-#define USERDATA_ADDR_1 0xC341
-#define USERDATA_ADDR_2 0xC342
-#define USERDATA_ADDR_3 0xC343
-
-#define SQTT_REG_TYPE_USERDATA 3
-
 typedef gfx9Token Token;
 
 #define empty_wave_check(waveslot_size) if (waveslot_size == 0) { continue; }
@@ -270,12 +261,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
     }
   }
 
-  PipeArray64 wave_start_addr{};
-
-  CodeobjTableTranslator table;
-  std::unordered_set<uint32_t> active_codeobj_id{};
-  PipeArray32 current_codeobj_size{};
-  PipeArray64 current_codeobj_addr{};
+  CSRegisterHandlerGFX9 csregister;
 
   for (size_t t = 0; t<tokens.size(); t++)
   {
@@ -295,7 +281,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
     }
     else if (token.type == SQTT_TOKEN_WAVE_START) // Wave start
     {
-      uint64_t wave_addr = ToPcV2((wave_start_addr.at_reg(token) << 8) & ((1ul<<48)-1), table);
+      uint64_t wave_addr = csregister.get_wave_start(token);
 
       if ((int)token.cu == target_cu && token.sh == 0)
       {
@@ -396,45 +382,15 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
     else if (token.type == SQTT_INST_PC)
     {
       empty_wave_check(SIMD[token.simd][token.wave].size());
-      SIMD[token.simd][token.wave].back().apply_pc(token);
+      SIMD[token.simd][token.wave].back().apply_pc(token, csregister.table);
     }
-    else if (token.type == SQTT_TOKEN_REG_CS || token.type == SQTT_TOKEN_REG_CS_PRIV)
+    else if (csregister.IsRegCS(token.type))
     {
-      if (token.regaddr == COMPUTE_PGM_LO)
-        wave_start_addr.setlo(token, token.regdata);
-      else if (token.regaddr == COMPUTE_PGM_HI)
-        wave_start_addr.sethi(token, token.regdata);
+      csregister.UpdateRegCS(token);
     }
-    else if(token.type == SQTT_TOKEN_REG)
+    else if (csregister.IsRegNoCS(token.type))
     {
-      if (token.regaddr >= USERDATA_ADDR_0 && token.regaddr <= USERDATA_ADDR_3)
-      {
-        if (token.regaddr == USERDATA_ADDR_1)
-          current_codeobj_size.at_reg(token) = token.regdata;
-        if (token.regaddr == USERDATA_ADDR_2)
-          current_codeobj_addr.setlo(token, token.regdata);
-        if (token.regaddr == USERDATA_ADDR_3)
-          current_codeobj_addr.sethi(token, token.regdata);
-        if (token.regaddr == USERDATA_ADDR_0)
-        {
-          uint32_t id = token.regdata >> 2;
-          uint32_t type = token.regdata & 0x3;
-          uint64_t base_addr = current_codeobj_addr.at_reg(token);
-
-          auto it = active_codeobj_id.find(id);
-          if (type == 0 && it == active_codeobj_id.end())
-          {
-            active_codeobj_id.insert(id);
-            address_range_t arange = {base_addr, current_codeobj_size.at_reg(token), id};
-            table.insert(arange);
-          }
-          else if (type == 1 && it != active_codeobj_id.end())
-          {
-            active_codeobj_id.erase(id);
-            table.remove(base_addr);
-          }
-        }
-      }
+      csregister.UpdateRegNoCS(token);
     }
   }
 
@@ -465,7 +421,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
   return std::make_tuple(SIMD, perfEvents, occupancy, kid_map);
 }
 
-void wave_t::apply_pc(Token& token)
+void wave_t::apply_pc(Token& token, CodeobjTableTranslator& table)
 {
   if (trap_status != WaveTrapStatus::TRAP_RESTORED || token.pc <= 0x100000)
   {
@@ -476,7 +432,7 @@ void wave_t::apply_pc(Token& token)
   }
 
   if (last_jump_inst >= 0 && last_jump_inst < instructions.size())
-    instructions[last_jump_inst].issue2inst = token.pc<<2;
+    instructions[last_jump_inst].issue2inst = table.ToPcV2(token.pc<<2);
   this->last_jump_inst = -1;
 }
 

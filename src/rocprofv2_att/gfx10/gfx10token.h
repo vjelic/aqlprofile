@@ -352,8 +352,8 @@ union reg_write_type {
         uint64_t RDP : 1;
         uint64_t context : 3;
         uint64_t CS : 1;
-        uint64_t addr : 16;
-        uint64_t data : 32;
+        uint64_t regaddr : 16;
+        uint64_t regdata : 32;
     };
     uint64_t raw;
     void print() const {

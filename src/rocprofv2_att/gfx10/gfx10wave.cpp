@@ -41,13 +41,6 @@ struct alu_user_inst_t {
   uint64_t time;
 };
 
-#define COMPUTE_PGM_LO 0xC
-#define COMPUTE_PGM_HI 0xD
-#define USERDATA_ADDR_0 0x40
-#define USERDATA_ADDR_1 0x41
-#define USERDATA_ADDR_2 0x42
-#define USERDATA_ADDR_3 0x43
-
 /*
 std::unordered_map<int, const char*> gfx10wave_t::INST_NAMES = {
     {0, "salu"},
@@ -331,10 +324,11 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
     }
   }
 
+  CSRegisterHandlerGFX10 csregister;
   PipeArray64 wave_start_addr{};
 
   CodeobjTableTranslator table;
-  std::unordered_set<uint32_t> active_codeobj_id{};
+  std::unordered_map<uint32_t, uint64_t> active_codeobj_id{};
   PipeArray32 current_codeobj_size{};
   PipeArray64 current_codeobj_addr{};
 
@@ -360,7 +354,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
       case gfx10type::WAVE_START:
       {
         wstart_type start { .raw = token.contents };
-        uint64_t wave_addr = ToPcV2((wave_start_addr.at_reg(start) << 8) & ((1ul<<48)-1), table);
+        uint64_t wave_addr = csregister.get_wave_start(start);
 
         size_t kid = get_addr_unique_id(wave_addr);
         while (current_occupancy.size() <= kid) current_occupancy.push_back({});
@@ -460,42 +454,12 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
       }
       case gfx10type::REG: {
         reg_write_type reg { .raw = token.contents };
-        reg.addr &= 0xFF;
+        reg.regaddr &= 0xFF;
 
-        if (reg.CS) {
-          if (reg.addr == COMPUTE_PGM_LO)
-            wave_start_addr.setlo(reg, reg.data);
-          else if (reg.addr == COMPUTE_PGM_HI)
-            wave_start_addr.sethi(reg, reg.data);
-        }
-        else if (reg.addr >= USERDATA_ADDR_0 && reg.addr <= USERDATA_ADDR_3)
-        {
-          if (reg.addr == USERDATA_ADDR_1)
-            current_codeobj_size.at_reg(reg) = reg.data;
-          if (reg.addr == USERDATA_ADDR_2)
-            current_codeobj_addr.setlo(reg, reg.data);
-          if (reg.addr == USERDATA_ADDR_3)
-            current_codeobj_addr.sethi(reg, reg.data);
-          if (reg.addr == USERDATA_ADDR_0)
-          {
-            uint32_t id = reg.data >> 2;
-            uint32_t type = reg.data & 0x3;
-            uint64_t base_addr = current_codeobj_addr.at_reg(reg);
-
-            auto it = active_codeobj_id.find(id);
-            if (type == 0 && it == active_codeobj_id.end())
-            {
-              active_codeobj_id.insert(id);
-              address_range_t arange = {base_addr, current_codeobj_size.at_reg(reg), id};
-              table.insert(arange);
-            }
-            else if (type == 1 && it != active_codeobj_id.end())
-            {
-              active_codeobj_id.erase(id);
-              table.remove(base_addr);
-            }
-          }
-        }
+        if (reg.CS)
+          csregister.UpdateRegCS(reg);
+        else
+          csregister.UpdateRegNoCS(reg);
         break;
       }
       /*
@@ -591,7 +555,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
 }
 
 void wave_t::new_pc(uint64_t time, int64_t pc, CodeobjTableTranslator& table) {
-  Instruction inst{time, WaveInstCategory::PCINFO, ToPcV2(pc<<2, table), 0};
+  Instruction inst{time, WaveInstCategory::PCINFO, table.ToPcV2(pc<<2), 0};
   if (last_jump_inst >= 0)
     instructions.emplace(instructions.begin()+last_jump_inst+1, inst);
   else

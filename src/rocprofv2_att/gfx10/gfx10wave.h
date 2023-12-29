@@ -73,3 +73,23 @@ struct gfx10wave_t : public WaveDataInternal {
   static std::pair<WaveInstCategory, uint16_t> inst_map_to_gfx9(int einst);
 };
 
+class CSRegisterHandlerGFX10: public CSRegisterHandler
+{
+    static constexpr size_t COMPUTE_PGM_LO = 0xC;
+    static constexpr size_t COMPUTE_PGM_HI = 0xD;
+    static constexpr size_t USERDATA_ADDR_0 = 0x40;
+    static constexpr size_t USERDATA_ADDR_1 = 0x41;
+    static constexpr size_t USERDATA_ADDR_2 = 0x42;
+    static constexpr size_t USERDATA_ADDR_3 = 0x43;
+public:
+    virtual bool IsPgmLo(size_t addr) override { return addr == COMPUTE_PGM_LO; };
+    virtual bool IsPgmHi(size_t addr) override { return addr == COMPUTE_PGM_HI; };
+
+    virtual bool IsUserdata(size_t addr) override {
+      return addr >= USERDATA_ADDR_0 && addr <= USERDATA_ADDR_3;
+    };
+    virtual bool IsUserdata0(size_t addr) override { return addr == USERDATA_ADDR_0; };
+    virtual bool IsUserdata1(size_t addr) override { return addr == USERDATA_ADDR_1; };
+    virtual bool IsUserdata2(size_t addr) override { return addr == USERDATA_ADDR_2; };
+    virtual bool IsUserdata3(size_t addr) override { return addr == USERDATA_ADDR_3; };
+};

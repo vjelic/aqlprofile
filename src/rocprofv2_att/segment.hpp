@@ -133,6 +133,7 @@ public:
   void clear() { reset(); this->Super::clear(); }
   bool remove(uint64_t addr) { reset(); return this->Super::remove(addr); }
 
+  uint64_t ToPcV2(uint64_t pc);
 private:
   size_t cached_segment = ~0;
 };

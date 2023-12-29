@@ -95,7 +95,7 @@ std::unordered_map<std::string, InstCategory> Trie::type_dict = {
     {"s_xor", InstCategory::SALU},
     {"s_xnor", InstCategory::SALU},
     {"s_nand", InstCategory::SALU},
-    {"s_delay", InstCategory::DONT_KNOW},
+    {"s_delay", InstCategory::SALU},
 
     {"s_getpc", InstCategory::GETPC},
     {"s_setpc", InstCategory::SETPC},

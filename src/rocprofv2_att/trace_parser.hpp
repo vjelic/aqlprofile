@@ -325,10 +325,6 @@ typedef union {
     } codeobj;
 } pcinfo_t;
 
-
-uint64_t ToPcV2(uint64_t pc, class CodeobjTableTranslator& table);
-
-
 template<typename Type>
 class PipeArray : public std::array<std::array<Type, 4>, 2>
 {
@@ -352,4 +348,102 @@ public:
     uint64_t& elem = at_reg(token);
     elem = (elem & ((1ul<<32)-1)) | (hi<<32);
   }
+};
+
+class CSRegisterHandler
+{
+public:
+    PipeArray64 wave_start_addr{};
+    CodeobjTableTranslator table;
+    std::unordered_map<uint32_t, uint64_t> active_codeobj_id{};
+    std::unordered_set<uint32_t> code_obj_erase_list{};
+    PipeArray32 current_codeobj_size{};
+    PipeArray64 current_codeobj_addr{};
+
+    virtual bool IsPgmLo(size_t addr) = 0;
+    virtual bool IsPgmHi(size_t addr) = 0;
+    virtual bool IsUserdata(size_t addr) = 0;
+    virtual bool IsUserdata0(size_t addr) = 0;
+    virtual bool IsUserdata1(size_t addr) = 0;
+    virtual bool IsUserdata2(size_t addr) = 0;
+    virtual bool IsUserdata3(size_t addr) = 0;
+    virtual ~CSRegisterHandler() { CheckForgetList(); }
+
+    void CheckForgetList()
+    {
+        auto it = code_obj_erase_list.begin();
+        while (it != code_obj_erase_list.end())
+        {
+            uint32_t id = *it;
+            uint64_t addr = 0;
+            it++; // Increment iterator before potentially deleting it's element
+            try {
+                addr = active_codeobj_id.at(id);
+            } catch(std::exception& e) {
+                continue;
+            }
+
+            bool bUsed = false;
+            for (auto& me : wave_start_addr)
+            for (uint64_t pipe : me)
+            bUsed |= pipe == addr;
+
+            if (!bUsed)
+            {
+                table.remove(addr);
+                active_codeobj_id.erase(id);
+                code_obj_erase_list.erase(id);
+            }
+        }
+    }
+
+    template<typename TokenType>
+    void UpdateRegCS(const TokenType& token)
+    {
+        if (IsPgmLo(token.regaddr))
+            wave_start_addr.setlo(token, token.regdata);
+        else if (IsPgmHi(token.regaddr))
+            wave_start_addr.sethi(token, token.regdata);
+
+        auto it = code_obj_erase_list.begin();
+        if (IsPgmLo(token.regaddr))
+            CheckForgetList();
+    }
+
+    template<typename TokenType>
+    void UpdateRegNoCS(const TokenType& token)
+    {
+        if (!IsUserdata(token.regaddr)) return;
+
+        if (IsUserdata0(token.regaddr))
+        {
+            uint32_t id = token.regdata >> 2;
+            uint32_t type = token.regdata & 0x3;
+
+            auto it = active_codeobj_id.find(id);
+            if (type == 0 && it == active_codeobj_id.end())
+            {
+                uint64_t base_addr = current_codeobj_addr.at_reg(token);
+                active_codeobj_id.emplace(id, base_addr);
+                address_range_t arange = {base_addr, current_codeobj_size.at_reg(token), id};
+                table.insert(arange);
+            }
+            else if (type == 1 && it != active_codeobj_id.end())
+            {
+                code_obj_erase_list.insert(id);
+            }
+        }
+        else if (IsUserdata1(token.regaddr))
+            current_codeobj_size.at_reg(token) = token.regdata;
+        else if (IsUserdata2(token.regaddr))
+            current_codeobj_addr.setlo(token, token.regdata);
+        else if (IsUserdata3(token.regaddr))
+            current_codeobj_addr.sethi(token, token.regdata);
+    }
+
+    template<typename TokenType>
+    uint64_t get_wave_start(const TokenType& token)
+    {
+        return table.ToPcV2((wave_start_addr.at_reg(token) << 8) & ((1ul<<48)-1));
+    }
 };

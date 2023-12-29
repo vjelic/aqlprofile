@@ -420,12 +420,11 @@ extern "C"
     }
 }
 
-
-uint64_t ToPcV2(uint64_t pc, CodeobjTableTranslator& table)
+uint64_t CodeobjTableTranslator::ToPcV2(uint64_t pc)
 {
   pcinfo_t pcinfo;
   try {
-    const address_range_t& codeobj = table.find_codeobj_in_range(pc);
+    const address_range_t& codeobj = this->find_codeobj_in_range(pc);
     pcinfo.codeobj.header = 1;
     pcinfo.codeobj.id = codeobj.id;
     pcinfo.codeobj.offset = pc - codeobj.vbegin;
