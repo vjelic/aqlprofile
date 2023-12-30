@@ -32,7 +32,7 @@
 #include <string_view>
 
 enum class InstCategory {
-  COMMENT = 0,
+  SKIP = 0,
   SMEM = 1,
   SALU = 2,
   VMEM = 3,
