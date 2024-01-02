@@ -29,8 +29,6 @@
 #include <mutex>
 #include <shared_mutex>
 
-#define SQTT_PARSER_VERSION 2
-
 enum WAVESLOT_STATE
 {
     WS_EMPTY = 0,

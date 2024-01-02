@@ -392,9 +392,9 @@ int main(int argc, char* argv[]) {
     }
     ret_val = RunKernel<simple_convolution, TestPGenPmc<RUN_MODE> >(
         events_count, pmc_argv(events_count, events_arr));
-  } else if (sqtt_enable && TestHsa::HsaAgentName() != "gfx10") {
+  } else if (sqtt_enable) {
     ret_val = RunKernel<simple_convolution, TestPGenSqtt>(argc, argv);
-  } else if (pcsmp_enable && TestHsa::HsaAgentName() != "gfx10") {
+  } else if (pcsmp_enable && TestHsa::HsaAgentName().substr(0, 4) != "gfx1") {
     ret_val = RunKernel<simple_convolution, TestPGenPcsmp>(argc, argv);
   } else if (spm_enable) {
     #ifdef ENABLE_SPM

@@ -148,6 +148,7 @@ class TestPGenSqtt : public TestPGen {
 
       {
         std::ofstream out_file("sqtt_dump_" + std::to_string(it->sample_id) + ".txt");
+        TEST_ASSERT(out_file.is_open());
         out_file << std::hex;
 
         // Write the buffer in terms of shorts (16 bits)
@@ -158,6 +159,7 @@ class TestPGenSqtt : public TestPGen {
       }
       {
         std::ofstream out_file("sqtt_dump_" + std::to_string(it->sample_id) + ".bin", std::ios::binary);
+        TEST_ASSERT(out_file.is_open());
         out_file.write(static_cast<const char*>(sys_buf), it->trace_data.size);
       }
 
