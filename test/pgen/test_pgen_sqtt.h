@@ -148,13 +148,13 @@ class TestPGenSqtt : public TestPGen {
 
       {
         std::ofstream out_file("sqtt_dump_" + std::to_string(it->sample_id) + ".txt");
-        std::cout << std::hex;
+        out_file << std::hex;
 
         // Write the buffer in terms of shorts (16 bits)
         uint16_t* trace_data = (uint16_t*)sys_buf;
         for (unsigned i = 0; i < (it->trace_data.size / sizeof(uint16_t)); ++i)
           out_file << std::setw(4) << std::setfill('0') << trace_data[i] << "\n";
-        std::cout << std::dec;
+        out_file << std::dec;
       }
       {
         std::ofstream out_file("sqtt_dump_" + std::to_string(it->sample_id) + ".bin", std::ios::binary);
