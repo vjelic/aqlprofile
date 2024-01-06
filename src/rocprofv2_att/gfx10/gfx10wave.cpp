@@ -29,6 +29,7 @@
 #include "gfx10wave.h"
 #include "../gfx11/gfx11wave.h"
 #include "../segment.hpp"
+#include <map>
 
 int gfx10wave_t::dp_cycles = 1;
 int gfx10wave_t::dp_derate = 1;
@@ -307,22 +308,8 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
   int target_simd = 0;
   int tt_version = 0;
 
-  // kernel_addr -> SA -> WGP
-  auto current_occupancy = std::vector<std::array<int, 16>>(current_kernel_unique_id.load());
   // data from all waves
   auto running_waves = std::unordered_map<uint64_t, size_t>{};
-  auto retroactive_occ_waves = std::array<std::vector<uint32_t>, 16>{};
-
-  {
-    occupancy_info_t occ;
-    occ.kernel_id = 0;
-    occ.time = 0;
-    occ.value = 0;
-    for (int cu=0; cu<16; cu++) {
-      occ.cu = (uint64_t)cu;
-      occupancy.push_back(occ);
-    }
-  }
 
   CSRegisterHandlerGFX10 csregister;
   PipeArray64 wave_start_addr{};
@@ -357,15 +344,15 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
         uint64_t wave_addr = csregister.get_wave_start(start);
 
         size_t kid = get_addr_unique_id(wave_addr);
-        while (current_occupancy.size() <= kid) current_occupancy.push_back({});
         running_waves[start.getGPULocation()] = kid;
 
-        current_occupancy[kid][start.SACU()] += 1;
         occupancy.push_back(occupancy_info_t{
           .kernel_id = (uint64_t)kid,
-          .value = (uint64_t)current_occupancy[kid][start.SACU()],
+          .simd = start.simd,
+          .slot = start.wid,
+          .enable = 1,
           .cu = (uint64_t)start.SACU(),
-          .time = (uint64_t)token.time/16,
+          .time = (uint64_t)token.time/OCCUPANCY_RESOLUTION,
         });
         num_waves_started += 1;
 
@@ -380,30 +367,33 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
           SIMD[end.wid].back().complete_wave(token);
         }
 
+        size_t kid = 0;
         if (running_waves.find(end.getGPULocation()) != running_waves.end())
         {
           num_waves_completed += 1;
-          size_t kid = running_waves[end.getGPULocation()];
-          assert(current_occupancy.size() > kid);
-          current_occupancy[kid][end.SACU()] -= 1;
-
-          occupancy.push_back(occupancy_info_t{
-            .kernel_id = (uint64_t)kid,
-            .value = (uint64_t)current_occupancy[kid][end.SACU()],
-            .cu = (uint64_t)end.SACU(),
-            .time = (uint64_t)token.time/16,
-          });
+          kid = running_waves[end.getGPULocation()];
+          running_waves.erase(end.getGPULocation());
         }
         else
         {
-          retroactive_occ_waves[end.SACU()].push_back(occupancy.size());
-          occupancy.push_back(occupancy_info_t{
-            .kernel_id = (uint64_t)0,
-            .value = (uint64_t)current_occupancy[0][end.SACU()],
+          occupancy.insert(occupancy.begin(), occupancy_info_t{
+            .kernel_id = (uint64_t)kid,
+            .simd = end.simd,
+            .slot = end.wid,
+            .enable = 1,
             .cu = (uint64_t)end.SACU(),
-            .time = (uint64_t)token.time/16,
+            .time = (uint64_t)tokens[0].time/OCCUPANCY_RESOLUTION,
           });
         }
+
+        occupancy.push_back(occupancy_info_t{
+          .kernel_id = (uint64_t)kid,
+          .simd = end.simd,
+          .slot = end.wid,
+          .enable = 0,
+          .cu = (uint64_t)end.SACU(),
+          .time = (uint64_t)token.time/OCCUPANCY_RESOLUTION,
+        });
         break;
       }
       case gfx10type::INST: {
@@ -507,21 +497,6 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
     }
   }
 
-  // Fix occupancy for wave_end that does not have a wave_start token
-  for (int cu=0; cu<retroactive_occ_waves.size(); cu++)
-  {
-    int last_index = 0;
-    auto& retro = retroactive_occ_waves[cu];
-
-    for (int j=0; j<retro.size(); j++)
-    {
-      for (int k=last_index; k<retro[j]; k++)
-        if (occupancy[k].kernel_id == 0 && occupancy[k].cu == cu)
-          occupancy[k].value += retro.size()-j;
-      last_index = retro[j];
-    }
-  }
-
   if (alu_stack.size() == alu_exec_count)
   for (int a=0; a<alu_stack.size(); a++) {
     auto& alu = alu_stack[a];
@@ -545,13 +520,17 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
   if (bHasLostPackets)
     std::cout << "Warning: Packet lost!" << std::endl;
 
-  std::unordered_map<uint64_t, uint64_t> rev_map;
+  std::map<uint64_t, uint64_t> rev_map;
   for (auto& kv : kernelID) rev_map.insert({kv.second, kv.first});
 
   std::vector<uint64_t> kid_map;
-  for (int key = 0; key < current_occupancy.size(); key++) kid_map.push_back(rev_map[key]);
+  for (int key = 0; key < rev_map.size(); key++) kid_map.push_back(rev_map[key]);
 
+#ifdef AMD_AQLPROFILE_SQTT_NPI
   return std::make_tuple(SIMD, perfEvents, occupancy, kid_map);
+#else
+  return std::make_tuple(SIMD, std::vector<perfevent_t>{}, std::vector<occupancy_info_t>{}, kid_map);
+#endif
 }
 
 void wave_t::new_pc(uint64_t time, int64_t pc, CodeobjTableTranslator& table) {

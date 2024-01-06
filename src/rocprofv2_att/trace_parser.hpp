@@ -34,6 +34,7 @@
 
 //#define AMD_AQLPROFILE_SQTT_NPI
 #define SQTT_PARSER_VERSION 3
+#define OCCUPANCY_RESOLUTION 8
 
 enum WAVESLOT_STATE
 {
@@ -83,9 +84,11 @@ typedef struct {
 
 typedef struct {
     uint64_t kernel_id : 12;
-    uint64_t value : 7;
+    uint64_t simd : 2;
+    uint64_t slot : 4;
+    uint64_t enable : 1;
     uint64_t cu : 4;
-    uint64_t time : 41; // Time_value/16
+    uint64_t time : 41; // Time_value/8
 } occupancy_info_t;
 
 typedef union {
