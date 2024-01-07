@@ -250,7 +250,7 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
       memset((char*)&trace_config, 0, sizeof(pm4_builder::TraceConfig));
       trace_config.vmIdMask = 0xF;
       trace_config.simd_sel = 0xF;
-      trace_config.perfMASK = (1 << 16) - 1;
+      trace_config.perfMASK = (1ul << 32) - 1;
       trace_config.se_mask = 0x11111111;
 
       const uint64_t se_number_total = pm4_factory->GetShaderEnginesNumber();
@@ -309,7 +309,7 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
               trace_config.perfMASK = p->value;
               break;
             case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERFCOUNTER_CTRL:
-              trace_config.perfCTRL = (p->value & 0x31) | 0x7F;
+              trace_config.perfCTRL = ((p->value & 0x1F) << 8) | 0xFFFF007F;
               break;
             case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERFCOUNTER_NAME:
               if (trace_config.n_perfcounters < 8) {

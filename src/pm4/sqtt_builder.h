@@ -9,6 +9,7 @@
 #include "pm4/cmd_config.h"
 
 #define SQTT_PERFCOUNTER_TOKEN (1u << 14)
+#define SQTT_PERFCOUNTER_SIMD_EN (0xFu << 24)
 
 namespace pm4_builder {
 class CmdBuffer;
@@ -158,7 +159,7 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
 
     for (int perf = 0; perf < config->n_perfcounters && perf < 8; perf++) {
       Builder::BuildWriteConfigRegPacket(cmd_buffer, Primitives::sqtt_perfcounter_addr(perf),
-                                        config->perfcounters[perf]);
+                                          config->perfcounters[perf] | SQTT_PERFCOUNTER_SIMD_EN);
     }
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_PERFCOUNTER_MASK_ADDR,
                                         config->perfMASK);
