@@ -407,10 +407,6 @@ public:
             wave_start_addr.setlo(token, token.regdata);
         else if (IsPgmHi(token.regaddr))
             wave_start_addr.sethi(token, token.regdata);
-
-        auto it = code_obj_erase_list.begin();
-        if (IsPgmLo(token.regaddr))
-            CheckForgetList();
     }
 
     template<typename TokenType>
@@ -430,6 +426,7 @@ public:
                 active_codeobj_id.emplace(id, base_addr);
                 address_range_t arange = {base_addr, current_codeobj_size.at_reg(token), id};
                 table.insert(arange);
+                CheckForgetList();
             }
             else if (type == 1 && it != active_codeobj_id.end())
             {
