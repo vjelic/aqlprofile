@@ -355,9 +355,8 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
       int64_t active_cycles = array_apply_issue(token, SIMD);
       total_num_issue_cycles += active_cycles;
     }
-    else if (token.type == SQTT_PERFCOUNTER_TOKEN)
+    else if (token.type == SQTT_PERFCOUNTER_TOKEN && token.sh == 0)
     {
-      std::cout << token.sh << std::endl;
       perfEvents.push_back(perfevent_t{
         token.time - 4*token.cu,
         (uint16_t)token.cntr[0],
@@ -392,11 +391,18 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
   std::vector<uint64_t> kid_map;
   for (int key = 0; key < rev_map.size(); key++) kid_map.push_back(rev_map[key]);
 
-#ifdef AMD_AQLPROFILE_SQTT_NPI
-  return std::make_tuple(SIMD, perfEvents, occupancy, kid_map);
-#else
-  return std::make_tuple(SIMD, std::vector<perfevent_t>{}, std::vector<occupancy_info_t>{}, kid_map);
+#ifndef AMD_AQLPROFILE_SQTT_NPI
+  for (auto& event : occupancy)
+  {
+    event.time &= ~0x7Ful;  // Makes the time information have a granularity of 1024 cycles
+    event.cu = 0;           // Removes CU/SIMD/SLOT information 
+    event.simd = 0;
+    event.slot = 0;
+  }
+  perfEvents = std::vector<perfevent_t>{};
 #endif
+
+  return std::make_tuple(SIMD, perfEvents, occupancy, kid_map);
 }
 
 void wave_t::apply_pc(Token& token, CodeobjTableTranslator& table)
