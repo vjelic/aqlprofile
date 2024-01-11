@@ -81,7 +81,7 @@ public:
 struct address_range_t
 {
   uint64_t vbegin;
-  uint32_t size;
+  uint64_t size;
   uint32_t id;
 
   bool operator<(const address_range_t& other) const { return vbegin < other.vbegin; }

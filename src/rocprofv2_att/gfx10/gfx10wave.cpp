@@ -497,6 +497,30 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
     }
   }
 
+  for (auto& slot : SIMD) for (auto& wave : slot)
+  {
+    if (!wave.instructions.size()) continue;
+    auto& inst = wave.instructions.at(0);
+    // If the wave has a invalid PC value, check if the codeobj information was not delayed relative to TTrace
+    if (inst.value != static_cast<uint64_t>(WaveInstCategory::PCINFO)) continue;
+    if (inst.issue2inst >> 62) continue;
+
+    inst.issue2inst = csregister.get_wave_start_delayed(inst.issue2inst);
+  }
+
+  std::unordered_map<uint64_t, uint64_t> retroactive_addr_map{};
+  for (auto& [addr, id] : kernelID)
+  {
+    uint64_t v2pc = csregister.get_wave_start_delayed(addr);
+    if (v2pc != addr && kernelID.find(v2pc) != kernelID.end())
+      retroactive_addr_map[id] = kernelID.at(v2pc);
+  }
+
+  for (auto& occ : occupancy)
+    if (retroactive_addr_map.find(occ.kernel_id) != retroactive_addr_map.end())
+      occ.kernel_id = retroactive_addr_map.at(occ.kernel_id);
+
+
   if (alu_stack.size() == alu_exec_count)
   for (int a=0; a<alu_stack.size(); a++) {
     auto& alu = alu_stack[a];
