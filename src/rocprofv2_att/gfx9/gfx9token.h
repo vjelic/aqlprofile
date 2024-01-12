@@ -56,7 +56,7 @@ class gfx9Token {
   }
 
   void timestamp() { time = get_bits(16, 63); }
-  uint64_t time;
+  int64_t time;
 
   void misc() {
     delta = get_bits(4, 11);

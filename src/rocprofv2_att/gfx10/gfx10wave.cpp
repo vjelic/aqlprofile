@@ -564,7 +564,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
   return std::make_tuple(SIMD, perfEvents, occupancy, kid_map);
 }
 
-void wave_t::new_pc(uint64_t time, int64_t pc, CodeobjTableTranslator& table) {
+void wave_t::new_pc(int64_t time, int64_t pc, CodeobjTableTranslator& table) {
   Instruction inst{time, WaveInstCategory::PCINFO, table.ToPcV2(pc<<2), 0};
   if (last_jump_inst >= 0)
     instructions.emplace(instructions.begin()+last_jump_inst+1, inst);
@@ -594,7 +594,7 @@ void wave_t::apply_valu_inst(Token token, valu_inst_type inst) {
   update_immediate(token.time);
   set_state_exec(token.time, 1);
 
-  this->instructions.push_back({(uint64_t)token.time, WaveInstCategory::VALU, 0, 1});
+  this->instructions.push_back({token.time, WaveInstCategory::VALU, 0, 1});
   num_issued_instrs += 1;
   num_valu_instrs += 1;
 }
@@ -605,7 +605,7 @@ void wave_t::update_immediate(int64_t token_time) {
 
   auto& inst = this->instructions.back();
   if (inst.value != (uint64_t)WaveInstCategory::IMMED) return;
-  inst.last = std::max(inst.last, std::max(token_time-inst.time,1ul)-1);
+  inst.last = std::max<int64_t>(inst.last, std::max(token_time-inst.time,1l)-1);
 
   if (!this->timeline.size()) return;
   this->timeline.back().second += std::max(token_time-last_state_cycle,1l)-1;
@@ -619,8 +619,8 @@ void wave_t::apply_immediate(Token token) {
   }
 
   int64_t time = std::min(token.time, last_state_cycle+last_state_duration);
-  uint64_t delta_time = std::max(1l, token.time-time);
-  this->instructions.push_back({(uint64_t)time, WaveInstCategory::IMMED, 0, delta_time});
+  int64_t delta_time = std::max(1l, token.time-time);
+  this->instructions.push_back({time, WaveInstCategory::IMMED, 0, delta_time});
 
   set_state_exec(time, 0);
   cur_state = WAVESLOT_STATE::WS_WAIT;
@@ -650,7 +650,7 @@ void wave_t::apply_inst(Token token, inst_type inst, int tt_version) {
     last_jump_inst = this->instructions.size();
 
   update_immediate(token.time);
-  this->instructions.push_back({(uint64_t)token.time, mapped.first, 0, mapped.second});
+  this->instructions.push_back({token.time, mapped.first, 0, mapped.second});
   set_state_exec(token.time, mapped.second);
   num_issued_instrs += 1;
 

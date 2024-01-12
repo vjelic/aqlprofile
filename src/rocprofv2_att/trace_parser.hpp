@@ -77,7 +77,7 @@ enum WaveTrapStatus
 
 
 typedef struct {
-    uint64_t time;
+    int64_t time;
     uint16_t events0;
     uint16_t events1;
     uint16_t events2;
@@ -108,15 +108,15 @@ typedef union {
 struct Instruction
 {
     Instruction() = default;
-    Instruction(uint64_t time, WaveInstCategory value, uint64_t issue2inst, uint64_t last)
-            : time(time), issue2inst(issue2inst), last(last), value((uint64_t)value) {}
+    Instruction(int64_t time, WaveInstCategory value, uint64_t issue2inst, int64_t last)
+            : time(time), value((int64_t)value), issue2inst(issue2inst), last(last) {}
 
     std::pair<uint64_t, uint64_t> getTiming() const { return {time, std::max(issue2inst, last)}; }
 
-    uint64_t time;
-    uint64_t value;
-    uint64_t issue2inst;
-    uint64_t last;
+    int64_t time;
+    int64_t value;
+    int64_t issue2inst;
+    int64_t last;
 };
 
 struct InstructionExt
@@ -127,9 +127,9 @@ struct InstructionExt
     InstructionExt(const Instruction& inst):
         num_waves(1), value(inst.value), cycles(std::max(inst.last, inst.issue2inst)) {};
 
-    uint64_t num_waves = 0;
-    uint64_t value = 0;
-    uint64_t cycles = 0;
+    int64_t num_waves = 0;
+    int64_t value = 0;
+    int64_t cycles = 0;
 
     // TODO: Compare PCs
     bool operator==(const Instruction& other) const { return !(*this != other); };
@@ -180,8 +180,8 @@ struct WaveDataBase
     uint64_t num_valu_instrs = 0;
     uint64_t num_issued_instrs = 0;  // total issued instructions (compute + memory)
 
-    uint64_t begin_time = 0;  // Begin and end cycle
-    uint64_t end_time = 0;
+    int64_t begin_time = 0;  // Begin and end cycle
+    int64_t end_time = 0;
     int64_t traceID = -1;
 
     uint64_t timeline_size = 0;

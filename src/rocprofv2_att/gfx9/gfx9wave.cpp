@@ -26,6 +26,7 @@
 #include <map>
 
 typedef gfx9Token Token;
+std::atomic<int> gfx9wave_t::global_target_cu{0};
 
 #define empty_wave_check(waveslot_size) if (waveslot_size == 0) { continue; }
 
@@ -96,14 +97,9 @@ wave_t::gfx9wave_t(Token& token) {
 
 
 void wave_t::complete_wave(Token& token) {
-  uint64_t state_update_cycle = std::min(this->state_update_cycle, token.time);
-  uint64_t state_start_cycle = std::min(state_update_cycle, this->state_start_cycle);
-
   // State: EXEC -> IDLE -> EMPTY
-  timeline.push_back(
-      std::make_pair(WAVESLOT_STATE::WS_EXEC, state_update_cycle - state_start_cycle));
-  timeline.push_back(
-      std::make_pair(WAVESLOT_STATE::WS_IDLE, token.time - state_update_cycle));
+  if (state_start_cycle < token.time)
+    timeline.push_back(std::make_pair(WAVESLOT_STATE::WS_IDLE, token.time - state_start_cycle));
 
   this->cur_state = WAVESLOT_STATE::WS_EMPTY;
   this->state_start_cycle = token.time;
@@ -115,99 +111,96 @@ void wave_t::complete_wave(Token& token) {
 
 void wave_t::apply_inst(Token& token)
 {
-  if (this->trap_status != WaveTrapStatus::TRAP_RESTORED) return;
-  this->inst_time = token.time;
+  if (this->trap_status != WaveTrapStatus::TRAP_RESTORED || !issued_instructions.size())
+    return;
 
-  this->state_update_cycle = token.time;
-  uint64_t issue2inst = token.time - std::min(this->issue_time, token.time);
+  this->inst_time = token.time;
+  Instruction& the_inst = instructions.at(*issued_instructions.begin());
+  the_inst.issue2inst = token.time - the_inst.time;
+  int64_t phase = (16-global_target_cu.load()+simd)%4;
 
   // ISSUE stall type cannot be known until issue complete
   // SMEM RD/WR
 
-  if (instructions.size() && instructions.back().value == (uint64_t)WaveInstCategory::IMMED)
-    instructions.back().last = std::min(instructions.back().last, token.time-instructions.back().time);
-
   if (token.inst_type == 0 || token.inst_type == 16) {
-    if (this->stall_started == 1) {
+    if (this->stall_started == 1)
       this->num_smem_stalls += 1;
-      this->stall_started = 0;
-    }
 
     this->num_smem_instrs += 1;
     this->num_mem_instrs += 1;
-
-    // start of mem transaction
-    this->mem_access_started = 1;
-    this->instructions.push_back({token.time, WaveInstCategory::SMEM, issue2inst, 0});
+    the_inst.value = (uint64_t)WaveInstCategory::SMEM;
+    // Phase correction
+    the_inst.issue2inst = std::max(the_inst.issue2inst - 4*(phase==3), 4l);
   } else if (token.inst_type == 1 || token.inst_type == 17) {  // SALU32/64 instr
-    if (this->stall_started == 1) {
+    if (this->stall_started == 1)
       this->num_salu_stalls += 1;
-      this->stall_started = 0;
-    }
 
     this->num_salu_instrs += 1;
-    this->instructions.push_back({token.time, WaveInstCategory::SALU, issue2inst, 0});
+    the_inst.value = (uint64_t)WaveInstCategory::SALU;
+    // Phase correction
+    the_inst.issue2inst = std::max(the_inst.issue2inst - 4*(phase==3), 4l);
   } else if (token.inst_type == 2 || token.inst_type == 3) {  // VMEM RD/WR
-    if (this->stall_started == 1) {
+    if (this->stall_started == 1)
       this->num_vmem_stalls += 1;
-      this->stall_started = 0;
-    }
 
     this->num_vmem_instrs += 1;
     this->num_mem_instrs += 1;
-
-    // start of mem transaction
-    this->mem_access_started = 1;
-    this->instructions.push_back({token.time, WaveInstCategory::VMEM, issue2inst, 0});
+    the_inst.value = (uint64_t)WaveInstCategory::VMEM;
   } else if (token.inst_type == 4 || token.inst_type == 14) {  // FLAT RD/WR
-    if (this->stall_started == 1) {
+    if (this->stall_started == 1)
       this->num_flat_stalls += 1;
-      this->stall_started = 0;
-    }
 
     this->num_flat_instrs += 1;
     this->num_mem_instrs += 1;
-
-    this->mem_access_started = 1;
-    this->instructions.push_back({token.time, WaveInstCategory::FLAT, issue2inst, 0});
+    the_inst.value = (uint64_t)WaveInstCategory::FLAT;
   } else if (token.inst_type == 6) {  // LDS
-    if (this->stall_started == 1) {
+    if (this->stall_started == 1)
       this->num_lds_stalls += 1;
-      this->stall_started = 0;
-    }
 
     this->num_lds_instrs += 1;
     this->num_mem_instrs += 1;
-
-    this->mem_access_started = 1;
-    this->instructions.push_back({token.time, WaveInstCategory::LDS, issue2inst, 0});
+    the_inst.value = (uint64_t)WaveInstCategory::LDS;
   } else if (token.inst_type == 5 || token.inst_type == 18 || token.inst_type == 28) {  // VALU32/64 instr
-    if (this->stall_started == 1) {
+    if (this->stall_started == 1)
       this->num_valu_stalls += 1;
-      this->stall_started = 0;
-    }
 
     this->num_valu_instrs += 1;
-    this->instructions.push_back({token.time, WaveInstCategory::VALU, issue2inst, 0});
+    the_inst.value = (uint64_t)WaveInstCategory::VALU;
+    // Phase correction
+    the_inst.issue2inst = std::max(the_inst.issue2inst, 4l*(phase>=2));
   } else if (token.inst_type == 12 || token.inst_type == 13) {  // Branch
-    if (this->stall_started == 1) {
+    if (this->stall_started == 1)
       this->num_branch_stalls += 1;
-      this->stall_started = 0;
-    }
 
     this->num_branch_instrs += 1;
-    if (token.inst_type == 13) {
+    the_inst.value = (uint64_t)WaveInstCategory::NEXT;
+    if (token.inst_type == 12) {
       this->num_branch_taken_instrs += 1;
-      this->instructions.push_back({token.time, WaveInstCategory::NEXT, issue2inst, 0});
-    } else {
-      this->instructions.push_back({token.time, WaveInstCategory::JUMP, issue2inst, 0});
+      the_inst.value = (uint64_t)WaveInstCategory::JUMP;
     }
   } else if (token.inst_type == 7) {
-    instructions.push_back(Instruction{token.time, WaveInstCategory::SALU, 0, 4});
+    the_inst.value = (uint64_t)WaveInstCategory::SALU;
     auto inst = Instruction{token.time, WaveInstCategory::PCINFO, 0, 0};
     this->last_jump_inst = instructions.size();
     instructions.push_back(inst);
+  } else {
+    if (token.inst_type == 15)
+      last_message_time = token.time;
+    instructions.erase(instructions.begin()+*issued_instructions.begin());
   }
+
+  if (instructions.size() && stall_started)
+  {
+    int64_t min_stall_cycles = 4l;
+    if (phase && the_inst.value == (int64_t)WaveInstCategory::LDS)
+      min_stall_cycles = 8ul;
+
+    the_inst.time = stall_start_time;
+    the_inst.last = std::max(token.time - the_inst.time, min_stall_cycles);
+    stall_started = false;
+  }
+
+  issued_instructions.erase(issued_instructions.begin());
 }
 
 int64_t wave_t::array_apply_issue(Token& token, WaveArray& SIMD) {
@@ -236,7 +229,9 @@ std::tuple<
   std::vector<occupancy_info_t>,
   std::vector<uint64_t>
 >
-wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
+wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
+{
+  global_target_cu.store(target_cu);
   bool bHasLostPackets = false;
   WaveArray SIMD;
   int64_t total_num_issue_cycles = 0;
@@ -257,7 +252,9 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
     if (token.type == 0)
     {
       if (token.misc_type == 2)
+      {
         bHasLostPackets = true;
+      }
       else if (token.misc_type == 6)
       {
         for (auto& simd : SIMD)
@@ -417,8 +414,8 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
 #ifndef AMD_AQLPROFILE_SQTT_NPI
   for (auto& event : occupancy)
   {
-    event.time &= ~0x7Ful;  // Makes the time information have a granularity of 1024 cycles
-    event.cu = 0;           // Removes CU/SIMD/SLOT information 
+    event.time &= ~0xFul;  // Makes the time information have a granularity of 128 cycles
+    event.cu = 0;          // Removes CU/SIMD/SLOT information
     event.simd = 0;
     event.slot = 0;
   }
@@ -430,11 +427,9 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
 
 void wave_t::apply_pc(Token& token, CodeobjTableTranslator& table)
 {
-  if (trap_status != WaveTrapStatus::TRAP_RESTORED || token.pc <= 0x100000)
+  if (trap_status != WaveTrapStatus::TRAP_RESTORED)
   {
     this->trap_status = WaveTrapStatus::TRAP_SAVED;
-    //if (last_jump_inst+1 == instructions.size())
-    //  instructions[last_jump_inst].issue2inst = token.time - instructions[last_jump_inst].time;
     return;
   }
 
@@ -443,99 +438,68 @@ void wave_t::apply_pc(Token& token, CodeobjTableTranslator& table)
   this->last_jump_inst = -1;
 }
 
-int64_t wave_t::apply_issue(uint64_t wave_status, uint64_t token_time)
+int64_t wave_t::apply_issue(uint64_t wave_status, int64_t token_time)
 {
   if (this->trap_status != WaveTrapStatus::TRAP_RESTORED) return 0;
 
+  auto previous_state = this->cur_state;
   int64_t active_issue_cycle = 0;
-  uint64_t inst_issue_time = token_time - std::min(this->inst_time, token_time);
 
-  if (instructions.size())
+  if (wave_status == SQTT_ISSUE_IMMED)
   {
-#if 0
-    instructions.back().last = inst_issue_time;
-#else
-    if (instructions.back().value == (uint64_t)WaveInstCategory::IMMED)
-      instructions.back().last = std::max(inst_issue_time, instructions.back().last);
-    else
-      instructions.back().last = inst_issue_time;  // v_mul_lo_u32 gets 2 tokens
-#endif
-  }
+    int64_t immed_time = token_time;
+    int64_t cycles_time = 4;
 
-  if (wave_status == SQTT_ISSUE_IMMED) {
-#if 0
-    instructions.push_back({this->inst_time, WaveInstCategory::IMMED, 0, 0});
-#else     // May not add up to correct number of cycles
-    if (instructions.size()) {
-      instructions.back().last -= inst_issue_time-4;
-      inst_issue_time = (inst_issue_time > 4) ? (inst_issue_time-4) : 0;
+    if (instructions.size() && instructions.back().value != 0) // s_waitcnt
+    {
+      int64_t last_cycles = std::max(instructions.back().issue2inst, instructions.back().last);
+      immed_time = std::max(last_message_time, instructions.back().time + last_cycles);
     }
-    instructions.push_back({this->inst_time + 4,
-                          WaveInstCategory::IMMED, 0, inst_issue_time});
-#endif
+
+    cycles_time = token_time - immed_time;
+    instructions.push_back({immed_time, WaveInstCategory::IMMED, 0, std::max(cycles_time, 4l)});
+
+    this->last_message_time = 0;
     this->inst_time = token_time;
-    uint64_t cur_state = this->cur_state;
-
-    if (cur_state == WAVESLOT_STATE::WS_EXEC) {
-      // Align by hand
-      uint64_t state_update_cycle = std::min(token_time, this->state_update_cycle+4);
-      uint64_t state_start_cycle = std::min(this->state_start_cycle, state_update_cycle);
-      // EXEC -> WAIT -> EXEC
-      this->timeline.push_back(
-          std::make_pair(WAVESLOT_STATE::WS_EXEC, state_update_cycle - state_start_cycle));
-      this->timeline.push_back(
-          std::make_pair(WAVESLOT_STATE::WS_WAIT, token_time - state_update_cycle));
-
-      this->cur_state = WAVESLOT_STATE::WS_EXEC;
-      this->state_start_cycle = token_time;
-      this->state_update_cycle = token_time;
-
-      // reset the mem access transaction cycle
-      this->mem_access_started = 0;
-    }
-  } else if (wave_status == SQTT_ISSUE_STALL) {
-    this->stall_started = 1;
-
-    // State: IDLE/EXEC -> STALL
-    uint64_t cur_state = this->cur_state;
-    uint64_t state_start_cycle = std::min(this->state_start_cycle, token_time);
-
-    this->timeline.push_back(
-        std::make_pair(cur_state, token_time - state_start_cycle));
-
-    this->cur_state = WAVESLOT_STATE::WS_STALL;
-    this->state_start_cycle = token_time;
-
-  } else if (wave_status == SQTT_ISSUE_INST) {
-    // there are normal instructions issued in this cycle
-    active_issue_cycle = 1;  // INST issue to pipeline in this cycle
-
-    this->issue_time = token_time;
-    this->num_issued_instrs += 1;
-
-    // state transitions, no explicit WAIT->EXEC
-    if (cur_state == WAVESLOT_STATE::WS_IDLE) {
-      // Issue INST in EMPTY state is illegal, added to work around SQTT issue
-      // fist instr in this wave, State: IDLE -> EXEC
-      uint64_t state_start_cycle = std::min(this->state_start_cycle, token_time);
-      this->timeline.push_back(
-          std::make_pair(cur_state, token_time - state_start_cycle));
-      this->state_start_cycle = token_time;
-    } else if (cur_state == WAVESLOT_STATE::WS_STALL) {
-      // State: STALL -> EXEC
-      uint64_t state_start_cycle = std::min(this->state_start_cycle, token_time);
-      this->timeline.push_back(
-          std::make_pair(WAVESLOT_STATE::WS_STALL, token_time - state_start_cycle));
-      this->state_start_cycle = token_time;
-    } else if (cur_state == WAVESLOT_STATE::WS_EMPTY) {
-      // this is exception, should not happen. observed in SQTT extend timeline
-      uint64_t state_start_cycle = std::min(this->state_start_cycle, token_time);
-      this->timeline.push_back(
-          std::make_pair(cur_state, token_time - state_start_cycle));
-      this->state_start_cycle = token_time;
-    }
     this->cur_state = WAVESLOT_STATE::WS_EXEC;
-    this->state_update_cycle = token_time;
+
+    if (cycles_time > 0)
+    {
+      if (state_start_cycle < immed_time)
+        timeline.back().second += immed_time - state_start_cycle;
+
+      timeline.push_back({WAVESLOT_STATE::WS_WAIT, cycles_time});
+      state_start_cycle = immed_time + cycles_time;
+    }
   }
+  else
+  {
+    if (wave_status == SQTT_ISSUE_STALL)
+    {
+      this->stall_started = true;
+      this->cur_state = WAVESLOT_STATE::WS_STALL;
+      this->stall_start_time = token_time;
+    }
+    else if (wave_status == SQTT_ISSUE_INST)
+    {
+      active_issue_cycle = 1;
+      this->issue_time = token_time;
+      this->num_issued_instrs += 1;
+      this->cur_state = WAVESLOT_STATE::WS_EXEC;
+      issued_instructions.insert(instructions.size());
+      instructions.push_back({token_time, WaveInstCategory::WAVE_END, 0, 4});
+    }
+  }
+
+  int64_t state_duration = token_time - state_start_cycle;
+  if (state_duration > 0)
+  {
+    if (timeline.size() && timeline.back().first == previous_state)
+      timeline.back().second += state_duration;
+    else
+      this->timeline.push_back({previous_state, state_duration});
+  }
+
+  this->state_start_cycle = std::max(token_time, state_start_cycle);
   return active_issue_cycle;
 }
