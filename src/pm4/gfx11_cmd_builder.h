@@ -168,7 +168,7 @@ class Gfx11CmdBuilder : public CmdBuilder {
   }
 
  void BuildCopyRegDataPacket(CmdBuffer* cmdbuf, uint32_t src_reg_addr, const void* dst_addr,
-                            uint32_t size, bool wait){
+                            uint32_t size, bool wait) override {
     PM4MEC_COPY_DATA copy_data{};
 
     // Initialize the command header

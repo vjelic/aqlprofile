@@ -239,7 +239,7 @@ class Gfx9CmdBuilder : public CmdBuilder {
   }
 
   void BuildCopyRegDataPacket(CmdBuffer* cmdbuf, uint32_t src_reg_addr, const void* dst_addr,
-                              uint32_t size, bool wait) {
+                              uint32_t size, bool wait) override {
     PM4MEC_COPY_DATA copy_data{};
     build_pm4_copy_data(copy_data, (uint64_t)src_reg_addr, dst_addr, size, wait);
 
@@ -248,7 +248,7 @@ class Gfx9CmdBuilder : public CmdBuilder {
   }
 
   void BuildCopyRegDataPacket(CmdBuffer* cmdbuf, uint64_t src_reg_addr, const void* dst_addr,
-                              uint32_t size, bool wait) {
+                              uint32_t size, bool wait) override {
     PM4MEC_COPY_DATA copy_data{};
     build_pm4_copy_data(copy_data, src_reg_addr, dst_addr, size, wait);
 
