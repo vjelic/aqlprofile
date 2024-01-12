@@ -1,4 +1,5 @@
 #include "core/aql_profile.h"
+#include "core/include/aql_profile_v2.h"
 
 #include <cstdint>
 #include <future>
@@ -580,6 +581,21 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_iterate_event_ids(
     EventDimension::init();
     for (auto& [name, id] : EventDimension::dimension_table)
       callback(id, name.c_str());
+  } catch(...) {
+    return HSA_STATUS_ERROR;
+  }
+  return HSA_STATUS_SUCCESS;
+}
+
+PUBLIC_API hsa_status_t aqlprofile_iterate_event_ids(aqlprofile_eventname_callback_t callback,
+                                                     void* user_data) {
+  try {
+    EventDimension::init();
+    for (auto& [name, id] : EventDimension::dimension_table) {
+      if (auto ret = callback(id, name.c_str(), user_data); ret != HSA_STATUS_SUCCESS) {
+        return ret;
+      }
+    }
   } catch(...) {
     return HSA_STATUS_ERROR;
   }
