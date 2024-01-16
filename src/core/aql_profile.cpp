@@ -597,9 +597,11 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_iterate_event_coord(
   {
     const EventAttribDimension& attrib = EventAttribDimension::get(agent, event);
 
+    if (!attrib.get_num()) return HSA_STATUS_ERROR;
+
     std::vector<uint8_t> coord;
     coord.resize(attrib.get_num());
-    attrib.get_coordinates(coord.data(), sample_id);
+    attrib.get_coordinates(coord.data(), sample_id*attrib.get_num_instances() + event.block_index);
 
     for (size_t i=0; i<attrib.get_num(); i++)
     {
