@@ -338,6 +338,13 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
     auto userdata_channel = Primitives::SQ_THREAD_TRACE_USERDATA_2;
 
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, userdata_channel, fourcc.u32All);
+
+    thread_trace_viewer_user_data_header_version version;
+    version.opcode = thread_trace_viewer_user_data_opcode_version;
+    version.major = TT_VIEWER_USER_DATA_FORMAT_MAJOR_VERSION;
+    version.minor = TT_VIEWER_USER_DATA_FORMAT_MINOR_VERSION;
+
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, userdata_channel, version.u32All);
   }
 
   void End(CmdBuffer* cmd_buffer, const ThreadTraceConfig* config) override {

@@ -1,5 +1,16 @@
 #pragma once
 
+/**
+* @file      ttviewer_user_data_format.hpp
+* @brief     user data interface between thread trace generators and thread trace viewer
+* @copyright 2017 Advanced Micro Devices Inc
+* this file defines an interface used to pass UMD and tools user data from a thread trace generator tool to a thread trace viewer
+* the register SQ_THREAD_TRACE_USER_DATA_2 is exclusively used to pass the data
+* the register SQ_THREAD_TRACE_USER_DATA_2 is exclusively used to pass the data
+*/
+#define TT_VIEWER_USER_DATA_FORMAT_MAJOR_VERSION 2
+#define TT_VIEWER_USER_DATA_FORMAT_MINOR_VERSION 2
+
 union ttv_user_data_header_codeobj
 {
   struct
@@ -39,6 +50,27 @@ union thread_trace_viewer_user_data_header_fourcc
     unsigned int char2  : 8; //!< FourCC 2nd char: 'R'
     unsigned int char3  : 8; //!< FourCC 3nd char: 'O'
     unsigned int char4  : 8; //!< FourCC 4th char: 'C'
+  };
+  unsigned int u32All;
+};
+
+/**
+* @brief version header data
+* a version number written after the fourcc
+* the version number is expected to change whenever this interface changes
+* the minor version should be incremented whenever there is a change that does not alter data used by existing viewers
+* the major version must be incremented when the change alters data used by existing viewers
+* the minor version should reset to zero when the major version is incremented
+* the viewer should check the version to ensure the generator is producing compatible data
+* in particular the viewer should not use the data if it does not recognize the major version
+*/
+union thread_trace_viewer_user_data_header_version
+{
+  struct
+  {
+    unsigned int opcode :  8; //!< thread_trace_viewer_user_data_opcode_version
+    unsigned int major  : 10; //!< TT_VIEWER_USER_DATA_FORMAT_MAJOR_VERSION
+    unsigned int minor  : 14; //!< TT_VIEWER_USER_DATA_FORMAT_MINOR_VERSION
   };
   unsigned int u32All;
 };
