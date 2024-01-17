@@ -425,6 +425,9 @@ uint64_t CodeobjTableTranslator::ToPcV2(uint64_t pc)
   pcinfo_t pcinfo;
   try {
     const address_range_t& codeobj = this->find_codeobj_in_range(pc);
+    // If offset does not fit in 34 bits, use raw PC values
+    if (pc - codeobj.vbegin > (1ul<<PCINFO_OFFSET_BITS))
+        throw std::string();
     pcinfo.codeobj.header = 1;
     pcinfo.codeobj.id = codeobj.id;
     pcinfo.codeobj.offset = pc - codeobj.vbegin;

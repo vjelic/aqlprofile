@@ -32,9 +32,13 @@
 #include "segment.hpp"
 #include <iostream>
 
+#include "thread_trace_viewer_def.h"
+
 //#define AMD_AQLPROFILE_SQTT_NPI
-#define SQTT_PARSER_VERSION 3
+#define SQTT_PARSER_VERSION 4
 #define OCCUPANCY_RESOLUTION 8
+#define PCINFO_OFFSET_BITS 34
+#define PCINFO_ID_BITS 28
 
 enum WAVESLOT_STATE
 {
@@ -322,8 +326,8 @@ typedef union {
         uint64_t header : 2;
     } addr;
     struct {
-        uint64_t offset : 30;
-        uint64_t id : 32;
+        uint64_t offset : PCINFO_OFFSET_BITS;
+        uint64_t id : PCINFO_ID_BITS;
         uint64_t header : 2;
     } codeobj;
 } pcinfo_t;
@@ -353,15 +357,54 @@ public:
   }
 };
 
+enum CSRegisterHandlerState
+{
+    CSRegisterID = 0,
+    CSRegisterSizeLo = 1,
+    CSRegisterAddrLo = 2,
+    CSRegisterAddrHi = 3,
+    CSRegisterSizeHi = 4,
+    CSRegisterWaitForHeader = 32
+};
+
 class CSRegisterHandler
 {
 public:
-    PipeArray64 wave_start_addr{};
-    CodeobjTableTranslator table;
+    CodeobjTableTranslator table{};
+    CodeobjTableTranslator table_from_start{};
+
     std::unordered_map<uint32_t, uint64_t> active_codeobj_id{};
-    std::unordered_set<uint32_t> code_obj_erase_list{};
-    PipeArray32 current_codeobj_size{};
+
+    PipeArray64 wave_start_addr{};
+    PipeArray64 current_codeobj_size{};
     PipeArray64 current_codeobj_addr{};
+
+    bool bIsTTVFormat = false;
+    CSRegisterHandlerState userdata_state = CSRegisterWaitForHeader;
+
+    template<typename TokenType>
+    uint32_t get_regaddr(const TokenType& token) { return token.regaddr; }
+
+    template<typename TokenType>
+    uint32_t get_regdata(const TokenType& token) { return token.regdata; }
+
+    template<typename TokenType>
+    ttv_user_data_header_codeobj TTVUserdataF(const TokenType& token) {
+        return ttv_user_data_header_codeobj{.u32All = static_cast<uint32_t>(token.regdata)};
+    }
+
+    template<typename TokenType> bool isTTVUserdataState(const TokenType& token) {
+        auto data = TTVUserdataF(token);
+        return data.opcode == thread_trace_viewer_user_data_opcode_codeobj && data.reserved == 0;
+    }
+
+    template<typename TokenType> bool isTTVUserdataHeader(const TokenType& token)
+    {
+        uint32_t regdata = static_cast<uint32_t>(token.regdata);
+        thread_trace_viewer_user_data_header_fourcc data{.u32All = regdata};
+        return  data.opcode == thread_trace_viewer_user_data_opcode_fourcc &&
+                data.char2 == 'R' && data.char3 == 'O' && data.char4 == 'C';
+    }
 
     virtual bool IsPgmLo(size_t addr) = 0;
     virtual bool IsPgmHi(size_t addr) = 0;
@@ -370,35 +413,7 @@ public:
     virtual bool IsUserdata1(size_t addr) = 0;
     virtual bool IsUserdata2(size_t addr) = 0;
     virtual bool IsUserdata3(size_t addr) = 0;
-    virtual ~CSRegisterHandler() { CheckForgetList(); }
-
-    void CheckForgetList()
-    {
-        auto it = code_obj_erase_list.begin();
-        while (it != code_obj_erase_list.end())
-        {
-            uint32_t id = *it;
-            uint64_t addr = 0;
-            it++; // Increment iterator before potentially deleting it's element
-            try {
-                addr = active_codeobj_id.at(id);
-            } catch(std::exception& e) {
-                continue;
-            }
-
-            bool bUsed = false;
-            for (auto& me : wave_start_addr)
-            for (uint64_t pipe : me)
-            bUsed |= pipe == addr;
-
-            if (!bUsed)
-            {
-                table.remove(addr);
-                active_codeobj_id.erase(id);
-                code_obj_erase_list.erase(id);
-            }
-        }
-    }
+    virtual ~CSRegisterHandler() {}
 
     template<typename TokenType>
     void UpdateRegCS(const TokenType& token)
@@ -412,12 +427,47 @@ public:
     template<typename TokenType>
     void UpdateRegNoCS(const TokenType& token)
     {
-        if (!IsUserdata(token.regaddr)) return;
+        if (!IsUserdata(token.regaddr))
+            return;
+        else if (bIsTTVFormat && !IsUserdata2(token.regaddr))
+            return;
 
-        if (IsUserdata0(token.regaddr))
+        if (IsUserdata2(token.regaddr) && isTTVUserdataHeader(token))
+        {
+            bIsTTVFormat = true;
+            userdata_state = CSRegisterWaitForHeader;
+            return;
+        }
+
+        if (bIsTTVFormat)
+        {
+            if (userdata_state == CSRegisterWaitForHeader)
+            {
+                if (isTTVUserdataState(token))
+                    userdata_state = static_cast<CSRegisterHandlerState>(TTVUserdataF(token).type);
+                return;
+            }
+        }
+        else
+        {
+            if (IsUserdata0(token.regaddr))
+                userdata_state = CSRegisterID;
+            else if (IsUserdata1(token.regaddr))
+                userdata_state = CSRegisterSizeLo;
+            else if (IsUserdata2(token.regaddr))
+                userdata_state = CSRegisterAddrLo;
+            else if (IsUserdata3(token.regaddr))
+                userdata_state = CSRegisterAddrHi;
+            else
+                return;
+        }
+
+
+        if (userdata_state == CSRegisterID)
         {
             uint32_t id = token.regdata >> 2;
-            uint32_t type = token.regdata & 0x3;
+            uint32_t bFromStart = (token.regdata >> 1) & 0x1;
+            uint32_t type = token.regdata & 0x1;
 
             auto it = active_codeobj_id.find(id);
             if (type == 0 && it == active_codeobj_id.end())
@@ -426,24 +476,35 @@ public:
                 active_codeobj_id.emplace(id, base_addr);
                 address_range_t arange = {base_addr, current_codeobj_size.at_reg(token), id};
                 table.insert(arange);
-                CheckForgetList();
+                if (bFromStart)
+                    table_from_start.insert(arange);
             }
-            else if (type == 1 && it != active_codeobj_id.end())
+            else if (bIsTTVFormat && type == 1 && it != active_codeobj_id.end())
             {
-                code_obj_erase_list.insert(id);
+                try {
+                    table.remove(active_codeobj_id.at(id));
+                    active_codeobj_id.erase(id);
+                } catch(...) {}
             }
         }
-        else if (IsUserdata1(token.regaddr))
-            current_codeobj_size.at_reg(token) = token.regdata;
-        else if (IsUserdata2(token.regaddr))
+        else if (userdata_state == CSRegisterSizeLo)
+            current_codeobj_size.setlo(token, token.regdata);
+        else if (userdata_state == CSRegisterSizeHi)
+            current_codeobj_size.sethi(token, token.regdata);
+        else if (userdata_state == CSRegisterAddrLo)
             current_codeobj_addr.setlo(token, token.regdata);
-        else if (IsUserdata3(token.regaddr))
+        else if (userdata_state == CSRegisterAddrHi)
             current_codeobj_addr.sethi(token, token.regdata);
+
+        userdata_state = CSRegisterWaitForHeader;
     }
 
     template<typename TokenType>
-    uint64_t get_wave_start(const TokenType& token)
-    {
+    uint64_t get_wave_start(const TokenType& token) {
         return table.ToPcV2((wave_start_addr.at_reg(token) << 8) & ((1ul<<48)-1));
+    }
+
+    uint64_t get_wave_start_delayed(uint64_t addr) {
+        return table_from_start.ToPcV2(addr);
     }
 };

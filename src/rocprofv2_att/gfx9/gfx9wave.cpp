@@ -382,6 +382,29 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu) {
     }
   }
 
+  for (auto& waveslot : SIMD) for (auto& slot : waveslot) for (auto& wave : slot)
+  {
+    if (!wave.instructions.size()) continue;
+    auto& inst = wave.instructions.at(0);
+    // If the wave has a invalid PC value, check if the codeobj information was not delayed relative to TTrace
+    if (inst.value != static_cast<uint64_t>(WaveInstCategory::PCINFO)) continue;
+    if (inst.issue2inst >> 62) continue;
+
+    inst.issue2inst = csregister.get_wave_start_delayed(inst.issue2inst);
+  }
+
+  std::unordered_map<uint64_t, uint64_t> retroactive_addr_map{};
+  for (auto& [addr, id] : kernelID)
+  {
+    uint64_t v2pc = csregister.get_wave_start_delayed(addr);
+    if (v2pc != addr && kernelID.find(v2pc) != kernelID.end())
+      retroactive_addr_map[id] = kernelID.at(v2pc);
+  }
+
+  for (auto& occ : occupancy)
+    if (retroactive_addr_map.find(occ.kernel_id) != retroactive_addr_map.end())
+      occ.kernel_id = retroactive_addr_map.at(occ.kernel_id);
+
   if (bHasLostPackets)
     std::cout << "Warning: Packet lost!" << std::endl;
 
@@ -427,17 +450,17 @@ int64_t wave_t::apply_issue(uint64_t wave_status, uint64_t token_time)
   int64_t active_issue_cycle = 0;
   uint64_t inst_issue_time = token_time - std::min(this->inst_time, token_time);
 
-#if 0
   if (instructions.size())
-      instructions.back().last = inst_issue_time;
+  {
+#if 0
+    instructions.back().last = inst_issue_time;
 #else
-  if (instructions.size()) {
     if (instructions.back().value == (uint64_t)WaveInstCategory::IMMED)
-      instructions.back().last += inst_issue_time;
+      instructions.back().last = std::max(inst_issue_time, instructions.back().last);
     else
       instructions.back().last = inst_issue_time;  // v_mul_lo_u32 gets 2 tokens
-  }
 #endif
+  }
 
   if (wave_status == SQTT_ISSUE_IMMED) {
 #if 0
@@ -451,11 +474,9 @@ int64_t wave_t::apply_issue(uint64_t wave_status, uint64_t token_time)
                           WaveInstCategory::IMMED, 0, inst_issue_time});
 #endif
     this->inst_time = token_time;
-
     uint64_t cur_state = this->cur_state;
-    uint64_t mem_access_started = this->mem_access_started;
 
-    if (cur_state == WAVESLOT_STATE::WS_EXEC && mem_access_started == 1) {
+    if (cur_state == WAVESLOT_STATE::WS_EXEC) {
       // Align by hand
       uint64_t state_update_cycle = std::min(token_time, this->state_update_cycle+4);
       uint64_t state_start_cycle = std::min(this->state_start_cycle, state_update_cycle);
@@ -493,7 +514,6 @@ int64_t wave_t::apply_issue(uint64_t wave_status, uint64_t token_time)
     this->num_issued_instrs += 1;
 
     // state transitions, no explicit WAIT->EXEC
-    uint64_t cur_state = this->cur_state;
     if (cur_state == WAVESLOT_STATE::WS_IDLE) {
       // Issue INST in EMPTY state is illegal, added to work around SQTT issue
       // fist instr in this wave, State: IDLE -> EXEC

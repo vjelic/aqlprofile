@@ -7,6 +7,7 @@
 #include <unordered_map>
 
 #include "pm4/cmd_config.h"
+#include "src/rocprofv2_att/thread_trace_viewer_def.h"
 
 #define SQTT_PERFCOUNTER_TOKEN (1u << 14)
 #define SQTT_PERFCOUNTER_SIMD_EN (0xFu << 24)
@@ -285,8 +286,6 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
       }
       // Reset the GRBM to broadcast mode
       SetGRBMToBroadcast(cmd_buffer);
-      // Issue a CSPartialFlush cmd including cache flush
-      if (config->concurrent == 0) Builder::BuildWriteWaitIdlePacket(cmd_buffer);
     } else {
       SetGRBMToBroadcast(cmd_buffer);
       Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_STATUS_ADDR, 0);
@@ -329,6 +328,16 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
       SetGRBMToBroadcast(cmd_buffer);
       Builder::BuildWriteShRegPacket(cmd_buffer, Primitives::COMPUTE_THREAD_TRACE_ENABLE_ADDR, 1);
     }
+    Builder::BuildWriteWaitIdlePacket(cmd_buffer);
+
+    thread_trace_viewer_user_data_header_fourcc fourcc;
+    fourcc.opcode = thread_trace_viewer_user_data_opcode_fourcc;
+    fourcc.char2 = 'R';
+    fourcc.char3 = 'O';
+    fourcc.char4 = 'C';
+    auto userdata_channel = Primitives::SQ_THREAD_TRACE_USERDATA_2;
+
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, userdata_channel, fourcc.u32All);
   }
 
   void End(CmdBuffer* cmd_buffer, const ThreadTraceConfig* config) override {
@@ -456,28 +465,16 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
     CmdBuffer* cmd_buffer,
     uint32_t data,
     hsa_ven_amd_aqlprofile_att_marker_channel_t channel
-  ) override {
+  ) override
+  {
+    ttv_user_data_header_codeobj header;
+    header.opcode = thread_trace_viewer_user_data_opcode_codeobj;
+    header.type = static_cast<unsigned>(channel);
+    auto userdata_channel = Primitives::SQ_THREAD_TRACE_USERDATA_2;
+
     SetGRBMToBroadcast(cmd_buffer);
-    auto USERDATA = Primitives::SQ_THREAD_TRACE_USERDATA_0;
-    switch (channel)
-    {
-    case HSA_VEN_AMD_AQLPROFILE_ATT_CHANNEL_0:
-      USERDATA = Primitives::SQ_THREAD_TRACE_USERDATA_0;
-      break;
-    case HSA_VEN_AMD_AQLPROFILE_ATT_CHANNEL_1:
-      USERDATA = Primitives::SQ_THREAD_TRACE_USERDATA_1;
-      break;
-    case HSA_VEN_AMD_AQLPROFILE_ATT_CHANNEL_2:
-      USERDATA = Primitives::SQ_THREAD_TRACE_USERDATA_2;
-      break;
-    case HSA_VEN_AMD_AQLPROFILE_ATT_CHANNEL_3:
-      USERDATA = Primitives::SQ_THREAD_TRACE_USERDATA_3;
-      break;
-    default:
-      return HSA_STATUS_ERROR;
-      break;
-    }
-    Builder::BuildWriteUConfigRegPacket(cmd_buffer, USERDATA, data);
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, userdata_channel, header.u32All);
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, userdata_channel, data);
     return HSA_STATUS_SUCCESS;
   }
 
