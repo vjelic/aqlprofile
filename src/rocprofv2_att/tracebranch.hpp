@@ -59,7 +59,7 @@ struct InstBranch
     [[nodiscard]] int64_t insert(const WaveDataInternal& wave)
     {
         auto& insts = wave.instructions;
-        if (!insts.size() || insts[0].value != (uint64_t)WaveInstCategory::PCINFO)
+        if (!insts.size() || insts[0].value != WaveInstCategory::PCINFO)
             return -1;
 
         for (auto& b : branches)

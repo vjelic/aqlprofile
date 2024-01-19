@@ -50,7 +50,7 @@ enum WAVESLOT_STATE
     WS_UNKNOWN = 5,
 };
 
-enum class WaveInstCategory
+enum WaveInstCategory
 {
     NONE = 0,
     SMEM = 1,
@@ -64,7 +64,7 @@ enum class WaveInstCategory
     IMMED = 9,
     TRAP = 10,
     PCINFO = 15,
-    WAVE_END,
+    WAVE_NOT_FINISHED,
 };
 
 enum WaveTrapStatus
@@ -135,11 +135,11 @@ struct InstructionExt
     bool operator==(const Instruction& other) const { return !(*this != other); };
     bool operator!=(const Instruction& other) const {
         return this->value != other.value ||
-            (value == (uint64_t)WaveInstCategory::PCINFO && cycles != other.issue2inst);
+            (value == WaveInstCategory::PCINFO && cycles != other.issue2inst);
     };
     InstructionExt& operator+=(const Instruction& other) {
         num_waves += 1;
-        if (value != (uint64_t)WaveInstCategory::PCINFO)
+        if (value != WaveInstCategory::PCINFO)
             cycles += std::max(other.last, other.issue2inst);
         return *this;
     };

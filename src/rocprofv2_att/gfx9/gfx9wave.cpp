@@ -128,7 +128,7 @@ void wave_t::apply_inst(Token& token)
 
     this->num_smem_instrs += 1;
     this->num_mem_instrs += 1;
-    the_inst.value = (uint64_t)WaveInstCategory::SMEM;
+    the_inst.value = WaveInstCategory::SMEM;
     // Phase correction
     the_inst.issue2inst = std::max(the_inst.issue2inst - 4*(phase==3), 4l);
   } else if (token.inst_type == 1 || token.inst_type == 17) {  // SALU32/64 instr
@@ -136,7 +136,7 @@ void wave_t::apply_inst(Token& token)
       this->num_salu_stalls += 1;
 
     this->num_salu_instrs += 1;
-    the_inst.value = (uint64_t)WaveInstCategory::SALU;
+    the_inst.value = WaveInstCategory::SALU;
     // Phase correction
     the_inst.issue2inst = std::max(the_inst.issue2inst - 4*(phase==3), 4l);
   } else if (token.inst_type == 2 || token.inst_type == 3) {  // VMEM RD/WR
@@ -145,27 +145,27 @@ void wave_t::apply_inst(Token& token)
 
     this->num_vmem_instrs += 1;
     this->num_mem_instrs += 1;
-    the_inst.value = (uint64_t)WaveInstCategory::VMEM;
+    the_inst.value = WaveInstCategory::VMEM;
   } else if (token.inst_type == 4 || token.inst_type == 14) {  // FLAT RD/WR
     if (this->stall_started == 1)
       this->num_flat_stalls += 1;
 
     this->num_flat_instrs += 1;
     this->num_mem_instrs += 1;
-    the_inst.value = (uint64_t)WaveInstCategory::FLAT;
+    the_inst.value = WaveInstCategory::FLAT;
   } else if (token.inst_type == 6) {  // LDS
     if (this->stall_started == 1)
       this->num_lds_stalls += 1;
 
     this->num_lds_instrs += 1;
     this->num_mem_instrs += 1;
-    the_inst.value = (uint64_t)WaveInstCategory::LDS;
+    the_inst.value = WaveInstCategory::LDS;
   } else if (token.inst_type == 5 || token.inst_type == 18 || token.inst_type == 28) {  // VALU32/64 instr
     if (this->stall_started == 1)
       this->num_valu_stalls += 1;
 
     this->num_valu_instrs += 1;
-    the_inst.value = (uint64_t)WaveInstCategory::VALU;
+    the_inst.value = WaveInstCategory::VALU;
     // Phase correction
     the_inst.issue2inst = std::max(the_inst.issue2inst, 4l*(phase>=2));
   } else if (token.inst_type == 12 || token.inst_type == 13) {  // Branch
@@ -173,13 +173,13 @@ void wave_t::apply_inst(Token& token)
       this->num_branch_stalls += 1;
 
     this->num_branch_instrs += 1;
-    the_inst.value = (uint64_t)WaveInstCategory::NEXT;
+    the_inst.value = WaveInstCategory::NEXT;
     if (token.inst_type == 12) {
       this->num_branch_taken_instrs += 1;
-      the_inst.value = (uint64_t)WaveInstCategory::JUMP;
+      the_inst.value = WaveInstCategory::JUMP;
     }
   } else if (token.inst_type == 7) {
-    the_inst.value = (uint64_t)WaveInstCategory::SALU;
+    the_inst.value = WaveInstCategory::SALU;
     auto inst = Instruction{token.time, WaveInstCategory::PCINFO, 0, 0};
     this->last_jump_inst = instructions.size();
     instructions.push_back(inst);
@@ -192,7 +192,7 @@ void wave_t::apply_inst(Token& token)
   if (instructions.size() && stall_started)
   {
     int64_t min_stall_cycles = 4l;
-    if (phase && the_inst.value == (int64_t)WaveInstCategory::LDS)
+    if (phase && the_inst.value == WaveInstCategory::LDS)
       min_stall_cycles = 8ul;
 
     the_inst.time = stall_start_time;
@@ -384,7 +384,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
     if (!wave.instructions.size()) continue;
     auto& inst = wave.instructions.at(0);
     // If the wave has a invalid PC value, check if the codeobj information was not delayed relative to TTrace
-    if (inst.value != static_cast<uint64_t>(WaveInstCategory::PCINFO)) continue;
+    if (inst.value != WaveInstCategory::PCINFO) continue;
     if (inst.issue2inst >> 62) continue;
 
     inst.issue2inst = csregister.get_wave_start_delayed(inst.issue2inst);
@@ -450,7 +450,8 @@ int64_t wave_t::apply_issue(uint64_t wave_status, int64_t token_time)
     int64_t immed_time = token_time;
     int64_t cycles_time = 4;
 
-    if (instructions.size() && instructions.back().value != 0) // s_waitcnt
+    if (instructions.back().value != WaveInstCategory::PCINFO &&
+        instructions.back().value != WaveInstCategory::WAVE_NOT_FINISHED)
     {
       int64_t last_cycles = std::max(instructions.back().issue2inst, instructions.back().last);
       immed_time = std::max(last_message_time, instructions.back().time + last_cycles);
@@ -487,7 +488,7 @@ int64_t wave_t::apply_issue(uint64_t wave_status, int64_t token_time)
       this->num_issued_instrs += 1;
       this->cur_state = WAVESLOT_STATE::WS_EXEC;
       issued_instructions.insert(instructions.size());
-      instructions.push_back({token_time, WaveInstCategory::WAVE_END, 0, 4});
+      instructions.push_back({token_time, WaveInstCategory::WAVE_NOT_FINISHED, 0, 4});
     }
   }
 

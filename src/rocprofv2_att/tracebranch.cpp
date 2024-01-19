@@ -47,7 +47,7 @@ FlattenTree InstBranch::get()
         return {{unique_id}, {sequence}};
 
     FlattenTree ret{{unique_id}, {sequence}};
-    for (auto& v : sequence) if (v.value != (uint64_t)WaveInstCategory::PCINFO)
+    for (auto& v : sequence) if (v.value != WaveInstCategory::PCINFO)
     {
         v.cycles = 0;
         v.num_waves = 0;
