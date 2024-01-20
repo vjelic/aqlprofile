@@ -92,6 +92,7 @@ public:
 
         cu_num = (pm4_factory->GetComputeUnitNumber() + sas - 1) / sas;
         wgp_num = (pm4_factory->GetComputeUnitNumber()/2 + sas - 1) / sas;
+        block_instance_count = block_info->instance_count;
 
         if (num_xccs > 1)
             dimensions.push_back({"XCD", num_xccs});
@@ -105,7 +106,7 @@ public:
         else if (workgroup_processor)
             dimensions.push_back({"WGP", wgp_num});
         else
-            dimensions.push_back({"INSTANCE", block_info->instance_count});
+            dimensions.push_back({"INSTANCE", block_instance_count});
     }
 
     uint64_t get_num() const { return dimensions.size(); };
@@ -123,6 +124,8 @@ public:
             return HSA_STATUS_ERROR_INVALID_INDEX;
         return HSA_STATUS_SUCCESS;
     }
+
+    size_t get_num_instances() const { return block_instance_count; }
 
 private:
     bool HasAttr(CounterBlockAttr attr) const { return (block_info->attr & attr) != 0; }
@@ -145,6 +148,7 @@ private:
     size_t sarrays = 1;
     size_t cu_num = 1;
     size_t wgp_num = 1;
+    size_t block_instance_count = 1;
 
     std::vector<EventDimension> dimensions;
 
