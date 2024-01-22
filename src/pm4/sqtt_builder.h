@@ -315,13 +315,13 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
         uint32_t token_mask = (config->occupancy_mode) ?
                                 Primitives::sqtt_token_mask_occupancy_value():
                                 Primitives::sqtt_token_mask_on_value();
-        if ((1 << index) & config->se_mask == 0)
+        if (((1 << index) & config->se_mask) == 0)
           token_mask = Primitives::sqtt_token_mask_off_value();
 
         WriteConfigPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_TOKEN_MASK_ADDR, token_mask);
         // Program the thread trace ctrl register
         WriteConfigPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_CTRL_ADDR, ctrl_val);
-    
+
         base_addr += sqtt_size;
       }
       // Reset the GRBM to broadcast mode
