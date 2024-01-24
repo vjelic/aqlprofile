@@ -60,10 +60,7 @@ class TestPGenSqtt : public TestPGen {
 
     hsa_status_t status;
     hsa_agent_t agent;
-    uint32_t command_buffer_alignment;
     uint32_t command_buffer_size;
-    uint32_t output_buffer_alignment;
-    uint32_t output_buffer_size;
 
     // GPU identificator
     agent = GetAgentInfo()->dev_id;
@@ -74,23 +71,18 @@ class TestPGenSqtt : public TestPGen {
     profile_.type = HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_TRACE;
 
     // Profile buffers attributes
-    command_buffer_alignment = buffer_alignment_;
     status = api_->hsa_ven_amd_aqlprofile_get_info(
         &profile_, HSA_VEN_AMD_AQLPROFILE_INFO_COMMAND_BUFFER_SIZE, &command_buffer_size);
     TEST_ASSERT(status == HSA_STATUS_SUCCESS);
 
-    output_buffer_alignment = buffer_alignment_;
-    output_buffer_size = buffer_size_;
-
     // Application is allocating the command buffer
-    // AllocateSystem(command_buffer_alignment, command_buffer_size,
+    // AllocateSystem(buffer_alignment_, command_buffer_size,
     //                MODE_HOST_ACC|MODE_DEV_ACC|MODE_EXEC_DATA)
     profile_.command_buffer.ptr =
         GetRsrcFactory()->AllocateCmdMemory(GetAgentInfo(), command_buffer_size);
     TEST_ASSERT(profile_.command_buffer.ptr != NULL);
     profile_.command_buffer.size = command_buffer_size;
-    TEST_ASSERT((reinterpret_cast<uintptr_t>(profile_.command_buffer.ptr) &
-                 (command_buffer_alignment - 1)) == 0);
+    TEST_ASSERT((reinterpret_cast<uintptr_t>(profile_.command_buffer.ptr) & buffer_bitmask) == 0);
 
     this->parameters = {
       {HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_COMPUTE_UNIT_TARGET, 1},
@@ -101,14 +93,12 @@ class TestPGenSqtt : public TestPGen {
     profile_.parameter_count = parameters.size();
 
     // Application is allocating the output buffer
-    // AllocateLocal(output_buffer_alignment, output_buffer_size,
-    //               MODE_DEV_ACC)
-    profile_.output_buffer.ptr =
-        GetRsrcFactory()->AllocateLocalMemory(GetAgentInfo(), output_buffer_size);
+    // AllocateLocal(buffer_alignment_, buffer_size_, MODE_DEV_ACC)
+    profile_.output_buffer.ptr = GetRsrcFactory()->AllocateLocalMemory(GetAgentInfo(), buffer_size_);
+    profile_.output_buffer.size = buffer_size_;
+
     TEST_ASSERT(profile_.output_buffer.ptr != NULL);
-    profile_.output_buffer.size = output_buffer_size;
-    TEST_ASSERT((reinterpret_cast<uintptr_t>(profile_.output_buffer.ptr) &
-                 (output_buffer_alignment - 1)) == 0);
+    TEST_ASSERT((reinterpret_cast<uintptr_t>(profile_.output_buffer.ptr) & buffer_bitmask) == 0);
 
     // Populating the AQL start packet
     status = api_->hsa_ven_amd_aqlprofile_start(&profile_, PrePacket());
@@ -148,19 +138,21 @@ class TestPGenSqtt : public TestPGen {
 
       {
         std::ofstream out_file("sqtt_dump_" + std::to_string(it->sample_id) + ".txt");
-        TEST_ASSERT(out_file.is_open());
-        out_file << std::hex;
+        if (out_file.is_open())
+        {
+          out_file << std::hex;
 
-        // Write the buffer in terms of shorts (16 bits)
-        uint16_t* trace_data = (uint16_t*)sys_buf;
-        for (unsigned i = 0; i < (it->trace_data.size / sizeof(uint16_t)); ++i)
-          out_file << std::setw(4) << std::setfill('0') << trace_data[i] << "\n";
-        out_file << std::dec;
+          // Write the buffer in terms of shorts (16 bits)
+          uint16_t* trace_data = (uint16_t*)sys_buf;
+          for (unsigned i = 0; i < (it->trace_data.size / sizeof(uint16_t)); ++i)
+            out_file << std::setw(4) << std::setfill('0') << trace_data[i] << "\n";
+          out_file << std::dec;
+        }
       }
       {
         std::ofstream out_file("sqtt_dump_" + std::to_string(it->sample_id) + ".bin", std::ios::binary);
-        TEST_ASSERT(out_file.is_open());
-        out_file.write(static_cast<const char*>(sys_buf), it->trace_data.size);
+        if (out_file.is_open())
+          out_file.write(static_cast<const char*>(sys_buf), it->trace_data.size);
       }
 
       try {
@@ -183,6 +175,7 @@ class TestPGenSqtt : public TestPGen {
   }
 
   static const uint32_t buffer_alignment_ = 0x1000;  // 4K
+  static const uint32_t buffer_bitmask = buffer_alignment_ - 1;  // 0xFFF
   static const uint32_t buffer_size_ = 0x2000000;    // 32M
 
   std::vector<hsa_ven_amd_aqlprofile_parameter_t> parameters;
