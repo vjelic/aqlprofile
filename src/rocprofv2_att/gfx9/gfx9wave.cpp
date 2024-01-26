@@ -294,8 +294,10 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
 
       occupancy.push_back(occupancy_info_t{
         .kernel_id = (uint64_t)kid,
+#ifdef AMD_AQLPROFILE_SQTT_NPI
         .simd = (uint64_t)token.simd,
         .slot = (uint64_t)token.wave,
+#endif
         .enable = 1,
         .cu = (uint64_t)token.cu,
         .time = (uint64_t)token.time/OCCUPANCY_RESOLUTION,
@@ -321,8 +323,10 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
       {
         occupancy.insert(occupancy.begin(), occupancy_info_t{
           .kernel_id = kid,
+#ifdef AMD_AQLPROFILE_SQTT_NPI
           .simd = (uint64_t)token.simd,
           .slot = (uint64_t)token.wave,
+#endif
           .enable = 1,
           .cu = (uint64_t)token.cu,
           .time = (uint64_t)tokens[0].time/OCCUPANCY_RESOLUTION,
@@ -331,8 +335,10 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
 
       occupancy.push_back(occupancy_info_t{
         .kernel_id = (uint64_t)kid,
+#ifdef AMD_AQLPROFILE_SQTT_NPI
         .simd = (uint64_t)token.simd,
         .slot = (uint64_t)token.wave,
+#endif
         .enable = 0,
         .cu = (uint64_t)token.cu,
         .time = (uint64_t)token.time/OCCUPANCY_RESOLUTION,
@@ -414,9 +420,8 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
 #ifndef AMD_AQLPROFILE_SQTT_NPI
   for (auto& event : occupancy)
   {
-    event.time &= ~0xFul;  // Makes the time information have a granularity of 128 cycles
-    event.cu = 0;          // Removes CU/SIMD/SLOT information
-    event.simd = 0;
+    event.time &= ~0x7ul;  // Makes the time information have a granularity of 64 cycles
+    event.simd = 0;         // Removes SIMD/SLOT information
     event.slot = 0;
   }
   perfEvents = std::vector<perfevent_t>{};

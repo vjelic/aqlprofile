@@ -191,7 +191,7 @@ static std::unordered_map<EINST, std::pair<WaveInstCategory, uint16_t>> table_in
     {EINST::smem_wr, {WaveInstCategory::SMEM, 1}},
     {EINST::branch_taken, {WaveInstCategory::JUMP, 1}},
     {EINST::branch_not_taken, {WaveInstCategory::NEXT, 1}},
-    {EINST::jump, {WaveInstCategory::JUMP, 1}},
+    {EINST::jump, {WaveInstCategory::SALU, 1}},
     {EINST::trap, {WaveInstCategory::TRAP, 1}},
     {EINST::salu_no_exec, {WaveInstCategory::SALU, 1}},
     {EINST::fatal_halt, {WaveInstCategory::TRAP, 1}},
@@ -348,8 +348,10 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
 
         occupancy.push_back(occupancy_info_t{
           .kernel_id = (uint64_t)kid,
+#ifdef AMD_AQLPROFILE_SQTT_NPI
           .simd = start.simd,
           .slot = start.wid,
+#endif
           .enable = 1,
           .cu = (uint64_t)start.SACU(),
           .time = (uint64_t)token.time/OCCUPANCY_RESOLUTION,
@@ -378,8 +380,10 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
         {
           occupancy.insert(occupancy.begin(), occupancy_info_t{
             .kernel_id = (uint64_t)kid,
+#ifdef AMD_AQLPROFILE_SQTT_NPI
             .simd = end.simd,
             .slot = end.wid,
+#endif
             .enable = 1,
             .cu = (uint64_t)end.SACU(),
             .time = (uint64_t)tokens[0].time/OCCUPANCY_RESOLUTION,
@@ -388,8 +392,10 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
 
         occupancy.push_back(occupancy_info_t{
           .kernel_id = (uint64_t)kid,
+#ifdef AMD_AQLPROFILE_SQTT_NPI
           .simd = end.simd,
           .slot = end.wid,
+#endif
           .enable = 0,
           .cu = (uint64_t)end.SACU(),
           .time = (uint64_t)token.time/OCCUPANCY_RESOLUTION,
@@ -553,9 +559,8 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
 #ifndef AMD_AQLPROFILE_SQTT_NPI
   for (auto& event : occupancy)
   {
-    event.time &= ~0x7Ful;  // Makes the time information have a granularity of 1024 cycles
-    event.cu = 0;           // Removes SA/WGP/SIMD/SLOT information 
-    event.simd = 0;
+    event.time &= ~0x7ul;  // Makes the time information have a granularity of 64 cycles
+    event.simd = 0;        // Removes SIMD/SLOT information
     event.slot = 0;
   }
   perfEvents = std::vector<perfevent_t>{};
@@ -564,7 +569,11 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
   return std::make_tuple(SIMD, perfEvents, occupancy, kid_map);
 }
 
-void wave_t::new_pc(int64_t time, int64_t pc, CodeobjTableTranslator& table) {
+void wave_t::new_pc(int64_t time, int64_t pc, CodeobjTableTranslator& table)
+{
+  if (last_jump_inst >= 0 && last_jump_inst < instructions.size())
+    time = instructions.at(last_jump_inst).time;
+
   Instruction inst{time, WaveInstCategory::PCINFO, table.ToPcV2(pc<<2), 0};
   if (last_jump_inst >= 0)
     instructions.emplace(instructions.begin()+last_jump_inst+1, inst);

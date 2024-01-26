@@ -190,7 +190,7 @@ std::unordered_map<EINST, std::pair<WaveInstCategory, uint16_t>> table_inst_map_
     {EINST::smem_wr, {WaveInstCategory::SMEM, 1}},
     {EINST::branch_taken, {WaveInstCategory::JUMP, 1}},
     {EINST::branch_not_taken, {WaveInstCategory::NEXT, 1}},
-    {EINST::jump, {WaveInstCategory::JUMP, 1}},
+    {EINST::jump, {WaveInstCategory::SALU, 1}},
     {EINST::trap, {WaveInstCategory::TRAP, 1}},
     {EINST::salu_no_exec, {WaveInstCategory::SALU, 1}},
     {EINST::fatal_halt, {WaveInstCategory::TRAP, 1}},
