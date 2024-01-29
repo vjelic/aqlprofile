@@ -27,6 +27,7 @@ std::unordered_map<std::string, InstCategory> Trie::type_dict = {
     {"s_wakeup", InstCategory::IMMED},
     {"s_sendmsg", InstCategory::IMMED},
     {"s_setprio", InstCategory::IMMED},
+    {"s_set_inst_prefetch_distance", InstCategory::IMMED},
     {"s_trap", InstCategory::IMMED},
     {"s_barrie", InstCategory::IMMED},
     {"s_endpgm", InstCategory::IMMED},
