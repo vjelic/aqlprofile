@@ -94,7 +94,7 @@ union wstart_type {
         /*std::cout << std::dec << "WSTART - wgp:" << wgp << " simd:" << simd << " wid: " << wid << " sa:"
                   << sa << " qid:" << queue_id << " me:" << me_id << " pipe:" << pipe_id << std::endl; */
     }
-    int SACU() const { return sa*8 + wgp; }
+    uint64_t SACU() const { return sa*8ul + wgp; }
     int CUSIMD() const { return 4*SACU() + simd; }
     uint64_t getGPULocation() const { return (sa<<10) | (CUSIMD()<<5) | wid; };
 };
@@ -114,8 +114,8 @@ union wend_type {
     void print() const {
         /*std::cout << "WEND - wgp:" << wgp << " simd:" << simd << " wid: " << wid << " sa:" << sa << std::endl;*/
     }
-    int SACU() const { return sa*8 + wgp; }
-    int CUSIMD() const { return 4*SACU() + simd; }
+    uint64_t SACU() const { return sa*8ul + wgp; }
+    uint64_t CUSIMD() const { return 4*SACU() + simd; }
     uint64_t getGPULocation() const { return (sa<<10) | (CUSIMD()<<5) | wid; };
 };
 

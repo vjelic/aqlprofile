@@ -346,16 +346,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
         size_t kid = get_addr_unique_id(wave_addr);
         running_waves[start.getGPULocation()] = kid;
 
-        occupancy.push_back(occupancy_info_t{
-          .kernel_id = (uint64_t)kid,
-#ifdef AMD_AQLPROFILE_SQTT_NPI
-          .simd = start.simd,
-          .slot = start.wid,
-#endif
-          .enable = 1,
-          .cu = (uint64_t)start.SACU(),
-          .time = (uint64_t)token.time/OCCUPANCY_RESOLUTION,
-        });
+        occupancy.push_back({kid, start.simd, start.wid, 1, start.SACU(), token.time});
         num_waves_started += 1;
 
         if (start.wgp == target_wgp && start.simd == target_simd && start.sa == 0)
@@ -377,29 +368,9 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
           running_waves.erase(end.getGPULocation());
         }
         else
-        {
-          occupancy.insert(occupancy.begin(), occupancy_info_t{
-            .kernel_id = (uint64_t)kid,
-#ifdef AMD_AQLPROFILE_SQTT_NPI
-            .simd = end.simd,
-            .slot = end.wid,
-#endif
-            .enable = 1,
-            .cu = (uint64_t)end.SACU(),
-            .time = (uint64_t)tokens[0].time/OCCUPANCY_RESOLUTION,
-          });
-        }
+          occupancy.insert(occupancy.begin(), {kid, end.simd, end.wid, 1, end.SACU(), tokens[0].time});
 
-        occupancy.push_back(occupancy_info_t{
-          .kernel_id = (uint64_t)kid,
-#ifdef AMD_AQLPROFILE_SQTT_NPI
-          .simd = end.simd,
-          .slot = end.wid,
-#endif
-          .enable = 0,
-          .cu = (uint64_t)end.SACU(),
-          .time = (uint64_t)token.time/OCCUPANCY_RESOLUTION,
-        });
+        occupancy.push_back({kid, end.simd, end.wid, 0, end.SACU(), token.time});
         break;
       }
       case gfx10type::INST: {
@@ -555,16 +526,6 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
 
   std::vector<uint64_t> kid_map;
   for (int key = 0; key < rev_map.size(); key++) kid_map.push_back(rev_map[key]);
-
-#ifndef AMD_AQLPROFILE_SQTT_NPI
-  for (auto& event : occupancy)
-  {
-    event.time &= ~0x7ul;  // Makes the time information have a granularity of 64 cycles
-    event.simd = 0;        // Removes SIMD/SLOT information
-    event.slot = 0;
-  }
-  perfEvents = std::vector<perfevent_t>{};
-#endif
 
   return std::make_tuple(SIMD, perfEvents, occupancy, kid_map);
 }

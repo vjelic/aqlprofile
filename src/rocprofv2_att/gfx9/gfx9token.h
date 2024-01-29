@@ -72,7 +72,7 @@ class gfx9Token {
     simd = get_bits(14, 15);
     CheckWave();
   }
-  int16_t cu, wave, simd;
+  uint16_t cu, wave, simd;
 
   void get_wave() {
     delta = get_bits(4, 4);

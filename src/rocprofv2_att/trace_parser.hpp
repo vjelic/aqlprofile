@@ -86,14 +86,28 @@ typedef struct {
     uint8_t bank;
 } perfevent_t;
 
-typedef struct {
+struct occupancy_info_t
+{
+    occupancy_info_t() = default;
+    occupancy_info_t(
+        uint64_t _kid, uint64_t _simd, uint64_t _slot,
+        uint64_t _enable, uint64_t _cu, int64_t _time)
+        : kernel_id(_kid), simd(_simd), slot(_slot),
+        enable(_enable), cu(_cu), time(uint64_t(_time/OCCUPANCY_RESOLUTION))
+    {
+#ifndef AMD_AQLPROFILE_SQTT_NPI
+        time &= ~0x7ul; // Makes the time information have a granularity of 64 cycles
+        simd = 0;
+        slot = 0;
+#endif
+    }
     uint64_t kernel_id : 12;
     uint64_t simd : 2;
     uint64_t slot : 4;
     uint64_t enable : 1;
     uint64_t cu : 4;
     uint64_t time : 41; // Time_value/8
-} occupancy_info_t;
+};
 
 typedef union {
     uint64_t raw;

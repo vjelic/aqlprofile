@@ -292,16 +292,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
       size_t kid = get_addr_unique_id(wave_addr);
       running_waves[getGPULocation(token)] = kid;
 
-      occupancy.push_back(occupancy_info_t{
-        .kernel_id = (uint64_t)kid,
-#ifdef AMD_AQLPROFILE_SQTT_NPI
-        .simd = (uint64_t)token.simd,
-        .slot = (uint64_t)token.wave,
-#endif
-        .enable = 1,
-        .cu = (uint64_t)token.cu,
-        .time = (uint64_t)token.time/OCCUPANCY_RESOLUTION,
-      });
+      occupancy.push_back({kid, token.simd, token.wave, 1, token.cu, token.time});
 
       num_waves_started += 1;
     }
@@ -320,30 +311,9 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
         kid = running_waves[getGPULocation(token)];
       }
       else
-      {
-        occupancy.insert(occupancy.begin(), occupancy_info_t{
-          .kernel_id = kid,
-#ifdef AMD_AQLPROFILE_SQTT_NPI
-          .simd = (uint64_t)token.simd,
-          .slot = (uint64_t)token.wave,
-#endif
-          .enable = 1,
-          .cu = (uint64_t)token.cu,
-          .time = (uint64_t)tokens[0].time/OCCUPANCY_RESOLUTION,
-        });
-      }
+        occupancy.insert(occupancy.begin(), {kid, token.simd, token.wave, 1, token.cu, tokens[0].time});
 
-      occupancy.push_back(occupancy_info_t{
-        .kernel_id = (uint64_t)kid,
-#ifdef AMD_AQLPROFILE_SQTT_NPI
-        .simd = (uint64_t)token.simd,
-        .slot = (uint64_t)token.wave,
-#endif
-        .enable = 0,
-        .cu = (uint64_t)token.cu,
-        .time = (uint64_t)token.time/OCCUPANCY_RESOLUTION,
-      });
-
+      occupancy.push_back({kid, token.simd, token.wave, 0, token.cu, token.time});
       num_waves_completed += 1;
     }
     else if (token.type == SQTT_TOKEN_INST)
@@ -358,6 +328,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
       int64_t active_cycles = array_apply_issue(token, SIMD);
       total_num_issue_cycles += active_cycles;
     }
+#ifdef AMD_AQLPROFILE_SQTT_NPI
     else if (token.type == SQTT_PERFCOUNTER_TOKEN && token.sh == 0)
     {
       perfEvents.push_back(perfevent_t{
@@ -370,6 +341,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
         (uint8_t)token.cntr_bank
       });
     }
+#endif
     else if (token.type == SQTT_INST_PC)
     {
       empty_wave_check(SIMD[token.simd][token.wave].size());
@@ -416,16 +388,6 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
 
   std::vector<uint64_t> kid_map;
   for (int key = 0; key < rev_map.size(); key++) kid_map.push_back(rev_map[key]);
-
-#ifndef AMD_AQLPROFILE_SQTT_NPI
-  for (auto& event : occupancy)
-  {
-    event.time &= ~0x7ul;  // Makes the time information have a granularity of 64 cycles
-    event.simd = 0;         // Removes SIMD/SLOT information
-    event.slot = 0;
-  }
-  perfEvents = std::vector<perfevent_t>{};
-#endif
 
   return std::make_tuple(SIMD, perfEvents, occupancy, kid_map);
 }
