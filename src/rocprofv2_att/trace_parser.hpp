@@ -31,7 +31,7 @@
 #include <array>
 #include "segment.hpp"
 #include <iostream>
-
+#include <cstdint>
 #include "thread_trace_viewer_def.h"
 
 //#define AMD_AQLPROFILE_SQTT_NPI
