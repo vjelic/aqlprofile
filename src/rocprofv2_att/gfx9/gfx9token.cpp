@@ -19,7 +19,7 @@
  THE SOFTWARE. */
 
 #include "gfx9token.h"
-#include "../trace_parser.hpp"
+
 typedef gfx9Token Token;
 
 std::unordered_map<uint32_t, uint32_t> token_len_dict = {{0, 16},

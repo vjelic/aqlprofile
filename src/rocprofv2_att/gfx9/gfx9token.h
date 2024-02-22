@@ -25,6 +25,8 @@
 #include <vector>
 #include <unordered_map>
 
+#include "../trace_parser.hpp"
+
 class gfx9Token {
  public:
   gfx9Token(uint64_t type, uint64_t val) : val(val), type(type) { build(); }

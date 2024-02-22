@@ -20,8 +20,9 @@
 
 #pragma once
 #include <vector>
-#include <cstdint>
 #include <iostream>
+#include <stdint.h>
+#include <cstdint>
 
 enum gfx10type {
     UNKNOWN = 0,

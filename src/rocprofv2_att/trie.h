@@ -30,7 +30,8 @@
 #include <cassert>
 #include <utility>
 #include <string_view>
-
+#include <cstdint>
+#include <stdint.h>
 enum class InstCategory {
   SKIP = 0,
   SMEM = 1,
