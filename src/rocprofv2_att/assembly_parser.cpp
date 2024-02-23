@@ -148,11 +148,13 @@ std::vector<clean_lines_t> clean_and_loc(std::vector<std::pair<int, std::string>
         else if (';' == line[0] && line.find("; Begin ") == std::string::npos) continue;
         else if (std::regex_match(line, std::regex("^\\s*$"))) continue;
 
-        if ('.' == line[0] && line.rfind(".loc", 0) == 0) {
-            loc = strip(comment.substr(1));
-            if (first) {
-                assert(results.size() > 0);  // Not checked in the python code.
-                results[0].loc = loc;
+        if ('.' == line[0] && line.rfind(".loc", 0) == 0)
+        {
+            if (comment.size())
+                loc = strip(comment.substr(1));
+            if (first && results.size())
+            {
+                results[0].loc = std::move(loc);
                 first = false;
                 loc = "";
             }
