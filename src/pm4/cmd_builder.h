@@ -11,6 +11,7 @@
 #include <sstream>
 #include <type_traits>
 #include <vector>
+#include <atomic>
 
 #define APPEND_COMMAND_WRAPPER(cmdbuf, ...)  \
   do {                                       \
@@ -104,7 +105,7 @@ class CmdBuilder {
  public:
   /// @brief Flush all caches
   /// @param CmdBuf Buffer to write commands to
-  virtual void BuildCacheFlushPacket(CmdBuffer* cmdbuf) = 0;
+  virtual void BuildCacheFlushPacket(CmdBuffer* cmdbuf, size_t addr, size_t size) = 0;
 
   /// @brief Build and copy a WaitIdle Gpu command into command buffer
   /// @param cmdbuf Pointer to command buffer to be appended
@@ -159,6 +160,13 @@ class CmdBuilder {
   virtual void BuildIndirectBufferCmd(CmdBuffer* cmdbuf, const void* cmd_addr,
                                       std::size_t cmd_size) = 0;
 
+  virtual void BuildMutexAcquirePacket(CmdBuffer* cmdbuf, size_t addr) = 0;
+  virtual void BuildMutexReleasePacket(CmdBuffer* cmdbuf, size_t addr) = 0;
+
+  virtual uint32_t MakeMutexSlot() {
+    static std::atomic<size_t> slot{1};
+    return uint32_t(slot.fetch_add(1)) | (1u<<31);
+  }
   /// @brief Release resources used by CmdBuilder
   virtual ~CmdBuilder(){};
 };

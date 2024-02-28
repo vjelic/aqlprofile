@@ -33,87 +33,44 @@ class event_exception : public aql_profile_exc_val<event_t> {
   event_exception(const std::string& m, const event_t& ev) : aql_profile_exc_val(m, ev) {}
 };
 
-hsa_status_t _internal_aqlprofile_pmc_iterate_data(
-    aqlprofile_pmc_profile_t profile,
-    aqlprofile_pmc_data_callback_t callback,
-    void* userdata,
-    bool bLegacy
-);
-
-hsa_status_t _internal_aqlprofile_pmc_start(
-  aqlprofile_pmc_profile_t profile,
-  hsa_ext_amd_aql_pm4_packet_t* aql_start_packet
-);
-
-hsa_status_t _internal_aqlprofile_pmc_stop(
-  aqlprofile_pmc_profile_t profile,
-  hsa_ext_amd_aql_pm4_packet_t* aql_start_packet
-);
-
-hsa_status_t _internal_aqlprofile_att_iterate_data(
-  aqlprofile_att_profile_t profile,
-  aqlprofile_att_data_callback_t callback,
-  void* data
-);
-
-hsa_status_t _internal_aqlprofile_att_start(
-  aqlprofile_att_profile_t profile,
-  hsa_ext_amd_aql_pm4_packet_t* aql_start_packet
-);
-
-hsa_status_t _internal_aqlprofile_att_stop(
-  aqlprofile_att_profile_t profile,
-  hsa_ext_amd_aql_pm4_packet_t* aql_start_packet
-);
-
 }  // namespace aql_profile
 
 namespace aql_profile_v2 {
 
 hsa_status_t _internal_aqlprofile_pmc_iterate_data(
-    aqlprofile_pmc_profile_t profile,
+    aqlprofile_handle_t handle,
     aqlprofile_pmc_data_callback_t callback,
-    void* userdata,
-    bool bLegacy
+    void* userdata
 );
 
-hsa_status_t _internal_aqlprofile_pmc_start(
-  aqlprofile_pmc_profile_t profile,
-  hsa_ext_amd_aql_pm4_packet_t* aql_start_packet
-);
-
-hsa_status_t _internal_aqlprofile_pmc_stop(
-  aqlprofile_pmc_profile_t profile,
-  hsa_ext_amd_aql_pm4_packet_t* aql_stop_packet
-);
-
-hsa_status_t _internal_aqlprofile_pmc_read(
-  aqlprofile_pmc_profile_t profile,
-  hsa_ext_amd_aql_pm4_packet_t* aql_read_packet
+hsa_status_t _internal_aqlprofile_pmc_create_packets(
+    aqlprofile_handle_t* handle,
+    aqlprofile_pmc_aql_packets_t* packets,
+    aqlprofile_pmc_profile_t profile,
+    aqlprofile_memory_alloc_callback_t callback,
+    void* userdata
 );
 
 hsa_status_t _internal_aqlprofile_att_iterate_data(
-  aqlprofile_att_profile_t profile,
-  aqlprofile_att_data_callback_t callback,
-  void* data
+    aqlprofile_handle_t handle,
+    aqlprofile_att_data_callback_t callback,
+    void* data
 );
 
-hsa_status_t _internal_aqlprofile_att_start(
-  aqlprofile_att_profile_t profile,
-  hsa_ext_amd_aql_pm4_packet_t* aql_start_packet
-);
-
-hsa_status_t _internal_aqlprofile_att_stop(
-  aqlprofile_att_profile_t profile,
-  hsa_ext_amd_aql_pm4_packet_t* aql_start_packet
+hsa_status_t _internal_aqlprofile_att_create_packets(
+    aqlprofile_handle_t* handle,
+    aqlprofile_att_control_aql_packets_t packets,
+    aqlprofile_att_profile_t profile,
+    aqlprofile_memory_alloc_callback_t callback,
+    void* userdata
 );
 
 }  // namespace aql_profile_v2
 
 static std::ostream& operator<<(std::ostream& os, const aql_profile::event_t& ev) {
-  os << "event( block(" << ev.block_name << "." << ev.block_index << "), Id(" << ev.counter_id
-     << "))";
-  return os;
+    os << "event( block(" << ev.block_name << "." << ev.block_index << "), Id(" << ev.counter_id
+      << "))";
+    return os;
 }
 
 #endif  // SRC_CORE_AQL_PROFILE_H_

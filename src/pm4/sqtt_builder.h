@@ -387,7 +387,8 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
       // Reset the GRBM to broadcast mode
       SetGRBMToBroadcast(cmd_buffer);
       // Initialize cache flush request object
-      Builder::BuildCacheFlushPacket(cmd_buffer);
+      Builder::BuildCacheFlushPacket(cmd_buffer, size_t(config->control_buffer_ptr), config->control_buffer_size);
+      Builder::BuildCacheFlushPacket(cmd_buffer, size_t(config->data_buffer_size), config->data_buffer_size);
       // Program zero size of thread trace buffer
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_SIZE_ADDR,
                                           Primitives::sqtt_zero_size_value());
@@ -401,7 +402,8 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
       Builder::BuildWriteShRegPacket(cmd_buffer, Primitives::COMPUTE_THREAD_TRACE_ENABLE_ADDR, 0);
 
       if (Primitives::GFXIP_LEVEL == 11) {
-        Builder::BuildCacheFlushPacket(cmd_buffer);
+        Builder::BuildCacheFlushPacket(cmd_buffer, size_t(config->control_buffer_ptr), config->control_buffer_size);
+        Builder::BuildCacheFlushPacket(cmd_buffer, size_t(config->data_buffer_size), config->data_buffer_size);
         Builder::BuildWriteWaitIdlePacket(cmd_buffer);
       }
 

@@ -45,6 +45,7 @@ struct TraceConfig {
   bool mi100;
 
   void* control_buffer_ptr;
+  uint32_t control_buffer_size;
   void* data_buffer_ptr;
   uint32_t data_buffer_size;
 

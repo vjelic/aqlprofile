@@ -7,58 +7,109 @@
 
 extern "C" {
 
-typedef union {
-    uint32_t raw;
-    struct {
-        uint32_t accum_lo_res : 1;
-        uint32_t accum_hi_res : 1;
-        uint32_t _reserved : 30;
-    } sq_flags;
-} aqlprofile_pmc_event_flags_t;
+typedef struct {
+    uint64_t handle;
+} aqlprofile_handle_t;
 
+/**
+ * @brief Flags to describe which agents can access given buffer.
+*/
 typedef union {
     uint32_t raw;
     struct {
-        uint32_t agent_access : 1;
-        uint32_t host_access  : 1;
-        uint32_t _reserved    : 30;
+        uint32_t device_access : 1;
+        uint32_t host_access   : 1;
+        uint32_t _reserved     : 30;
     };
 } aqlprofile_buffer_desc_flags_t;
 
+/**
+ * @brief Callback to request a memory buffer, which will be tied to a profile.
+ * The user is responsible for clearing up memory after the profile is no longer needed.
+ * @param[out] ptr The pointer containing memory.
+ * @param[in] size Minimum requested buffer size.
+ * @param[in] flags Access flags, requesting which agents need to read/write to the buffer.
+ * @param[in] userdata Data to be passed back to user.
+ * @retval HSA_STATUS_SUCCESS if successful
+ * @retval HSA_STATUS_ERROR if memory could not be allocated
+*/
+typedef hsa_status_t (*aqlprofile_memory_alloc_callback_t)(
+    void** ptr,
+    uint64_t size,
+    aqlprofile_buffer_desc_flags_t flags,
+    void* userdata
+);
+
+/**
+ * @brief Callback to dealloc memory requested via aqlprofile_memory_alloc_callback_t
+ * @param[in] ptr The pointer containing memory.
+ * @param[in] userdata Data to be passed back to user.
+ * @retval HSA_STATUS_SUCCESS if successful
+ * @retval HSA_STATUS_ERROR if memory could not be allocated
+*/
+typedef void (*aqlprofile_memory_dealloc_callback_t)(
+    void* ptr,
+    void* userdata
+);
+
+typedef enum {
+    AQLPROFILE_ACCUMULATION_NONE = 0, /** Do not accumulate event */
+    AQLPROFILE_ACCUMULATION_LO_RES,   /**< The event should be integrated over quad-cycles */
+    AQLPROFILE_ACCUMULATION_HI_RES,   /**< The event should be integrated every cycle */
+    AQLPROFILE_ACCUMULATION_LAST,
+} aqlprofile_accumulation_type_t;
+
+/**
+ * @brief Special flags indicating additional properties to a counter. E.g. Accumulation metrics
+*/
+typedef union {
+    uint32_t raw;
+    struct {
+        uint32_t accum : 3;  /**< One of aqlprofile_accumulation_type_t */
+        uint32_t _reserved : 29;
+    } sq_flags;
+} aqlprofile_pmc_event_flags_t;
+
+/**
+ * @brief Struct containing all necessary information of an event (counter).
+*/
 typedef struct
 {
-    aqlprofile_pmc_event_flags_t flags;
-    uint32_t block_index;
-    uint32_t event_id;
-    hsa_ven_amd_aqlprofile_block_name_t block_name;
+    uint32_t block_index;                           /**< Block channel. */
+    uint32_t event_id;                              /**< Event ID as fined by XML */
+    aqlprofile_pmc_event_flags_t flags;             /**< Special event flags e.g. accumulation */
+    hsa_ven_amd_aqlprofile_block_name_t block_name; /**< Block name as defined by block indexes */
 } aqlprofile_pmc_event_t;
 
+/**
+ * @brief AQLprofile struct containing information for perfmon events
+*/
 typedef struct
 {
-    void* ptr;
-    uint64_t size;
-    aqlprofile_buffer_desc_flags_t flags;
-} aqlprofile_buffer_descriptor_t;
-
-typedef struct
-{
-  hsa_agent_t agent;                             // GFXIP handle
-  aqlprofile_buffer_descriptor_t output_buffer;  // Output buffer
-  aqlprofile_buffer_descriptor_t command_buffer; // PM4 commands
-  const aqlprofile_pmc_event_t* events;          // Events array
-  uint32_t event_count;                          // Events count
+  hsa_agent_t agent;
+  const aqlprofile_pmc_event_t* events;
+  uint32_t event_count;
 } aqlprofile_pmc_profile_t;
 
+/**
+ * @brief AQLprofile struct containing information for Advanced Thread Trace
+*/
 typedef struct
 {
-  hsa_agent_t agent;                                     // GFXIP handle
-  aqlprofile_buffer_descriptor_t output_buffer;          // Output buffer
-  aqlprofile_buffer_descriptor_t command_buffer;         // PM4 commands
-  const hsa_ven_amd_aqlprofile_parameter_t* parameters;  // Parameters array
-  uint32_t parameter_count;                              // Parameters count
+  hsa_agent_t agent;
+  const hsa_ven_amd_aqlprofile_parameter_t* parameters;
+  uint32_t parameter_count;
 } aqlprofile_att_profile_t;
 
-// Definition of output data iterator callback
+/**
+ * @brief Data callback for perfmon events. Each event will call this once per coordinate
+ * @param[in] event The event information passed in from aqlprofile_pmc_profile_t
+ * @param[in] counter_id Internal ID of the counter
+ * @param[in] counter_value The event value, as incremented from start() to stop()
+ * @param[in] userdata Data returned to user
+ * @retval HSA_STATUS_SUCCESS to continue iteration
+ * @retval HSA_STATUS_ERROR to stop callback iteration
+*/
 typedef hsa_status_t (*aqlprofile_pmc_data_callback_t)(
     aqlprofile_pmc_event_t event,
     uint64_t counter_id,
@@ -66,7 +117,15 @@ typedef hsa_status_t (*aqlprofile_pmc_data_callback_t)(
     void* userdata
 );
 
-// Definition of output data iterator callback
+/**
+ * @brief Data callback for thread trace. This will be called at least once per shader engine
+ * @param[in] shader Shader Engine ID
+ * @param[in] buffer Pointer containing the data
+ * @param[in] size Amount of bytes used by thread trace
+ * @param[in] callback_data Data returned to user
+ * @retval HSA_STATUS_SUCCESS to continue iteration
+ * @retval HSA_STATUS_ERROR to stop callback iteration
+*/
 typedef hsa_status_t (*aqlprofile_att_data_callback_t)(
     uint32_t shader,
     void* buffer,
@@ -74,49 +133,102 @@ typedef hsa_status_t (*aqlprofile_att_data_callback_t)(
     void* callback_data
 );
 
+/**
+ * @brief Iterate_data() will parse the event data and call @callback with the resulting event data
+ * @param[in] handle The handle returned from aqlprofile_pmc_create_packets()
+ * @param[in] callback CB where the resulting event values are going to be returned
+ * @param[in] userdata Data sent back to user
+ * @retval HSA_STATUS_SUCCESS all operations exited succesfully
+ * @retval HSA_STATUS_ERROR if some callback returns an error
+ * @retval HSA_STATUS_ERROR_INVALID_ARGUMENT if invalid handle is given
+*/
 PUBLIC_API hsa_status_t aqlprofile_pmc_iterate_data(
-    aqlprofile_pmc_profile_t profile,
+    aqlprofile_handle_t handle,
     aqlprofile_pmc_data_callback_t callback,
     void* userdata
 );
 
-PUBLIC_API hsa_status_t aqlprofile_pmc_start(
+/**
+ * @brief Struct to be returned by aqlprofile_pmc_create_packets
+*/
+typedef struct {
+    hsa_ext_amd_aql_pm4_packet_t start_packet;  /**< Reset counters and start incrementing */
+    hsa_ext_amd_aql_pm4_packet_t stop_packet;   /**< Pause counters from incrementing */
+    hsa_ext_amd_aql_pm4_packet_t read_packet;   /**< Retrieve results from device */
+} aqlprofile_pmc_aql_packets_t;
+
+/**
+ * @brief Function to create AQL packets to be inserted into the queue.
+ * @param[out] handle To be passed to iterate_data()
+ * @param[out] packets Pointer to where the start, stop and read packets will be written to
+ * @param[in] profile Agent and events information
+ * @param[in] alloc_cb Memory allocation, which may request cpu or gpu memory for internal use
+ * @param[in] dealloc_cb Function to free memory allocated by alloc_cb
+ * @param[in] userdata Data passed back to user via memory alloc callback
+*/
+PUBLIC_API hsa_status_t aqlprofile_pmc_create_packets(
+    aqlprofile_handle_t* handle,
+    aqlprofile_pmc_aql_packets_t* packets,
     aqlprofile_pmc_profile_t profile,
-    hsa_ext_amd_aql_pm4_packet_t* aql_start_packet
+    aqlprofile_memory_alloc_callback_t alloc_cb,
+    aqlprofile_memory_dealloc_callback_t dealloc_cb,
+    void* userdata
 );
 
-PUBLIC_API hsa_status_t aqlprofile_pmc_stop(
-    aqlprofile_pmc_profile_t profile,
-    hsa_ext_amd_aql_pm4_packet_t* aql_stop_packet
-);
+/**
+ * @brief Function to delete AQL packets after creation by aqlprofile_pmc_create_packets
+ * @param[in] handle Returned by aqlprofile_pmc_create_packets()
+*/
+PUBLIC_API void aqlprofile_pmc_delete_packets(aqlprofile_handle_t handle);
 
-PUBLIC_API hsa_status_t aqlprofile_pmc_read(
-    aqlprofile_pmc_profile_t profile,
-    hsa_ext_amd_aql_pm4_packet_t* aql_read_packet
-);
-
+/**
+ * @brief Iterates over thread trace data and the data to user
+ * @param[in] handle The handle returned from aqlprofile_att_create_packets()
+ * @param[in] callback CB where the resulting data is going to be returned
+ * @param[in] userdata Data sent back to user
+ * @retval HSA_STATUS_SUCCESS all operations exited succesfully
+ * @retval HSA_STATUS_ERROR if some callback returns an error
+ * @retval HSA_STATUS_ERROR_INVALID_ARGUMENT if invalid handle is given
+*/
 PUBLIC_API hsa_status_t aqlprofile_att_iterate_data(
-    aqlprofile_att_profile_t profile,
+    aqlprofile_handle_t handle,
     aqlprofile_att_data_callback_t callback,
     void* userdata
 );
 
-PUBLIC_API hsa_status_t aqlprofile_att_start(
+/**
+ * @brief Struct containing AQLpackets to start and stop thread trace
+*/
+typedef struct {
+    hsa_ext_amd_aql_pm4_packet_t start_packet; /**< Packet to start thread trace */
+    hsa_ext_amd_aql_pm4_packet_t stop_packet;  /**< Packet to stop thread trace and flush data */
+} aqlprofile_att_control_aql_packets_t;
+
+/**
+ * @brief Fn to create start and stop thread trace packets
+ * @param[out] handle To be passed to iterate_data()
+ * @param[out] packets Packets returned by this function to start and stop thread trace
+ * @param[in] profile Agent information and extra parameters for thread trace
+ * @param[in] callback Memory allocation fn which may request cpu or gpu memory
+ * @retval HSA_STATUS_SUCCESS if all packets created succesfully
+ * @retval HSA_STATUS_ERROR otherwise
+*/
+PUBLIC_API hsa_status_t aqlprofile_att_create_packets(
+    aqlprofile_handle_t* handle,
+    aqlprofile_att_control_aql_packets_t* packets,
     aqlprofile_att_profile_t profile,
-    hsa_ext_amd_aql_pm4_packet_t* aql_start_packet
+    aqlprofile_memory_alloc_callback_t alloc_cb,
+    aqlprofile_memory_dealloc_callback_t dealloc_cb,
+    void* userdata
 );
 
-PUBLIC_API hsa_status_t aqlprofile_att_stop(
-    aqlprofile_att_profile_t profile,
-    hsa_ext_amd_aql_pm4_packet_t* aql_stop_packet
-);
+PUBLIC_API void aqlprofile_att_delete_packets(aqlprofile_handle_t handle);
 
 /**
  * @brief Callback for iteration of all possible event coordinate IDs and coordinate names.
  * @param [in] id Integer identifying the dimension.
  * @param [in] name Name of the dimension
  * @param [in] data User data supplied to @ref aqlprofile_iterate_event_ids
- * @return hsa_status_t
  * @retval HSA_STATUS_SUCCESS Continues iteration
  * @retval OTHERS Any other HSA return values stops iteration, passing back this value through
  *         @ref aqlprofile_iterate_event_ids
@@ -127,7 +239,6 @@ typedef hsa_status_t (*aqlprofile_eventname_callback_t)(int id, const char* name
  * @brief Iterate over all possible event coordinate IDs and their names.
  * @param [in] callback Callback to use for iteration of dimensions
  * @param [in] user_data Data to supply to callback @ref aqlprofile_eventname_callback_t
- * @return hsa_status_t
  * @retval HSA_STATUS_SUCCESS if successful
  * @retval HSA_STATUS_ERROR if error on interation
  * @retval OTHERS If @ref aqlprofile_eventname_callback_t returns non-HSA_STATUS_SUCCESS, 
@@ -308,7 +419,6 @@ struct wave_data_t
  * @param [in] id Integer identifying type ID.
  * @param [in] name Name of the trace type.
  * @param [in] userdata User data supplied to back caller
- * @return hsa_status_t
  * @retval HSA_STATUS_SUCCESS Continues iteration
  * @retval OTHERS Any other HSA return values stops iteration, passing back this value through
  *         @ref aqlprofile_iterate_trace_type_ids
@@ -319,7 +429,6 @@ typedef hsa_status_t (*aqlprofile_att_tracename_callback_t)(int id, const char* 
  * @brief Iterate over all possible event coordinate IDs and their names.
  * @param [in] callback Callback to use for iteration of trace types
  * @param [in] userdata Data to supply to callback @ref aqlprofile_tracename_callback_t
- * @return hsa_status_t
  * @retval HSA_STATUS_SUCCESS if successful
  * @retval HSA_STATUS_ERROR if error on interation
  * @retval OTHERS If @ref aqlprofile_eventname_callback_t returns non-HSA_STATUS_SUCCESS, 

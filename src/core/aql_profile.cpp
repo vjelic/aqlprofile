@@ -197,32 +197,17 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
     if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_PMC) {
       pm4_builder::PmcBuilder* pmc_builder = pm4_factory->GetPmcBuilder();
 
-      if (aql_profile::read_api_enabled) {
-        // Generate read commands
-        pmc_builder->Read(&commands, countersVec, profile->output_buffer.ptr);
-        cmd_buffer_mgr.SetRdSize(commands.Size());
+      // Generate read commands
+      auto data_size = pmc_builder->Read(&commands, countersVec, profile->output_buffer.ptr);
+      if (!aql_profile::read_api_enabled)
+        commands.Clear();
+      cmd_buffer_mgr.SetRdSize(commands.Size());
 
-        // Copy generated read commands
-        if (profile->command_buffer.ptr != NULL) {
-          const aql_profile::descriptor_t rd_descr = cmd_buffer_mgr.GetRdDescr();
-          memcpy(rd_descr.ptr, commands.Data(), commands.Size());
-          commands.Clear();
-        }
-
-        if (is_concurrent) {
-          // Generate read commands
-          pmc_builder->Read(
-              &commands, countersVec,
-              (char*)(profile->output_buffer.ptr) + (profile->output_buffer.size / 2));
-          cmd_buffer_mgr.SetRd2Size(commands.Size());
-
-          // Copy generated read commands
-          if (profile->command_buffer.ptr != NULL) {
-            const aql_profile::descriptor_t rd_descr = cmd_buffer_mgr.GetRdDescr();
-            memcpy((char*)rd_descr.ptr + (rd_descr.size / 2), commands.Data(), commands.Size());
-            commands.Clear();
-          }
-        }
+      // Copy generated read commands
+      if (profile->command_buffer.ptr != NULL) {
+        const aql_profile::descriptor_t rd_descr = cmd_buffer_mgr.GetRdDescr();
+        memcpy(rd_descr.ptr, commands.Data(), commands.Size());
+        commands.Clear();
       }
 
       // Generate start commands
@@ -230,19 +215,15 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
       cmd_buffer_mgr.SetPreSize(commands.Size());
 
       // Generate stop commands
-      const uint32_t data_size =
-          pmc_builder->Stop(&commands, countersVec, profile->output_buffer.ptr);
-      ERR_CHECK(data_size == 0, HSA_STATUS_ERROR, "PMC Builder Stop(): data size set to zero");
+      pmc_builder->Stop(&commands, countersVec);
+      if (!aql_profile::read_api_enabled)
+        pmc_builder->Read(&commands, countersVec, profile->output_buffer.ptr);
+
       if (profile->output_buffer.size < data_size) {
         profile->output_buffer.size = data_size;
-        if (profile->output_buffer.ptr != NULL) {
-          ERR_LOGGING << "Bad profile output_buffer size (" << profile->output_buffer.size
-                      << "), required size(" << data_size << ")";
+        if (profile->output_buffer.ptr != NULL)
           return HSA_STATUS_ERROR_INVALID_ARGUMENT;
-        }
       }
-      assert(data_size <= profile->output_buffer.size);
-
     } else if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_TRACE) {
       pm4_builder::TraceConfig trace_config{};
       memset((char*)&trace_config, 0, sizeof(pm4_builder::TraceConfig));
@@ -334,6 +315,7 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
       trace_config.se_number_total = se_number_total;
       trace_config.sampleRate = 10000;  // tbd
       trace_config.control_buffer_ptr = control_ptr;
+      trace_config.control_buffer_size = control_size;
       trace_config.data_buffer_ptr = profile->output_buffer.ptr;
       trace_config.data_buffer_size = profile->output_buffer.size;
 
@@ -379,24 +361,18 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
     }
 
     cmd_buffer_mgr.Finalize(commands.Size());
-    const uint32_t cmd_size = cmd_buffer_mgr.GetSize();
+    const uint32_t cmd_size = (cmd_buffer_mgr.GetSize() + 0x1800) & ~0xFFF;
     if (profile->command_buffer.size < cmd_size) {
       profile->command_buffer.size = cmd_size;
-      if (profile->command_buffer.ptr != NULL) {
-        ERR_LOGGING << "Bad profile command_buffer size (" << profile->command_buffer.size
-                    << "), required size(" << cmd_size << ")";
+      if (profile->command_buffer.ptr != NULL)
         return HSA_STATUS_ERROR_INVALID_ARGUMENT;
-      }
     }
-    assert(cmd_size <= profile->command_buffer.size);
-
     if (profile->command_buffer.ptr != NULL) {
       // Copy generated commands
       const aql_profile::descriptor_t pre_descr = cmd_buffer_mgr.GetPreDescr();
       const aql_profile::descriptor_t post_descr = cmd_buffer_mgr.GetPostDescr();
       memcpy(pre_descr.ptr, commands.Data(), pre_descr.size);
-      memcpy(post_descr.ptr, reinterpret_cast<const char*>(commands.Data()) + pre_descr.size,
-             post_descr.size);
+      memcpy(post_descr.ptr, reinterpret_cast<const char*>(commands.Data()) + pre_descr.size, post_descr.size);
       // Populate start aql packet
       pm4_builder::CmdBuilder* cmd_writer = pm4_factory->GetCmdBuilder();
       aql_profile::PopulateAql(pre_descr.ptr, pre_descr.size, cmd_writer, aql_start_packet);
@@ -430,23 +406,20 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_stop(const hsa_ven_amd_aqlprofile
 // Method to populate the provided AQL packet with profiling read commands
 PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_read(const hsa_ven_amd_aqlprofile_profile_t* profile,
                                                     aql_profile::packet_t* aql_read_packet) {
-  if (aql_profile::read_api_enabled) {
-    try {
-      // Populate read aql packet
-      aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile);
-      const bool is_concurrent = pm4_factory->IsConcurrent();
-      pm4_builder::CmdBuilder* cmd_writer = pm4_factory->GetCmdBuilder();
-      aql_profile::CommandBufferMgr cmd_buffer_mgr(profile);
+  if (!aql_profile::read_api_enabled)
+    return HSA_STATUS_ERROR;
+  try {
+    // Populate read aql packet
+    aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile);
+    const bool is_concurrent = pm4_factory->IsConcurrent();
+    pm4_builder::CmdBuilder* cmd_writer = pm4_factory->GetCmdBuilder();
+    aql_profile::CommandBufferMgr cmd_buffer_mgr(profile);
 
-      const aql_profile::descriptor_t rd_descr =
-          (is_concurrent == false) ? cmd_buffer_mgr.GetRdDescr() : cmd_buffer_mgr.FetchRdDescr();
-      aql_profile::PopulateAql(rd_descr.ptr, rd_descr.size, cmd_writer, aql_read_packet);
-    } catch (std::exception& e) {
-      ERR_LOGGING << e.what();
-      return HSA_STATUS_ERROR;
-    }
-  } else {
-    ERR_LOGGING << "Read API disabled";
+    const aql_profile::descriptor_t rd_descr =
+        (is_concurrent == false) ? cmd_buffer_mgr.GetRdDescr() : cmd_buffer_mgr.FetchRdDescr();
+    aql_profile::PopulateAql(rd_descr.ptr, rd_descr.size, cmd_writer, aql_read_packet);
+  } catch (std::exception& e) {
+    ERR_LOGGING << e.what();
     return HSA_STATUS_ERROR;
   }
   return HSA_STATUS_SUCCESS;
@@ -629,117 +602,78 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
     if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_PMC) {
       uint64_t* samples = reinterpret_cast<uint64_t*>(profile->output_buffer.ptr);
 
-      uint32_t umc_sample_count = 0;
-      if (xcc_num > 1) {
-        // We count the UMC samples - per sample per event since we are exposing all 128 UMCCHs
-        for (const hsa_ven_amd_aqlprofile_event_t* p = profile->events;
-            p < profile->events + profile->event_count; ++p) {
-          if (p->block_name == HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_UMC)
-              ++ umc_sample_count;
+      if (xcc_num > 1) for (const hsa_ven_amd_aqlprofile_event_t* p = profile->events;
+                            p < profile->events + profile->event_count; ++p)
+      {
+        if ((char*)samples >= (char*)profile->output_buffer.ptr + profile->output_buffer.size)
+          return HSA_STATUS_ERROR;
+
+        if (!(pm4_factory->GetBlockInfo(p)->attr & CounterBlockUmcAttr))
+          continue;
+
+        // Process an MI300 UMC event for XCC 0 ONLY
+        auto sample_id = p->block_index; // sample id is the event block_index or the UMCCH id
+        hsa_ven_amd_aqlprofile_info_data_t sample_info;
+        sample_info.sample_id = sample_id;
+        sample_info.pmc_data.event = *p;
+        sample_info.pmc_data.result = *samples;
+#if DEBUG_TRACE == 2
+        printf(
+                "DATA: sample index(%u) id(%u) bloc id(%u) index(%u) counter id(%u) "
+                "res(%lu)\n",
+                sample_index, sample_id, p->block_name, p->block_index, p->counter_id,
+                samples[sample_index]);
+#endif
+
+        status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_PMC_DATA, &sample_info, data);
+        if (status == HSA_STATUS_INFO_BREAK) {
+          status = HSA_STATUS_SUCCESS;
+          break;
         }
+        if (status != HSA_STATUS_SUCCESS)
+          break;
+        samples ++;
       }
-
-      // per xcc sample count
-      uint32_t xcc_sample_count = (profile->output_buffer.size - umc_sample_count *  pm4_builder::UMC_SAMPLE_BYTE_SIZE) /
-        (sizeof(uint64_t) * xcc_num);
-
       for (uint32_t xcc_index = 0; xcc_index < xcc_num; xcc_index++)
       {
-        const uint32_t sample_count = (xcc_index == 0) ? (umc_sample_count + xcc_sample_count) : xcc_sample_count;
-        uint32_t sample_index = 0;
-
         for (const hsa_ven_amd_aqlprofile_event_t* p = profile->events;
              p < profile->events + profile->event_count; ++p)
         {
-          if ((xcc_num > 1) && (pm4_factory->GetBlockInfo(p)->attr & CounterBlockUmcAttr))
+          if ((char*)samples >= (char*)profile->output_buffer.ptr + profile->output_buffer.size)
+            return HSA_STATUS_ERROR;
+
+          if (pm4_factory->GetBlockInfo(p)->attr & CounterBlockUmcAttr) continue;
+
+          // non-MI300A-AID counter event.
+          uint32_t block_samples_count = 1;
+          if (pm4_factory->GetBlockInfo(p)->attr & CounterBlockSeAttr)
+            block_samples_count *= se_number;
+          if (pm4_factory->GetBlockInfo(p)->attr & CounterBlockSaAttr)
+            block_samples_count *= 2;
+          if (pm4_factory->GetBlockInfo(p)->attr & CounterBlockSqAttr)
+            block_samples_count *= pm4_factory->GetNumWGPs();
+
+          for (uint32_t blk = 0; blk < block_samples_count; ++blk)
           {
-            // MI300A-AID counter event
-            if (xcc_index == 0)
-            {
-              // Process an MI300 UMC event for XCC 0 ONLY
-              auto sample_id = p->block_index; // sample id is the event block_index or the UMCCH id
-              hsa_ven_amd_aqlprofile_info_data_t sample_info;
-              sample_info.sample_id = sample_id;
-              sample_info.pmc_data.event = *p;
-              sample_info.pmc_data.result = samples[sample_index];
+            hsa_ven_amd_aqlprofile_info_data_t sample_info;
+            sample_info.sample_id = blk;
+            sample_info.pmc_data.event = *p;
 #if DEBUG_TRACE == 2
-              printf(
-                     "DATA: sample index(%u) id(%u) bloc id(%u) index(%u) counter id(%u) "
-                     "res(%lu)\n",
-                     sample_index, sample_id, p->block_name, p->block_index, p->counter_id,
-                     samples[sample_index]);
+              printf("DATA: xcc(%u) id(%u) bloc id(%u) index(%u) counter id(%u) res(%lu)\n",
+                  xcc_index, blk, p->block_name, p->block_index, p->counter_id, *samples);
 #endif
 
-              status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_PMC_DATA, &sample_info, data);
-              if (status == HSA_STATUS_INFO_BREAK) {
-                status = HSA_STATUS_SUCCESS;
-                break;
-              }
-              if (status != HSA_STATUS_SUCCESS) {
-                ERR_LOGGING << "PMC data callback error, sample_id(" << sample_id << ") status(" << status
-                            << ")";
-                break;
-              }
-              ++sample_index;
+            sample_info.pmc_data.result = *samples;
+            status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_PMC_DATA, &sample_info, data);
+            if (status == HSA_STATUS_INFO_BREAK) {
+              status = HSA_STATUS_SUCCESS;
+              break;
             }
-          }
-          else
-          {
-            // non-MI300A-AID counter event.
-            uint32_t block_samples_count = 1;
-            if (pm4_factory->GetBlockInfo(p)->attr & CounterBlockSeAttr)
-              block_samples_count *= se_number;
-            if (pm4_factory->GetBlockInfo(p)->attr & CounterBlockSaAttr)
-              block_samples_count *= 2;
-            if (pm4_factory->GetBlockInfo(p)->attr & CounterBlockSqAttr)
-              block_samples_count *= pm4_factory->GetNumWGPs();
-
-            for (uint32_t blk = 0; blk < block_samples_count; ++blk)
-            {
-              if (sample_index >= sample_count) {
-                ERR_LOGGING << "Bad sample index (" << sample_index << "/" << sample_count << ")";
-                return HSA_STATUS_ERROR;
-              }
-              assert(sample_index < sample_count);
-
-              hsa_ven_amd_aqlprofile_info_data_t sample_info;
-              sample_info.sample_id = blk;
-              sample_info.pmc_data.event = *p;
-              uint64_t val = samples[sample_index];
-  #if DEBUG_TRACE == 2
-                printf(
-                    "DATA: xcc(%u) sample index(%u) id(%u) bloc id(%u) index(%u) counter id(%u) "
-                    "res(%lu)\n",
-                    xcc_index, sample_index, blk, p->block_name, p->block_index, p->counter_id, val);
-  #endif
-              if (is_concurrent)
-              {
-                uint64_t start_val = samples[sample_index + sample_count / 2];
-                if (val < start_val) {
-                  ERR_LOGGING << "Bad values (end=" << val << " < start=" << start_val
-                              << ") of sample index (" << sample_index << ") bloc id ("
-                              << p->block_index << ") counter id (" << p->counter_id << ")";
-                  return HSA_STATUS_ERROR;
-                }
-                val -= start_val;
-              }
-
-              sample_info.pmc_data.result = val;
-              status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_PMC_DATA, &sample_info, data);
-              if (status == HSA_STATUS_INFO_BREAK) {
-                status = HSA_STATUS_SUCCESS;
-                break;
-              }
-              if (status != HSA_STATUS_SUCCESS) {
-                ERR_LOGGING << "PMC data callback error, sample_id(" << blk << ") status(" << status
-                            << ")";
-                break;
-              }
-              ++sample_index;
-            }
+            if (status != HSA_STATUS_SUCCESS)
+              break;
+            samples ++;
           }
         }
-        samples += sample_count;
       }
     } else if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_TRACE) {
       uint32_t mode = 2;

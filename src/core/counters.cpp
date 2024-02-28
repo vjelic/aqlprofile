@@ -17,6 +17,7 @@
 #include "pm4/sqtt_builder.h"
 
 #include "core/commandbuffermgr.hpp"
+#include "memorymanager.hpp"
 
 #define PUBLIC_API __attribute__((visibility("default")))
 #define CONSTRUCTOR_API __attribute__((constructor))
@@ -91,206 +92,140 @@ static inline bool IsEventMatch(const event_t& event1, const event_t& event2) {
 // Method for iterating the events output data
 hsa_status_t
 _internal_aqlprofile_pmc_iterate_data(
-    aqlprofile_pmc_profile_t profile,
+    aqlprofile_handle_t handle,
     aqlprofile_pmc_data_callback_t callback,
     void* userdata
 ) {
     hsa_status_t status = HSA_STATUS_SUCCESS;
 
-    aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile.agent);
+    auto memorymgr = MemoryManager::GetManager(handle.handle);
+
+    aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(memorymgr->GetAgent());
     const uint32_t xcc_num = pm4_factory->GetXccNumber();
-    const uint32_t se_number = pm4_factory->GetShaderEnginesNumber() / xcc_num;
 
-    uint64_t* samples = reinterpret_cast<uint64_t*>(profile.output_buffer.ptr);
+    uint64_t* samples = reinterpret_cast<uint64_t*>(memorymgr->GetOutputBuf());
+    uint64_t* buffer_end_location = samples + memorymgr->GetOutputBufSize()/sizeof(uint64_t);
+    auto& events = memorymgr->GetEvents();
 
-    uint32_t umc_sample_count = 0;
-    if (xcc_num > 1)
+    size_t umc_sample_id = 0;
+    if (xcc_num > 1) for (auto& event : events)
     {
-        // We count the UMC samples - per sample per event since we are exposing all 128 UMCCHs
-        for (const auto* p = profile.events; p < profile.events + profile.event_count; p++)
-            umc_sample_count += p->block_name == HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_UMC;
+        if (samples >= buffer_end_location)
+            return HSA_STATUS_ERROR;
+
+        if (!(pm4_factory->GetBlockInfo(event.block_name)->attr & CounterBlockUmcAttr))
+            continue;
+
+#if DEBUG_TRACE == 2
+        printf("DATA: sample index(%u) id(%u) bloc id(%u) index(%u) counter id(%u) res(%lu)\n",
+                sample_index, sample_id, p->block_name, p->block_index, p->counter_id, *samples);
+#endif
+
+        status = callback(event, event.block_index, *samples, userdata);
+        if (status == HSA_STATUS_INFO_BREAK) {
+            status = HSA_STATUS_SUCCESS;
+            break;
+        }
+        if (status != HSA_STATUS_SUCCESS)
+            break;
+        samples ++;
+        umc_sample_id ++;
     }
 
-    // per xcc sample count
-    uint32_t umc_bytes = umc_sample_count * pm4_builder::UMC_SAMPLE_BYTE_SIZE;
-    uint32_t xcc_sample_count = (profile.output_buffer.size - umc_bytes) / (sizeof(uint64_t) * xcc_num);
-
-    for (uint32_t xcc_index = 0; xcc_index < xcc_num; xcc_index++)
+    size_t xcc_sample_count = 0;
+    for (uint32_t xcc_index = 0; xcc_index < xcc_num; xcc_index++) for (auto& event : events)
     {
-        const uint32_t sample_count = (xcc_index == 0) ? (umc_sample_count + xcc_sample_count) : xcc_sample_count;
-        uint32_t sample_index = 0;
+        if (samples >= buffer_end_location)
+            return HSA_STATUS_ERROR;
 
-        for (const auto* p = profile.events; p < profile.events + profile.event_count; p++)
+        if (pm4_factory->GetBlockInfo(event.block_name)->attr & CounterBlockUmcAttr)
+            continue;
+
+        // non-MI300A-AID counter event.
+        uint32_t block_samples_count = pm4_factory->GetNumEvents(event.block_name);
+        for (uint32_t blk = 0; blk < block_samples_count; ++blk)
         {
-            if ((xcc_num > 1) && (pm4_factory->GetBlockInfo(p->block_name)->attr & CounterBlockUmcAttr))
-            {
-                // MI300A-AID counter event
-                if (xcc_index == 0)
-                {
-                    // Process an MI300 UMC event for XCC 0 ONLY
-                    auto sample_id = p->block_index; // sample id is the event block_index or the UMCCH id
 #if DEBUG_TRACE == 2
-                    printf(
-                                    "DATA: sample index(%u) id(%u) bloc id(%u) index(%u) counter id(%u) "
-                                    "res(%lu)\n",
-                                    sample_index, sample_id, p->block_name, p->block_index, p->counter_id,
-                                    samples[sample_index]);
+              printf("DATA: xcc(%u) blk(%u) bloc id(%u) index(%u) counter id(%u) res(%lu)\n",
+                  xcc_index, blk, event.block_name, event.block_index, event.event_id, *samples);
 #endif
-
-                    status = callback(*p, sample_id, samples[sample_index], userdata);
-                    if (status == HSA_STATUS_INFO_BREAK) {
-                        status = HSA_STATUS_SUCCESS;
-                        break;
-                    }
-                    if (status != HSA_STATUS_SUCCESS) {
-                        ERR_LOGGING << "PMC data callback error, sample_id(" << sample_id << ") status(" << status
-                                                << ")";
-                        break;
-                    }
-                    ++sample_index;
-                }
+            xcc_sample_count += xcc_index == 0;
+            size_t xcc_sample_id = xcc_sample_count * xcc_index + blk;
+            status = callback(event, xcc_sample_id, *samples, userdata);
+            if (status == HSA_STATUS_INFO_BREAK) {
+              status = HSA_STATUS_SUCCESS;
+              break;
             }
-            else
-            {
-                // non-MI300A-AID counter event.
-                uint32_t block_samples_count = 1;
-                if (pm4_factory->GetBlockInfo(p->block_name)->attr & CounterBlockSeAttr)
-                    block_samples_count *= se_number;
-                if (pm4_factory->GetBlockInfo(p->block_name)->attr & CounterBlockSaAttr)
-                    block_samples_count *= 2;
-                if (pm4_factory->GetBlockInfo(p->block_name)->attr & CounterBlockSqAttr)
-                    block_samples_count *= pm4_factory->GetNumWGPs();
-
-                for (uint32_t blk = 0; blk < block_samples_count; ++blk)
-                {
-                    if (sample_index >= sample_count) {
-                        ERR_LOGGING << "Bad sample index (" << sample_index << "/" << sample_count << ")";
-                        return HSA_STATUS_ERROR;
-                    }
-                    assert(sample_index < sample_count);
-#if DEBUG_TRACE == 2
-                        printf(
-                                "DATA: xcc(%u) sample index(%u) id(%u) bloc id(%u) index(%u) counter id(%u) "
-                                "res(%lu)\n",
-                                xcc_index, sample_index, blk, p->block_name, p->block_index, p->counter_id, samples[sample_index]);
-#endif
-                    size_t xcc_sample_id = sample_count * xcc_index + blk;
-                    status = callback(*p, xcc_sample_id, samples[sample_index], userdata);
-                    if (status == HSA_STATUS_INFO_BREAK) {
-                        status = HSA_STATUS_SUCCESS;
-                        break;
-                    }
-                    if (status != HSA_STATUS_SUCCESS) {
-                        ERR_LOGGING << "PMC data callback error, sample_id(" << blk << ") status(" << status << ")";
-                        break;
-                    }
-                    ++sample_index;
-                }
-            }
+            if (status != HSA_STATUS_SUCCESS)
+              break;
+            samples ++;
         }
-        samples += sample_count;
     }
 
     return status;
 }
 
-hsa_status_t
-_internal_aqlprofile_pmc_start(
+hsa_status_t _internal_aqlprofile_pmc_create_packets(
+    aqlprofile_handle_t* handle,
+    aqlprofile_pmc_aql_packets_t* packets,
     aqlprofile_pmc_profile_t profile,
-    hsa_ext_amd_aql_pm4_packet_t* aql_start_packet
+    aqlprofile_memory_alloc_callback_t alloc_cb,
+    aqlprofile_memory_dealloc_callback_t dealloc_cb,
+    void* userdata
 ) {
     pm4_builder::CmdBuffer commands;
-    aql_profile::CommandBufferMgr cmd_buffer_mgr(profile.command_buffer.ptr, UINT_MAX);
+    auto memorymgr = MemoryManager::CreateManager(
+        profile.agent,
+        alloc_cb,
+        dealloc_cb,
+        userdata
+    );
+    memorymgr->CopyEvents(profile.events, profile.event_count);
+
+    pm4_builder::CmdBuffer read_cmd;
+    pm4_builder::CmdBuffer start_cmd;
+    pm4_builder::CmdBuffer stop_cmd;
 
     aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile.agent);
     const pm4_builder::counters_vector countersVec = CountersVec(profile, pm4_factory);
 
     pm4_builder::PmcBuilder* pmc_builder = pm4_factory->GetPmcBuilder();
 
+    // Start outputbuf ptr
+    size_t output_bytes = 0;
+    for (auto& event : memorymgr->GetEvents())
+        output_bytes += pm4_factory->GetBytesNeeded(event.block_name);
+    memorymgr->CreateOutputBuf(output_bytes);
     // Generate read commands
-    pmc_builder->Read(&commands, countersVec, profile.output_buffer.ptr);
-    cmd_buffer_mgr.SetRdSize(commands.Size());
-
-    // Copy generated read commands
-    if (profile.command_buffer.ptr != NULL) {
-        const aql_profile::descriptor_t rd_descr = cmd_buffer_mgr.GetRdDescr();
-        memcpy(rd_descr.ptr, commands.Data(), commands.Size());
-        commands.Clear();
-    }
-
+    size_t data_size = pmc_builder->Read(&read_cmd, countersVec, memorymgr->GetOutputBuf());
     // Generate start commands
-    pmc_builder->Start(&commands, countersVec);
-    cmd_buffer_mgr.SetPreSize(commands.Size());
-
+    pmc_builder->Start(&start_cmd, countersVec);
     // Generate stop commands
-    const uint32_t data_size =
-        pmc_builder->Stop(&commands, countersVec, profile.output_buffer.ptr);
+    pmc_builder->Stop(&stop_cmd, countersVec);
+
     ERR_CHECK(data_size == 0, HSA_STATUS_ERROR, "PMC Builder Stop(): data size set to zero");
-    if (profile.output_buffer.size < data_size) {
-        profile.output_buffer.size = data_size;
-        if (profile.output_buffer.ptr != NULL) {
-            ERR_LOGGING << "Bad profile output_buffer size (" << profile.output_buffer.size
-                        << "), required size(" << data_size << ")";
-            return HSA_STATUS_ERROR_INVALID_ARGUMENT;
-        }
-    }
-    assert(data_size <= profile.output_buffer.size);
+    if (memorymgr->GetOutputBufSize() < data_size)
+        return HSA_STATUS_ERROR_OUT_OF_RESOURCES;
 
-    cmd_buffer_mgr.Finalize(commands.Size());
-    const uint32_t cmd_size = cmd_buffer_mgr.GetSize();
-    if (profile.command_buffer.size < cmd_size) {
-        profile.command_buffer.size = cmd_size;
-        if (profile.command_buffer.ptr != NULL) {
-            ERR_LOGGING << "Bad profile command_buffer size (" << profile.command_buffer.size
-                        << "), required size(" << cmd_size << ")";
-            return HSA_STATUS_ERROR_INVALID_ARGUMENT;
-        }
-    }
-    assert(cmd_size <= profile.command_buffer.size);
+    // Copy generated commands
+    size_t start_size = aql_profile::CommandBufferMgr::Align(start_cmd.Size());
+    size_t stop_size = aql_profile::CommandBufferMgr::Align(stop_cmd.Size());
+    size_t read_size = aql_profile::CommandBufferMgr::Align(read_cmd.Size());
+    memorymgr->CreateCmdBuf(start_size+stop_size+read_size);
 
-    if (profile.command_buffer.ptr != NULL) {
-        // Copy generated commands
-        const aql_profile::descriptor_t pre_descr = cmd_buffer_mgr.GetPreDescr();
-        const aql_profile::descriptor_t post_descr = cmd_buffer_mgr.GetPostDescr();
-        memcpy(pre_descr.ptr, commands.Data(), pre_descr.size);
-        memcpy(post_descr.ptr, reinterpret_cast<const char*>(commands.Data()) + pre_descr.size,
-                post_descr.size);
-        // Populate start aql packet
-        pm4_builder::CmdBuilder* cmd_writer = pm4_factory->GetCmdBuilder();
-        aql_profile::PopulateAql(pre_descr.ptr, pre_descr.size, cmd_writer, aql_start_packet);
-    }
-
-    return HSA_STATUS_SUCCESS;
-}
-
-hsa_status_t
-_internal_aqlprofile_pmc_stop(
-    aqlprofile_pmc_profile_t profile,
-    hsa_ext_amd_aql_pm4_packet_t* aql_stop_packet
-) {
-    // Populate stop aql packet
-    aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile.agent);
+    handle->handle = memorymgr->GetHandler();
     pm4_builder::CmdBuilder* cmd_writer = pm4_factory->GetCmdBuilder();
-    aql_profile::CommandBufferMgr cmd_buffer_mgr(profile.command_buffer);
-    const aql_profile::descriptor_t post_descr = cmd_buffer_mgr.GetPostDescr();
-    aql_profile::PopulateAql(post_descr.ptr, post_descr.size, cmd_writer, aql_stop_packet);
-    return HSA_STATUS_SUCCESS;
-}
+    uint8_t* cmdbuf = reinterpret_cast<uint8_t*>(memorymgr->GetCmdBuf());
 
-// Method to populate the provided AQL packet with profiling read commands
-hsa_status_t _internal_aqlprofile_read(
-    aqlprofile_pmc_profile_t profile,
-    hsa_ext_amd_aql_pm4_packet_t* aql_read_packet
-) {
-    // Populate read aql packet
-    aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile.agent);
-    const bool is_concurrent = pm4_factory->IsConcurrent();
-    pm4_builder::CmdBuilder* cmd_writer = pm4_factory->GetCmdBuilder();
-    aql_profile::CommandBufferMgr cmd_buffer_mgr(profile.command_buffer);
+    memcpy(cmdbuf, read_cmd.Data(), read_cmd.Size());
+    aql_profile::PopulateAql(cmdbuf, read_cmd.Size(), cmd_writer, &packets->read_packet);
+    cmdbuf += read_size;
+    memcpy(cmdbuf, start_cmd.Data(), start_cmd.Size());
+    aql_profile::PopulateAql(cmdbuf, start_cmd.Size(), cmd_writer, &packets->start_packet);
+    cmdbuf += start_size;
+    memcpy(cmdbuf, stop_cmd.Data(), stop_cmd.Size());
+    aql_profile::PopulateAql(cmdbuf, stop_cmd.Size(), cmd_writer, &packets->stop_packet);
 
-    const aql_profile::descriptor_t rd_descr =
-        (is_concurrent == false) ? cmd_buffer_mgr.GetRdDescr() : cmd_buffer_mgr.FetchRdDescr();
-    aql_profile::PopulateAql(rd_descr.ptr, rd_descr.size, cmd_writer, aql_read_packet);
     return HSA_STATUS_SUCCESS;
 }
 
@@ -298,12 +233,18 @@ hsa_status_t _internal_aqlprofile_read(
 
 extern "C" {
 
-PUBLIC_API hsa_status_t aqlprofile_pmc_start(
+PUBLIC_API hsa_status_t aqlprofile_pmc_create_packets(
+    aqlprofile_handle_t* handle,
+    aqlprofile_pmc_aql_packets_t* packets,
     aqlprofile_pmc_profile_t profile,
-    hsa_ext_amd_aql_pm4_packet_t* aql_start_packet
+    aqlprofile_memory_alloc_callback_t alloc_cb,
+    aqlprofile_memory_dealloc_callback_t dealloc_cb,
+    void* userdata
 ) {
     try {
-        return aql_profile_v2::_internal_aqlprofile_pmc_start(profile, aql_start_packet);
+        return aql_profile_v2::_internal_aqlprofile_pmc_create_packets(
+            handle, packets, profile, alloc_cb, dealloc_cb, userdata
+        );
     } catch (std::exception& e) {
         ERR_LOGGING << e.what();
         return HSA_STATUS_ERROR;
@@ -312,42 +253,25 @@ PUBLIC_API hsa_status_t aqlprofile_pmc_start(
     }
 }
 
-PUBLIC_API hsa_status_t aqlprofile_pmc_stop(
-    aqlprofile_pmc_profile_t profile,
-    hsa_ext_amd_aql_pm4_packet_t* aql_stop_packet
-) {
+PUBLIC_API void aqlprofile_pmc_delete_packets(aqlprofile_handle_t handle)
+{
     try {
-        return aql_profile_v2::_internal_aqlprofile_pmc_stop(profile, aql_stop_packet);
+        MemoryManager::DeleteManager(handle.handle);
     } catch (std::exception& e) {
-        ERR_LOGGING << e.what();
-        return HSA_STATUS_ERROR;
+        return;
     } catch (...) {
-        return HSA_STATUS_ERROR;
-    }
-}
-
-PUBLIC_API hsa_status_t aqlprofile_pmc_read(
-    aqlprofile_pmc_profile_t profile,
-    hsa_ext_amd_aql_pm4_packet_t* aql_read_packet
-) {
-    try {
-        return aql_profile_v2::_internal_aqlprofile_read(profile, aql_read_packet);
-    } catch (std::exception& e) {
-        ERR_LOGGING << e.what();
-        return HSA_STATUS_ERROR;
-    } catch (...) {
-        return HSA_STATUS_ERROR;
+        return;
     }
 }
 
 PUBLIC_API hsa_status_t
 aqlprofile_pmc_iterate_data(
-    aqlprofile_pmc_profile_t profile,
+    aqlprofile_handle_t handle,
     aqlprofile_pmc_data_callback_t callback,
-    void* data
+    void* userdata
 ) {
     try {
-        return aql_profile_v2::_internal_aqlprofile_pmc_iterate_data(profile, callback, data);
+        return aql_profile_v2::_internal_aqlprofile_pmc_iterate_data(handle, callback, userdata);
     } catch (std::exception& e) {
         ERR_LOGGING << e.what();
         return HSA_STATUS_ERROR;

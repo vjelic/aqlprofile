@@ -24,7 +24,6 @@ class CommandBufferMgr {
 
   CommandBufferMgr(void* ptr, const uint32_t& size) { Init(descriptor_t{ptr, size}, false); }
   explicit CommandBufferMgr(const profile_t* profile) { Init(profile->command_buffer, true); }
-  explicit CommandBufferMgr(aqlprofile_buffer_descriptor_t desc) { Init({desc.ptr, (uint32_t)desc.size}, true); }
 
   char* GetPrefix() { return reinterpret_cast<char*>(buffer_.ptr); }
   char* GetPrefix1() { return reinterpret_cast<char*>(buffer_.ptr) + sizeof(info_t); }
@@ -129,6 +128,8 @@ class CommandBufferMgr {
     return descr;
   }
 
+  static uint32_t Align(const uint32_t& size) { return (size + align_mask_) & ~align_mask_; }
+
  private:
   void Init(const descriptor_t& buffer, const bool& import) {
     buffer_ = buffer;
@@ -153,8 +154,6 @@ class CommandBufferMgr {
   uint32_t GetPreOffset() const { return GetRdOffset() + Align(info_.rdcmds_size); }
   uint32_t GetPostOffset() const { return GetPreOffset() + Align(info_.precmds_size); }
   uint32_t GetEndOffset() const { return GetPostOffset() + Align(info_.postcmds_size); }
-
-  static uint32_t Align(const uint32_t& size) { return (size + align_mask_) & ~align_mask_; }
 
   static const uint32_t align_size_ = 0x100;
   static const uint32_t align_mask_ = align_size_ - 1;

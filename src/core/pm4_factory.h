@@ -132,11 +132,30 @@ class Pm4Factory {
     return block_map_.Get(block_id);
   }
 
+  virtual size_t GetNumEvents(uint32_t block_name) const
+  {
+    size_t se_number = GetShaderEnginesNumber() / GetXccNumber();
+    size_t block_samples_count = 1;
+    auto* block_info = GetBlockInfo(block_name);
+
+    if (block_info->attr & CounterBlockSeAttr)
+      block_samples_count *= se_number;
+    if (block_info->attr & CounterBlockSaAttr)
+      block_samples_count *= 2;
+    if (block_info->attr & CounterBlockSqAttr)
+      block_samples_count *= GetNumWGPs();
+    return block_samples_count;
+  }
+
+  virtual size_t GetBytesNeeded(uint32_t block_name) const {
+    return GetNumEvents(block_name)*sizeof(uint64_t);
+  }
+
   // Return block id for a given block name string
   uint32_t FindBlock(const char* name) const { return block_map_.Find(name); }
 
   /// Workaround for GFX11. PMC Builder overrides this.
-  virtual int GetNumWGPs() {
+  virtual int GetNumWGPs() const {
     if (pmc_builder_)
       return pmc_builder_->GetNumWGPs();
     return 1;
