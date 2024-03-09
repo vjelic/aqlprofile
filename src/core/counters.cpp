@@ -84,11 +84,6 @@ static inline pm4_builder::counters_vector CountersVec(
     return vec;
 }
 
-static inline bool IsEventMatch(const event_t& event1, const event_t& event2) {
-    return (event1.block_name == event2.block_name) && (event1.block_index == event2.block_index) &&
-         (event1.counter_id == event2.counter_id);
-}
-
 // Method for iterating the events output data
 hsa_status_t
 _internal_aqlprofile_pmc_iterate_data(
@@ -96,9 +91,10 @@ _internal_aqlprofile_pmc_iterate_data(
     aqlprofile_pmc_data_callback_t callback,
     void* userdata
 ) {
-    hsa_status_t status = HSA_STATUS_SUCCESS;
-
-    auto memorymgr = MemoryManager::GetManager(handle.handle);
+    auto counter_memorymgr = MemoryManager::GetManager(handle.handle);
+    CounterMemoryManager* memorymgr = dynamic_cast<CounterMemoryManager*>(counter_memorymgr.get());
+    if (!memorymgr)
+        return HSA_STATUS_ERROR_INVALID_ARGUMENT;
 
     aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(memorymgr->GetAgent());
     const uint32_t xcc_num = pm4_factory->GetXccNumber();
@@ -121,15 +117,14 @@ _internal_aqlprofile_pmc_iterate_data(
                 sample_index, sample_id, p->block_name, p->block_index, p->counter_id, *samples);
 #endif
 
-        status = callback(event, event.block_index, *samples, userdata);
-        if (status == HSA_STATUS_INFO_BREAK) {
-            status = HSA_STATUS_SUCCESS;
-            break;
-        }
-        if (status != HSA_STATUS_SUCCESS)
-            break;
+        hsa_status_t status = callback(event, event.block_index, *samples, userdata);
         samples ++;
         umc_sample_id ++;
+
+        if (status == HSA_STATUS_INFO_BREAK)
+            return HSA_STATUS_SUCCESS;
+        if (status != HSA_STATUS_SUCCESS)
+            return status;
     }
 
     size_t xcc_sample_count = 0;
@@ -151,18 +146,17 @@ _internal_aqlprofile_pmc_iterate_data(
 #endif
             xcc_sample_count += xcc_index == 0;
             size_t xcc_sample_id = xcc_sample_count * xcc_index + blk;
-            status = callback(event, xcc_sample_id, *samples, userdata);
-            if (status == HSA_STATUS_INFO_BREAK) {
-              status = HSA_STATUS_SUCCESS;
-              break;
-            }
-            if (status != HSA_STATUS_SUCCESS)
-              break;
+            hsa_status_t status = callback(event, xcc_sample_id, *samples, userdata);
             samples ++;
+
+            if (status == HSA_STATUS_INFO_BREAK)
+                return HSA_STATUS_SUCCESS;
+            else if (status != HSA_STATUS_SUCCESS)
+                return status;
         }
     }
 
-    return status;
+    return HSA_STATUS_SUCCESS;
 }
 
 hsa_status_t _internal_aqlprofile_pmc_create_packets(
@@ -174,12 +168,13 @@ hsa_status_t _internal_aqlprofile_pmc_create_packets(
     void* userdata
 ) {
     pm4_builder::CmdBuffer commands;
-    auto memorymgr = MemoryManager::CreateManager(
+    auto memorymgr = std::make_shared<CounterMemoryManager>(
         profile.agent,
         alloc_cb,
         dealloc_cb,
         userdata
     );
+    MemoryManager::RegisterManager(memorymgr);
     memorymgr->CopyEvents(profile.events, profile.event_count);
 
     pm4_builder::CmdBuffer read_cmd;
@@ -245,6 +240,9 @@ PUBLIC_API hsa_status_t aqlprofile_pmc_create_packets(
         return aql_profile_v2::_internal_aqlprofile_pmc_create_packets(
             handle, packets, profile, alloc_cb, dealloc_cb, userdata
         );
+    } catch (hsa_status_t err) {
+        ERR_LOGGING << err;
+        return err;
     } catch (std::exception& e) {
         ERR_LOGGING << e.what();
         return HSA_STATUS_ERROR;
@@ -272,6 +270,9 @@ aqlprofile_pmc_iterate_data(
 ) {
     try {
         return aql_profile_v2::_internal_aqlprofile_pmc_iterate_data(handle, callback, userdata);
+    } catch (hsa_status_t err) {
+        ERR_LOGGING << err;
+        return err;
     } catch (std::exception& e) {
         ERR_LOGGING << e.what();
         return HSA_STATUS_ERROR;
@@ -291,6 +292,12 @@ PUBLIC_API hsa_status_t aqlprofile_iterate_event_ids(
                 return ret;
             }
         }
+    } catch (hsa_status_t err) {
+        ERR_LOGGING << err;
+        return err;
+    } catch (hsa_status_t err) {
+        ERR_LOGGING << err;
+        return err;
     } catch(...) {
         return HSA_STATUS_ERROR;
     }
@@ -319,6 +326,10 @@ PUBLIC_API hsa_status_t aqlprofile_iterate_event_coord(
             EventDimension dim = attrib.get_dim(i);
             callback(i, dim.id, dim.extent, coord[i], dim.name.data(), userdata);
         }
+    } 
+    catch (hsa_status_t err) {
+        ERR_LOGGING << err;
+        return err;
     }
     catch(...) {
         return HSA_STATUS_ERROR;

@@ -59,16 +59,13 @@ private:
 
 // Thread traces status register indices to determine
 // status of thread trace run
-enum {
-  TT_STATUS_IDX_STATUS = 0,
-  TT_STATUS_IDX_CNTR = 1,
-  TT_STATUS_IDX_WPTR = 2,
-  TT_STATUS_IDX_ID = 3,
-  TT_STATUS_IDX_MAX = 4
-};
 
-typedef uint32_t ControlType;
-typedef TraceConfig ThreadTraceConfig;
+struct TraceControl {
+  uint32_t status;
+  uint32_t cntr;
+  uint32_t wptr;
+  uint32_t _reserved;
+};
 
 // Encapsulates the various Api and structures that are used to enable
 // a thread trace session and collect its data. Implementations of this
@@ -80,17 +77,17 @@ class SqttBuilder {
   // Builds Pm4 command stream to program hardware registers that
   // enable a thread trace session, including the issue of an event
   // to begin thread session
-  virtual void Begin(CmdBuffer* cmd_buffer, const ThreadTraceConfig* config) = 0;
+  virtual void Begin(CmdBuffer* cmd_buffer, const TraceConfig* config) = 0;
   // Builds Pm4 command stream to program hardware registers that
   // disable a thread trace session, including the issue of an event
   // to stop currently ongoing thread session
-  virtual void End(CmdBuffer* cmd_buffer, const ThreadTraceConfig* config) = 0;
+  virtual void End(CmdBuffer* cmd_buffer, const TraceConfig* config) = 0;
   // Builds Pm4 command stream to program hardware registers that
   // inserts "data" into the SQTT buffer as USERDATA_2 (data_lo) and USERDATA_3 (data_hi)
   virtual hsa_status_t InsertMarker(
     CmdBuffer* cmd_buffer,
     uint32_t data,
-    hsa_ven_amd_aqlprofile_att_marker_channel_t channel
+    unsigned channel
   ) = 0;
 
   // returns the target CU
@@ -117,7 +114,7 @@ template <typename Builder, typename Primitives>
 class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitives {
  public:
  explicit GpuSqttBuilder(const AgentInfo* agent_info)
-      : Builder(), xcc_number_(agent_info->xcc_num) {}
+    : Builder(), xcc_number_(agent_info->xcc_num), se_number_total(agent_info->se_num) {}
 
   // returns the target CU for a particular SE
   virtual int GetTargetCU(int SE) const override { return target_cu_per_se.at(SE); };
@@ -150,7 +147,7 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR, sh0);
   }
 
-  void StartPerfMon(CmdBuffer* cmd_buffer, const ThreadTraceConfig* config) {
+  void StartPerfMon(CmdBuffer* cmd_buffer, const TraceConfig* config) {
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_PERFMON_CLK_CNTL_ADDR, 1);
 
     Builder::BuildWriteShRegPacket(cmd_buffer, Primitives::COMPUTE_PERFCOUNT_ENABLE_ADDR,
@@ -180,11 +177,12 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
     Builder::BuildWriteWaitIdlePacket(cmd_buffer);
   }
 
-  void Begin(CmdBuffer* cmd_buffer, const ThreadTraceConfig* config) override {
+  void Begin(CmdBuffer* cmd_buffer, const TraceConfig* config) override
+  {
     // Iterate through the list of SE's and program the register
     // for carrying address of thread trace buffer which is aligned
     // to 4KB per thread trace specification
-    const uint64_t se_number_xcc = config->se_number_total / GetXCCNumber();
+    const uint64_t se_number_xcc = se_number_total / GetXCCNumber();
     uint64_t base_addr = reinterpret_cast<uint64_t>(config->data_buffer_ptr);
     const uint64_t base_step = GetBaseStep(config->data_buffer_size, config->se_mask);
     this->capacity_per_se = base_step;
@@ -195,7 +193,7 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
                              config->deprecated_tokenMask2;
 
     this->se_mask = config->se_mask;
-    for (uint64_t se_index=0; se_index < config->se_number_total; se_index++)
+    for (uint64_t se_index=0; se_index < se_number_total; se_index++)
     {
       bool bMaskedIn = ((1 << se_index) & se_mask) != 0;
       target_cu_per_se[se_index] = bMaskedIn ? config->targetCu : -1;
@@ -239,7 +237,7 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
         Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_HIWATER_ADDR,
                                             Primitives::SQ_THREAD_TRACE_HIWATER_VAL);
       }
-      for (uint64_t se_index = 0; se_index < config->se_number_total; se_index++)
+      for (uint64_t se_index = 0; se_index < se_number_total; se_index++)
       {
           se_base_addresses[se_index] = base_addr;
           if (target_cu_per_se.at(se_index) < 0)
@@ -290,7 +288,7 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
       SetGRBMToBroadcast(cmd_buffer);
       Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_STATUS_ADDR, 0);
 
-      for (uint64_t index = 0; index < config->se_number_total; index ++)
+      for (uint64_t index = 0; index < se_number_total; index ++)
       {
         se_base_addresses[index] = base_addr;
         bool bMaskedIn = target_cu_per_se.at(index) >= 0;
@@ -347,13 +345,13 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, userdata_channel, version.u32All);
   }
 
-  void End(CmdBuffer* cmd_buffer, const ThreadTraceConfig* config) override {
+  void End(CmdBuffer* cmd_buffer, const TraceConfig* config) override {
     SetGRBMToBroadcast(cmd_buffer);
     // Issue a CSPartialFlush cmd including cache flush
     Builder::BuildWriteWaitIdlePacket(cmd_buffer);
 
     if (Primitives::GFXIP_LEVEL == 9) {
-      const uint32_t se_number_xcc = config->se_number_total / std::max(1u, GetXCCNumber());
+      const uint32_t se_number_xcc = se_number_total / std::max(1u, GetXCCNumber());
 
       // Program the thread trace mode register to disable thread trace
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_MODE_ADDR,
@@ -365,12 +363,12 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
 
       // Iterate through the list of SE's and read the Status, Counter and
       // Write Pointer registers of Thread Trace subsystem
-      for (uint64_t se_index = 0; se_index < config->se_number_total; se_index++) {
+      for (size_t se_index = 0; se_index < se_number_total; se_index++) {
         if (target_cu_per_se.at(se_index) < 0)
           continue;
 
-        uint64_t xcc_index = se_index / se_number_xcc;
-        uint64_t se_index_xcc = se_index % se_number_xcc;
+        size_t xcc_index = se_index / se_number_xcc;
+        size_t se_index_xcc = se_index % se_number_xcc;
 
         XCC_Packet_Lock<Builder> lock(this, cmd_buffer, GetXCCNumber(), xcc_index);
 
@@ -418,7 +416,7 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
       const uint32_t ctrl_val = Primitives::sqtt_ctrl_value() & 0xffffffc0;
       WriteConfigPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_CTRL_ADDR, ctrl_val);
   
-      for (uint64_t index = 0; index < config->se_number_total; index ++)
+      for (uint64_t index = 0; index < se_number_total; index ++)
       {
         Select_GRBM_SE_SH0(cmd_buffer, index);
         ReadValues(cmd_buffer, config, index);
@@ -430,22 +428,19 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
     }
   }
 
-  void ReadValues(CmdBuffer* cmd_buffer, const ThreadTraceConfig* config, const uint64_t se_index)
+  void ReadValues(CmdBuffer* cmd_buffer, const TraceConfig* config, size_t se_index)
   {
     // Retrieve the values from various status registers
-    ControlType* control_buffer = reinterpret_cast<ControlType*>(config->control_buffer_ptr);
-    const uint32_t status_idx = ((TT_STATUS_IDX_MAX * se_index) + TT_STATUS_IDX_STATUS);
+    auto& control = reinterpret_cast<TraceControl*>(config->control_buffer_ptr)[se_index];
+
     Builder::BuildCopyRegDataPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_STATUS_ADDR,
-                                    control_buffer + status_idx,
-                                    Primitives::COPY_DATA_SEL_COUNT_1DW_PRM, true);
-    const uint32_t cntr_idx = ((TT_STATUS_IDX_MAX * se_index) + TT_STATUS_IDX_CNTR);
+                                  &control.status, Primitives::COPY_DATA_SEL_COUNT_1DW_PRM, true);
+
     Builder::BuildCopyRegDataPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_CNTR_ADDR,
-                                    control_buffer + cntr_idx,
-                                    Primitives::COPY_DATA_SEL_COUNT_1DW_PRM, true);
-    const uint32_t wptr_idx = ((TT_STATUS_IDX_MAX * se_index) + TT_STATUS_IDX_WPTR);
+                                  &control.cntr, Primitives::COPY_DATA_SEL_COUNT_1DW_PRM, true);
+
     Builder::BuildCopyRegDataPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_WPTR_ADDR,
-                                    control_buffer + wptr_idx,
-                                    Primitives::COPY_DATA_SEL_COUNT_1DW_PRM, true);
+                                  &control.wptr, Primitives::COPY_DATA_SEL_COUNT_1DW_PRM, true);
   }
 
   uint32_t GetXCCNumber() const { return xcc_number_; }
@@ -473,12 +468,12 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
   virtual hsa_status_t InsertMarker(
     CmdBuffer* cmd_buffer,
     uint32_t data,
-    hsa_ven_amd_aqlprofile_att_marker_channel_t channel
+    unsigned channel
   ) override
   {
     ttv_user_data_header_codeobj header;
     header.opcode = thread_trace_viewer_user_data_opcode_codeobj;
-    header.type = static_cast<unsigned>(channel);
+    header.type = channel;
     auto userdata_channel = Primitives::SQ_THREAD_TRACE_USERDATA_2;
 
     SetGRBMToBroadcast(cmd_buffer);
@@ -495,8 +490,9 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
 
   }
 
-  uint32_t xcc_number_;
-  uint32_t xcc_current_cmd_size;
+  size_t se_number_total;
+  size_t xcc_number_;
+  size_t xcc_current_cmd_size;
   uint64_t se_mask;
   uint64_t capacity_per_se;
   uint64_t capacity_per_disabled_se;

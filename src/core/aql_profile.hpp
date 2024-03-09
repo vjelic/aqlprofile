@@ -35,38 +35,6 @@ class event_exception : public aql_profile_exc_val<event_t> {
 
 }  // namespace aql_profile
 
-namespace aql_profile_v2 {
-
-hsa_status_t _internal_aqlprofile_pmc_iterate_data(
-    aqlprofile_handle_t handle,
-    aqlprofile_pmc_data_callback_t callback,
-    void* userdata
-);
-
-hsa_status_t _internal_aqlprofile_pmc_create_packets(
-    aqlprofile_handle_t* handle,
-    aqlprofile_pmc_aql_packets_t* packets,
-    aqlprofile_pmc_profile_t profile,
-    aqlprofile_memory_alloc_callback_t callback,
-    void* userdata
-);
-
-hsa_status_t _internal_aqlprofile_att_iterate_data(
-    aqlprofile_handle_t handle,
-    aqlprofile_att_data_callback_t callback,
-    void* data
-);
-
-hsa_status_t _internal_aqlprofile_att_create_packets(
-    aqlprofile_handle_t* handle,
-    aqlprofile_att_control_aql_packets_t packets,
-    aqlprofile_att_profile_t profile,
-    aqlprofile_memory_alloc_callback_t callback,
-    void* userdata
-);
-
-}  // namespace aql_profile_v2
-
 static std::ostream& operator<<(std::ostream& os, const aql_profile::event_t& ev) {
     os << "event( block(" << ev.block_name << "." << ev.block_index << "), Id(" << ev.counter_id
       << "))";

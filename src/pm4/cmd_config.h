@@ -50,7 +50,7 @@ struct TraceConfig {
   uint32_t data_buffer_size;
 
   // SE number for tracing
-  uint32_t se_number_total;
+  uint32_t spm_se_number_total;
   // concurrent kernels mode
   uint32_t concurrent;
   // SE mask for tracing; note -> replicated for all XCCs

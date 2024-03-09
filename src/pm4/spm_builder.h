@@ -243,7 +243,7 @@ class GpuSpmBuilder : public SpmBuilder, protected Builder, protected Primitives
                                                 Primitives::get_spm_global_delay(counter_des, j));
           }
         } else {
-          for (size_t i = 0; i < config->se_number_total; ++i) {
+          for (size_t i = 0; i < config->spm_se_number_total; ++i) {
             for (size_t j = 0; j < block_info->instance_count; ++j) {
               int delay_index = i * block_info->instance_count + j;
               Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,

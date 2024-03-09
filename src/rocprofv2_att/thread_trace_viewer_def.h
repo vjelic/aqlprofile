@@ -74,3 +74,12 @@ union thread_trace_viewer_user_data_header_version
   };
   unsigned int u32All;
 };
+
+typedef enum {
+  ATT_MARKER_HEADER_CHANNEL = 0,
+  ATT_MARKER_SIZE_LO_CHANNEL = 1,
+  ATT_MARKER_ADDR_LO_CHANNEL = 2,
+  ATT_MARKER_ADDR_HI_CHANNEL = 3,
+  ATT_MARKER_SIZE_HI_CHANNEL = 4,
+  ATT_MARKER_WAIT_FOR_HEADER = 32
+} MarkerState;

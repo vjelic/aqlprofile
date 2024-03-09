@@ -303,39 +303,20 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
         }
       }
 
-      const uint32_t tnumber = se_number_total;
+      auto control_size = sizeof(pm4_builder::TraceControl) * se_number_total;
+      char* prefix_ptr = cmd_buffer_mgr.AddPrefix(control_size);
+      auto* control_ptr = reinterpret_cast<pm4_builder::TraceControl*>(prefix_ptr);
 
-      const uint32_t control_size =
-          pm4_builder::TT_STATUS_IDX_MAX * sizeof(pm4_builder::ControlType) * tnumber;
-      char* prefix_ptr = cmd_buffer_mgr.AddPrefix(control_size + sizeof(uint32_t));
-      pm4_builder::ControlType* const control_ptr =
-          reinterpret_cast<pm4_builder::ControlType*>(prefix_ptr + sizeof(uint32_t));
-
+      trace_config.spm_kfd_mode = true;
       trace_config.spm_sq_32bit_mode = true;
-      trace_config.se_number_total = se_number_total;
-      trace_config.sampleRate = 10000;  // tbd
+      trace_config.sampleRate = 625;  // tbd
       trace_config.control_buffer_ptr = control_ptr;
       trace_config.control_buffer_size = control_size;
       trace_config.data_buffer_ptr = profile->output_buffer.ptr;
       trace_config.data_buffer_size = profile->output_buffer.size;
 
-      if (prefix_ptr != NULL) {
-        *reinterpret_cast<uint32_t*>(prefix_ptr) = tnumber;
-        uint32_t i = 0;
-        uint32_t se_per_xcc = pm4_factory->GetShaderEnginesNumber() / pm4_factory->GetXccNumber();
-        for (uint32_t t = 0; t < se_number_total; t++) {
-          if (true) {
-            const uint32_t se_id_ind =
-                (pm4_builder::TT_STATUS_IDX_MAX * i) + pm4_builder::TT_STATUS_IDX_ID;
-            control_ptr[se_id_ind] = t % se_per_xcc;
-            i += 1;
-          }
-        }
-      }
-
       if (countersVec.size() == 0) {
         pm4_builder::SqttBuilder* sqtt_builder = pm4_factory->GetSqttBuilder();
-
         // Generate start commands
         sqtt_builder->Begin(&commands, &trace_config);
         cmd_buffer_mgr.SetPreSize(commands.Size());
@@ -343,12 +324,7 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
         sqtt_builder->End(&commands, &trace_config);
       } else {
         pm4_builder::SpmBuilder* spm_builder = pm4_factory->GetSpmBuilder();
-
-        trace_config.spm_sq_32bit_mode = true;
-        trace_config.spm_kfd_mode = true;
-        trace_config.sampleRate = 625;
         trace_config.mi100 = (pm4_factory->GetGpuId() == aql_profile::MI100_GPU_ID);
-
         // Generate start commands
         spm_builder->Begin(&commands, &trace_config, countersVec);
         cmd_buffer_mgr.SetPreSize(commands.Size());
@@ -689,40 +665,36 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
 
       if (mode != 2) {  // SQTT trace data, or SQTT pc sampling
         pm4_builder::SqttBuilder* sqttbuilder = pm4_factory->GetSqttBuilder();
+        const uint64_t se_number_total = pm4_factory->GetShaderEnginesNumber();
         // Control buffer was allocated as the CmdBuffer prefix partition
         aql_profile::CommandBufferMgr cmd_buffer_mgr(profile);
-        const char* const prefix_ptr = cmd_buffer_mgr.GetPrefix1();
-        const uint32_t tnumber = *reinterpret_cast<const uint32_t*>(prefix_ptr);
-        const pm4_builder::ControlType* const control_ptr =
-            reinterpret_cast<const pm4_builder::ControlType*>(prefix_ptr + sizeof(uint32_t));
+
+        auto* control_ptr = reinterpret_cast<pm4_builder::TraceControl*>(cmd_buffer_mgr.GetPrefix1());
         // Check if SQTT buffer was wrapped
-        for (unsigned i = 0; i < tnumber; ++i) {
-          const uint32_t status_ind =
-              (pm4_builder::TT_STATUS_IDX_MAX * i) + pm4_builder::TT_STATUS_IDX_STATUS;
-          if (control_ptr[status_ind] & sqttbuilder->GetUTCErrorMask()) {
-            ERR_LOGGING << "SQTT memory error received, SE(" << i << ")";
+        for (size_t se_index = 0; se_index < se_number_total; se_index++)
+        {
+          if (control_ptr[se_index].status & sqttbuilder->GetUTCErrorMask())
+          {
+            ERR_LOGGING << "SQTT memory error received, SE(" << se_index << ")";
             status = HSA_STATUS_ERROR_EXCEPTION;
-          } else if (control_ptr[status_ind] & sqttbuilder->GetBufferFullMask()) {
-            ERR2_LOGGING << "SQTT data buffer full, SE(" << i << ")";
+          }
+          else if (control_ptr[se_index].status & sqttbuilder->GetBufferFullMask())
+          {
+            ERR2_LOGGING << "SQTT data buffer full, SE(" << se_index << ")";
             if (status == HSA_STATUS_SUCCESS) status = HSA_STATUS_ERROR_OUT_OF_RESOURCES;
           }
         }
 
         // The samples sizes are returned in the control buffer
-        for (uint64_t se_index = 0; se_index < tnumber; se_index++)
+        for (size_t se_index = 0; se_index < se_number_total; se_index++)
         {
           bool bMaskedIn = sqttbuilder->GetTargetCU(se_index) >= 0;
           uint64_t sample_capacity = sqttbuilder->GetCapacity(se_index);
           void* sample_ptr = reinterpret_cast<void*>(sqttbuilder->GetSEBaseAddr(se_index));
-          uint32_t se_id_ind = (pm4_builder::TT_STATUS_IDX_MAX * se_index) + pm4_builder::TT_STATUS_IDX_ID;
 
-          const uint32_t se_id = control_ptr[se_id_ind];
           // WPTR specifies the index in thread trace buffer where next token will be
           // written by hardware. The index is incremented by size of 32 bytes.
-          uint32_t wptr_ind = (pm4_builder::TT_STATUS_IDX_MAX * se_index) + pm4_builder::TT_STATUS_IDX_WPTR;
-
-          uint64_t sample_size = (control_ptr[wptr_ind] & sqttbuilder->GetWritePtrMask()) *
-                                 sqttbuilder->GetWritePtrBlk();
+          size_t sample_size = (control_ptr[se_index].wptr & sqttbuilder->GetWritePtrMask()) * sqttbuilder->GetWritePtrBlk();
 
           if (pm4_factory->GetGpuId() == aql_profile::GFX11_GPU_ID) {
             sample_size = sample_size - reinterpret_cast<uint64_t>(sample_ptr);
@@ -794,6 +766,39 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
   }
 
   return status;
+}
+
+// Method to populate the provided AQL packet with ATT Markers
+PUBLIC_API hsa_status_t
+hsa_ven_amd_aqlprofile_att_marker(
+    hsa_ven_amd_aqlprofile_profile_t* profile,
+    aql_profile::packet_t* aql_marker_packet,
+    uint32_t data,
+    hsa_ven_amd_aqlprofile_att_marker_channel_t channel
+) {
+    assert(profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_TRACE);
+
+    aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile);
+    pm4_builder::SqttBuilder* sqtt_builder = pm4_factory->GetSqttBuilder();
+    pm4_builder::CmdBuilder* cmd_writer = pm4_factory->GetCmdBuilder();
+    pm4_builder::CmdBuffer commands;
+
+    // Generate start commands
+    auto status = sqtt_builder->InsertMarker(&commands, data, channel);
+    if (status != HSA_STATUS_SUCCESS) return status;
+    aql_profile::descriptor_t& cmdbuffer = profile->command_buffer;
+
+    size_t cmd_size = cmdbuffer.size;
+    cmdbuffer.size = commands.Size();
+
+    if (cmdbuffer.ptr == NULL) return HSA_STATUS_SUCCESS;
+    if (cmd_size < commands.Size()) return HSA_STATUS_ERROR_OUT_OF_RESOURCES;
+
+    // Populate stop aql packet
+    memcpy(cmdbuffer.ptr, commands.Data(), commands.Size());
+    aql_profile::PopulateAql(cmdbuffer.ptr, commands.Size(), cmd_writer, aql_marker_packet);
+
+    return HSA_STATUS_SUCCESS;
 }
 
 }  // extern "C"

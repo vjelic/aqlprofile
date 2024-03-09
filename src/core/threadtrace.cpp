@@ -15,7 +15,7 @@
 #include "core/commandbuffermgr.hpp"
 #include "memorymanager.hpp"
 
-#define THREAD_TRACE_PREFIX_SIZE 0x1000
+#define THREAD_TRACE_PREFIX_SIZE 0x100
 #define DEFAULT_TRACE_BUFFER_SIZE (3<<26)
 
 #define PUBLIC_API __attribute__((visibility("default")))
@@ -30,24 +30,27 @@ hsa_status_t _internal_aqlprofile_att_iterate_data(
 ) {
     hsa_status_t status = HSA_STATUS_SUCCESS;
 
-    auto memorymgr = MemoryManager::GetManager(handle.handle);
+    auto shared_memorymgr = MemoryManager::GetManager(handle.handle);
+    TraceMemoryManager* memorymgr = dynamic_cast<TraceMemoryManager*>(shared_memorymgr.get());
+    if (!memorymgr)
+        return HSA_STATUS_ERROR_INVALID_ARGUMENT;
+
     aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(memorymgr->GetAgent());
-
     pm4_builder::SqttBuilder* sqttbuilder = pm4_factory->GetSqttBuilder();
-
-    auto* prefix_ptr = reinterpret_cast<const uint32_t*>(memorymgr->GetCmdBuf());
-    const uint32_t se_number_total = *prefix_ptr;
-    auto* control_ptr = reinterpret_cast<const pm4_builder::ControlType*>(prefix_ptr+1);
+    const size_t se_number_total = pm4_factory->GetShaderEnginesNumber();
+    auto* control_ptr = memorymgr->GetTraceControlBuf<pm4_builder::TraceControl>();
 
     // Check if SQTT buffer was wrapped
-    for (unsigned i = 0; i < se_number_total; ++i)
+    for (size_t se = 0; se < se_number_total; se++)
     {
-        uint32_t status_ind = (pm4_builder::TT_STATUS_IDX_MAX * i) + pm4_builder::TT_STATUS_IDX_STATUS;
-        if (control_ptr[status_ind] & sqttbuilder->GetUTCErrorMask()) {
-            ERR_LOGGING << "SQTT memory error received, SE(" << i << ")";
+        if (control_ptr[se].status & sqttbuilder->GetUTCErrorMask())
+        {
+            ERR_LOGGING << "SQTT memory error received, SE(" << se << ")";
             status = HSA_STATUS_ERROR_EXCEPTION;
-        } else if (control_ptr[status_ind] & sqttbuilder->GetBufferFullMask()) {
-            ERR2_LOGGING << "SQTT data buffer full, SE(" << i << ")";
+        }
+        else if (control_ptr[se].status & sqttbuilder->GetBufferFullMask())
+        {
+            ERR2_LOGGING << "SQTT data buffer full, SE(" << se << ")";
             if (status == HSA_STATUS_SUCCESS) status = HSA_STATUS_ERROR_OUT_OF_RESOURCES;
         }
     }
@@ -58,15 +61,11 @@ hsa_status_t _internal_aqlprofile_att_iterate_data(
         bool bMaskedIn = sqttbuilder->GetTargetCU(se_index) >= 0;
         uint64_t sample_capacity = sqttbuilder->GetCapacity(se_index);
         void* sample_ptr = reinterpret_cast<void*>(sqttbuilder->GetSEBaseAddr(se_index));
-        uint32_t se_id_ind = (pm4_builder::TT_STATUS_IDX_MAX * se_index) + pm4_builder::TT_STATUS_IDX_ID;
 
-        const uint32_t se_id = control_ptr[se_id_ind];
         // WPTR specifies the index in thread trace buffer where next token will be
         // written by hardware. The index is incremented by size of 32 bytes.
-        uint32_t wptr_ind = (pm4_builder::TT_STATUS_IDX_MAX * se_index) + pm4_builder::TT_STATUS_IDX_WPTR;
-
-        uint64_t sample_size = (control_ptr[wptr_ind] & sqttbuilder->GetWritePtrMask()) *
-                                sqttbuilder->GetWritePtrBlk();
+        size_t wptr_mask = sqttbuilder->GetWritePtrMask();
+        size_t sample_size = (control_ptr[se_index].wptr & wptr_mask) * sqttbuilder->GetWritePtrBlk();
 
         // GFX11 hardware bug workaround
         if (pm4_factory->GetGpuId() == aql_profile::GFX11_GPU_ID)
@@ -101,13 +100,6 @@ hsa_status_t _internal_aqlprofile_att_create_packets(
     pm4_builder::CmdBuffer start_cmd;
     pm4_builder::CmdBuffer stop_cmd;
 
-    auto memorymgr = MemoryManager::CreateManager(
-        profile.agent,
-        alloc_cb,
-        dealloc_cb,
-        userdata
-    );
-
     aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile.agent);
     pm4_builder::TraceConfig trace_config{};
 
@@ -117,7 +109,7 @@ hsa_status_t _internal_aqlprofile_att_create_packets(
     trace_config.perfMASK = (1ul << 32) - 1;
     trace_config.se_mask = 0x11111111;
 
-    const uint64_t se_number_total = pm4_factory->GetShaderEnginesNumber();
+    const size_t se_number_total = pm4_factory->GetShaderEnginesNumber();
     size_t buffer_size = DEFAULT_TRACE_BUFFER_SIZE;
 
     if (profile.parameters)
@@ -185,26 +177,26 @@ hsa_status_t _internal_aqlprofile_att_create_packets(
             return HSA_STATUS_ERROR_INVALID_ARGUMENT;
     }
 
+    const size_t control_size = sizeof(pm4_builder::TraceControl) * se_number_total;
+
+    auto memorymgr = std::make_shared<TraceMemoryManager>(
+        profile.agent,
+        alloc_cb,
+        dealloc_cb,
+        userdata
+    );
+    memorymgr->CreateTraceControlBuf(control_size + THREAD_TRACE_PREFIX_SIZE);
     memorymgr->CreateOutputBuf(buffer_size);
-    memorymgr->CreateTraceControlBuf(THREAD_TRACE_PREFIX_SIZE);
+    MemoryManager::RegisterManager(memorymgr);
 
-    const size_t control_size = pm4_builder::TT_STATUS_IDX_MAX * sizeof(pm4_builder::ControlType) * se_number_total;
-    auto* prefix_ptr = reinterpret_cast<uint32_t*>(memorymgr->GetTraceControlBuf());
-    *prefix_ptr = se_number_total;
-    auto* control_ptr = reinterpret_cast<pm4_builder::ControlType*>(prefix_ptr+1);
+    auto* control_ptr = memorymgr->GetTraceControlBuf<pm4_builder::TraceControl>();
 
-    trace_config.se_number_total = se_number_total;
     trace_config.control_buffer_ptr = control_ptr;
+    trace_config.control_buffer_size = control_size;
     trace_config.data_buffer_ptr = memorymgr->GetOutputBuf();
     trace_config.data_buffer_size = memorymgr->GetOutputBufSize();
 
     uint32_t se_per_xcc = pm4_factory->GetShaderEnginesNumber() / pm4_factory->GetXccNumber();
-    for (uint32_t t = 0; t < se_number_total; t++)
-    {
-        uint32_t se_id_ind = (pm4_builder::TT_STATUS_IDX_MAX * t) + pm4_builder::TT_STATUS_IDX_ID;
-        control_ptr[se_id_ind] = t % se_per_xcc;
-    }
-
     pm4_builder::SqttBuilder* sqtt_builder = pm4_factory->GetSqttBuilder();
 
     // Generate start commands
@@ -230,40 +222,65 @@ hsa_status_t _internal_aqlprofile_att_create_packets(
     return HSA_STATUS_SUCCESS;
 }
 
+// Method to populate the provided AQL packet with ATT Markers
+hsa_status_t _internal_aqlprofile_att_codeobj_load_marker(
+    hsa_ext_amd_aql_pm4_packet_t* packets,
+    aqlprofile_handle_t handle,
+    aqlprofile_att_header_marker_t header,
+    uint64_t addr,
+    uint64_t size
+) {
+    auto shared_memorymgr = MemoryManager::GetManager(handle.handle);
+    TraceMemoryManager* memorymgr = dynamic_cast<TraceMemoryManager*>(shared_memorymgr.get());
+    if (!memorymgr)
+        return HSA_STATUS_ERROR_INVALID_ARGUMENT;
+
+    aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(memorymgr->GetAgent());
+    pm4_builder::SqttBuilder* sqttbuilder = pm4_factory->GetSqttBuilder();
+    pm4_builder::CmdBuilder* cmd_writer = pm4_factory->GetCmdBuilder();
+    pm4_builder::CmdBuffer commands;
+
+    sqttbuilder->InsertMarker(&commands, header.raw, ATT_MARKER_HEADER_CHANNEL);
+    if (!header.isUnload)
+    {
+        sqttbuilder->InsertMarker(&commands, uint32_t(addr), ATT_MARKER_ADDR_LO_CHANNEL);
+        sqttbuilder->InsertMarker(&commands, addr >> 32, ATT_MARKER_ADDR_HI_CHANNEL);
+        sqttbuilder->InsertMarker(&commands, uint32_t(size), ATT_MARKER_SIZE_LO_CHANNEL);
+        sqttbuilder->InsertMarker(&commands, size >> 32, ATT_MARKER_SIZE_HI_CHANNEL);
+    }
+
+    void* cmdbuffer = memorymgr->AddMarkerCmdBuffer(commands.Size());
+
+    memcpy(cmdbuffer, commands.Data(), commands.Size());
+    aql_profile::PopulateAql(cmdbuffer, commands.Size(), cmd_writer, packets);
+
+    return HSA_STATUS_SUCCESS;
+}
+
 } // namespace aql_profile_v2
 
 extern "C" {
 
 // Method to populate the provided AQL packet with ATT Markers
 PUBLIC_API hsa_status_t
-hsa_ven_amd_aqlprofile_att_marker(
-    hsa_ven_amd_aqlprofile_profile_t* profile,
-    aql_profile::packet_t* aql_marker_packet,
-    uint32_t data,
-    hsa_ven_amd_aqlprofile_att_marker_channel_t channel
+aqlprofile_att_codeobj_load_marker(
+    hsa_ext_amd_aql_pm4_packet_t* packets,
+    aqlprofile_handle_t handle,
+    aqlprofile_att_header_marker_t header,
+    uint64_t addr,
+    uint64_t size
 ) {
-    assert(profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_TRACE);
-
-    aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile);
-    pm4_builder::SqttBuilder* sqtt_builder = pm4_factory->GetSqttBuilder();
-    pm4_builder::CmdBuilder* cmd_writer = pm4_factory->GetCmdBuilder();
-    pm4_builder::CmdBuffer commands;
-
-    // Generate start commands
-    auto status = sqtt_builder->InsertMarker(&commands, data, channel);
-    if (status != HSA_STATUS_SUCCESS) return status;
-    aql_profile::descriptor_t& cmdbuffer = profile->command_buffer;
-
-    size_t cmd_size = cmdbuffer.size;
-    cmdbuffer.size = commands.Size();
-
-    if (cmdbuffer.ptr == NULL) return HSA_STATUS_SUCCESS;
-    if (cmd_size < commands.Size()) return HSA_STATUS_ERROR_OUT_OF_RESOURCES;
-
-    // Populate stop aql packet
-    memcpy(cmdbuffer.ptr, commands.Data(), commands.Size());
-    aql_profile::PopulateAql(cmdbuffer.ptr, commands.Size(), cmd_writer, aql_marker_packet);
-
+    try {
+        return aql_profile_v2::_internal_aqlprofile_att_codeobj_load_marker(packets, handle, header, addr, size);
+    } catch (hsa_status_t err) {
+        ERR_LOGGING << err;
+        return err;
+    } catch (std::exception& e) {
+        ERR_LOGGING << e.what();
+        return HSA_STATUS_ERROR;
+    } catch (...) {
+        return HSA_STATUS_ERROR;
+    }
     return HSA_STATUS_SUCCESS;
 }
 
@@ -275,6 +292,9 @@ aqlprofile_att_iterate_data(
 ) {
     try {
         return aql_profile_v2::_internal_aqlprofile_att_iterate_data(handle, callback, userdata);
+    } catch (hsa_status_t err) {
+        ERR_LOGGING << err;
+        return err;
     } catch (std::exception& e) {
         ERR_LOGGING << e.what();
         return HSA_STATUS_ERROR;
@@ -294,6 +314,9 @@ PUBLIC_API hsa_status_t aqlprofile_att_create_packets(
     try {
         return aql_profile_v2::_internal_aqlprofile_att_create_packets(
             handle, packets, profile, alloc_cb, dealloc_cb, userdata);
+    } catch (hsa_status_t err) {
+        ERR_LOGGING << err;
+        return err;
     } catch (std::exception& e) {
         ERR_LOGGING << e.what();
         return HSA_STATUS_ERROR;

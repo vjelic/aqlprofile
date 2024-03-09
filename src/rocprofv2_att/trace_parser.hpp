@@ -270,16 +270,6 @@ public:
   }
 };
 
-enum CSRegisterHandlerState
-{
-    CSRegisterID = 0,
-    CSRegisterSizeLo = 1,
-    CSRegisterAddrLo = 2,
-    CSRegisterAddrHi = 3,
-    CSRegisterSizeHi = 4,
-    CSRegisterWaitForHeader = 32
-};
-
 class CSRegisterHandler
 {
 public:
@@ -293,7 +283,7 @@ public:
     PipeArray64 current_codeobj_addr{};
 
     bool bIsTTVFormat = false;
-    CSRegisterHandlerState userdata_state = CSRegisterWaitForHeader;
+    MarkerState userdata_state = ATT_MARKER_WAIT_FOR_HEADER;
 
     template<typename TokenType>
     uint32_t get_regaddr(const TokenType& token) { return token.regaddr; }
@@ -348,51 +338,50 @@ public:
         if (IsUserdata2(token.regaddr) && isTTVUserdataHeader(token))
         {
             bIsTTVFormat = true;
-            userdata_state = CSRegisterWaitForHeader;
+            userdata_state = ATT_MARKER_WAIT_FOR_HEADER;
             return;
         }
 
         if (bIsTTVFormat)
         {
-            if (userdata_state == CSRegisterWaitForHeader)
+            if (userdata_state == ATT_MARKER_WAIT_FOR_HEADER)
             {
                 if (isTTVUserdataState(token))
-                    userdata_state = static_cast<CSRegisterHandlerState>(TTVUserdataF(token).type);
+                    userdata_state = static_cast<MarkerState>(TTVUserdataF(token).type);
                 return;
             }
         }
         else
         {
             if (IsUserdata0(token.regaddr))
-                userdata_state = CSRegisterID;
+                userdata_state = ATT_MARKER_HEADER_CHANNEL;
             else if (IsUserdata1(token.regaddr))
-                userdata_state = CSRegisterSizeLo;
+                userdata_state = ATT_MARKER_SIZE_LO_CHANNEL;
             else if (IsUserdata2(token.regaddr))
-                userdata_state = CSRegisterAddrLo;
+                userdata_state = ATT_MARKER_ADDR_LO_CHANNEL;
             else if (IsUserdata3(token.regaddr))
-                userdata_state = CSRegisterAddrHi;
+                userdata_state = ATT_MARKER_ADDR_HI_CHANNEL;
             else
                 return;
         }
 
 
-        if (userdata_state == CSRegisterID)
+        if (userdata_state == ATT_MARKER_HEADER_CHANNEL)
         {
-            uint32_t id = token.regdata >> 2;
-            uint32_t bFromStart = (token.regdata >> 1) & 0x1;
-            uint32_t type = token.regdata & 0x1;
+            aqlprofile_att_header_marker_t header{.raw = uint32_t(token.regdata)};
+            uint32_t id = header.id;
 
             auto it = active_codeobj_id.find(id);
-            if (type == 0 && it == active_codeobj_id.end())
+            if (!header.isUnload && it == active_codeobj_id.end())
             {
                 uint64_t base_addr = current_codeobj_addr.at_reg(token);
                 active_codeobj_id.emplace(id, base_addr);
                 address_range_t arange = {base_addr, current_codeobj_size.at_reg(token), id};
                 table.insert(arange);
-                if (bFromStart)
+                if (header.bFromStart)
                     table_from_start.insert(arange);
             }
-            else if (bIsTTVFormat && type == 1 && it != active_codeobj_id.end())
+            else if (bIsTTVFormat && header.isUnload && it != active_codeobj_id.end())
             {
                 try {
                     table.remove(active_codeobj_id.at(id));
@@ -400,16 +389,16 @@ public:
                 } catch(...) {}
             }
         }
-        else if (userdata_state == CSRegisterSizeLo)
+        else if (userdata_state == ATT_MARKER_SIZE_LO_CHANNEL)
             current_codeobj_size.setlo(token, token.regdata);
-        else if (userdata_state == CSRegisterSizeHi)
+        else if (userdata_state == ATT_MARKER_SIZE_HI_CHANNEL)
             current_codeobj_size.sethi(token, token.regdata);
-        else if (userdata_state == CSRegisterAddrLo)
+        else if (userdata_state == ATT_MARKER_ADDR_LO_CHANNEL)
             current_codeobj_addr.setlo(token, token.regdata);
-        else if (userdata_state == CSRegisterAddrHi)
+        else if (userdata_state == ATT_MARKER_ADDR_HI_CHANNEL)
             current_codeobj_addr.sethi(token, token.regdata);
 
-        userdata_state = CSRegisterWaitForHeader;
+        userdata_state = ATT_MARKER_WAIT_FOR_HEADER;
     }
 
     template<typename TokenType>

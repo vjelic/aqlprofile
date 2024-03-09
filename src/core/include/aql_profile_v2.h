@@ -549,4 +549,33 @@ hsa_status_t aqlprofile_att_parse_data(
     void* userdata
 );
 
+/**
+ * @brief Contains information of code objects. IDs can be reused for different load addresses.
+*/
+typedef union
+{
+  uint32_t raw;
+  struct {
+    uint32_t isUnload : 1;    // 0 if code object is being loaded, 1 for unload
+    uint32_t bFromStart : 1;  // Has this code object been loaded before thread trace started?
+    uint32_t id : 30;         // To be passed back to isa_string_callback in marker_id
+  };
+} aqlprofile_att_header_marker_t;
+
+/**
+ * @brief Creates an AQL packet for marking code objects
+ * @param[out] packets Returned packet
+ * @param[in] handle The handle created from aqlprofile_att_create_packets()
+ * @param[in] header Header containing code object information created from profiler
+ * @param[in] addr Code object loaded address.
+ * @param[in] size Code object loaded size.
+*/
+hsa_status_t aqlprofile_att_codeobj_load_marker(
+    hsa_ext_amd_aql_pm4_packet_t* packets,
+    aqlprofile_handle_t handle,
+    aqlprofile_att_header_marker_t header,
+    uint64_t addr,
+    uint64_t size
+);
+
 }
