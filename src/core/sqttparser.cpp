@@ -125,35 +125,29 @@ __attribute__((visibility("default"))) hsa_status_t aqlprofile_att_parse_data(
         userdata
     );
     std::unique_ptr<Stitcher> stitcher{nullptr};
-    std::vector<uint8_t> buffer(1<<24);
 
-    int shader = -1;
-    int prev_shader = -1;
-    size_t buffer_size = se_data_callback(&shader, buffer.data(), buffer.size(), userdata);
+    int shader = 0;
+    uint8_t* buffer = nullptr;
+    uint64_t buffer_size = 0;
+    size_t remaining = se_data_callback(&shader, &buffer, &buffer_size, userdata);
 
-    while (shader >= 0 && buffer_size != 0)
+    while (remaining && buffer_size)
     {
-        auto ret = AnalyseBinary_internal(buffer.data(), buffer_size, -1);
+        auto ret = AnalyseBinary_internal(buffer, buffer_size, 1);
 
-        if (!stitcher)
+        trace_callback(trace_type_ids["occupancy"], 0, (void*)ret->occupancy.data(), ret->occupancy.size(), userdata);
+        trace_callback(trace_type_ids["kernel_ids_addr"], 0, (void*)ret->kernel_ids_addr.data(), ret->kernel_ids_addr.size(), userdata);
+
+        /*if (!stitcher)
             stitcher = std::make_unique<Stitcher>(service, !ret->flags.isNavi);
 
         for (size_t t=0; t<ret->traces.size(); t++) if (ret->traces[t].size())
         {
             auto stitched = stitcher->stitch(ret->traces[t]);
             trace_callback(trace_type_ids["tracedata"], t, (void*)stitched.data(), stitched.size(), userdata);
-        }
+        } */
 
-        size_t buffer_size = se_data_callback(&shader, buffer.data(), buffer.size(), userdata);
-
-        if (shader != prev_shader)
-        {
-            trace_callback(trace_type_ids["occupancy"], 0, (void*)ret->occupancy.data(), ret->occupancy.size(), userdata);
-            trace_callback(trace_type_ids["kernel_ids_addr"], 0, (void*)ret->kernel_ids_addr.data(), ret->kernel_ids_addr.size(), userdata);
-        }
-
-
-        prev_shader = shader;
+        remaining = se_data_callback(&shader, &buffer, &buffer_size, userdata);
     }
 
     return HSA_STATUS_SUCCESS;

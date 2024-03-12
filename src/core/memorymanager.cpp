@@ -9,7 +9,7 @@ void CounterMemoryManager::CopyEvents(const aqlprofile_pmc_event_t* _events, siz
 {
     events.reserve(count+4);
     for (size_t i=0; i<count; i++)
-        events.push_back(EventRequest{_events[i], nullptr, false});
+        events.push_back(EventRequest{_events[i], false});
 
     std::sort(events.begin(), events.end());
 
@@ -21,12 +21,12 @@ void CounterMemoryManager::CopyEvents(const aqlprofile_pmc_event_t* _events, siz
         if (it != events.begin())
         {
             auto prev = std::prev(it);
-            if (it->IsSameNoFlags(*prev) && (!prev->flags.raw || prev->bInserted))
+            if (it->IsSameNoFlags(*prev) && (!prev->flags.raw || prev->bInternal))
                 continue;
         }
 
         EventRequest req = *it;
-        req.bInserted = true;
+        req.bInternal = true;
         acc_requests.push_back(req);
     }
 

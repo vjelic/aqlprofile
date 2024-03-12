@@ -426,7 +426,7 @@ class gfx9_cntx_prim {
     regUMCCH_PerfMonCtlClk perfmon_ctl_clk{};
     // clear - GlblReset
     perfmon_ctl_clk.bits.GlblReset = 1;
-    perfmon_ctl_clk.bits.GlblResetMsk = 0xFFF;
+    perfmon_ctl_clk.bits.GlblResetMsk = 0x1FF;
     return perfmon_ctl_clk.u32All;
   }
 
@@ -692,6 +692,11 @@ class gfx9_cntx_prim {
   static uint32_t sqtt_busy_mask() {
     const uint32_t BUSY_BIT = 30;
     return 1u << BUSY_BIT;
+  }
+
+  static uint32_t sqtt_pending_mask() {
+    const uint32_t NUM_PIPES = 8;
+    return (1u << NUM_PIPES) - 1;
   }
 
 };

@@ -8,12 +8,11 @@
 
 struct EventRequest: public aqlprofile_pmc_event_t
 {
-    void* loc;
-    bool bInserted;
+    bool bInternal;
 
     auto GetOrder() const -> auto {
         uint64_t idx{0}, blk{0};
-        idx |= bInserted ? 0 : 1;
+        idx |= bInternal ? 0 : 1;
         idx |= uint64_t(flags.raw)<<1;
         idx |= uint64_t(event_id) << 33;
         blk |= uint64_t(block_index);

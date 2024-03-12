@@ -146,13 +146,17 @@ _internal_aqlprofile_pmc_iterate_data(
 #endif
             xcc_sample_count += xcc_index == 0;
             size_t xcc_sample_id = xcc_sample_count * xcc_index + blk;
-            hsa_status_t status = callback(event, xcc_sample_id, *samples, userdata);
-            samples ++;
 
-            if (status == HSA_STATUS_INFO_BREAK)
-                return HSA_STATUS_SUCCESS;
-            else if (status != HSA_STATUS_SUCCESS)
-                return status;
+            if (!event.bInternal)
+            {
+                hsa_status_t status = callback(event, xcc_sample_id, *samples, userdata);
+                if (status == HSA_STATUS_INFO_BREAK)
+                    return HSA_STATUS_SUCCESS;
+                else if (status != HSA_STATUS_SUCCESS)
+                    return status;
+            }
+
+            samples ++;
         }
     }
 

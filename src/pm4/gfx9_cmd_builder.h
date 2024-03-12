@@ -9,9 +9,7 @@
 #include <sstream>
 
 #include "pm4/cmd_builder.h"
-#ifndef SRC_PM4_GFX10_CMD_BUILDER_H_
-  #include "def/gfx9_def.h"
-#endif
+
 namespace pm4_builder {
 
 /// @brief class Gfx9CmdBuilder implements the virtual class CmdBuilder

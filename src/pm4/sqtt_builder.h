@@ -399,23 +399,24 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
       SetGRBMToBroadcast(cmd_buffer);
       Builder::BuildWriteShRegPacket(cmd_buffer, Primitives::COMPUTE_THREAD_TRACE_ENABLE_ADDR, 0);
 
-      if (Primitives::GFXIP_LEVEL == 11) {
-        Builder::BuildCacheFlushPacket(cmd_buffer, size_t(config->control_buffer_ptr), config->control_buffer_size);
-        Builder::BuildCacheFlushPacket(cmd_buffer, size_t(config->data_buffer_size), config->data_buffer_size);
-        Builder::BuildWriteWaitIdlePacket(cmd_buffer);
-      }
-
       {
-        // Wait until SQTT_BUSY is 0
-        const uint32_t mask_val = Primitives::sqtt_busy_mask();
+        // Wait for FINISH_PENDING
+        const uint32_t mask_val = Primitives::sqtt_pending_mask();
         const uint32_t status_offset = Primitives::SQ_THREAD_TRACE_STATUS_ADDR;
-        Builder::BuildWaitRegMemCommand(cmd_buffer, false, status_offset, false, mask_val, 0);
+        Builder::BuildWaitRegMemCommand(cmd_buffer, false, status_offset, true, mask_val, 0);
       }
 
       // Program the thread trace ctrl register to set mode to 0
       const uint32_t ctrl_val = Primitives::sqtt_ctrl_value() & 0xffffffc0;
       WriteConfigPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_CTRL_ADDR, ctrl_val);
   
+      {
+        // Wait until SQTT_BUSY is 0
+        const uint32_t mask_val = Primitives::sqtt_busy_mask();
+        const uint32_t status_offset = Primitives::SQ_THREAD_TRACE_STATUS_ADDR;
+        Builder::BuildWaitRegMemCommand(cmd_buffer, false, status_offset, true, mask_val, 0);
+      }
+
       for (uint64_t index = 0; index < se_number_total; index ++)
       {
         Select_GRBM_SE_SH0(cmd_buffer, index);
@@ -424,8 +425,11 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
 
       // Reset the GRBM to broadcast mode
       SetGRBMToBroadcast(cmd_buffer);
-      Builder::BuildWriteWaitIdlePacket(cmd_buffer);
     }
+
+    if (Primitives::GFXIP_LEVEL != 10)
+        Builder::BuildCacheFlushPacket(cmd_buffer, size_t(config->control_buffer_ptr), config->control_buffer_size);
+    Builder::BuildWriteWaitIdlePacket(cmd_buffer);
   }
 
   void ReadValues(CmdBuffer* cmd_buffer, const TraceConfig* config, size_t se_index)

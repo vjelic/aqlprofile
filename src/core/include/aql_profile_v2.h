@@ -11,6 +11,13 @@ typedef struct {
     uint64_t handle;
 } aqlprofile_handle_t;
 
+typedef enum {
+    AQLPROFILE_BUFFER_HINT_NONE = 0,
+    AQLPROFILE_BUFFER_HINT_HOST = 1,
+    AQLPROFILE_BUFFER_HINT_DEVICE = 2,
+    AQLPROFILE_BUFFER_HINT_KERNARG = 3
+} aqlprofile_buffer_hint_t;
+
 /**
  * @brief Flags to describe which agents can access given buffer.
 */
@@ -19,7 +26,8 @@ typedef union {
     struct {
         uint32_t device_access : 1;
         uint32_t host_access   : 1;
-        uint32_t _reserved     : 30;
+        uint32_t hint          : 3; // One of aqlprofile_buffer_hint_t
+        uint32_t _reserved     : 27;
     };
 } aqlprofile_buffer_desc_flags_t;
 
@@ -507,17 +515,17 @@ typedef hsa_status_t(*aqlprofile_att_trace_callback_t)(
  *  2) Move to the next shader engine.
  * @param[out] shader_engine_id The ID of given shader engine.
  * @param[out] buffer The buffer to fill up with SE data.
- * @param[in] buffer_size The space available in the buffer.
+ * @param[out] buffer_size The space available in the buffer.
  * @param[in] userdata Arbitrary data pointer to be sent back to the user via callback.
- * @returns Number of bytes filled.
+ * @returns Number of bytes remaining in shader engine.
  * @retval 0 if no more SE data is available. Parsing will stop.
  * @retval buffer_size if the buffer does not hold enough data for the current shader engine.
  * @retval 0 > ret > buffer_size for partially filled buffer, and caller moves over to next SE.
 */
 typedef uint64_t(*aqlprofile_att_se_data_callback_t)(
     int* shader_engine_id,
-    uint8_t* buffer,
-    uint64_t buffer_size,
+    uint8_t** buffer,
+    uint64_t* buffer_size,
     void* userdata
 );
 

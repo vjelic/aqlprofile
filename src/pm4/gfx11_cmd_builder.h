@@ -84,7 +84,7 @@ class Gfx11CmdBuilder : public CmdBuilder {
     // Initialize the command header
     wait_reg_mem.header = MakePacket3Header(IT_WAIT_REG_MEM, sizeof(wait_reg_mem));
 
-    wait_reg_mem.bitfields7.poll_interval = 0x04;
+    wait_reg_mem.bitfields7.poll_interval = 0x10;
     wait_reg_mem.bitfields2.operation = operation__mec_wait_reg_mem__wait_reg_mem;
 
     // Apply the space to which addr belongs
@@ -289,7 +289,7 @@ class Gfx11CmdBuilder : public CmdBuilder {
 
     atomic.bitfields2.command = command__mec_atomic_mem__loop_until_compare_satisfied;
     atomic.bitfields2.atomic = GL2_OP_ATOMIC_CMPSWAP_RTN_32;
-    atomic.bitfields9.loop_interval = 4;
+    atomic.bitfields9.loop_interval = 16;
 
     atomic.addr_lo = uint32_t(addr);
     atomic.addr_hi = addr >> 32;
