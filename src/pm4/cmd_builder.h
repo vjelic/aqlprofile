@@ -169,6 +169,9 @@ class CmdBuilder {
   }
   /// @brief Release resources used by CmdBuilder
   virtual ~CmdBuilder(){};
+
+  bool bUsePerfCounterMode {true};
+  // is this an MI300 command builder?
 };
 
 /// @brief Returns the lower 32-bits of a value

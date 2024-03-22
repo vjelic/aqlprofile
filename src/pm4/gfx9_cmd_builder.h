@@ -184,7 +184,7 @@ class Gfx9CmdBuilder : public CmdBuilder {
     copy_data.bitfields2.src_sel = src_sel__mec_copy_data__immediate_data;
     copy_data.bitfields2.src_cache_policy = src_cache_policy__mec_copy_data__lru;
 
-    copy_data.bitfields2.dst_sel = IsPrivilegedConfigReg(addr)
+    copy_data.bitfields2.dst_sel = IsPrivilegedConfigReg(addr) && bUsePerfCounterMode
                                        ? dst_sel__mec_copy_data__perfcounters
                                        : dst_sel__mec_copy_data__mem_mapped_register;
 
@@ -213,7 +213,7 @@ class Gfx9CmdBuilder : public CmdBuilder {
     // Initialize the command header
     copy_data.header = MakePacket3Header(IT_COPY_DATA, sizeof(copy_data));
 
-    copy_data.bitfields2.src_sel = IsPrivilegedConfigReg(src_reg_addr)
+    copy_data.bitfields2.src_sel = IsPrivilegedConfigReg(src_reg_addr) && bUsePerfCounterMode
                                        ? src_sel__mec_copy_data__perfcounters
                                        : src_sel__mec_copy_data__mem_mapped_register;
     copy_data.bitfields2.src_cache_policy = src_cache_policy__mec_copy_data__stream;

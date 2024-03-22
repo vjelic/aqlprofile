@@ -128,6 +128,9 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       xcc_number_(agent_info->xcc_num),
       sarrays_per_se(agent_info->shader_arrays_per_se) {
         this->wgp_per_sa = (agent_info->cu_num/2+sarrays_per_se*se_number_-1)/(se_number_*sarrays_per_se);
+        // Due to MI300 CP firmware issue we need to use mem_mapped_register mode to patch for GCEA hang.
+        // Otherwise both perfcounters mode and mem_mapped_register mode should work.
+        this->bUsePerfCounterMode = (xcc_number_ > 1) ? false : true;
   }
 
   int GetNumWGPs() override {
