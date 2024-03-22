@@ -12,11 +12,13 @@ typedef struct {
 } aqlprofile_handle_t;
 
 typedef enum {
-    AQLPROFILE_BUFFER_HINT_NONE = 0,
-    AQLPROFILE_BUFFER_HINT_HOST = 1,
-    AQLPROFILE_BUFFER_HINT_DEVICE = 2,
-    AQLPROFILE_BUFFER_HINT_KERNARG = 3
-} aqlprofile_buffer_hint_t;
+    AQLPROFILE_MEMORY_HINT_NONE = 0,
+    AQLPROFILE_MEMORY_HINT_HOST = 1,
+    AQLPROFILE_MEMORY_HINT_DEVICE_UNCACHED = 2,
+    AQLPROFILE_MEMORY_HINT_DEVICE_COHERENT = 3,
+    AQLPROFILE_MEMORY_HINT_DEVICE_NONCOHERENT = 4,
+    AQLPROFILE_MEMORY_HINT_LAST
+} aqlprofile_memory_hint_t;
 
 /**
  * @brief Flags to describe which agents can access given buffer.
@@ -26,8 +28,8 @@ typedef union {
     struct {
         uint32_t device_access : 1;
         uint32_t host_access   : 1;
-        uint32_t hint          : 3; // One of aqlprofile_buffer_hint_t
-        uint32_t _reserved     : 27;
+        uint32_t memory_hint   : 6; // One of aqlprofile_memory_hint_t
+        uint32_t _reserved     : 24;
     };
 } aqlprofile_buffer_desc_flags_t;
 

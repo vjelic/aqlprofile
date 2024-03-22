@@ -46,40 +46,63 @@ using ::aql_profile::Pm4Factory;
 using aql_profile::event_exception;
 using aql_profile::event_t;
 
-static inline pm4_builder::counters_vector CountersVec(
-    aqlprofile_pmc_profile_t profile,
-    const Pm4Factory* pm4_factory
+uint32_t HandleSQFlagsBlock(Pm4Factory* pm4_factory, const aqlprofile_pmc_event_t& event)
+{
+    auto visible_id = event.event_id;
+    if (event.flags.sq_flags.accum == AQLPROFILE_ACCUMULATION_LO_RES)
+        visible_id = pm4_factory->GetAccumLowID();
+    if (event.flags.sq_flags.accum == AQLPROFILE_ACCUMULATION_HI_RES)
+        visible_id = pm4_factory->GetAccumHiID();
+    return visible_id;
+}
+
+counter_des_t GetCounter(
+    Pm4Factory* pm4_factory,
+    const aqlprofile_pmc_event_t& event,
+    std::map<block_des_t, uint32_t, lt_block_des>& index_map
+) {
+    const GpuBlockInfo* block_info = pm4_factory->GetBlockInfo(event.block_name);
+    const block_des_t block_des = {block_info->id, event.block_index};
+    const auto ret = index_map.insert({block_des, 0});
+    auto reg_index = ret.first->second;
+    auto visible_id = event.event_id;
+
+    if (reg_index >= block_info->counter_count)
+        throw std::string("Event is out of block counter registers number limit");
+
+
+    if (event.flags.raw)
+    {
+        if (event.block_name == HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SQ)
+        {
+            visible_id = HandleSQFlagsBlock(pm4_factory, event);
+        }
+        else
+        {
+            throw HSA_STATUS_ERROR_INVALID_ARGUMENT;
+        }
+    }
+
+    ret.first->second++;
+    return {visible_id, reg_index, block_des, block_info};
+}
+
+pm4_builder::counters_vector CountersVec(
+    const std::vector<EventRequest>& events,
+    Pm4Factory* pm4_factory
 ) {
     pm4_builder::counters_vector vec;
     std::map<block_des_t, uint32_t, lt_block_des> index_map;
-    for (const auto* p = profile.events; p < profile.events + profile.event_count; p++)
-    {
-        const GpuBlockInfo* block_info = pm4_factory->GetBlockInfo(p->block_name);
-        const block_des_t block_des = {block_info->id, p->block_index};
-        // Counting counter register index per block
-        const auto ret = index_map.insert({block_des, 0});
-        uint32_t& reg_index = ret.first->second;
 
-        if (reg_index >= block_info->counter_count) {
-            throw std::string("Event is out of block counter registers number limit");
-        }
+    for (auto& event : events)
+        vec.push_back(GetCounter(pm4_factory, event, index_map));
 
-        vec.push_back({p->event_id, reg_index, block_des, block_info});
-
-        ++reg_index;
-    }
-
-    if (pm4_factory->IsGFX10() && (vec.get_attr() & CounterBlockSqAttr) != 0 &&
-            (vec.get_attr() & CounterBlockGRBMAttr) == 0) {
-        event_t grbm_event{
-                .block_name = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_GRBM, .block_index = 0, .counter_id = 0};
-        const GpuBlockInfo* block_info = pm4_factory->GetBlockInfo(&grbm_event);
-        if (block_info == nullptr) return vec;
-        const block_des_t block_des = {block_info->id, 0};
-        const auto ret = index_map.insert({block_des, 0});
-        uint32_t& reg_index = ret.first->second;
-        vec.push_back({0, reg_index, block_des, block_info});
-        reg_index++;
+    if (pm4_factory->IsGFX10() &&
+        (vec.get_attr() & CounterBlockSqAttr) != 0 &&
+        (vec.get_attr() & CounterBlockGRBMAttr) == 0
+    ) {
+        aqlprofile_pmc_event_t grbm_event{.block_name = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_GRBM};
+        vec.push_back(GetCounter(pm4_factory, grbm_event, index_map));
     }
     return vec;
 }
@@ -186,7 +209,7 @@ hsa_status_t _internal_aqlprofile_pmc_create_packets(
     pm4_builder::CmdBuffer stop_cmd;
 
     aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile.agent);
-    const pm4_builder::counters_vector countersVec = CountersVec(profile, pm4_factory);
+    const pm4_builder::counters_vector countersVec = CountersVec(memorymgr->GetEvents(), pm4_factory);
 
     pm4_builder::PmcBuilder* pmc_builder = pm4_factory->GetPmcBuilder();
 

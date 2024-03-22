@@ -21,6 +21,9 @@ class Gfx11Factory : public Pm4Factory {
   }
   bool IsGFX11() const override { return true; }
 
+  virtual int GetAccumLowID() const override { return 1; };
+  virtual int GetAccumHiID() const override { return 1; };
+
  protected:
   //void ConstructTable(const AgentInfo* agent_info);
   void Init(const AgentInfo* agent_info);

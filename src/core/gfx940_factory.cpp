@@ -44,6 +44,9 @@ class Mi300Factory : public Mi100Factory {
       }
     }
   }
+
+  virtual int GetAccumLowID() const override { return 1; };
+  virtual int GetAccumHiID() const override { return 184; };
 };
 
 Pm4Factory* Pm4Factory::Mi300Create(const AgentInfo* agent_info) {

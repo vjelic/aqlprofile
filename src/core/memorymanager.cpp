@@ -8,8 +8,14 @@ std::mutex MemoryManager::managers_map_mutex;
 void CounterMemoryManager::CopyEvents(const aqlprofile_pmc_event_t* _events, size_t count)
 {
     events.reserve(count+4);
+    int num_flag_metrics = 0;
     for (size_t i=0; i<count; i++)
+    {
         events.push_back(EventRequest{_events[i], false});
+        num_flag_metrics += _events[i].flags.raw != 0;
+    }
+
+    if (!num_flag_metrics) return;
 
     std::sort(events.begin(), events.end());
 
@@ -27,6 +33,7 @@ void CounterMemoryManager::CopyEvents(const aqlprofile_pmc_event_t* _events, siz
 
         EventRequest req = *it;
         req.bInternal = true;
+        req.flags.raw = 0;
         acc_requests.push_back(req);
     }
 

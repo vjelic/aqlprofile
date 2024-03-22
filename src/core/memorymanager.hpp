@@ -10,12 +10,13 @@ struct EventRequest: public aqlprofile_pmc_event_t
 {
     bool bInternal;
 
-    auto GetOrder() const -> auto {
-        uint64_t idx{0}, blk{0};
-        idx |= bInternal ? 0 : 1;
-        idx |= uint64_t(flags.raw)<<1;
+    auto GetOrder() const -> auto
+    {
+        uint64_t idx = bInternal ? 0 : 1;
+        idx |= uint64_t(flags.raw) << 1;
         idx |= uint64_t(event_id) << 33;
-        blk |= uint64_t(block_index);
+
+        uint64_t blk = block_index;
         blk |= uint64_t(block_name) << 32;
 
         return std::pair<uint64_t, uint64_t>{blk, idx};
@@ -68,6 +69,7 @@ public:
     {
         aqlprofile_buffer_desc_flags_t flags{};
         flags.host_access = flags.device_access = true;
+        flags.memory_hint = AQLPROFILE_MEMORY_HINT_HOST;
         cmdbuf = AllocMemory(size, flags);
     }
 
@@ -140,6 +142,7 @@ public:
     {
         aqlprofile_buffer_desc_flags_t flags{};
         flags.host_access = flags.device_access = true;
+        flags.memory_hint = AQLPROFILE_MEMORY_HINT_DEVICE_UNCACHED;
         outputbuf = AllocMemory(size, flags);
         outputbuf_size = size;
     }
@@ -165,6 +168,7 @@ public:
     {
         aqlprofile_buffer_desc_flags_t flags{};
         flags.device_access = true;
+        flags.memory_hint = AQLPROFILE_MEMORY_HINT_DEVICE_NONCOHERENT;
         outputbuf = AllocMemory(size, flags);
         outputbuf_size = size;
     }
@@ -173,6 +177,7 @@ public:
     {
         aqlprofile_buffer_desc_flags_t flags{};
         flags.host_access = flags.device_access = true;
+        flags.memory_hint = AQLPROFILE_MEMORY_HINT_HOST;
         trace_control_buf = AllocMemory(size, flags);
     }
 

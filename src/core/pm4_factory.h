@@ -161,6 +161,9 @@ class Pm4Factory {
     return 1;
   };
 
+  virtual int GetAccumLowID() const { throw HSA_STATUS_ERROR_INVALID_ARGUMENT; };
+  virtual int GetAccumHiID() const { throw HSA_STATUS_ERROR_INVALID_ARGUMENT; };
+
  protected:
   explicit Pm4Factory(const BlockInfoMap& map)
       : cmd_builder_(NULL),
