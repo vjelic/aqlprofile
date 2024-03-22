@@ -39,7 +39,9 @@ enum CounterBlockAttr {
   // UMC blocks
   CounterBlockUmcAttr = 0x10000,
   // SE and SA-dependent blocks
-  CounterBlockSaAttr = 0x20000
+  CounterBlockSaAttr = 0x20000,
+  // MI300 AID blocks
+  CounterBlockAidAttr = 0x40000
 };
 
 // Register address corresponding to each counter

@@ -215,9 +215,9 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
       cmd_buffer_mgr.SetPreSize(commands.Size());
 
       // Generate stop commands
+      pmc_builder->Stop(&commands, countersVec);
       if (!aql_profile::read_api_enabled)
         pmc_builder->Read(&commands, countersVec, profile->output_buffer.ptr);
-      pmc_builder->Stop(&commands, countersVec);
 
       if (profile->output_buffer.size < data_size) {
         profile->output_buffer.size = data_size;
@@ -584,7 +584,7 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
         if ((char*)samples >= (char*)profile->output_buffer.ptr + profile->output_buffer.size)
           return HSA_STATUS_ERROR;
 
-        if (!(pm4_factory->GetBlockInfo(p)->attr & CounterBlockUmcAttr))
+        if (!(pm4_factory->GetBlockInfo(p)->attr & CounterBlockAidAttr))
           continue;
 
         // Process an MI300 UMC event for XCC 0 ONLY

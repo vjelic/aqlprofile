@@ -1138,7 +1138,7 @@ static const GpuBlockInfo RpbCounterBlockInfo = {"RPB", RpbCounterBlockId, 1, Rp
 // Counter block SDMA
 static const GpuBlockInfo SdmaCounterBlockInfo = {"SDMA", SdmaCounterBlockId, SdmaCounterBlockNumInstances, SdmaCounterBlockMaxEvent, SdmaCounterBlockNumCounters, SdmaCounterRegAddr, NULL, CounterBlockSdmaAttr|CounterBlockExplInstAttr};
 // Counter block UMC
-static const GpuBlockInfo UmcCounterBlockInfo = {"UMC", UmcCounterBlockId, UmcCounterBlockNumInstances, UmcCounterBlockMaxEvent, UmcCounterBlockNumCounters, UmcCounterRegAddr, NULL, CounterBlockUmcAttr|CounterBlockExplInstAttr};
+static const GpuBlockInfo UmcCounterBlockInfo = {"UMC", UmcCounterBlockId, UmcCounterBlockNumInstances, UmcCounterBlockMaxEvent, UmcCounterBlockNumCounters, UmcCounterRegAddr, NULL, CounterBlockUmcAttr|CounterBlockExplInstAttr|CounterBlockAidAttr};
 }  // namespace gfx9
 }  // namespace gfxip
 

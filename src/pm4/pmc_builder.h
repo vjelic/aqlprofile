@@ -105,21 +105,20 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
   const CounterRegInfo* get_reg_table(const counter_des_t& counter_des) {
     const auto* block_info = counter_des.block_info;
     const auto& block_des = counter_des.block_des;
-    auto base_index = (block_info->attr & CounterBlockExplInstAttr)
-                                ? block_des.index * block_info->counter_count
+    auto base_index = block_des.index;
+    if ((block_info->attr & CounterBlockAidAttr) && (xcc_number_ > 1))
+      // MI300 all AID style instances fold back to per AID counter_reg_info
+      base_index %= (block_info->instance_count / MAX_AID);
+    base_index = (block_info->attr & CounterBlockExplInstAttr)
+                                ? base_index * block_info->counter_count
                                 : 0;
-    if ((block_info->attr & CounterBlockUmcAttr) && (xcc_number_ > 1))
-      // MI300 UMC style instances
-      base_index %= 32;
     return &(block_info->counter_reg_info[base_index]);
   }
 
   // helper function to convert a 32-bit address to a 64-bit SMN address.
   // Returns the address seen by UMC_MASTER_XCC of register at reg_addr on target_aid_index.
   uint64_t get_smn_addr(uint32_t reg_addr, uint32_t target_aid_index) {
-    // master xcc is accessing its own AID
-    int umc_usr = ((UMC_MASTER_XCC >> 1) != target_aid_index);
-    return reg_addr | ((uint64_t)umc_usr << UMC_USR_BIT) | ((uint64_t)target_aid_index << UMC_AID_BIT);
+    return reg_addr | ((uint64_t)1 << UMC_USR_BIT) | ((uint64_t)target_aid_index << UMC_AID_BIT);
   }
 
  public:
@@ -604,7 +603,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
     for (const auto& counter_des : counters_vec)
     {
       const auto* block_info = counter_des.block_info;
-      if (block_info->attr & CounterBlockUmcAttr)
+      if (block_info->attr & CounterBlockAidAttr)
       {
         const auto& block_des = counter_des.block_des;
         const auto* reg_table = get_reg_table(counter_des);
