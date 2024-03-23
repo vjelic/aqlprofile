@@ -116,7 +116,7 @@ void wave_t::apply_inst(Token& token)
 
   this->inst_time = token.time;
   Instruction& the_inst = instructions.at(*issued_instructions.begin());
-  the_inst.issue2inst = token.time - the_inst.time;
+  the_inst.cycles = token.time - the_inst.time;
   int64_t phase = (16-global_target_cu.load()+simd)%4;
 
   // ISSUE stall type cannot be known until issue complete
@@ -130,7 +130,7 @@ void wave_t::apply_inst(Token& token)
     this->num_mem_instrs += 1;
     the_inst.value = WaveInstCategory::SMEM;
     // Phase correction
-    the_inst.issue2inst = std::max(the_inst.issue2inst - 4*(phase==3), 4l);
+    the_inst.cycles = std::max(the_inst.cycles - 4*(phase==3), 4);
   } else if (token.inst_type == 1 || token.inst_type == 17) {  // SALU32/64 instr
     if (this->stall_started == 1)
       this->num_salu_stalls += 1;
@@ -138,7 +138,7 @@ void wave_t::apply_inst(Token& token)
     this->num_salu_instrs += 1;
     the_inst.value = WaveInstCategory::SALU;
     // Phase correction
-    the_inst.issue2inst = std::max(the_inst.issue2inst - 4*(phase==3), 4l);
+    the_inst.cycles = std::max(the_inst.cycles - 4*(phase==3), 4);
   } else if (token.inst_type == 2 || token.inst_type == 3) {  // VMEM RD/WR
     if (this->stall_started == 1)
       this->num_vmem_stalls += 1;
@@ -167,7 +167,7 @@ void wave_t::apply_inst(Token& token)
     this->num_valu_instrs += 1;
     the_inst.value = WaveInstCategory::VALU;
     // Phase correction
-    the_inst.issue2inst = std::max(the_inst.issue2inst, 4l*(phase>=2));
+    the_inst.cycles = std::max(the_inst.cycles, 4*(phase>=2));
   } else if (token.inst_type == 12 || token.inst_type == 13) {  // Branch
     if (this->stall_started == 1)
       this->num_branch_stalls += 1;
@@ -191,12 +191,12 @@ void wave_t::apply_inst(Token& token)
 
   if (instructions.size() && stall_started)
   {
-    int64_t min_stall_cycles = 4l;
+    int64_t min_stall_cycles = 4;
     if (phase && the_inst.value == WaveInstCategory::LDS)
-      min_stall_cycles = 8ul;
+      min_stall_cycles = 8;
 
     the_inst.time = stall_start_time;
-    the_inst.last = std::max(token.time - the_inst.time, min_stall_cycles);
+    the_inst.stall_time = std::max(token.time - the_inst.time, min_stall_cycles);
     stall_started = false;
   }
 
@@ -227,7 +227,7 @@ std::tuple<
   WaveArray,
   std::vector<att_perfevent_t>,
   std::vector<occupancy_info_t>,
-  std::vector<uint64_t>
+  std::vector<pcinfo_t>
 >
 wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
 {
@@ -265,7 +265,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
     }
     else if (token.type == SQTT_TOKEN_WAVE_START) // Wave start
     {
-      uint64_t wave_addr = csregister.get_wave_start(token);
+      pcinfo_t wave_addr = csregister.get_wave_start(token);
 
       if ((int)token.cu == target_cu && token.sh == 0)
       {
@@ -285,8 +285,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
         if (!wslot.size() || wslot.back().end_time != 0)
           wslot.push_back(wave_t(token));
 
-        Instruction inst{wslot.back().begin_time, WaveInstCategory::PCINFO, wave_addr, 0};
-        wslot.back().instructions.insert(wslot.back().instructions.begin(), inst);
+        wslot.back().instructions.insert(wslot.back().instructions.begin(), Instruction{wave_addr});
       }
 
       size_t kid = get_addr_unique_id(wave_addr);
@@ -363,16 +362,16 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
     auto& inst = wave.instructions.at(0);
     // If the wave has a invalid PC value, check if the codeobj information was not delayed relative to TTrace
     if (inst.value != WaveInstCategory::PCINFO) continue;
-    if (inst.issue2inst >> 62) continue;
+    if (inst.pc.marker_id != 0) continue;
 
-    inst.issue2inst = csregister.get_wave_start_delayed(inst.issue2inst);
+    inst.pc = csregister.get_wave_start_delayed(inst.pc.addr);
   }
 
-  std::unordered_map<uint64_t, uint64_t> retroactive_addr_map{};
-  for (auto& [addr, id] : kernelID)
+  std::unordered_map<size_t, size_t> retroactive_addr_map{};
+  for (auto& [krn_addr, id] : kernelID)
   {
-    uint64_t v2pc = csregister.get_wave_start_delayed(addr);
-    if (v2pc != addr && kernelID.find(v2pc) != kernelID.end())
+    pcinfo_t v2pc = csregister.get_wave_start_delayed(krn_addr.addr);
+    if (v2pc != krn_addr && kernelID.find(v2pc) != kernelID.end())
       retroactive_addr_map[id] = kernelID.at(v2pc);
   }
 
@@ -383,10 +382,10 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
   if (bHasLostPackets)
     std::cout << "Warning: Packet lost!" << std::endl;
 
-  std::map<uint64_t, uint64_t> rev_map;
+  std::map<uint64_t, pcinfo_t> rev_map;
   for (auto& kv : kernelID) rev_map.insert({kv.second, kv.first});
 
-  std::vector<uint64_t> kid_map;
+  std::vector<pcinfo_t> kid_map;
   for (int key = 0; key < rev_map.size(); key++) kid_map.push_back(rev_map[key]);
 
   return std::make_tuple(SIMD, perfEvents, occupancy, kid_map);
@@ -401,7 +400,7 @@ void wave_t::apply_pc(Token& token, CodeobjTableTranslator& table)
   }
 
   if (last_jump_inst >= 0 && last_jump_inst < instructions.size())
-    instructions[last_jump_inst].issue2inst = table.ToPcV2(token.pc<<2);
+    instructions[last_jump_inst].pc = table.ToPcV2(token.pc<<2);
   this->last_jump_inst = -1;
 }
 
@@ -420,7 +419,7 @@ int64_t wave_t::apply_issue(uint64_t wave_status, int64_t token_time)
     if (instructions.back().value != WaveInstCategory::PCINFO &&
         instructions.back().value != WaveInstCategory::WAVE_NOT_FINISHED)
     {
-      int64_t last_cycles = std::max(instructions.back().issue2inst, instructions.back().last);
+      int64_t last_cycles = std::max(instructions.back().cycles, instructions.back().stall_time);
       immed_time = std::max(last_message_time, instructions.back().time + last_cycles);
     }
 

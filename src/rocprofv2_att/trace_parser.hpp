@@ -39,8 +39,6 @@
 #define AMD_AQLPROFILE_SQTT_NPI
 #define SQTT_PARSER_VERSION 4
 #define OCCUPANCY_RESOLUTION 8
-#define PCINFO_OFFSET_BITS 34
-#define PCINFO_ID_BITS 28
 
 struct occupancy_info_t : public att_occupancy_info_t
 {
@@ -63,42 +61,60 @@ struct occupancy_info_t : public att_occupancy_info_t
     }
 };
 
-struct Instruction
+struct __attribute__((packed)) Instruction
 {
     Instruction() = default;
-    Instruction(int64_t time, WaveInstCategory value, uint64_t issue2inst, int64_t last)
-            : time(time), value((int64_t)value), issue2inst(issue2inst), last(last) {}
+    Instruction(pcinfo_t _pc): value(WaveInstCategory::PCINFO), pc(_pc) {}
+    Instruction(int64_t _time, WaveInstCategory _value, int64_t _cycles, int _stall)
+            : time(_time), value(_value), cycles(_cycles), stall_time(_stall) {}
 
-    wave_instruction_t getTiming() const { return {time, std::max(issue2inst, last)}; }
+    wave_instruction_t getTiming() const { return {time, std::max(cycles, stall_time)}; }
 
-    int64_t time;
-    int64_t value;
-    int64_t issue2inst;
-    int64_t last;
+    union {
+        struct __attribute__((packed)) {
+            int64_t time;
+            int cycles;
+            int stall_time : 24;
+        };
+        pcinfo_t pc;
+    };
+    int value : 8;
 };
 
-struct InstructionExt
+struct InstructionExt : public att_trace_event_t
 {
-    InstructionExt() = default;
-    InstructionExt(WaveInstCategory value, uint64_t num_waves, uint64_t cycles)
-            : num_waves(num_waves), value((uint64_t)value), cycles(cycles) {}
-    InstructionExt(const Instruction& inst):
-        num_waves(1), value(inst.value), cycles(std::max(inst.last, inst.issue2inst)) {};
+    InstructionExt(): value(WaveInstCategory::NONE) {
+        this->latency = this->hitcount = 0;
+    }
+    InstructionExt(WaveInstCategory _value, uint64_t num_waves, uint64_t cycles): value(_value)
+    {
+        this->hitcount = num_waves;
+        this->latency = cycles;
+    }
+    InstructionExt(const Instruction& inst): value(inst.value)
+    {
+        if (inst.value != WaveInstCategory::PCINFO)
+        {
+            this->hitcount = 1;
+            this->latency = std::max(inst.cycles, inst.stall_time);
+        }
+        else
+            this->pc = inst.pc;
+    }
+    int value;
 
-    int64_t num_waves = 0;
-    int64_t value = 0;
-    int64_t cycles = 0;
-
-    // TODO: Compare PCs
     inline bool operator==(const Instruction& other) const { return !(*this != other); };
-    inline bool operator!=(const Instruction& other) const {
-        return this->value != other.value ||
-            (value == WaveInstCategory::PCINFO && cycles != other.issue2inst);
+    inline bool operator!=(const Instruction& other) const
+    {
+        if (value == WaveInstCategory::PCINFO)
+            return pc != other.pc;
+        return this->value != other.value;
     };
-    InstructionExt& operator+=(const Instruction& other) {
-        num_waves += 1;
+    InstructionExt& operator+=(const Instruction& other)
+    {
+        hitcount += 1;
         if (value != WaveInstCategory::PCINFO)
-            cycles += std::max(other.last, other.issue2inst);
+            latency += std::max(other.cycles, other.stall_time);
         return *this;
     };
 };
@@ -109,11 +125,11 @@ struct WaveDataInternal : public wave_data_t
     std::vector<std::pair<int32_t, int32_t>> timeline;  // wave state in each cycle
 
     // kernel_addr -> kernel_ID
-    static std::unordered_map<uint64_t, size_t> kernelID;
+    static std::unordered_map<pcinfo_t, size_t> kernelID;
     static std::atomic<size_t> current_kernel_unique_id;
     static std::shared_mutex mutex;
 
-    static size_t get_addr_unique_id(uint64_t wave_addr)
+    static size_t get_addr_unique_id(pcinfo_t wave_addr)
     {
         size_t kid;
         bool bSuccess = false;
@@ -201,7 +217,7 @@ struct python_return_info_t
 struct CppReturnInfo
 {
     att_output_flags_t flags;
-    std::vector<uint64_t> kernel_ids_addr;
+    std::vector<pcinfo_t> kernel_ids_addr;
     std::vector<int64_t> traceIDs;
     std::vector<uint64_t> tracesizes;
     std::vector<InstructionExt*> tracedata;
@@ -231,19 +247,6 @@ struct fileoffset_info_t
 
 std::unique_ptr<CppReturnInfo>
 AnalyseBinary_internal(const uint8_t* buffer, int BUFFER_SIZE, int target_cu);
-
-typedef union {
-    uint64_t raw;
-    struct {
-        uint64_t addr : 62;
-        uint64_t header : 2;
-    } addr;
-    struct {
-        uint64_t offset : PCINFO_OFFSET_BITS;
-        uint64_t id : PCINFO_ID_BITS;
-        uint64_t header : 2;
-    } codeobj;
-} pcinfo_t;
 
 template<typename Type>
 class PipeArray : public std::array<std::array<Type, 4>, 2>
@@ -402,11 +405,11 @@ public:
     }
 
     template<typename TokenType>
-    uint64_t get_wave_start(const TokenType& token) {
+    pcinfo_t get_wave_start(const TokenType& token) {
         return table.ToPcV2((wave_start_addr.at_reg(token) << 8) & ((1ul<<48)-1));
     }
 
-    uint64_t get_wave_start_delayed(uint64_t addr) {
+    pcinfo_t get_wave_start_delayed(uint64_t addr) {
         return table_from_start.ToPcV2(addr);
     }
 };

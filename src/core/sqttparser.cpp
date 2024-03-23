@@ -13,62 +13,47 @@ class CodeService: public ICodeServicer
 {
 public:
     CodeService() = delete;
-    CodeService(
-        aqlprofile_att_isa_length_callback_t isa_len,
-        aqlprofile_att_isa_string_callback_t isa_str,
-        void* _userdata
-    ):  isa_length_cb(isa_len), isa_string_cb(isa_str), userdata(_userdata) {};
-
-    virtual assemblyLine GetInstruction(uint64_t pc_addr) override
+    CodeService(aqlprofile_att_isa_callback_t isa_str, void* _userdata): 
+        isa_cb(isa_str), userdata(_userdata)
     {
-        pcinfo_t pc{ .raw = pc_addr };
-        uint32_t id = (pc.codeobj.header != 0) ? pc.codeobj.id : 0;
-        uint64_t addr = (pc.codeobj.header != 0) ? pc.codeobj.offset : pc_addr;
+        isa_memory_copy.resize(64);
+        source_memory_copy.resize(64);
+    };
 
-        uint64_t isa_len = 0, source_len = 0;
+    virtual assemblyLine GetInstruction(pcinfo_t pc) override
+    {
+        size_t isa_len = isa_memory_copy.size();
+        size_t source_len = source_memory_copy.size();
+        uint64_t memsize = 0;
 
+        auto status = isa_cb(isa_memory_copy.data(), source_memory_copy.data(), &memsize, &isa_len, &source_len, pc.marker_id, pc.addr, userdata);
+        if (status == HSA_STATUS_ERROR_OUT_OF_RESOURCES)
         {
-            auto it = isa_lengths.find(id);
-            if (it == isa_lengths.end())
-            {
-                auto status = isa_length_cb(id, userdata, &isa_len, &source_len);
-                if (status != HSA_STATUS_SUCCESS)
-                    throw "ISA Length Callback returned error " + std::to_string(status);
-                isa_lengths[id] = {isa_len, source_len};
-            }
-            else
-            {
-                isa_len = it->second.first;
-                source_len = it->second.second;
-            }
+            if (isa_memory_copy.size() < isa_len)
+                isa_memory_copy.resize(isa_len);
+            if (source_memory_copy.size() < source_len)
+                source_memory_copy.resize(source_len);
+
+            status = isa_cb(isa_memory_copy.data(), source_memory_copy.data(), &memsize, &isa_len, &source_len, pc.marker_id, pc.addr, userdata);
         }
 
-        assemblyLine isa;
-        isa.addr = pc_addr;
-        isa.line.resize(isa_len);
-        isa.loc.resize(source_len);
-        uint64_t memsize;
-
-        auto status = isa_string_cb(id, addr, userdata, &memsize, isa.line.data(), &isa_len, isa.loc.data(), &source_len);
         if (status != HSA_STATUS_SUCCESS)
             throw "ISA Callback returned error " + std::to_string(status);
 
-        isa.next = isa.addr + memsize;
+        assemblyLine isa;
+        isa.addr = pc;
+        isa.line = isa_memory_copy.substr(0, isa_len);
+        isa.loc = source_memory_copy.substr(0, source_len);
+        isa.next = {isa.addr.addr + memsize, isa.addr.marker_id};
         isa.cat = Trie::inst_type(isa.line);
-
-        isa.line.resize(isa_len);
-        isa.loc.resize(source_len);
         return isa;
     };
 
-    virtual void forget(uint32_t id) override { isa_lengths.erase(id); };
-
 private:
-    aqlprofile_att_isa_length_callback_t const isa_length_cb;
-    aqlprofile_att_isa_string_callback_t const isa_string_cb;
+    aqlprofile_att_isa_callback_t const isa_cb;
     void* const userdata;
-
-    std::unordered_map<uint32_t, std::pair<uint64_t, uint64_t>> isa_lengths;
+    std::string isa_memory_copy;
+    std::string source_memory_copy;
 };
 
 
@@ -115,15 +100,10 @@ std::unordered_map<std::string, int> trace_type_ids = {
 __attribute__((visibility("default"))) hsa_status_t aqlprofile_att_parse_data(
     aqlprofile_att_se_data_callback_t se_data_callback,
     aqlprofile_att_trace_callback_t trace_callback,
-    aqlprofile_att_isa_length_callback_t isa_length_callback,
-    aqlprofile_att_isa_string_callback_t isa_string_callback,
+    aqlprofile_att_isa_callback_t isa_callback,
     void* userdata
 ) {
-    std::shared_ptr<ICodeServicer> service = std::make_shared<CodeService>(
-        isa_length_callback,
-        isa_string_callback,
-        userdata
-    );
+    std::shared_ptr<ICodeServicer> service = std::make_shared<CodeService>(isa_callback, userdata);
     std::unique_ptr<Stitcher> stitcher{nullptr};
 
     int shader = 0;
@@ -138,14 +118,14 @@ __attribute__((visibility("default"))) hsa_status_t aqlprofile_att_parse_data(
         trace_callback(trace_type_ids["occupancy"], 0, (void*)ret->occupancy.data(), ret->occupancy.size(), userdata);
         trace_callback(trace_type_ids["kernel_ids_addr"], 0, (void*)ret->kernel_ids_addr.data(), ret->kernel_ids_addr.size(), userdata);
 
-        /*if (!stitcher)
+        if (!stitcher)
             stitcher = std::make_unique<Stitcher>(service, !ret->flags.isNavi);
 
-        for (size_t t=0; t<ret->traces.size(); t++) if (ret->traces[t].size())
+        for (size_t t=0; t<ret->traces.size(); t++) if (ret->traces[t].size() > 1)
         {
-            auto stitched = stitcher->stitch(ret->traces[t]);
-            trace_callback(trace_type_ids["tracedata"], t, (void*)stitched.data(), stitched.size(), userdata);
-        } */
+            stitcher->stitch(ret->traces[t]);
+            trace_callback(trace_type_ids["tracedata"], t, (void*)ret->traces[t].data(), ret->traces[t].size(), userdata);
+        }
 
         remaining = se_data_callback(&shader, &buffer, &buffer_size, userdata);
     }

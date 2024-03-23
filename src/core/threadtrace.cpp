@@ -95,6 +95,7 @@ hsa_status_t _internal_aqlprofile_att_create_packets(
     aqlprofile_att_profile_t profile,
     aqlprofile_memory_alloc_callback_t alloc_cb,
     aqlprofile_memory_dealloc_callback_t dealloc_cb,
+    aqlprofile_memory_copy_t copy_fn,
     void* userdata
 ) {
     pm4_builder::CmdBuffer start_cmd;
@@ -213,10 +214,10 @@ hsa_status_t _internal_aqlprofile_att_create_packets(
     pm4_builder::CmdBuilder* cmd_writer = pm4_factory->GetCmdBuilder();
     uint8_t* cmdbuf = reinterpret_cast<uint8_t*>(memorymgr->GetCmdBuf());
 
-    memcpy(cmdbuf, start_cmd.Data(), start_cmd.Size());
+    copy_fn(cmdbuf, start_cmd.Data(), start_cmd.Size(), userdata);
     aql_profile::PopulateAql(cmdbuf, start_cmd.Size(), cmd_writer, &packets->start_packet);
     cmdbuf += start_size;
-    memcpy(cmdbuf, stop_cmd.Data(), stop_cmd.Size());
+    copy_fn(cmdbuf, stop_cmd.Data(), stop_cmd.Size(), userdata);
     aql_profile::PopulateAql(cmdbuf, stop_cmd.Size(), cmd_writer, &packets->stop_packet);
 
     return HSA_STATUS_SUCCESS;
@@ -309,11 +310,12 @@ PUBLIC_API hsa_status_t aqlprofile_att_create_packets(
     aqlprofile_att_profile_t profile,
     aqlprofile_memory_alloc_callback_t alloc_cb,
     aqlprofile_memory_dealloc_callback_t dealloc_cb,
+    aqlprofile_memory_copy_t copy_fn,
     void* userdata
 ) {
     try {
         return aql_profile_v2::_internal_aqlprofile_att_create_packets(
-            handle, packets, profile, alloc_cb, dealloc_cb, userdata);
+            handle, packets, profile, alloc_cb, dealloc_cb, copy_fn, userdata);
     } catch (hsa_status_t err) {
         ERR_LOGGING << err;
         return err;

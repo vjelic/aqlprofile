@@ -15,11 +15,7 @@ PCTranslator::PCTranslator(
     {
         std::unique_lock<SharedMutex> lk(code_mut);
         for (auto& c : code)
-        {
             addrmap[c->addr] = c;
-            if (c->cat == InstCategory::BRANCH)
-                jump_map[c->addr] = code.at(getjump_loc(*c));
-        }
     }
 }
 
@@ -35,7 +31,7 @@ assemblyLinePtr PCTranslator::jump(const assemblyLine& source)
     return jump_map.emplace(source.addr, getcode(getjump_loc(source))).first->second;
 }
 
-assemblyLinePtr PCTranslator::getcode(uint64_t addr)
+assemblyLinePtr PCTranslator::getcode(pcinfo_t addr)
 {
     {
         std::shared_lock<SharedMutex> lk(code_mut);
@@ -62,7 +58,7 @@ assemblyLinePtr PCTranslator::setpc(
     const assemblyLine& source,
     const InstructionExt& next_inst
 ) {
-    return getcode(next_inst.cycles);
+    return getcode(next_inst.pc);
 
     /*except:
         print('SETPC warning: Could not find addr', hex(self.insts[inst_index+1].cycles), 'for', inst_index, line)
@@ -73,7 +69,7 @@ assemblyLinePtr PCTranslator::swappc(
     const assemblyLine& next_line,
     const InstructionExt& next_inst
 ) {
-    return getcode(next_inst.cycles);
+    return getcode(next_inst.pc);
     /*except:
         print('SWAPPC warning: Could not find addr', hex(self.insts[inst_index+1].cycles), 'for', inst_index, line)
         return -1 */
@@ -93,9 +89,9 @@ void PCTranslator::addsymbol(uint64_t addr)
     self.raw_code.append(newline) */
 }
 
-uint64_t PCTranslator::getjump_loc(const assemblyLine& line)
+pcinfo_t PCTranslator::getjump_loc(const assemblyLine& line)
 {
     int64_t delta = std::stoi(splitv(line.line, ' ').back().data());
     if (delta >= 32768) delta -= 65536;
-    return line.addr + 4 + 4*delta;
+    return {line.addr.addr + 4 + 4*delta, line.addr.marker_id};
 }

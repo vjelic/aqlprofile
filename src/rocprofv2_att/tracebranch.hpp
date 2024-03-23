@@ -63,11 +63,11 @@ struct InstBranch
             return -1;
 
         for (auto& b : branches)
-            if (insts[0].issue2inst == b->pcvalue)
+            if (insts[0].pc == b->pcvalue)
                 return b->recursive_insert(insts.data(), insts.size());
 
         InstBranch* newbranch = new InstBranch(insts[0].value, insts.data(), insts.size());
-        newbranch->pcvalue = insts[0].issue2inst;
+        newbranch->pcvalue = insts[0].pc;
         branches.emplace_back(newbranch);
         return newbranch->unique_id;
     }
@@ -87,7 +87,7 @@ struct InstBranch
     }
 
     FlattenTree get();
-    uint64_t pcvalue = 0;
+    pcinfo_t pcvalue{};
 
 private:
     static std::atomic<int64_t> current_unique_id;

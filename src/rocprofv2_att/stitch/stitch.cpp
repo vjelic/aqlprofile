@@ -27,7 +27,7 @@ std::unordered_map<InstCategory, std::string> assemblyLine::categories =
   {InstCategory::NEGATIVE, "NEGATIVE"},
 };
 
-std::vector<uint64_t> Stitcher::stitch(std::vector<InstructionExt>& insts)
+void Stitcher::stitch(std::vector<InstructionExt>& insts)
 {
     STITCH_ASSERT(insts.size());
 
@@ -38,19 +38,17 @@ std::vector<uint64_t> Stitcher::stitch(std::vector<InstructionExt>& insts)
 
     assemblyLinePtr line;
     assemblyLinePtr next;
-    std::vector<uint64_t> result;
-    result.reserve(insts.size());
 
     if (bIsAuto)
     {
         const InstructionExt& firstinst = insts.at(0);
         STITCH_ASSERT(firstinst.value == WaveInstCategory::PCINFO);
-        STITCH_ASSERT(firstinst.cycles != 0);
+        STITCH_ASSERT(firstinst.pc.addr || firstinst.pc.marker_id);
 
         try {
-            next = watchlist->getcode(firstinst.cycles);
+            next = watchlist->getcode(firstinst.pc);
         } catch (...) {
-            return {};
+            return;
         }
 
         pcskip.push_back(0);
@@ -113,7 +111,7 @@ std::vector<uint64_t> Stitcher::stitch(std::vector<InstructionExt>& insts)
                         pcskip.push_back(inst_index);
                     }
                     else
-                        inst.cycles += insts.at(inst_index).cycles;
+                        inst.latency += insts.at(inst_index).latency;
                 }
             }
             STITCH_ASSERT(next.get());
@@ -162,7 +160,7 @@ std::vector<uint64_t> Stitcher::stitch(std::vector<InstructionExt>& insts)
 
         if (bMatched || (!bGFX9 && inst.value == WaveInstCategory::IMMED))
         {
-            result.push_back(line->addr);
+            inst.pc = line->addr;
             inst_index ++;
             num_failed_stitches = 0;
             //inst.asmline = reverse_map[line]
@@ -185,8 +183,6 @@ std::vector<uint64_t> Stitcher::stitch(std::vector<InstructionExt>& insts)
 
         std::cout << "Successfuly parsed " << inst_index << " tokens" << std::endl;
     }
-
-    return result;
 }
 
 Stitcher::Stitcher(

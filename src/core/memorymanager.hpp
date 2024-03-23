@@ -68,8 +68,8 @@ public:
     void CreateCmdBuf(size_t size)
     {
         aqlprofile_buffer_desc_flags_t flags{};
-        flags.host_access = flags.device_access = true;
-        flags.memory_hint = AQLPROFILE_MEMORY_HINT_HOST;
+        flags.device_access = true;
+        flags.memory_hint = AQLPROFILE_MEMORY_HINT_DEVICE_NONCOHERENT;
         cmdbuf = AllocMemory(size, flags);
     }
 

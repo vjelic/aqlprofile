@@ -144,6 +144,22 @@ typedef hsa_status_t (*aqlprofile_att_data_callback_t)(
 );
 
 /**
+ * @brief Memory copy fn for aqlprofile to copy data.
+ * @param[in] dst Destination pointer to copy data to.
+ * @param[in] src Source pointer where data is to be copied from.
+ * @param[in] size Amount of bytes to be copied.
+ * @param[in] userdata Data returned to user
+ * @retval HSA_STATUS_SUCCESS on success
+ * @retval HSA_STATUS_ERROR on failure
+*/
+typedef hsa_status_t (*aqlprofile_memory_copy_t)(
+    void* dst,
+    const void* src,
+    size_t size,
+    void* userdata
+);
+
+/**
  * @brief Iterate_data() will parse the event data and call @callback with the resulting event data
  * @param[in] handle The handle returned from aqlprofile_pmc_create_packets()
  * @param[in] callback CB where the resulting event values are going to be returned
@@ -182,6 +198,7 @@ PUBLIC_API hsa_status_t aqlprofile_pmc_create_packets(
     aqlprofile_pmc_profile_t profile,
     aqlprofile_memory_alloc_callback_t alloc_cb,
     aqlprofile_memory_dealloc_callback_t dealloc_cb,
+    aqlprofile_memory_copy_t memcpy_cb,
     void* userdata
 );
 
@@ -229,6 +246,7 @@ PUBLIC_API hsa_status_t aqlprofile_att_create_packets(
     aqlprofile_att_profile_t profile,
     aqlprofile_memory_alloc_callback_t alloc_cb,
     aqlprofile_memory_dealloc_callback_t dealloc_cb,
+    aqlprofile_memory_copy_t memcpy_cb,
     void* userdata
 );
 
@@ -372,11 +390,15 @@ enum WaveTrapStatus
     TRAP_STANDBY = 2
 };
 
-typedef struct {
-    WaveInstCategory inst;
-    uint32_t hitcount;
-    uint64_t latency;
-    uint64_t pc;
+struct __attribute__((packed)) pcinfo_t {
+    size_t addr;
+    int marker_id;
+};
+
+typedef struct __attribute__((packed)) {
+    pcinfo_t pc;
+    int hitcount;
+    size_t latency;
 } att_trace_event_t;
 
 struct wave_data_t
@@ -387,39 +409,39 @@ struct wave_data_t
     uint8_t reserved;
 
     // VMEM Pipeline: instrs and stalls
-    uint32_t num_vmem_instrs = 0;
-    uint32_t num_vmem_stalls = 0;
+    int num_vmem_instrs = 0;
+    int num_vmem_stalls = 0;
     // FLAT instrs and stalls
-    uint32_t num_flat_instrs = 0;
-    uint32_t num_flat_stalls = 0;
+    int num_flat_instrs = 0;
+    int num_flat_stalls = 0;
 
     // LDS instr and stalls
-    uint32_t num_lds_instrs = 0;
-    uint32_t num_lds_stalls = 0;
+    int num_lds_instrs = 0;
+    int num_lds_stalls = 0;
 
     // SCA instrs stalls
-    uint32_t num_salu_instrs = 0;
-    uint32_t num_smem_instrs = 0;
-    uint32_t num_salu_stalls = 0;
-    uint32_t num_smem_stalls = 0;
+    int num_salu_instrs = 0;
+    int num_smem_instrs = 0;
+    int num_salu_stalls = 0;
+    int num_smem_stalls = 0;
 
     // Branch
-    uint32_t num_branch_instrs = 0;
-    uint32_t num_branch_taken_instrs = 0;
-    uint32_t num_branch_stalls = 0;
+    int num_branch_instrs = 0;
+    int num_branch_taken_instrs = 0;
+    int num_branch_stalls = 0;
 
     // total VMEM/FLAT/LDS/SMEM instructions issued
-    uint32_t num_mem_instrs = 0;     // total issued memory instructions
-    uint32_t num_valu_stalls = 0;
-    uint64_t num_valu_instrs = 0;
-    uint64_t num_issued_instrs = 0;  // total issued instructions (compute + memory)
+    int num_mem_instrs = 0;     // total issued memory instructions
+    int num_valu_stalls = 0;
+    size_t num_valu_instrs = 0;
+    size_t num_issued_instrs = 0;  // total issued instructions (compute + memory)
 
     int64_t begin_time = 0;  // Begin and end cycle
     int64_t end_time = 0;
     int64_t traceID = -1;
 
-    uint64_t timeline_size = 0;
-    uint64_t instructions_size = 0;
+    size_t timeline_size = 0;
+    size_t instructions_size = 0;
     wave_state_t* timeline_array;
     wave_instruction_t* instructions_array;
 };
@@ -450,49 +472,39 @@ PUBLIC_API hsa_status_t aqlprofile_att_iterate_trace_type_ids(
 );
 
 /**
- * @brief Callback for rocprofiler to return the largest instruction length and source reference.
- * These values will be used as preallocation for aqlprofile_att_isa_string_callback_t.
- * @param[in] marker_id The ID of generated ATT marker for given symbol.
- * @param[in] userdata Arbitrary data pointer to be sent back to the user via callback.
- * @param[out] isa_length Minimum necessary space to copy the ISA to.
- * @param[out] source_length Minimum necessary space to copy the source reference to.
-*/
-typedef hsa_status_t(*aqlprofile_att_isa_length_callback_t)(
-    uint64_t marker_id,
-    void* userdata,
-    uint64_t* isa_length,
-    uint64_t* source_length
-);
-
-/**
  * @brief Callback for rocprofiler to return ISA to aqlprofile ATT parser.
- * The caller must copy a desired instruction on symbol_name and source_reference,
- * while obeying the max length returned by aqlprofile_att_isa_length_callback_t
- * @param[in] marker_id The ID of generated ATT marker for given codeobject ID.
- * @param[in] offset  The offset from base virtual address for given marker_id.
- *                    If marker_id == 0, this parameter is raw virtual address.
- * @param[in] userdata Arbitrary data pointer to be sent back to the user via callback.
- * @param[out] isa_memory_size (Auto) The number of bytes to next instruction. 0 for custom ISA.
- * @param[out] isa_instruction The char* name where to copy the ISA line to.
- * @param[out] isa_size Size of returned ISA string.
+ * The caller must copy a desired instruction on isa_instruction and source_reference,
+ * while obeying the max length passed by the caller.
+ * If the caller's length is insufficient, then this function writes the minimum sizes to isa_size
+ * and source_size and returns HSA_STATUS_ERROR_OUT_OF_RESOURCES.
+ * If call returns HSA_STATUS_SUCCESS, isa_size and source_size are written with bytes used.
+ * @param[out] isa_instruction Where to copy the ISA line to.
  * @param[out] source_reference Reference to source line and/or additional comments in the binary.
- * @param[out] source_size Size of returned reference string.
+ * @param[out] isa_memory_size (Auto) The number of bytes to next instruction. 0 for custom ISA.
+ * @param[inout] isa_size Size of returned ISA string.
+ * @param[inout] source_size Size of returned reference/comment string.
+ * @param[in] marker_id The generated ATT marker for given codeobject ID.
+ * @param[in] offset The offset from base vaddr for given codeobj ID.
+ * If marker_id == 0, this parameter is raw virtual address with no codeobj ID information.
+ * @param[in] userdata Arbitrary data pointer to be sent back to the user via callback.
+ * @retval HSA_STATUS_SUCCESS on success.
+ * @retval HSA_STATUS_ERROR on generic error.
+ * @retval HSA_STATUS_ERROR_INVALID_ARGUMENT for invalid offset or invalid marker_id.
+ * @retval HSA_STATUS_ERROR_OUT_OF_RESOURCES for insufficient isa_size or source_size.
 */
-typedef hsa_status_t(*aqlprofile_att_isa_string_callback_t)(
+typedef hsa_status_t(*aqlprofile_att_isa_callback_t)(
+    char* isa_instruction,
+    char* source_reference,
+    uint64_t* isa_memory_size,
+    uint64_t* isa_size,
+    uint64_t* source_size,
     uint32_t marker_id,
     uint64_t offset,
-    void* userdata,
-    uint64_t* isa_memory_size,
-    char* isa_instruction,
-    uint64_t* isa_size,
-    char* source_reference,
-    uint64_t* source_size
+    void* userdata
 );
 
 /**
- * @brief Callback for rocprofiler to return ISA to aqlprofile ATT parser.
- * The caller must copy a desired instruction on symbol_name and source_reference,
- * while obeying the max length returned by aqlprofile_att_isa_length_callback_t
+ * @brief Callback for rocprofiler to return traces back to rocprofiler.
  * @param[in] trace_type_id The type of this trace as in _iterate_event_ids().
  * @param[in] correlation_id The ID of shader engine or trace callback number.
  * @param[in] trace_events A pointer to sequence of events, of size trace_size.
@@ -532,13 +544,24 @@ typedef uint64_t(*aqlprofile_att_se_data_callback_t)(
 );
 
 /**
- * @brief Iterate over all available event types.
+ * @brief Callback returning from aqlprofile_att_parser_iterate_event_list
  * @param[in] trace_event_id ID of the event.
  * @param[in] trace_event_name Event name.
+ * @param[in] userdata userdata.
 */
-hsa_status_t aqlprofile_att_parser_iterate_event_list(
+typedef void(*aqlprofile_att_parser_iterate_event_cb_t)(
     int trace_event_id,
     const char* trace_event_name,
+    void* userdata
+);
+
+/**
+ * @brief Iterate over all available event types.
+ * @param[in] callback Callback where events are returned to.
+ * @param[in] userdata userdata.
+*/
+hsa_status_t aqlprofile_att_parser_iterate_event_list(
+    aqlprofile_att_parser_iterate_event_cb_t callback,
     void* userdata
 );
 
@@ -546,16 +569,14 @@ hsa_status_t aqlprofile_att_parser_iterate_event_list(
  * @brief Iterate over all event coordinates for a given agent_t and event_t.
  * @param[in] se_data_callback Callback to return shader engine data from.
  * @param[in] trace_callback Callback where the trace data is returned to.
- * Each trace will be marked by the ID returned on aqlprofile_att_parser_iterate_event_list
- * @param[in] symbol_length_callback Callback to return ISA lengths.
- * @param[in] symbol_name_callback Callback to return ISA lines.
+ * Each trace will be marked by the ID returned on aqlprofile_att_parser_iterate_event_list.
+ * @param[in] isa_callback Callback to return ISA lines.
  * @param[in] userdata Userdata passed back to caller via callback.
 */
 hsa_status_t aqlprofile_att_parse_data(
     aqlprofile_att_se_data_callback_t se_data_callback,
     aqlprofile_att_trace_callback_t trace_callback,
-    aqlprofile_att_isa_length_callback_t isa_length_callback,
-    aqlprofile_att_isa_string_callback_t isa_string_callback,
+    aqlprofile_att_isa_callback_t isa_callback,
     void* userdata
 );
 

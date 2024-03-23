@@ -33,7 +33,7 @@
 #include "stitch/stitch.hpp"
 
 std::shared_mutex WaveDataInternal::mutex;
-std::unordered_map<uint64_t, size_t> WaveDataInternal::kernelID{{0,0}};
+std::unordered_map<pcinfo_t, size_t> WaveDataInternal::kernelID{{{0,0},0}};
 std::atomic<size_t> WaveDataInternal::current_kernel_unique_id{1};
 
 template<typename WaveArrayType> FlattenTree getAggregatedData(WaveArrayType& wavearray);
@@ -324,8 +324,8 @@ std::unique_ptr<CppReturnInfo> CppReturnInfo::UnSerialize(const char* buffer, si
     READ_INC(&info, sizeof(fileoffset_info_t), numinfo);
     ret->flags = info.flags;
 
-    ret->kernel_ids_addr = std::vector<uint64_t>(info.num_kernel_ids);
-    READ_INC(ret->kernel_ids_addr.data(), sizeof(uint64_t), info.num_kernel_ids);
+    ret->kernel_ids_addr = std::vector<pcinfo_t>(info.num_kernel_ids);
+    READ_INC(ret->kernel_ids_addr.data(), sizeof(pcinfo_t), info.num_kernel_ids);
     
     ret->tracesizes = std::vector<uint64_t>(info.num_traces);
     READ_INC(ret->tracesizes.data(), sizeof(uint64_t), info.num_traces);
@@ -390,20 +390,15 @@ extern "C"
     }
 }
 
-uint64_t CodeobjTableTranslator::ToPcV2(uint64_t pc)
+pcinfo_t CodeobjTableTranslator::ToPcV2(uint64_t pc)
 {
-  pcinfo_t pcinfo;
-  try {
-    const address_range_t& codeobj = this->find_codeobj_in_range(pc);
-    // If offset does not fit in 34 bits, use raw PC values
-    if (pc - codeobj.vbegin > (1ul<<PCINFO_OFFSET_BITS))
-        throw std::string();
-    pcinfo.codeobj.header = 1;
-    pcinfo.codeobj.id = codeobj.id;
-    pcinfo.codeobj.offset = pc - codeobj.vbegin;
-  } catch (std::string& e) {
-    pcinfo.addr.header = 0;
-    pcinfo.addr.addr = pc;
-  }
-  return pcinfo.raw;
+    pcinfo_t pcinfo {.addr = pc, .marker_id = 0};
+    try {
+        const address_range_t& codeobj = this->find_codeobj_in_range(pc);
+        pcinfo.marker_id = codeobj.id;
+        pcinfo.addr = pc - codeobj.vbegin;
+    }
+    catch (std::string& e) {}
+    catch (std::out_of_range& e) {}
+    return pcinfo;
 }

@@ -266,14 +266,13 @@ std::pair<WaveInstCategory, uint16_t> gfx10wave_t::inst_map_to_gfx9(int einst) {
 
 #define empty_wave_check(waveslot_size) if (waveslot_size == 0) { continue; }
 
-wave_t::gfx10wave_t(Token& token, uint64_t start_addr, int tg_simd, int slot) {
+wave_t::gfx10wave_t(Token& token, pcinfo_t start_addr, int tg_simd, int slot) {
   this->begin_time = token.time;
   this->last_state_cycle = token.time;
   this->simd = tg_simd;
   this->wave_id = slot;
 
-  Instruction inst{this->begin_time, WaveInstCategory::PCINFO, start_addr, 0};
-  instructions.push_back(inst);
+  instructions.push_back(Instruction{start_addr});
 }
 
 void wave_t::complete_wave(Token& token) {
@@ -289,7 +288,7 @@ std::tuple<
   WaveArray,
   std::vector<att_perfevent_t>,
   std::vector<occupancy_info_t>,
-  std::vector<uint64_t>
+  std::vector<pcinfo_t>
 >
 wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
   bool bHasLostPackets = false;
@@ -341,7 +340,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
       case gfx10type::WAVE_START:
       {
         wstart_type start { .raw = token.contents };
-        uint64_t wave_addr = csregister.get_wave_start(start);
+        pcinfo_t wave_addr = csregister.get_wave_start(start);
 
         size_t kid = get_addr_unique_id(wave_addr);
         running_waves[start.getGPULocation()] = kid;
@@ -480,16 +479,16 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
     auto& inst = wave.instructions.at(0);
     // If the wave has a invalid PC value, check if the codeobj information was not delayed relative to TTrace
     if (inst.value != static_cast<uint64_t>(WaveInstCategory::PCINFO)) continue;
-    if (inst.issue2inst >> 62) continue;
+    if (inst.pc.marker_id != 0) continue;
 
-    inst.issue2inst = csregister.get_wave_start_delayed(inst.issue2inst);
+    inst.pc = csregister.get_wave_start_delayed(inst.pc.addr);
   }
 
-  std::unordered_map<uint64_t, uint64_t> retroactive_addr_map{};
-  for (auto& [addr, id] : kernelID)
+  std::unordered_map<size_t, size_t> retroactive_addr_map{};
+  for (auto& [krn_addr, id] : kernelID)
   {
-    uint64_t v2pc = csregister.get_wave_start_delayed(addr);
-    if (v2pc != addr && kernelID.find(v2pc) != kernelID.end())
+    pcinfo_t v2pc = csregister.get_wave_start_delayed(krn_addr.addr);
+    if (v2pc != krn_addr && kernelID.find(v2pc) != kernelID.end())
       retroactive_addr_map[id] = kernelID.at(v2pc);
   }
 
@@ -511,20 +510,20 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
     auto& inst_vector = SIMD[alu.slot][alu.wid].instructions;
     auto& inst = inst_vector[alu.inst];
     int64_t inst_time = inst.time;
-    int64_t delay_time = inst.last + (int64_t)alu.time - inst_time;
+    int64_t delay_time = inst.stall_time + (int64_t)alu.time - inst_time;
 
     if (alu.inst < inst_vector.size()-1)
       delay_time = std::min(delay_time, (int64_t)inst_vector[alu.inst+1].time - inst_time);
-    inst.last = delay_time;
+    inst.stall_time = delay_time;
   }
 
   if (bHasLostPackets)
     std::cout << "Warning: Packet lost!" << std::endl;
 
-  std::map<uint64_t, uint64_t> rev_map;
+  std::map<uint64_t, pcinfo_t> rev_map;
   for (auto& kv : kernelID) rev_map.insert({kv.second, kv.first});
 
-  std::vector<uint64_t> kid_map;
+  std::vector<pcinfo_t> kid_map;
   for (int key = 0; key < rev_map.size(); key++) kid_map.push_back(rev_map[key]);
 
   return std::make_tuple(SIMD, perfEvents, occupancy, kid_map);
@@ -535,7 +534,7 @@ void wave_t::new_pc(int64_t time, int64_t pc, CodeobjTableTranslator& table)
   if (last_jump_inst >= 0 && last_jump_inst < instructions.size())
     time = instructions.at(last_jump_inst).time;
 
-  Instruction inst{time, WaveInstCategory::PCINFO, table.ToPcV2(pc<<2), 0};
+  Instruction inst{table.ToPcV2(pc<<2)};
   if (last_jump_inst >= 0)
     instructions.emplace(instructions.begin()+last_jump_inst+1, inst);
   else
@@ -575,7 +574,7 @@ void wave_t::update_immediate(int64_t token_time) {
 
   auto& inst = this->instructions.back();
   if (inst.value != (uint64_t)WaveInstCategory::IMMED) return;
-  inst.last = std::max<int64_t>(inst.last, std::max(token_time-inst.time,1l)-1);
+  inst.stall_time = std::max<int64_t>(inst.stall_time, std::max(token_time-inst.time,1l)-1);
 
   if (!this->timeline.size()) return;
   this->timeline.back().second += std::max(token_time-last_state_cycle,1l)-1;
@@ -590,7 +589,7 @@ void wave_t::apply_immediate(Token token) {
 
   int64_t time = std::min(token.time, last_state_cycle+last_state_duration);
   int64_t delta_time = std::max(1l, token.time-time);
-  this->instructions.push_back({time, WaveInstCategory::IMMED, 0, delta_time});
+  this->instructions.push_back({time, WaveInstCategory::IMMED, delta_time, 0});
 
   set_state_exec(time, 0);
   cur_state = WAVESLOT_STATE::WS_WAIT;

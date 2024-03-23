@@ -20,9 +20,9 @@ struct assemblyLine
     String line;
     String loc;
     InstCategory cat;
-    uint64_t addr;
-    uint64_t next;
-    size_t to_line;
+    pcinfo_t addr;
+    pcinfo_t next;
+    pcinfo_t to_line;
     size_t index;
     size_t line_num;
 
@@ -30,8 +30,8 @@ struct assemblyLine
 
     void print()
     {
-        std::cout << int(cat) << " t " << categories.at(cat) << " addr: " << std::hex << addr
-                  << " next " << next << std::dec << ' ' << line << " : " << loc << std::endl;
+        std::cout << int(cat) << " t " << categories.at(cat) << " addr: " << std::hex << addr.addr
+                  << " next " << next.addr << std::dec << ' ' << line << " : " << loc << std::endl;
     }
 };
 typedef std::shared_ptr<assemblyLine> assemblyLinePtr;
@@ -39,8 +39,7 @@ typedef std::shared_ptr<assemblyLine> assemblyLinePtr;
 class ICodeServicer
 {
 public:
-    virtual assemblyLine GetInstruction(uint64_t addr) = 0;
-    virtual void forget(uint32_t id) = 0;
+    virtual assemblyLine GetInstruction(pcinfo_t addr) = 0;
     virtual ~ICodeServicer() {};
 };
 
@@ -85,7 +84,7 @@ class IWatchlist
 public:
     virtual ~IWatchlist(){};
     virtual assemblyLinePtr jump(const assemblyLine& source) = 0;
-    virtual assemblyLinePtr getcode(uint64_t addr) = 0;
+    virtual assemblyLinePtr getcode(pcinfo_t addr) = 0;
     virtual void getpc(const assemblyLine& source, const assemblyLine& next) = 0;
     virtual assemblyLinePtr setpc(const assemblyLine& source, const InstructionExt& next_inst) = 0;
     virtual assemblyLinePtr swappc(
@@ -96,7 +95,7 @@ public:
     virtual void scratch(const assemblyLine& source) = 0;
     virtual void move(const assemblyLine& source) = 0;
     virtual void updatelane(const assemblyLine& source) = 0;
-    virtual size_t reverse_map(uint64_t addr) = 0;
+    virtual size_t reverse_map(pcinfo_t addr) = 0;
 
     bool try_match_swapped(
         const InstructionExt& first,
@@ -124,7 +123,7 @@ public:
     virtual ~RegisterWatchList() {}
 
     virtual assemblyLinePtr jump(const assemblyLine& source) override;
-    virtual assemblyLinePtr getcode(uint64_t addr) override;
+    virtual assemblyLinePtr getcode(pcinfo_t addr) override;
 
     virtual void getpc(const assemblyLine& source, const assemblyLine& next) override;
     assemblyLinePtr setpc(const assemblyLine& source, const InstructionExt& next_inst) override;
@@ -167,7 +166,7 @@ public:
     //PCTranslator(insts, code, raw_code, reverse_map, codeservice);
 
     virtual assemblyLinePtr jump(const assemblyLine& source) override;
-    virtual assemblyLinePtr getcode(uint64_t addr) override;
+    virtual assemblyLinePtr getcode(pcinfo_t addr) override;
 
     assemblyLinePtr setpc(const assemblyLine& source, const InstructionExt& next_inst) override;
     assemblyLinePtr swappc(
@@ -180,15 +179,15 @@ public:
     virtual void move(const assemblyLine& source) override {}
     virtual void updatelane(const assemblyLine& source) override {}
     virtual void getpc(const assemblyLine& source, const assemblyLine& next) override {}
-    virtual size_t reverse_map(uint64_t addr) { if (getcode(addr).get()) return getcode(addr)->index; return 0; };
+    virtual size_t reverse_map(pcinfo_t addr) { if (getcode(addr).get()) return getcode(addr)->index; return 0; };
 
     void addsymbol(uint64_t addr);
-    uint64_t getjump_loc(const assemblyLine& line);
+    pcinfo_t getjump_loc(const assemblyLine& line);
 
     std::vector<assemblyLinePtr>& code;
     std::shared_ptr<ICodeServicer> service;
-    std::unordered_map<uint64_t, assemblyLinePtr> jump_map;
-    std::unordered_map<uint64_t, assemblyLinePtr> addrmap;
+    std::unordered_map<pcinfo_t, assemblyLinePtr> jump_map;
+    std::unordered_map<pcinfo_t, assemblyLinePtr> addrmap;
 
     SharedMutex code_mut;
     SharedMutex jump_mut;
@@ -200,7 +199,7 @@ public:
     Stitcher(std::shared_ptr<ICodeServicer>& service, bool bGFX9);
     Stitcher(std::vector<assemblyLinePtr>& code, std::unordered_map<int, int>& jumps, bool bGFX9);
 
-    std::vector<uint64_t> stitch(std::vector<InstructionExt>& trace);
+    void stitch(std::vector<InstructionExt>& trace);
     std::vector<assemblyLinePtr> raw_code;
 private:
     const bool bGFX9;

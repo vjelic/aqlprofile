@@ -28,7 +28,7 @@
 
 struct gfx10wave_t : public WaveDataInternal {
   gfx10wave_t() = default;
-  gfx10wave_t(class gfx10Token&, uint64_t start_addr, int tg_simd, int slot);
+  gfx10wave_t(class gfx10Token&, pcinfo_t start_addr, int tg_simd, int slot);
 
   int64_t last_state_cycle = 0;   //  record the time of state transition
   int64_t last_state_duration = 0; // record minimum how long the state should last
@@ -66,7 +66,7 @@ struct gfx10wave_t : public WaveDataInternal {
     WaveArray,
     std::vector<att_perfevent_t>,
     std::vector<occupancy_info_t>,
-    std::vector<uint64_t>
+    std::vector<pcinfo_t>
   > sqtt_simd_analysis(std::vector<gfx10Token>& tokens);
 
   //static std::unordered_map<int, const char*> INST_NAMES;
