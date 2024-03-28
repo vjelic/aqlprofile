@@ -289,9 +289,11 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
       }
 
       size_t kid = get_addr_unique_id(wave_addr);
-      running_waves[getGPULocation(token)] = kid;
-
-      occupancy.push_back({kid, token.simd, token.wave, 1, token.cu, token.time});
+      auto it = running_waves.emplace(getGPULocation(token), kid);
+      if (it.second)
+        occupancy.push_back({kid, token.simd, token.wave, 1, token.cu, token.time});
+      else
+        it.first->second = kid;
 
       num_waves_started += 1;
     }
@@ -304,15 +306,19 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
       }
 
       size_t kid = 0;
-      if (running_waves.find(getGPULocation(token)) != running_waves.end())
+      auto occ_it = running_waves.find(getGPULocation(token));
+      if (occ_it != running_waves.end())
       {
         num_waves_completed += 1;
-        kid = running_waves[getGPULocation(token)];
+        kid = occ_it->second;
+        running_waves.erase(occ_it);
+        occupancy.push_back({kid, token.simd, token.wave, 0, token.cu, token.time});
       }
-      else
+      else if (!bHasLostPackets)
+      {
         occupancy.insert(occupancy.begin(), {kid, token.simd, token.wave, 1, token.cu, tokens[0].time});
-
-      occupancy.push_back({kid, token.simd, token.wave, 0, token.cu, token.time});
+        occupancy.push_back({kid, token.simd, token.wave, 0, token.cu, token.time});
+      }
       num_waves_completed += 1;
     }
     else if (token.type == SQTT_TOKEN_INST)
@@ -433,7 +439,12 @@ int64_t wave_t::apply_issue(uint64_t wave_status, int64_t token_time)
     if (cycles_time > 0)
     {
       if (state_start_cycle < immed_time)
-        timeline.back().second += immed_time - state_start_cycle;
+      {
+        if (timeline.size())
+          timeline.back().second += immed_time - state_start_cycle;
+        else
+          timeline.push_back({WAVESLOT_STATE::WS_WAIT, immed_time - state_start_cycle});
+      }
 
       timeline.push_back({WAVESLOT_STATE::WS_WAIT, cycles_time});
       state_start_cycle = immed_time + cycles_time;
