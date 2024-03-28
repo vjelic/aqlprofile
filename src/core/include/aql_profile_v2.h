@@ -3,9 +3,9 @@
 #include <hsa/hsa.h>
 #include <hsa/hsa_ven_amd_aqlprofile.h>
 
-#define PUBLIC_API __attribute__((visibility("default")))
-
+#ifdef __cplusplus
 extern "C" {
+#endif
 
 typedef struct {
     uint64_t handle;
@@ -168,7 +168,7 @@ typedef hsa_status_t (*aqlprofile_memory_copy_t)(
  * @retval HSA_STATUS_ERROR if some callback returns an error
  * @retval HSA_STATUS_ERROR_INVALID_ARGUMENT if invalid handle is given
 */
-PUBLIC_API hsa_status_t aqlprofile_pmc_iterate_data(
+hsa_status_t aqlprofile_pmc_iterate_data(
     aqlprofile_handle_t handle,
     aqlprofile_pmc_data_callback_t callback,
     void* userdata
@@ -192,7 +192,7 @@ typedef struct {
  * @param[in] dealloc_cb Function to free memory allocated by alloc_cb
  * @param[in] userdata Data passed back to user via memory alloc callback
 */
-PUBLIC_API hsa_status_t aqlprofile_pmc_create_packets(
+hsa_status_t aqlprofile_pmc_create_packets(
     aqlprofile_handle_t* handle,
     aqlprofile_pmc_aql_packets_t* packets,
     aqlprofile_pmc_profile_t profile,
@@ -206,7 +206,7 @@ PUBLIC_API hsa_status_t aqlprofile_pmc_create_packets(
  * @brief Function to delete AQL packets after creation by aqlprofile_pmc_create_packets
  * @param[in] handle Returned by aqlprofile_pmc_create_packets()
 */
-PUBLIC_API void aqlprofile_pmc_delete_packets(aqlprofile_handle_t handle);
+void aqlprofile_pmc_delete_packets(aqlprofile_handle_t handle);
 
 /**
  * @brief Iterates over thread trace data and the data to user
@@ -217,7 +217,7 @@ PUBLIC_API void aqlprofile_pmc_delete_packets(aqlprofile_handle_t handle);
  * @retval HSA_STATUS_ERROR if some callback returns an error
  * @retval HSA_STATUS_ERROR_INVALID_ARGUMENT if invalid handle is given
 */
-PUBLIC_API hsa_status_t aqlprofile_att_iterate_data(
+hsa_status_t aqlprofile_att_iterate_data(
     aqlprofile_handle_t handle,
     aqlprofile_att_data_callback_t callback,
     void* userdata
@@ -240,7 +240,7 @@ typedef struct {
  * @retval HSA_STATUS_SUCCESS if all packets created succesfully
  * @retval HSA_STATUS_ERROR otherwise
 */
-PUBLIC_API hsa_status_t aqlprofile_att_create_packets(
+hsa_status_t aqlprofile_att_create_packets(
     aqlprofile_handle_t* handle,
     aqlprofile_att_control_aql_packets_t* packets,
     aqlprofile_att_profile_t profile,
@@ -250,7 +250,7 @@ PUBLIC_API hsa_status_t aqlprofile_att_create_packets(
     void* userdata
 );
 
-PUBLIC_API void aqlprofile_att_delete_packets(aqlprofile_handle_t handle);
+void aqlprofile_att_delete_packets(aqlprofile_handle_t handle);
 
 /**
  * @brief Callback for iteration of all possible event coordinate IDs and coordinate names.
@@ -272,7 +272,7 @@ typedef hsa_status_t (*aqlprofile_eventname_callback_t)(int id, const char* name
  * @retval OTHERS If @ref aqlprofile_eventname_callback_t returns non-HSA_STATUS_SUCCESS, 
  *         that value is returned. 
  */
-PUBLIC_API hsa_status_t aqlprofile_iterate_event_ids(
+hsa_status_t aqlprofile_iterate_event_ids(
     aqlprofile_eventname_callback_t callback,
     void* user_data
 );
@@ -466,7 +466,7 @@ typedef hsa_status_t (*aqlprofile_att_tracename_callback_t)(int id, const char* 
  * @retval OTHERS If @ref aqlprofile_eventname_callback_t returns non-HSA_STATUS_SUCCESS, 
  *         that value is returned. 
  */
-PUBLIC_API hsa_status_t aqlprofile_att_iterate_trace_type_ids(
+hsa_status_t aqlprofile_att_iterate_trace_type_ids(
     aqlprofile_att_tracename_callback_t callback,
     void* userdata
 );
@@ -609,4 +609,6 @@ hsa_status_t aqlprofile_att_codeobj_load_marker(
     uint64_t size
 );
 
+#ifdef __cplusplus
 }
+#endif
