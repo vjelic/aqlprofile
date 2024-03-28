@@ -92,14 +92,69 @@ typedef struct
 } aqlprofile_pmc_event_t;
 
 /**
+ * @brief Struct containing information about the agent. User code sets these values
+ * to the describe the agent to profile. Information can be obtained either from HSA
+ * (if loaded) or the KFD topology.
+*/
+typedef struct 
+{
+    const char* agent_gfxip;              /**< Agent GFXIP (HSA_AGENT_INFO_NAME or KFD.product_name) */
+    uint32_t xcc_num;               /**< XCC's on the agent (HSA_AMD_AGENT_INFO_NUM_XCC or KFD.num_xcc) */
+    uint32_t se_num;                /**< SE's on the agent (HSA_AMD_AGENT_INFO_NUM_SHADER_ENGINES or KFD.num_shader_banks) */
+    uint32_t cu_num;                /**< CU's on the agent (HSA_AMD_AGENT_INFO_COMPUTE_UNIT_COUNT or KFD.cu_count) */
+    uint32_t shader_arrays_per_se;  /**< Shader arrays per SE of agent (HSA_AMD_AGENT_INFO_NUM_SHADER_ARRAYS_PER_SE or KFD.simd_arrays_per_engine)*/
+} aqlprofile_agent_info_t;
+
+/** 
+ * @brief Struct containing a handle to a registered agent
+ * 
+ */
+typedef struct 
+{
+    uint64_t handle;
+} aqlprofile_agent_handle_t;
+
+/**
+ * @brief Registers an agent to be used with AQL profile. 
+ * @param[out] agent_id Handle to newly registered agent
+ * @param[in] agent_info Info to register a new agent with AQL Profiler
+ * @retval HSA_STATUS_SUCCESS registration ok
+ * @retval HSA_STATUS_ERROR registration failed
+*/
+PUBLIC_API hsa_status_t aqlprofile_register_agent(aqlprofile_agent_handle_t* agent_id, 
+                                                  const aqlprofile_agent_info_t* agent_info);
+
+/**
  * @brief AQLprofile struct containing information for perfmon events
 */
 typedef struct
 {
-  hsa_agent_t agent;
+  aqlprofile_agent_handle_t agent;
   const aqlprofile_pmc_event_t* events;
   uint32_t event_count;
 } aqlprofile_pmc_profile_t;
+
+
+// Profile attributes
+typedef enum
+{
+    AQLPROFILE_INFO_COMMAND_BUFFER_SIZE = 0, // get_info returns uint32_t value
+    AQLPROFILE_INFO_PMC_DATA_SIZE = 1,       // get_info returns uint32_t value
+    AQLPROFILE_INFO_PMC_DATA = 2,            // get_info returns PMC uint64_t value
+                                                            // in info_data object
+    AQLPROFILE_INFO_BLOCK_COUNTERS = 4,      // get_info returns number of block counter
+    AQLPROFILE_INFO_BLOCK_ID = 5,            // get_info returns block id, instances
+                                                            // by name string using _id_query_t
+    AQLPROFILE_INFO_ENABLE_CMD = 6,          // get_info returns size/pointer for
+                                                            // counters enable command buffer
+    AQLPROFILE_INFO_DISABLE_CMD = 7,         // get_info returns size/pointer for
+                                                            // counters disable command buffer
+} aqlprofile_pmc_info_type_t;
+
+PUBLIC_API hsa_status_t
+aqlprofile_get_pmc_info(const aqlprofile_pmc_profile_t* profile,
+                        aqlprofile_pmc_info_type_t attribute, 
+                        void* value);
 
 /**
  * @brief AQLprofile struct containing information for Advanced Thread Trace
@@ -158,6 +213,19 @@ typedef hsa_status_t (*aqlprofile_memory_copy_t)(
     size_t size,
     void* userdata
 );
+
+
+/**
+ * @brief Validates the event for the agent.  
+ * @param[in] agent The agent to validate the event for.
+ * @param[in] event The event to validate.
+ * @param[out] result True if the event is valid for the agent, false otherwise.
+ * @retval HSA_STATUS_SUCCESS if the event was validated.
+ * @retval HSA_STATUS_ERROR if the event was not validated.
+*/
+PUBLIC_API hsa_status_t aqlprofile_validate_pmc_event(
+    aqlprofile_agent_handle_t agent, const aqlprofile_pmc_event_t* event, bool* result);
+
 
 /**
  * @brief Iterate_data() will parse the event data and call @callback with the resulting event data
@@ -304,7 +372,7 @@ typedef hsa_status_t(*aqlprofile_coordinate_callback_t)(
  * @param[in] userdata Arbitrary data pointer to be sent back to the user via callback.
 */
 hsa_status_t aqlprofile_iterate_event_coord(
-  hsa_agent_t agent,
+  aqlprofile_agent_handle_t agent,
   aqlprofile_pmc_event_t event,
   uint64_t sample_id,
   aqlprofile_coordinate_callback_t callback,

@@ -53,6 +53,14 @@ public:
     ) : agent(agent), alloc_cb(alloc), dealloc_cb(dealloc),
         userdata(data), handle(HANDLE_COUNTER.fetch_add(1)) {}
 
+    MemoryManager(
+        aqlprofile_agent_handle_t agent,
+        aqlprofile_memory_alloc_callback_t alloc,
+        aqlprofile_memory_dealloc_callback_t dealloc,
+        void* data
+    ) : agent_handle(agent), alloc_cb(alloc), dealloc_cb(dealloc),
+        userdata(data), handle(HANDLE_COUNTER.fetch_add(1)) {}
+
     virtual ~MemoryManager() {}
 
     void CheckStatus(hsa_status_t status) const { if (status != HSA_STATUS_SUCCESS) throw status; }
@@ -64,6 +72,7 @@ public:
 
     size_t GetHandler() const { return handle; }
     hsa_agent_t GetAgent() const { return agent; }
+    aqlprofile_agent_handle_t AgentHandle() const { return agent_handle; }    
 
     void CreateCmdBuf(size_t size)
     {
@@ -113,7 +122,8 @@ protected:
         return std::unique_ptr<void, MemoryDeleter>{ptr, MemoryDeleter{dealloc_cb, userdata}};
     }
 
-    hsa_agent_t agent;
+    aqlprofile_agent_handle_t agent_handle = {.handle = 0};
+    hsa_agent_t agent = {.handle = 0};
     std::unique_ptr<void, MemoryDeleter> cmdbuf = nullptr;
     std::unique_ptr<void, MemoryDeleter> outputbuf = nullptr;
     size_t outputbuf_size = 0;
@@ -133,6 +143,13 @@ class CounterMemoryManager: public MemoryManager
 public:
     CounterMemoryManager(
         hsa_agent_t agent,
+        aqlprofile_memory_alloc_callback_t alloc,
+        aqlprofile_memory_dealloc_callback_t dealloc,
+        void* data
+    ): MemoryManager(agent, alloc, dealloc, data) {}
+
+    CounterMemoryManager(
+        aqlprofile_agent_handle_t agent,
         aqlprofile_memory_alloc_callback_t alloc,
         aqlprofile_memory_dealloc_callback_t dealloc,
         void* data
@@ -159,6 +176,13 @@ class TraceMemoryManager: public MemoryManager
 public:
     TraceMemoryManager(
         hsa_agent_t agent,
+        aqlprofile_memory_alloc_callback_t alloc,
+        aqlprofile_memory_dealloc_callback_t dealloc,
+        void* data
+    ): MemoryManager(agent, alloc, dealloc, data) {}
+
+    TraceMemoryManager(
+        aqlprofile_agent_handle_t agent,
         aqlprofile_memory_alloc_callback_t alloc,
         aqlprofile_memory_dealloc_callback_t dealloc,
         void* data

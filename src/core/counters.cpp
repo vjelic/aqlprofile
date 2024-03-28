@@ -119,7 +119,7 @@ _internal_aqlprofile_pmc_iterate_data(
     if (!memorymgr)
         return HSA_STATUS_ERROR_INVALID_ARGUMENT;
 
-    aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(memorymgr->GetAgent());
+    aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(memorymgr->AgentHandle());
     const uint32_t xcc_num = pm4_factory->GetXccNumber();
 
     uint64_t* samples = reinterpret_cast<uint64_t*>(memorymgr->GetOutputBuf());
@@ -324,17 +324,14 @@ PUBLIC_API hsa_status_t aqlprofile_iterate_event_ids(
     } catch (hsa_status_t err) {
         ERR_LOGGING << err;
         return err;
-    } catch (hsa_status_t err) {
-        ERR_LOGGING << err;
-        return err;
-    } catch(...) {
+    } catch (...) {
         return HSA_STATUS_ERROR;
     }
     return HSA_STATUS_SUCCESS;
 }
 
 PUBLIC_API hsa_status_t aqlprofile_iterate_event_coord(
-  hsa_agent_t agent,
+  aqlprofile_agent_handle_t agent,
   aqlprofile_pmc_event_t event,
   uint64_t counter_id,
   aqlprofile_coordinate_callback_t callback,
@@ -366,4 +363,84 @@ PUBLIC_API hsa_status_t aqlprofile_iterate_event_coord(
     return HSA_STATUS_SUCCESS;
 }
 
+
+PUBLIC_API hsa_status_t aqlprofile_register_agent(
+    aqlprofile_agent_handle_t* agent_id, 
+    const aqlprofile_agent_info_t* agent_info
+) {
+    try
+    {
+        *agent_id = aql_profile::RegisterAgent(agent_info);
+    } 
+    catch (hsa_status_t err) {
+        ERR_LOGGING << err;
+        return err;
+    }
+    catch(...) {
+        return HSA_STATUS_ERROR;
+    }
+
+    return HSA_STATUS_SUCCESS;
+}
+
+
+// Check if event is valid for the specific GPU
+PUBLIC_API hsa_status_t aqlprofile_validate_pmc_event(
+  aqlprofile_agent_handle_t agent, const aqlprofile_pmc_event_t* event, bool* result) {
+    hsa_status_t status = HSA_STATUS_SUCCESS;
+    *result = false;
+
+    try {
+        aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(agent);
+        if (pm4_factory->GetBlockInfo(event) != NULL) *result = true;
+    } catch (hsa_status_t err) {
+        ERR_LOGGING << err;
+        return err;
+    }
+    catch(...) {
+        return HSA_STATUS_ERROR;
+    }
+
+    return status;
+}
+
+PUBLIC_API hsa_status_t
+aqlprofile_get_pmc_info(const aqlprofile_pmc_profile_t* profile,
+                            aqlprofile_pmc_info_type_t attribute, void* value) {
+    if (!profile) return HSA_STATUS_ERROR;
+    hsa_status_t status = HSA_STATUS_SUCCESS;
+    try
+    {
+        aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile->agent);
+        switch (attribute) {
+            case AQLPROFILE_INFO_BLOCK_ID: {
+                hsa_ven_amd_aqlprofile_id_query_t* query =
+                    reinterpret_cast<hsa_ven_amd_aqlprofile_id_query_t*>(value);
+                const uint32_t block = pm4_factory->FindBlock(query->name);
+                const GpuBlockInfo* info = pm4_factory->GetBlockInfo(block);
+                auto status = (info == NULL) ? HSA_STATUS_ERROR : HSA_STATUS_SUCCESS;
+                if (status == HSA_STATUS_SUCCESS) {
+                    query->id = block;
+                    query->instance_count = info->instance_count;
+                }
+            } break;
+            case AQLPROFILE_INFO_BLOCK_COUNTERS: {
+                *reinterpret_cast<uint32_t*>(value) =
+                    pm4_factory->GetBlockInfo(&profile->events[0])->counter_count;
+            } break;
+            default:
+                status = HSA_STATUS_ERROR_INVALID_ARGUMENT;
+        }
+
+    } 
+    catch (hsa_status_t err) {
+        ERR_LOGGING << err;
+        return err;
+    }
+    catch(...) {
+        return HSA_STATUS_ERROR;
+    }
+    return HSA_STATUS_SUCCESS;
+
+}
 }  // extern "C"

@@ -10,6 +10,7 @@ set ( LIB_SRC
   ${LIB_DIR}/core/spm_data.cpp
   ${LIB_DIR}/core/populate_aql.cpp
   ${LIB_DIR}/core/memorymanager.cpp
+  ${LIB_DIR}/core/pm4_factory.cpp
   ${LIB_DIR}/core/gfx9_factory.cpp
   ${LIB_DIR}/core/gfx908_factory.cpp
   ${LIB_DIR}/core/gfx90a_factory.cpp

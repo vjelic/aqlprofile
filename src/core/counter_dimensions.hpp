@@ -37,14 +37,15 @@ struct EventDimension
     }
 };
 
+
 class EventKey
 {
 public:
-    hsa_agent_t agent;
+    uint64_t agent;
     hsa_ven_amd_aqlprofile_block_name_t block;
 
     bool operator==(const EventKey& other) const {
-        return  agent.handle == other.agent.handle && block == other.block;
+        return  agent == other.agent && block == other.block;
     }
     bool operator!=(const EventKey& other) const {
         return !(*this == other);
@@ -54,9 +55,9 @@ public:
 class EventAttribDimension
 {
 public:
-    template<typename EventType>
-    EventAttribDimension(hsa_agent_t agent, const EventType& event):
-        key({agent, event.block_name})
+    template<typename AgentType, typename EventType>
+    EventAttribDimension(AgentType agent, const EventType& event):
+        key({agent.handle, event.block_name})
     {
         EventDimension::init();
 
@@ -160,11 +161,11 @@ private:
     std::vector<EventDimension> dimensions;
 
 public:
-    template<typename EventType>
-    static const EventAttribDimension& get(hsa_agent_t agent, const EventType& event)
+    template<typename AgentType, typename EventType>
+    static const EventAttribDimension& get(AgentType agent, const EventType& event)
     {
         thread_local std::unique_ptr<EventAttribDimension> event_cache{nullptr};
-        EventKey key{agent, event.block_name};
+        EventKey key{agent.handle, event.block_name};
 
         if (!event_cache || event_cache->key != key)
             event_cache = std::make_unique<EventAttribDimension>(agent, event);
