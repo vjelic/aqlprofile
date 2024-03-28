@@ -267,6 +267,7 @@ std::pair<WaveInstCategory, uint16_t> gfx10wave_t::inst_map_to_gfx9(int einst) {
 #define empty_wave_check(waveslot_size) if (waveslot_size == 0) { continue; }
 
 wave_t::gfx10wave_t(Token& token, pcinfo_t start_addr, int tg_simd, int slot) {
+  this->traceID = -1;
   this->begin_time = token.time;
   this->last_state_cycle = token.time;
   this->simd = tg_simd;

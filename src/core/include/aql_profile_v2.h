@@ -409,39 +409,39 @@ struct wave_data_t
     uint8_t reserved;
 
     // VMEM Pipeline: instrs and stalls
-    int num_vmem_instrs = 0;
-    int num_vmem_stalls = 0;
+    int num_vmem_instrs;
+    int num_vmem_stalls;
     // FLAT instrs and stalls
-    int num_flat_instrs = 0;
-    int num_flat_stalls = 0;
+    int num_flat_instrs;
+    int num_flat_stalls;
 
     // LDS instr and stalls
-    int num_lds_instrs = 0;
-    int num_lds_stalls = 0;
+    int num_lds_instrs;
+    int num_lds_stalls;
 
     // SCA instrs stalls
-    int num_salu_instrs = 0;
-    int num_smem_instrs = 0;
-    int num_salu_stalls = 0;
-    int num_smem_stalls = 0;
+    int num_salu_instrs;
+    int num_smem_instrs;
+    int num_salu_stalls;
+    int num_smem_stalls;
 
     // Branch
-    int num_branch_instrs = 0;
-    int num_branch_taken_instrs = 0;
-    int num_branch_stalls = 0;
+    int num_branch_instrs;
+    int num_branch_taken_instrs;
+    int num_branch_stalls;
 
     // total VMEM/FLAT/LDS/SMEM instructions issued
-    int num_mem_instrs = 0;     // total issued memory instructions
-    int num_valu_stalls = 0;
-    size_t num_valu_instrs = 0;
-    size_t num_issued_instrs = 0;  // total issued instructions (compute + memory)
+    int num_mem_instrs;     // total issued memory instructions
+    int num_valu_stalls;
+    size_t num_valu_instrs;
+    size_t num_issued_instrs;  // total issued instructions (compute + memory)
 
-    int64_t begin_time = 0;  // Begin and end cycle
-    int64_t end_time = 0;
-    int64_t traceID = -1;
+    int64_t begin_time;  // Begin and end cycle
+    int64_t end_time;
+    int64_t traceID;
 
-    size_t timeline_size = 0;
-    size_t instructions_size = 0;
+    size_t timeline_size;
+    size_t instructions_size;
     wave_state_t* timeline_array;
     wave_instruction_t* instructions_array;
 };

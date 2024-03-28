@@ -121,6 +121,7 @@ struct InstructionExt : public att_trace_event_t
 
 struct WaveDataInternal : public wave_data_t
 {
+    WaveDataInternal() { memset(static_cast<wave_data_t*>(this), 0, sizeof(wave_data_t)); }
     std::vector<Instruction> instructions;
     std::vector<std::pair<int32_t, int32_t>> timeline;  // wave state in each cycle
 

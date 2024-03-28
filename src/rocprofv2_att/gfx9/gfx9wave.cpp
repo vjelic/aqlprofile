@@ -87,6 +87,7 @@ const uint64_t SQTT_PERFCOUNTER_TOKEN = 14;
 const uint64_t SQTT_TOKEN_REG_CS_PRIV = 15;
 
 wave_t::gfx9wave_t(Token& token) {
+  this->traceID = -1;
   this->begin_time = token.time;
   this->cur_state = WAVESLOT_STATE::WS_IDLE;
   this->state_start_cycle = token.time;
