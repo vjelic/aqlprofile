@@ -223,6 +223,7 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
         if (profile->output_buffer.ptr != NULL)
           return HSA_STATUS_ERROR_INVALID_ARGUMENT;
       }
+#ifdef AMD_AQLPROFILE_SQTT_NPI
     } else if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_TRACE) {
       pm4_builder::TraceConfig trace_config{};
       memset((char*)&trace_config, 0, sizeof(pm4_builder::TraceConfig));
@@ -330,6 +331,7 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
         // Generate stop commands
         spm_builder->End(&commands, &trace_config);
       }
+#endif
     } else {
       ERR_LOGGING << "Bad profile type (" << profile->type << ")";
       return HSA_STATUS_ERROR_INVALID_ARGUMENT;

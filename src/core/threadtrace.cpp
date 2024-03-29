@@ -96,6 +96,7 @@ hsa_status_t _internal_aqlprofile_att_create_packets(
     aqlprofile_memory_copy_t copy_fn,
     void* userdata
 ) {
+#ifdef AMD_AQLPROFILE_SQTT_NPI
     pm4_builder::CmdBuffer start_cmd;
     pm4_builder::CmdBuffer stop_cmd;
 
@@ -219,6 +220,9 @@ hsa_status_t _internal_aqlprofile_att_create_packets(
     aql_profile::PopulateAql(cmdbuf, stop_cmd.Size(), cmd_writer, &packets->stop_packet);
 
     return HSA_STATUS_SUCCESS;
+#else
+    return HSA_STATUS_ERROR;
+#endif
 }
 
 // Method to populate the provided AQL packet with ATT Markers

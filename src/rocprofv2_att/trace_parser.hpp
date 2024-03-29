@@ -36,7 +36,7 @@
 #include "thread_trace_viewer_def.h"
 #include "../core/include/aql_profile_v2.h"
 
-#define AMD_AQLPROFILE_SQTT_NPI
+//#define AMD_AQLPROFILE_SQTT_NPI
 #define SQTT_PARSER_VERSION 4
 #define OCCUPANCY_RESOLUTION 8
 
