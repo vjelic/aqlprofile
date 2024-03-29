@@ -121,8 +121,8 @@ typedef struct
  * @retval HSA_STATUS_SUCCESS registration ok
  * @retval HSA_STATUS_ERROR registration failed
 */
-PUBLIC_API hsa_status_t aqlprofile_register_agent(aqlprofile_agent_handle_t* agent_id, 
-                                                  const aqlprofile_agent_info_t* agent_info);
+hsa_status_t aqlprofile_register_agent(aqlprofile_agent_handle_t* agent_id,
+                                       const aqlprofile_agent_info_t* agent_info);
 
 /**
  * @brief AQLprofile struct containing information for perfmon events
@@ -151,7 +151,7 @@ typedef enum
                                                             // counters disable command buffer
 } aqlprofile_pmc_info_type_t;
 
-PUBLIC_API hsa_status_t
+hsa_status_t
 aqlprofile_get_pmc_info(const aqlprofile_pmc_profile_t* profile,
                         aqlprofile_pmc_info_type_t attribute, 
                         void* value);
@@ -223,7 +223,7 @@ typedef hsa_status_t (*aqlprofile_memory_copy_t)(
  * @retval HSA_STATUS_SUCCESS if the event was validated.
  * @retval HSA_STATUS_ERROR if the event was not validated.
 */
-PUBLIC_API hsa_status_t aqlprofile_validate_pmc_event(
+hsa_status_t aqlprofile_validate_pmc_event(
     aqlprofile_agent_handle_t agent, const aqlprofile_pmc_event_t* event, bool* result);
 
 
@@ -542,7 +542,7 @@ typedef hsa_status_t(*aqlprofile_att_isa_callback_t)(
     uint64_t* isa_memory_size,
     uint64_t* isa_size,
     uint64_t* source_size,
-    uint32_t marker_id,
+    uint64_t marker_id,
     uint64_t offset,
     void* userdata
 );
