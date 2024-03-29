@@ -18,8 +18,6 @@
 #define THREAD_TRACE_PREFIX_SIZE 0x100
 #define DEFAULT_TRACE_BUFFER_SIZE (3<<26)
 
-#define PUBLIC_API __attribute__((visibility("default")))
-
 namespace aql_profile_v2
 {
 
@@ -228,6 +226,7 @@ hsa_status_t _internal_aqlprofile_att_codeobj_load_marker(
     hsa_ext_amd_aql_pm4_packet_t* packets,
     aqlprofile_handle_t handle,
     aqlprofile_att_header_marker_t header,
+    uint64_t id,
     uint64_t addr,
     uint64_t size
 ) {
@@ -241,14 +240,19 @@ hsa_status_t _internal_aqlprofile_att_codeobj_load_marker(
     pm4_builder::CmdBuilder* cmd_writer = pm4_factory->GetCmdBuilder();
     pm4_builder::CmdBuffer commands;
 
-    sqttbuilder->InsertMarker(&commands, header.raw, ATT_MARKER_HEADER_CHANNEL);
     if (!header.isUnload)
     {
         sqttbuilder->InsertMarker(&commands, uint32_t(addr), ATT_MARKER_ADDR_LO_CHANNEL);
-        sqttbuilder->InsertMarker(&commands, addr >> 32, ATT_MARKER_ADDR_HI_CHANNEL);
+        sqttbuilder->InsertMarker(&commands, addr >> 32,     ATT_MARKER_ADDR_HI_CHANNEL);
         sqttbuilder->InsertMarker(&commands, uint32_t(size), ATT_MARKER_SIZE_LO_CHANNEL);
-        sqttbuilder->InsertMarker(&commands, size >> 32, ATT_MARKER_SIZE_HI_CHANNEL);
+        sqttbuilder->InsertMarker(&commands, size >> 32,     ATT_MARKER_SIZE_HI_CHANNEL);
     }
+    if (!header.legacy_id)
+    {
+        sqttbuilder->InsertMarker(&commands, uint32_t(id), ATT_MARKER_ID_LO_CHANNEL);
+        sqttbuilder->InsertMarker(&commands, id >> 32,     ATT_MARKER_ID_HI_CHANNEL);
+    }
+    sqttbuilder->InsertMarker(&commands, header.raw, ATT_MARKER_HEADER_CHANNEL);
 
     void* cmdbuffer = memorymgr->AddMarkerCmdBuffer(commands.Size());
 
@@ -268,11 +272,12 @@ aqlprofile_att_codeobj_load_marker(
     hsa_ext_amd_aql_pm4_packet_t* packets,
     aqlprofile_handle_t handle,
     aqlprofile_att_header_marker_t header,
+    uint64_t id,
     uint64_t addr,
     uint64_t size
 ) {
     try {
-        return aql_profile_v2::_internal_aqlprofile_att_codeobj_load_marker(packets, handle, header, addr, size);
+        return aql_profile_v2::_internal_aqlprofile_att_codeobj_load_marker(packets, handle, header, id, addr, size);
     } catch (hsa_status_t err) {
         ERR_LOGGING << err;
         return err;

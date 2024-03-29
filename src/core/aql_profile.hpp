@@ -10,6 +10,8 @@
 
 #include "core/aql_profile_exception.h"
 
+#define PUBLIC_API __attribute__((visibility("default")))
+
 namespace pm4_builder {
 class CmdBuilder;
 }

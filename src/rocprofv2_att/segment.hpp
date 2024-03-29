@@ -83,7 +83,7 @@ struct address_range_t
 {
     uint64_t vbegin;
     uint64_t size;
-    uint32_t id;
+    uint64_t id;
 
     bool operator<(const address_range_t& other) const { return vbegin < other.vbegin; }
     bool inrange(uint64_t addr) const { return addr >= vbegin && addr < vbegin+size; };

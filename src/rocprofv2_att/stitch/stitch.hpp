@@ -102,7 +102,7 @@ public:
         const InstructionExt& second,
         const assemblyLine& line
     ) {
-        return second.value == line.cat && first.value == getcode(line.next)->cat;
+        return second.category == line.cat && first.category == getcode(line.next)->cat;
     }
 };
 

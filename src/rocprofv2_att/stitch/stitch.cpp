@@ -42,7 +42,7 @@ void Stitcher::stitch(std::vector<InstructionExt>& insts)
     if (bIsAuto)
     {
         const InstructionExt& firstinst = insts.at(0);
-        STITCH_ASSERT(firstinst.value == WaveInstCategory::PCINFO);
+        STITCH_ASSERT(firstinst.category == WaveInstCategory::PCINFO);
         STITCH_ASSERT(firstinst.pc.addr || firstinst.pc.marker_id);
 
         try {
@@ -62,7 +62,7 @@ void Stitcher::stitch(std::vector<InstructionExt>& insts)
     {
         InstructionExt& inst = insts.at(inst_index);
 
-        if (inst.value == WaveInstCategory::PCINFO)
+        if (inst.category == WaveInstCategory::PCINFO)
         {
             pcskip.push_back(inst_index);
             inst_index ++;
@@ -85,7 +85,7 @@ void Stitcher::stitch(std::vector<InstructionExt>& insts)
         if (line->cat == InstCategory::GETPC)
         {
             watchlist->getpc(*line, *next);
-            bMatched = inst.value == WaveInstCategory::SALU || inst.value == WaveInstCategory::JUMP;
+            bMatched = inst.category == WaveInstCategory::SALU || inst.category == WaveInstCategory::JUMP;
         }
         else if (line->cat == InstCategory::SETPC || line->cat == InstCategory::SWAPPC)
         {
@@ -94,7 +94,7 @@ void Stitcher::stitch(std::vector<InstructionExt>& insts)
             else
                 next = watchlist->swappc(*line, *next, insts.at(inst_index+1));
 
-            bMatched = inst.value == WaveInstCategory::SALU || inst.value == WaveInstCategory::JUMP;
+            bMatched = inst.category == WaveInstCategory::SALU || inst.category == WaveInstCategory::JUMP;
 
             if (bIsAuto)
             {
@@ -104,7 +104,7 @@ void Stitcher::stitch(std::vector<InstructionExt>& insts)
                 while (!next.get() && inst_index+1 < insts.size())
                 {
                     inst_index ++;
-                    if (insts.at(inst_index).value == WaveInstCategory::PCINFO)
+                    if (insts.at(inst_index).category == WaveInstCategory::PCINFO)
                     {
                         // Set and swap has the same effect on Auto
                         next = watchlist->setpc(*line, insts.at(inst_index));
@@ -119,23 +119,23 @@ void Stitcher::stitch(std::vector<InstructionExt>& insts)
         else if (line->cat == InstCategory::LANE)
         {
             watchlist->updatelane(*line);
-            bMatched = inst.value == WaveInstCategory::VALU;
+            bMatched = inst.category == WaveInstCategory::VALU;
         }
-        else if (line->cat == inst.value)
+        else if (line->cat == inst.category)
         {
             //line->print();
         }
-        else if (inst.value == WaveInstCategory::JUMP && line->cat == InstCategory::BRANCH)
+        else if (inst.category == WaveInstCategory::JUMP && line->cat == InstCategory::BRANCH)
         {
             next = watchlist->jump(*line);
         }
-        else if (inst.value == WaveInstCategory::NEXT && line->cat == InstCategory::BRANCH)
+        else if (inst.category == WaveInstCategory::NEXT && line->cat == InstCategory::BRANCH)
         {
             //pass
         }
         else
         {
-            std::cout << "match? " << inst.value << ' '; line->print();
+            std::cout << "match? " << inst.category << ' '; line->print();
             bMatched = false;
             if (insts.size() > inst_index+1 && watchlist->try_match_swapped(inst, insts.at(inst_index+1), *line))
             {
@@ -158,7 +158,7 @@ void Stitcher::stitch(std::vector<InstructionExt>& insts)
             }
         }
 
-        if (bMatched || (!bGFX9 && inst.value == WaveInstCategory::IMMED))
+        if (bMatched || (!bGFX9 && inst.category == WaveInstCategory::IMMED))
         {
             inst.pc = line->addr;
             inst_index ++;

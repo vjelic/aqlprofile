@@ -86,48 +86,79 @@ att_output_flags_t flags;
 
 */
 
-std::unordered_map<std::string, int> trace_type_ids = {
-    {"kernel_ids_addr",  1},
-    {"traceIDs",         2},
-    {"tracedata",        3},
-    {"occupancy",        4},
-    {"perfevents",       5},
-    {"waves",            6},
-    {"wave_instruction", 7},
-    {"wave_timeline",    8},
+enum trace_type_ids_t
+{
+    KERNEL_ID_ADDR = 1,
+    TRACE_IDS,
+    TRACE_DATA,
+    OCCUPANCY,
+    PERFEVENT,
+    WAVES,
+    SHADER_NPI_DATA,
 };
 
-__attribute__((visibility("default"))) hsa_status_t aqlprofile_att_parse_data(
+std::unordered_map<int, std::string> trace_type_ids = {
+    {KERNEL_ID_ADDR, "kernel_ids_addr"},
+    {TRACE_IDS, "traceids",},
+    {TRACE_DATA, "tracedata"},
+    {OCCUPANCY, "occupancy"},
+#ifdef AMD_AQLPROFILE_SQTT_NPI
+    {PERFEVENT, "perfevent"},
+    {WAVES, "waves"},
+    {SHADER_NPI_DATA, "generic_data"},
+#endif
+};
+
+PUBLIC_API void aqlprofile_att_parser_iterate_event_list(
+    aqlprofile_att_parser_iterate_event_cb_t callback,
+    void* userdata
+) {
+    for (auto& [id, metadata] : trace_type_ids)
+        callback(id, metadata.c_str(), userdata);
+}
+
+
+PUBLIC_API hsa_status_t aqlprofile_att_parse_data(
     aqlprofile_att_se_data_callback_t se_data_callback,
     aqlprofile_att_trace_callback_t trace_callback,
     aqlprofile_att_isa_callback_t isa_callback,
-    void* userdata
+    void* cbdata
 ) {
-    std::shared_ptr<ICodeServicer> service = std::make_shared<CodeService>(isa_callback, userdata);
+    std::shared_ptr<ICodeServicer> service = std::make_shared<CodeService>(isa_callback, cbdata);
     std::unique_ptr<Stitcher> stitcher{nullptr};
 
     int shader = 0;
     uint8_t* buffer = nullptr;
     uint64_t buffer_size = 0;
-    size_t remaining = se_data_callback(&shader, &buffer, &buffer_size, userdata);
+    size_t remaining = se_data_callback(&shader, &buffer, &buffer_size, cbdata);
 
     while (remaining && buffer_size)
     {
         auto ret = AnalyseBinary_internal(buffer, buffer_size, 1);
 
-        trace_callback(trace_type_ids["occupancy"], 0, (void*)ret->occupancy.data(), ret->occupancy.size(), userdata);
-        trace_callback(trace_type_ids["kernel_ids_addr"], 0, (void*)ret->kernel_ids_addr.data(), ret->kernel_ids_addr.size(), userdata);
+        auto& traceids = ret->traceIDs;
+        trace_callback(TRACE_IDS, shader, (void*)traceids.data(), traceids.size(), cbdata);
+        auto& kernels = ret->kernel_ids_addr;
+        trace_callback(KERNEL_ID_ADDR, shader, (void*)kernels.data(), kernels.size(), cbdata);
+        auto& occ = ret->occupancy;
+        trace_callback(OCCUPANCY, shader, (void*)occ.data(), occ.size(), cbdata);
 
         if (!stitcher)
             stitcher = std::make_unique<Stitcher>(service, !ret->flags.isNavi);
 
         for (size_t t=0; t<ret->traces.size(); t++) if (ret->traces[t].size() > 1)
         {
-            stitcher->stitch(ret->traces[t]);
-            trace_callback(trace_type_ids["tracedata"], t, (void*)ret->traces[t].data(), ret->traces[t].size(), userdata);
+            stitcher->stitch(ret->traces.at(t));
+            std::vector<InstructionExt>& trace = ret->traces.at(t);
+            trace_callback(TRACE_DATA, traceids.at(t), (void*)trace.data(), trace.size(), cbdata);
         }
 
-        remaining = se_data_callback(&shader, &buffer, &buffer_size, userdata);
+#ifdef AMD_AQLPROFILE_SQTT_NPI
+        for (size_t t=0; t<ret->waves.size(); t++)
+            trace_callback(WAVES, t, (void*)ret->waves.data(), ret->waves.size(), cbdata);
+#endif
+
+        remaining = se_data_callback(&shader, &buffer, &buffer_size, cbdata);
     }
 
     return HSA_STATUS_SUCCESS;

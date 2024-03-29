@@ -390,18 +390,19 @@ enum WaveTrapStatus
     TRAP_STANDBY = 2
 };
 
-struct __attribute__((packed)) pcinfo_t {
+typedef struct __attribute__((packed)) {
     size_t addr;
-    int marker_id;
-};
+    size_t marker_id;
+} pcinfo_t;
 
 typedef struct __attribute__((packed)) {
+    uint64_t category : 8;
+    uint64_t hitcount : 56;
+    uint64_t latency;
     pcinfo_t pc;
-    int hitcount;
-    size_t latency;
 } att_trace_event_t;
 
-struct wave_data_t
+typedef struct
 {
     uint8_t simd;
     uint8_t wave_id;
@@ -444,32 +445,7 @@ struct wave_data_t
     size_t instructions_size;
     wave_state_t* timeline_array;
     wave_instruction_t* instructions_array;
-};
-
-/**
- * @brief Callback for iteration of all possible event coordinate IDs and coordinate names.
- * @param [in] id Integer identifying type ID.
- * @param [in] name Name of the trace type.
- * @param [in] userdata User data supplied to back caller
- * @retval HSA_STATUS_SUCCESS Continues iteration
- * @retval OTHERS Any other HSA return values stops iteration, passing back this value through
- *         @ref aqlprofile_iterate_trace_type_ids
- */
-typedef hsa_status_t (*aqlprofile_att_tracename_callback_t)(int id, const char* name, void* data);
-
-/**
- * @brief Iterate over all possible event coordinate IDs and their names.
- * @param [in] callback Callback to use for iteration of trace types
- * @param [in] userdata Data to supply to callback @ref aqlprofile_tracename_callback_t
- * @retval HSA_STATUS_SUCCESS if successful
- * @retval HSA_STATUS_ERROR if error on interation
- * @retval OTHERS If @ref aqlprofile_eventname_callback_t returns non-HSA_STATUS_SUCCESS, 
- *         that value is returned. 
- */
-hsa_status_t aqlprofile_att_iterate_trace_type_ids(
-    aqlprofile_att_tracename_callback_t callback,
-    void* userdata
-);
+} wave_data_t;
 
 /**
  * @brief Callback for rocprofiler to return ISA to aqlprofile ATT parser.
@@ -546,12 +522,12 @@ typedef uint64_t(*aqlprofile_att_se_data_callback_t)(
 /**
  * @brief Callback returning from aqlprofile_att_parser_iterate_event_list
  * @param[in] trace_event_id ID of the event.
- * @param[in] trace_event_name Event name.
+ * @param[in] trace_event_metadata Null-terminated string, entries separated by ';'
  * @param[in] userdata userdata.
 */
 typedef void(*aqlprofile_att_parser_iterate_event_cb_t)(
     int trace_event_id,
-    const char* trace_event_name,
+    const char* trace_event_metadata,
     void* userdata
 );
 
@@ -560,7 +536,7 @@ typedef void(*aqlprofile_att_parser_iterate_event_cb_t)(
  * @param[in] callback Callback where events are returned to.
  * @param[in] userdata userdata.
 */
-hsa_status_t aqlprofile_att_parser_iterate_event_list(
+void aqlprofile_att_parser_iterate_event_list(
     aqlprofile_att_parser_iterate_event_cb_t callback,
     void* userdata
 );
@@ -581,16 +557,16 @@ hsa_status_t aqlprofile_att_parse_data(
 );
 
 /**
- * @brief Contains information of code objects. IDs can be reused for different load addresses.
+ * @brief Contains flags for how code objects are interpreted
 */
 typedef union
 {
-  uint32_t raw;
-  struct {
-    uint32_t isUnload : 1;    // 0 if code object is being loaded, 1 for unload
-    uint32_t bFromStart : 1;  // Has this code object been loaded before thread trace started?
-    uint32_t id : 30;         // To be passed back to isa_string_callback in marker_id
-  };
+    struct {
+        uint32_t isUnload   : 1;  // 0 if code object is being loaded, 1 for unload
+        uint32_t bFromStart : 1;  // Has this code object been loaded before thread trace started?
+        uint32_t legacy_id  : 30; // Legacy code object ID, if it fits in 30 bits.
+    };
+    uint32_t raw;
 } aqlprofile_att_header_marker_t;
 
 /**
@@ -598,6 +574,7 @@ typedef union
  * @param[out] packets Returned packet
  * @param[in] handle The handle created from aqlprofile_att_create_packets()
  * @param[in] header Header containing code object information created from profiler
+ * @param[in] id To be passed back to isa_string_callback in marker_id
  * @param[in] addr Code object loaded address.
  * @param[in] size Code object loaded size.
 */
@@ -605,6 +582,7 @@ hsa_status_t aqlprofile_att_codeobj_load_marker(
     hsa_ext_amd_aql_pm4_packet_t* packets,
     aqlprofile_handle_t handle,
     aqlprofile_att_header_marker_t header,
+    uint64_t id,
     uint64_t addr,
     uint64_t size
 );

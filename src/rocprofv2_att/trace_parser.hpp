@@ -64,9 +64,9 @@ struct occupancy_info_t : public att_occupancy_info_t
 struct __attribute__((packed)) Instruction
 {
     Instruction() = default;
-    Instruction(pcinfo_t _pc): value(WaveInstCategory::PCINFO), pc(_pc) {}
-    Instruction(int64_t _time, WaveInstCategory _value, int64_t _cycles, int _stall)
-            : time(_time), value(_value), cycles(_cycles), stall_time(_stall) {}
+    Instruction(pcinfo_t _pc): category(WaveInstCategory::PCINFO), pc(_pc) {}
+    Instruction(int64_t _time, WaveInstCategory _category, int64_t _cycles, int _stall)
+            : time(_time), category(_category), cycles(_cycles), stall_time(_stall) {}
 
     wave_instruction_t getTiming() const { return {time, std::max(cycles, stall_time)}; }
 
@@ -78,46 +78,51 @@ struct __attribute__((packed)) Instruction
         };
         pcinfo_t pc;
     };
-    int value : 8;
+    int category : 8;
 };
 
-struct InstructionExt : public att_trace_event_t
+struct InstructionExt: public att_trace_event_t
 {
-    InstructionExt(): value(WaveInstCategory::NONE) {
-        this->latency = this->hitcount = 0;
-    }
-    InstructionExt(WaveInstCategory _value, uint64_t num_waves, uint64_t cycles): value(_value)
+    InstructionExt(): InstructionExt(WaveInstCategory::NONE, 0, 0) {}
+    InstructionExt(WaveInstCategory _category, uint64_t num_waves, uint64_t cycles)
     {
         this->hitcount = num_waves;
         this->latency = cycles;
+        this->pc = {0,0};
+        this->category = _category;
     }
-    InstructionExt(const Instruction& inst): value(inst.value)
+    InstructionExt(const Instruction& inst): InstructionExt()
     {
-        if (inst.value != WaveInstCategory::PCINFO)
+        this->category = inst.category;
+        if (inst.category != WaveInstCategory::PCINFO)
         {
-            this->hitcount = 1;
             this->latency = std::max(inst.cycles, inst.stall_time);
+            this->hitcount = 1;
         }
         else
             this->pc = inst.pc;
     }
-    int value;
 
     inline bool operator==(const Instruction& other) const { return !(*this != other); };
     inline bool operator!=(const Instruction& other) const
     {
-        if (value == WaveInstCategory::PCINFO)
+        if (this->category != other.category)
+            return true;
+        else if (other.category == WaveInstCategory::PCINFO)
             return pc != other.pc;
-        return this->value != other.value;
+        return false;
     };
     InstructionExt& operator+=(const Instruction& other)
     {
-        hitcount += 1;
-        if (value != WaveInstCategory::PCINFO)
+        if (other.category != WaveInstCategory::PCINFO)
+        {
+            hitcount += 1;
             latency += std::max(other.cycles, other.stall_time);
+        }
         return *this;
     };
 };
+static_assert(sizeof(att_trace_event_t)==sizeof(InstructionExt), "Structs cannot share layout!");
 
 struct WaveDataInternal : public wave_data_t
 {
@@ -280,11 +285,12 @@ public:
     CodeobjTableTranslator table{};
     CodeobjTableTranslator table_from_start{};
 
-    std::unordered_map<uint32_t, uint64_t> active_codeobj_id{};
+    std::unordered_map<size_t, uint64_t> active_codeobj_id{};
 
     PipeArray64 wave_start_addr{};
     PipeArray64 current_codeobj_size{};
     PipeArray64 current_codeobj_addr{};
+    PipeArray64 current_codeobj_id{};
 
     bool bIsTTVFormat = false;
     MarkerState userdata_state = ATT_MARKER_WAIT_FOR_HEADER;
@@ -334,46 +340,27 @@ public:
     template<typename TokenType>
     void UpdateRegNoCS(const TokenType& token)
     {
-        if (!IsUserdata(token.regaddr))
-            return;
-        else if (bIsTTVFormat && !IsUserdata2(token.regaddr))
+        if (!IsUserdata2(token.regaddr))
             return;
 
-        if (IsUserdata2(token.regaddr) && isTTVUserdataHeader(token))
+        if (isTTVUserdataHeader(token))
         {
-            bIsTTVFormat = true;
             userdata_state = ATT_MARKER_WAIT_FOR_HEADER;
             return;
         }
-
-        if (bIsTTVFormat)
+        else if (userdata_state == ATT_MARKER_WAIT_FOR_HEADER)
         {
-            if (userdata_state == ATT_MARKER_WAIT_FOR_HEADER)
-            {
-                if (isTTVUserdataState(token))
-                    userdata_state = static_cast<MarkerState>(TTVUserdataF(token).type);
-                return;
-            }
+            if (isTTVUserdataState(token))
+                userdata_state = static_cast<MarkerState>(TTVUserdataF(token).type);
+            return;
         }
-        else
-        {
-            if (IsUserdata0(token.regaddr))
-                userdata_state = ATT_MARKER_HEADER_CHANNEL;
-            else if (IsUserdata1(token.regaddr))
-                userdata_state = ATT_MARKER_SIZE_LO_CHANNEL;
-            else if (IsUserdata2(token.regaddr))
-                userdata_state = ATT_MARKER_ADDR_LO_CHANNEL;
-            else if (IsUserdata3(token.regaddr))
-                userdata_state = ATT_MARKER_ADDR_HI_CHANNEL;
-            else
-                return;
-        }
-
 
         if (userdata_state == ATT_MARKER_HEADER_CHANNEL)
         {
             aqlprofile_att_header_marker_t header{.raw = uint32_t(token.regdata)};
-            uint32_t id = header.id;
+            uint64_t id = header.legacy_id;
+            if (id == 0) // If not using legacy code ID
+                id = current_codeobj_id.at_reg(token);
 
             auto it = active_codeobj_id.find(id);
             if (!header.isUnload && it == active_codeobj_id.end())
@@ -393,6 +380,10 @@ public:
                 } catch(...) {}
             }
         }
+        else if (userdata_state == ATT_MARKER_ID_LO_CHANNEL)
+            current_codeobj_id.setlo(token, token.regdata);
+        else if (userdata_state == ATT_MARKER_ID_HI_CHANNEL)
+            current_codeobj_id.sethi(token, token.regdata);
         else if (userdata_state == ATT_MARKER_SIZE_LO_CHANNEL)
             current_codeobj_size.setlo(token, token.regdata);
         else if (userdata_state == ATT_MARKER_SIZE_HI_CHANNEL)

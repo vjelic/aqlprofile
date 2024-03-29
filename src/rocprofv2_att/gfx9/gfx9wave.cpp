@@ -129,7 +129,7 @@ void wave_t::apply_inst(Token& token)
 
     this->num_smem_instrs += 1;
     this->num_mem_instrs += 1;
-    the_inst.value = WaveInstCategory::SMEM;
+    the_inst.category = WaveInstCategory::SMEM;
     // Phase correction
     the_inst.cycles = std::max(the_inst.cycles - 4*(phase==3), 4);
   } else if (token.inst_type == 1 || token.inst_type == 17) {  // SALU32/64 instr
@@ -137,7 +137,7 @@ void wave_t::apply_inst(Token& token)
       this->num_salu_stalls += 1;
 
     this->num_salu_instrs += 1;
-    the_inst.value = WaveInstCategory::SALU;
+    the_inst.category = WaveInstCategory::SALU;
     // Phase correction
     the_inst.cycles = std::max(the_inst.cycles - 4*(phase==3), 4);
   } else if (token.inst_type == 2 || token.inst_type == 3) {  // VMEM RD/WR
@@ -146,27 +146,27 @@ void wave_t::apply_inst(Token& token)
 
     this->num_vmem_instrs += 1;
     this->num_mem_instrs += 1;
-    the_inst.value = WaveInstCategory::VMEM;
+    the_inst.category = WaveInstCategory::VMEM;
   } else if (token.inst_type == 4 || token.inst_type == 14) {  // FLAT RD/WR
     if (this->stall_started == 1)
       this->num_flat_stalls += 1;
 
     this->num_flat_instrs += 1;
     this->num_mem_instrs += 1;
-    the_inst.value = WaveInstCategory::FLAT;
+    the_inst.category = WaveInstCategory::FLAT;
   } else if (token.inst_type == 6) {  // LDS
     if (this->stall_started == 1)
       this->num_lds_stalls += 1;
 
     this->num_lds_instrs += 1;
     this->num_mem_instrs += 1;
-    the_inst.value = WaveInstCategory::LDS;
+    the_inst.category = WaveInstCategory::LDS;
   } else if (token.inst_type == 5 || token.inst_type == 18 || token.inst_type == 28) {  // VALU32/64 instr
     if (this->stall_started == 1)
       this->num_valu_stalls += 1;
 
     this->num_valu_instrs += 1;
-    the_inst.value = WaveInstCategory::VALU;
+    the_inst.category = WaveInstCategory::VALU;
     // Phase correction
     the_inst.cycles = std::max(the_inst.cycles, 4*(phase>=2));
   } else if (token.inst_type == 12 || token.inst_type == 13) {  // Branch
@@ -174,13 +174,13 @@ void wave_t::apply_inst(Token& token)
       this->num_branch_stalls += 1;
 
     this->num_branch_instrs += 1;
-    the_inst.value = WaveInstCategory::NEXT;
+    the_inst.category = WaveInstCategory::NEXT;
     if (token.inst_type == 12) {
       this->num_branch_taken_instrs += 1;
-      the_inst.value = WaveInstCategory::JUMP;
+      the_inst.category = WaveInstCategory::JUMP;
     }
   } else if (token.inst_type == 7) {
-    the_inst.value = WaveInstCategory::SALU;
+    the_inst.category = WaveInstCategory::SALU;
     auto inst = Instruction{token.time, WaveInstCategory::PCINFO, 0, 0};
     this->last_jump_inst = instructions.size();
     instructions.push_back(inst);
@@ -193,7 +193,7 @@ void wave_t::apply_inst(Token& token)
   if (instructions.size() && stall_started)
   {
     int64_t min_stall_cycles = 4;
-    if (phase && the_inst.value == WaveInstCategory::LDS)
+    if (phase && the_inst.category == WaveInstCategory::LDS)
       min_stall_cycles = 8;
 
     the_inst.time = stall_start_time;
@@ -368,7 +368,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
     if (!wave.instructions.size()) continue;
     auto& inst = wave.instructions.at(0);
     // If the wave has a invalid PC value, check if the codeobj information was not delayed relative to TTrace
-    if (inst.value != WaveInstCategory::PCINFO) continue;
+    if (inst.category != WaveInstCategory::PCINFO) continue;
     if (inst.pc.marker_id != 0) continue;
 
     inst.pc = csregister.get_wave_start_delayed(inst.pc.addr);
@@ -423,8 +423,8 @@ int64_t wave_t::apply_issue(uint64_t wave_status, int64_t token_time)
     int64_t immed_time = token_time;
     int64_t cycles_time = 4;
 
-    if (instructions.back().value != WaveInstCategory::PCINFO &&
-        instructions.back().value != WaveInstCategory::WAVE_NOT_FINISHED)
+    if (instructions.back().category != WaveInstCategory::PCINFO &&
+        instructions.back().category != WaveInstCategory::WAVE_NOT_FINISHED)
     {
       int64_t last_cycles = std::max(instructions.back().cycles, instructions.back().stall_time);
       immed_time = std::max(last_message_time, instructions.back().time + last_cycles);

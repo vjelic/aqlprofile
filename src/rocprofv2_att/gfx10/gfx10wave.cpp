@@ -479,7 +479,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
     if (!wave.instructions.size()) continue;
     auto& inst = wave.instructions.at(0);
     // If the wave has a invalid PC value, check if the codeobj information was not delayed relative to TTrace
-    if (inst.value != static_cast<uint64_t>(WaveInstCategory::PCINFO)) continue;
+    if (inst.category != static_cast<uint64_t>(WaveInstCategory::PCINFO)) continue;
     if (inst.pc.marker_id != 0) continue;
 
     inst.pc = csregister.get_wave_start_delayed(inst.pc.addr);
@@ -574,7 +574,7 @@ void wave_t::update_immediate(int64_t token_time) {
   if (!this->instructions.size()) return;
 
   auto& inst = this->instructions.back();
-  if (inst.value != (uint64_t)WaveInstCategory::IMMED) return;
+  if (inst.category != (uint64_t)WaveInstCategory::IMMED) return;
   inst.stall_time = std::max<int64_t>(inst.stall_time, std::max(token_time-inst.time,1l)-1);
 
   if (!this->timeline.size()) return;
