@@ -178,8 +178,9 @@ public:
         hsa_agent_t agent,
         aqlprofile_memory_alloc_callback_t alloc,
         aqlprofile_memory_dealloc_callback_t dealloc,
+        aqlprofile_memory_copy_t _copy_fn,
         void* data
-    ): MemoryManager(agent, alloc, dealloc, data) {}
+    ): MemoryManager(agent, alloc, dealloc, data), copy_fn(_copy_fn) {}
 
     TraceMemoryManager(
         aqlprofile_agent_handle_t agent,
@@ -222,7 +223,12 @@ public:
     template<typename Type> Type*
     GetTraceControlBuf() const { return reinterpret_cast<Type*>(trace_control_buf.get()); }
 
+    void CopyMemory(void* dst, const void* src, size_t size) {
+        this->copy_fn(dst, src, size, this->userdata);
+    }
+
 protected:
+    aqlprofile_memory_copy_t copy_fn;
     std::vector<hsa_ven_amd_aqlprofile_parameter_t> att_params;
 
     std::unique_ptr<void, MemoryDeleter> trace_control_buf = nullptr;

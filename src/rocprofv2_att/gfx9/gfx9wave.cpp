@@ -431,7 +431,7 @@ int64_t wave_t::apply_issue(uint64_t wave_status, int64_t token_time)
     }
 
     cycles_time = token_time - immed_time;
-    instructions.push_back({immed_time, WaveInstCategory::IMMED, 0, std::max(cycles_time, 4l)});
+    instructions.push_back({immed_time, WaveInstCategory::IMMED, 0, std::max((int)cycles_time, 4)});
 
     this->last_message_time = 0;
     this->inst_time = token_time;

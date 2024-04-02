@@ -1,3 +1,25 @@
+// MIT License
+//
+// Copyright (c) 2024 Advanced Micro Devices, Inc. All rights reserved.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #pragma once
 
 #include <hsa/hsa.h>
@@ -96,7 +118,7 @@ typedef struct
  * to the describe the agent to profile. Information can be obtained either from HSA
  * (if loaded) or the KFD topology.
 */
-typedef struct 
+typedef struct
 {
     const char* agent_gfxip;              /**< Agent GFXIP (HSA_AGENT_INFO_NAME or KFD.product_name) */
     uint32_t xcc_num;               /**< XCC's on the agent (HSA_AMD_AGENT_INFO_NUM_XCC or KFD.num_xcc) */
@@ -105,17 +127,17 @@ typedef struct
     uint32_t shader_arrays_per_se;  /**< Shader arrays per SE of agent (HSA_AMD_AGENT_INFO_NUM_SHADER_ARRAYS_PER_SE or KFD.simd_arrays_per_engine)*/
 } aqlprofile_agent_info_t;
 
-/** 
+/**
  * @brief Struct containing a handle to a registered agent
- * 
+ *
  */
-typedef struct 
+typedef struct
 {
     uint64_t handle;
 } aqlprofile_agent_handle_t;
 
 /**
- * @brief Registers an agent to be used with AQL profile. 
+ * @brief Registers an agent to be used with AQL profile.
  * @param[out] agent_id Handle to newly registered agent
  * @param[in] agent_info Info to register a new agent with AQL Profiler
  * @retval HSA_STATUS_SUCCESS registration ok
@@ -153,7 +175,7 @@ typedef enum
 
 hsa_status_t
 aqlprofile_get_pmc_info(const aqlprofile_pmc_profile_t* profile,
-                        aqlprofile_pmc_info_type_t attribute, 
+                        aqlprofile_pmc_info_type_t attribute,
                         void* value);
 
 /**
@@ -216,7 +238,7 @@ typedef hsa_status_t (*aqlprofile_memory_copy_t)(
 
 
 /**
- * @brief Validates the event for the agent.  
+ * @brief Validates the event for the agent.
  * @param[in] agent The agent to validate the event for.
  * @param[in] event The event to validate.
  * @param[out] result True if the event is valid for the agent, false otherwise.
@@ -458,7 +480,7 @@ enum WaveTrapStatus
     TRAP_STANDBY = 2
 };
 
-typedef struct __attribute__((packed)) {
+typedef struct {
     size_t addr;
     size_t marker_id;
 } pcinfo_t;

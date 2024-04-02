@@ -85,3 +85,16 @@ typedef enum {
   ATT_MARKER_ID_HI_CHANNEL = 6,
   ATT_MARKER_WAIT_FOR_HEADER = 32
 } MarkerState;
+
+typedef union {
+  struct {
+    uint64_t legacy_version : 13;
+    uint64_t gfx9_version2 : 3;
+    uint64_t DSIMDM : 4;
+    uint64_t DCU : 5;
+    uint64_t DSA : 1;
+    uint64_t SEID : 6;
+    uint64_t reserved2 : 32;
+  };
+  uint64_t raw;
+} att_header_packet_t;

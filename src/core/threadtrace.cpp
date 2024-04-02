@@ -14,9 +14,22 @@
 
 #include "core/commandbuffermgr.hpp"
 #include "memorymanager.hpp"
+#include "../rocprofv2_att/trace_parser.hpp"
 
 #define THREAD_TRACE_PREFIX_SIZE 0x100
 #define DEFAULT_TRACE_BUFFER_SIZE (3<<26)
+
+inline att_header_packet_t getHeaderPacket(int SE, int CU, int SIMD)
+{
+    att_header_packet_t header{.raw = 0};
+    header.legacy_version = 0;
+    header.gfx9_version2 = 4;
+    header.SEID = SE;
+    header.DCU = CU;
+    header.DSIMDM = SIMD;
+    header.DSA = 0;
+    return header;
+}
 
 namespace aql_profile_v2
 {
@@ -53,6 +66,9 @@ hsa_status_t _internal_aqlprofile_att_iterate_data(
         }
     }
 
+    std::vector<size_t> sample_sizes(se_number_total, 0);
+    size_t max_sample_size = 0;
+
     // The samples sizes are returned in the control buffer
     for (uint64_t se_index = 0; se_index < se_number_total; se_index++)
     {
@@ -80,8 +96,35 @@ hsa_status_t _internal_aqlprofile_att_iterate_data(
             if (status == HSA_STATUS_SUCCESS)
                 status = HSA_STATUS_ERROR_OUT_OF_RESOURCES;
         }
-        if (bMaskedIn)
-            callback(se_index, sample_ptr, sample_size, userdata);
+
+        sample_sizes.at(se_index) = sample_size;
+        max_sample_size = std::max(sample_size, max_sample_size);
+    }
+
+    std::vector<size_t> cpu_sample(max_sample_size/sizeof(size_t)+sizeof(att_header_packet_t), 0);
+
+    // The samples sizes are returned in the control buffer
+    for (uint64_t se_index = 0; se_index < se_number_total; se_index++)
+    {
+        int target_cu = sqttbuilder->GetTargetCU(se_index);
+        if (target_cu < 0)
+            continue;
+
+        void* sample_ptr = reinterpret_cast<void*>(sqttbuilder->GetSEBaseAddr(se_index));
+        size_t sample_size = sample_sizes.at(se_index);
+        size_t sample_size_plus_header = sample_size;
+
+        char* sample_data_ptr = (char*)cpu_sample.data();
+        if (pm4_factory->GetGpuId() == aql_profile::GFX9_GPU_ID)
+        {
+            auto* header = reinterpret_cast<att_header_packet_t*>(cpu_sample.data());
+            *header = getHeaderPacket(se_index, target_cu, 0xF);
+            sample_data_ptr += sizeof(att_header_packet_t);
+            sample_size_plus_header = sample_size + sizeof(att_header_packet_t);
+        }
+
+        memorymgr->CopyMemory((void*)sample_data_ptr, sample_ptr, sample_size);
+        callback(se_index, (void*)cpu_sample.data(), sample_size_plus_header, userdata);
     }
 
     return status;
@@ -183,6 +226,7 @@ hsa_status_t _internal_aqlprofile_att_create_packets(
         profile.agent,
         alloc_cb,
         dealloc_cb,
+        copy_fn,
         userdata
     );
     memorymgr->CreateTraceControlBuf(control_size + THREAD_TRACE_PREFIX_SIZE);

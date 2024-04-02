@@ -37,7 +37,7 @@
 #include "../core/include/aql_profile_v2.h"
 
 //#define AMD_AQLPROFILE_SQTT_NPI
-#define SQTT_PARSER_VERSION 4
+#define SQTT_PARSER_VERSION 5
 #define OCCUPANCY_RESOLUTION 8
 
 struct occupancy_info_t : public att_occupancy_info_t
@@ -45,14 +45,14 @@ struct occupancy_info_t : public att_occupancy_info_t
     occupancy_info_t() = default;
     occupancy_info_t(
         uint64_t kid, uint64_t simd, uint64_t slot,
-        uint64_t enable, uint64_t cu, int64_t time)
-    {
+        uint64_t enable, uint64_t cu, int64_t time
+    ) {
         this->kernel_id = kid;
         this->simd = simd;
         this->slot = slot;
         this->enable = enable;
         this->cu = cu;
-        this->time = time;
+        this->time = time/OCCUPANCY_RESOLUTION;
 #ifndef AMD_AQLPROFILE_SQTT_NPI
         this->time &= ~0x7ul; // Makes the time information have a granularity of 64 cycles
         this->simd = 0;
@@ -61,7 +61,9 @@ struct occupancy_info_t : public att_occupancy_info_t
     }
 };
 
-struct __attribute__((packed)) Instruction
+static_assert(sizeof(occupancy_info_t)==sizeof(att_occupancy_info_t), "Occ cannot share layout!");
+
+struct Instruction
 {
     Instruction() = default;
     Instruction(pcinfo_t _pc): category(WaveInstCategory::PCINFO), pc(_pc) {}
@@ -74,11 +76,11 @@ struct __attribute__((packed)) Instruction
         struct __attribute__((packed)) {
             int64_t time;
             int cycles;
-            int stall_time : 24;
+            int stall_time;
         };
         pcinfo_t pc;
     };
-    int category : 8;
+    int8_t category;
 };
 
 struct InstructionExt: public att_trace_event_t
@@ -252,7 +254,7 @@ struct fileoffset_info_t
 };
 
 std::unique_ptr<CppReturnInfo>
-AnalyseBinary_internal(const uint8_t* buffer, int BUFFER_SIZE, int target_cu);
+AnalyseBinary_internal(const uint8_t* buffer, int BUFFER_SIZE, bool bIsV2);
 
 template<typename Type>
 class PipeArray : public std::array<std::array<Type, 4>, 2>

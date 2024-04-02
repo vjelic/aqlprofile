@@ -56,36 +56,6 @@ private:
     std::string source_memory_copy;
 };
 
-
-/*
-att_output_flags_t flags;
-    std::vector<uint64_t> kernel_ids_addr;
-    std::vector<int64_t> traceIDs;
-    std::vector<uint64_t> tracesizes;
-    std::vector<InstructionExt*> tracedata;
-    std::vector<std::vector<InstructionExt>> traces;
-    std::vector<occupancy_info_t> occupancy;
-    std::vector<att_perfevent_t> perfevents;
-#ifdef AMD_AQLPROFILE_SQTT_NPI
-    std::vector<WaveDataNPI> waves;
-#endif
-
-    python_return_info_t fromCppReturn() const;
-    size_t GetMemoryNeededForSerialization() const;
-    size_t Serialize(char* buffer, size_t buffersize) const;
-    static std::unique_ptr<CppReturnInfo> UnSerialize(const char* buffer, size_t buffersize);
-
-
-    typedef hsa_status_t(*aqlprofile_att_trace_callback_t)(
-    int trace_type_id,
-    int correlation_id,
-    void* trace_events,
-    uint64_t trace_size,
-    void* userdata
-);
-
-*/
-
 enum trace_type_ids_t
 {
     KERNEL_ID_ADDR = 1,
@@ -134,7 +104,7 @@ PUBLIC_API hsa_status_t aqlprofile_att_parse_data(
 
     while (remaining && buffer_size)
     {
-        auto ret = AnalyseBinary_internal(buffer, buffer_size, 1);
+        auto ret = AnalyseBinary_internal(buffer, buffer_size, false);
 
         auto& traceids = ret->traceIDs;
         trace_callback(TRACE_IDS, shader, (void*)traceids.data(), traceids.size(), cbdata);
@@ -154,8 +124,7 @@ PUBLIC_API hsa_status_t aqlprofile_att_parse_data(
         }
 
 #ifdef AMD_AQLPROFILE_SQTT_NPI
-        for (size_t t=0; t<ret->waves.size(); t++)
-            trace_callback(WAVES, t, (void*)ret->waves.data(), ret->waves.size(), cbdata);
+        trace_callback(WAVES, 0, (void*)ret->waves.data(), ret->waves.size(), cbdata);
 #endif
 
         remaining = se_data_callback(&shader, &buffer, &buffer_size, cbdata);

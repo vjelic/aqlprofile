@@ -63,20 +63,6 @@ template<> FlattenTree getAggregatedData(gfx9wave_t::WaveArray& wavearray)
     return branch.get();
 }
 
-union att_header_packet_t {
-  struct {
-    uint64_t reserved : 14;
-    uint64_t navi : 1;
-    uint64_t enable : 1;
-    uint64_t DSIMDM : 4;
-    uint64_t DCU : 5;
-    uint64_t DSA : 1;
-    uint64_t SEID : 6;
-    uint64_t reserved2 : 32;
-  };
-  uint64_t raw;
-};
-
 std::unique_ptr<CppReturnInfo>
 AnalyseBinary_GFX9_internal(const uint8_t* tokendata, int buffersize, int target_cu)
 {
@@ -186,23 +172,29 @@ AnalyseBinary_GFX11_internal(const uint8_t* tokendata, int buffersize)
 
 // If target_cu < 0, find target_cu from software header
 std::unique_ptr<CppReturnInfo>
-AnalyseBinary_internal(const uint8_t* buffer, int BUFFER_SIZE, int target_cu)
+AnalyseBinary_internal(const uint8_t* buffer, int BUFFER_SIZE, bool bIsV2)
 {
     std::unique_ptr<CppReturnInfo> info{};
 
-    if (target_cu < 0) {
-        auto sw_header = *reinterpret_cast<const att_header_packet_t*>(buffer);
-        target_cu = sw_header.DCU;
+    auto gfx9_header = *reinterpret_cast<const att_header_packet_t*>(buffer);
+    if (gfx9_header.legacy_version == 0 && gfx9_header.gfx9_version2 == 4)
+    {
+        int target_cu = gfx9_header.DCU;
         buffer += sizeof(att_header_packet_t);
-    }
-    auto hw_header = *reinterpret_cast<const header_type*>(buffer);
-
-    if (hw_header.version == 3)
-        info = AnalyseBinary_GFX11_internal(buffer, BUFFER_SIZE);
-    else if (hw_header.version == 2 || hw_header.version == 1)
-        info = AnalyseBinary_GFX10_internal(buffer, BUFFER_SIZE);
-    else
         info = AnalyseBinary_GFX9_internal(buffer, BUFFER_SIZE, target_cu);
+    }
+    else if (gfx9_header.legacy_version != 0)
+    {
+        // V2 adds the header even for GFX10/11
+        if (bIsV2) buffer += sizeof(att_header_packet_t);
+
+        auto hw_header = *reinterpret_cast<const header_type*>(buffer);
+
+        if (hw_header.version == 3)
+            info = AnalyseBinary_GFX11_internal(buffer, BUFFER_SIZE);
+        else if (hw_header.version == 2 || hw_header.version == 1)
+            info = AnalyseBinary_GFX10_internal(buffer, BUFFER_SIZE);
+    }
 
     if (info.get() == nullptr) {
         std::cerr << "Invalid ATT data!" << std::endl;
@@ -371,7 +363,7 @@ extern "C"
         std::vector<uint64_t> buffer(BUFFER_SIZE/8+2, 0);
         file.read((char*)buffer.data(), BUFFER_SIZE);
 
-        auto globalstate = AnalyseBinary_internal((const uint8_t*)buffer.data(), BUFFER_SIZE, -1);
+        auto globalstate = AnalyseBinary_internal((const uint8_t*)buffer.data(), BUFFER_SIZE, true);
         python_return_info_t info = globalstate->fromCppReturn();
 
         {
