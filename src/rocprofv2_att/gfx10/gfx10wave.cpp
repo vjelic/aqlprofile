@@ -314,7 +314,6 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
   CSRegisterHandlerGFX10 csregister;
   PipeArray64 wave_start_addr{};
 
-  CodeobjTableTranslator table;
   std::unordered_map<uint32_t, uint64_t> active_codeobj_id{};
   PipeArray32 current_codeobj_size{};
   PipeArray64 current_codeobj_addr{};
@@ -416,7 +415,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
       case gfx10type::NEW_PC: {
         new_pc_type pc { .raw = token.contents };
         if (pc.wave < SIMD.size() && SIMD[pc.wave].size())
-          SIMD[pc.wave].back().new_pc((uint64_t)token.time, pc.pc, table);
+          SIMD[pc.wave].back().new_pc((uint64_t)token.time, pc.pc, csregister.table);
         break;
       }
       case gfx10type::REG: {
