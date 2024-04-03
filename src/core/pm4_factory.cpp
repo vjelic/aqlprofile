@@ -39,13 +39,12 @@ RegisterAgent(const aqlprofile_agent_info_t* agent_info)
 {
 
     aqlprofile_agent_handle_t agent_id;
-    AgentInfo int_agent_info = {
-        .cu_num = agent_info->cu_num,
-        .se_num = agent_info->se_num,
-        .xcc_num = agent_info->xcc_num,
-        .shader_arrays_per_se = agent_info->shader_arrays_per_se
-    };
-
+    AgentInfo int_agent_info;
+    int_agent_info.cu_num = agent_info->cu_num;
+    int_agent_info.se_num = agent_info->se_num;
+    int_agent_info.xcc_num = agent_info->xcc_num;
+    int_agent_info.shader_arrays_per_se = agent_info->shader_arrays_per_se;
+    
     auto len =  strlen(agent_info->agent_gfxip);
     memset(int_agent_info.gfxip, 0, sizeof(int_agent_info.gfxip));
     memcpy(int_agent_info.gfxip, agent_info->agent_gfxip, 

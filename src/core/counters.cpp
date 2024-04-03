@@ -101,7 +101,8 @@ pm4_builder::counters_vector CountersVec(
         (vec.get_attr() & CounterBlockSqAttr) != 0 &&
         (vec.get_attr() & CounterBlockGRBMAttr) == 0
     ) {
-        aqlprofile_pmc_event_t grbm_event{.block_name = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_GRBM};
+        aqlprofile_pmc_event_t grbm_event;
+        grbm_event.block_name = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_GRBM;
         vec.push_back(GetCounter(pm4_factory, grbm_event, index_map));
     }
     return vec;
