@@ -6,6 +6,7 @@
 #include <memory>
 #include <unordered_map>
 #include <shared_mutex>
+#include <optional>
 #include "../trie.h"
 #include "../trace_parser.hpp"
 

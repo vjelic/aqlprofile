@@ -319,12 +319,12 @@ inline Pm4Factory* Pm4Factory::Create(const hsa_agent_t agent, bool concurrent) 
   // Get GPU id for a given agent
 
   hsa_status_t status = HSA_STATUS_ERROR;
-  char agent_name[64];
-  char agent_gfxip[64];
+  std::vector<char> agent_name{};
+  agent_name.resize(64);
   uint32_t device_id = 0;
-  
+
   // Getting GfxIP name
-  status = hsa_agent_get_info(agent, HSA_AGENT_INFO_NAME, agent_name);
+  status = hsa_agent_get_info(agent, HSA_AGENT_INFO_NAME, agent_name.data());
   if (status == HSA_STATUS_SUCCESS) {
     // Getting DeviceId
     hsa_agent_info_t attribute = static_cast<hsa_agent_info_t>(HSA_AMD_AGENT_INFO_CHIP_ID);
@@ -333,19 +333,13 @@ inline Pm4Factory* Pm4Factory::Create(const hsa_agent_t agent, bool concurrent) 
   if (status != HSA_STATUS_SUCCESS) {
     throw aql_profile_exc_msg("Pm4Factory::Create() bad agent");
   }
-  
+
   const char* override_id = getenv("HSA_VEN_AMD_AQLPROFILE_DID");
   if (override_id != NULL) {
     device_id = atoi(override_id);
   }
-  
-  // Obtaining GPU id
-  
-  const int gfxip_label_len = strlen(agent_name)-  2;
-  memcpy(agent_gfxip, agent_name, gfxip_label_len);
-  agent_gfxip[gfxip_label_len] = '\0';
 
-  const gpu_id_t gpu_id = GetGpuId(agent_gfxip);
+  const gpu_id_t gpu_id = GetGpuId(agent_name.data());
   return Pm4Factory::Create(agent_info, gpu_id, concurrent);
 }
 
