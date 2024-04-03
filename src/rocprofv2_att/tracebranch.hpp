@@ -59,15 +59,15 @@ struct InstBranch
     [[nodiscard]] int64_t insert(const WaveDataInternal& wave)
     {
         auto& insts = wave.instructions;
-        if (!insts.size() || insts[0].value != WaveInstCategory::PCINFO)
+        if (!insts.size() || insts[0].category != WaveInstCategory::PCINFO)
             return -1;
 
         for (auto& b : branches)
-            if (insts[0].issue2inst == b->pcvalue)
+            if (insts[0].pc == b->pc)
                 return b->recursive_insert(insts.data(), insts.size());
 
-        InstBranch* newbranch = new InstBranch(insts[0].value, insts.data(), insts.size());
-        newbranch->pcvalue = insts[0].issue2inst;
+        InstBranch* newbranch = new InstBranch(insts[0].category, insts.data(), insts.size());
+        newbranch->pc = insts[0].pc;
         branches.emplace_back(newbranch);
         return newbranch->unique_id;
     }
@@ -79,7 +79,7 @@ struct InstBranch
 
         size_t psize = std::min<size_t>(32, sequence.size());
         for (size_t p=0; p<psize; p++)
-            std::cout << sequence[p].value << ' ';
+            std::cout << sequence[p].category << ' ';
         std::cout << std::endl;
 
         for (auto& b : branches)
@@ -87,7 +87,7 @@ struct InstBranch
     }
 
     FlattenTree get();
-    uint64_t pcvalue = 0;
+    pcinfo_t pc{};
 
 private:
     static std::atomic<int64_t> current_unique_id;

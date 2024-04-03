@@ -10,7 +10,7 @@
 #include <string>
 #include <thread>
 
-#include "core/aql_profile.h"
+#include "core/aql_profile.hpp"
 #include "core/logger.h"
 #include "core/pm4_factory.h"
 

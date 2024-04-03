@@ -678,6 +678,12 @@ class gfx10_cntx_prim {
     const uint32_t BUSY_BIT = 25;
     return 1u << BUSY_BIT;
   }
+
+  static uint32_t sqtt_pending_mask() {
+    const uint32_t PIPE_START = 2;
+    const uint32_t NUM_PIPES = 8;
+    return (1u << (NUM_PIPES+PIPE_START)) - (1u << PIPE_START);
+  }
 };
 
 template <>

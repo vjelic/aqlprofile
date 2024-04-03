@@ -87,6 +87,7 @@ const uint64_t SQTT_PERFCOUNTER_TOKEN = 14;
 const uint64_t SQTT_TOKEN_REG_CS_PRIV = 15;
 
 wave_t::gfx9wave_t(Token& token) {
+  this->traceID = -1;
   this->begin_time = token.time;
   this->cur_state = WAVESLOT_STATE::WS_IDLE;
   this->state_start_cycle = token.time;
@@ -116,7 +117,7 @@ void wave_t::apply_inst(Token& token)
 
   this->inst_time = token.time;
   Instruction& the_inst = instructions.at(*issued_instructions.begin());
-  the_inst.issue2inst = token.time - the_inst.time;
+  the_inst.cycles = token.time - the_inst.time;
   int64_t phase = (16-global_target_cu.load()+simd)%4;
 
   // ISSUE stall type cannot be known until issue complete
@@ -128,58 +129,58 @@ void wave_t::apply_inst(Token& token)
 
     this->num_smem_instrs += 1;
     this->num_mem_instrs += 1;
-    the_inst.value = WaveInstCategory::SMEM;
+    the_inst.category = WaveInstCategory::SMEM;
     // Phase correction
-    the_inst.issue2inst = std::max(the_inst.issue2inst - 4*(phase==3), 4l);
+    the_inst.cycles = std::max(the_inst.cycles - 4*(phase==3), 4);
   } else if (token.inst_type == 1 || token.inst_type == 17) {  // SALU32/64 instr
     if (this->stall_started == 1)
       this->num_salu_stalls += 1;
 
     this->num_salu_instrs += 1;
-    the_inst.value = WaveInstCategory::SALU;
+    the_inst.category = WaveInstCategory::SALU;
     // Phase correction
-    the_inst.issue2inst = std::max(the_inst.issue2inst - 4*(phase==3), 4l);
+    the_inst.cycles = std::max(the_inst.cycles - 4*(phase==3), 4);
   } else if (token.inst_type == 2 || token.inst_type == 3) {  // VMEM RD/WR
     if (this->stall_started == 1)
       this->num_vmem_stalls += 1;
 
     this->num_vmem_instrs += 1;
     this->num_mem_instrs += 1;
-    the_inst.value = WaveInstCategory::VMEM;
+    the_inst.category = WaveInstCategory::VMEM;
   } else if (token.inst_type == 4 || token.inst_type == 14) {  // FLAT RD/WR
     if (this->stall_started == 1)
       this->num_flat_stalls += 1;
 
     this->num_flat_instrs += 1;
     this->num_mem_instrs += 1;
-    the_inst.value = WaveInstCategory::FLAT;
+    the_inst.category = WaveInstCategory::FLAT;
   } else if (token.inst_type == 6) {  // LDS
     if (this->stall_started == 1)
       this->num_lds_stalls += 1;
 
     this->num_lds_instrs += 1;
     this->num_mem_instrs += 1;
-    the_inst.value = WaveInstCategory::LDS;
+    the_inst.category = WaveInstCategory::LDS;
   } else if (token.inst_type == 5 || token.inst_type == 18 || token.inst_type == 28) {  // VALU32/64 instr
     if (this->stall_started == 1)
       this->num_valu_stalls += 1;
 
     this->num_valu_instrs += 1;
-    the_inst.value = WaveInstCategory::VALU;
+    the_inst.category = WaveInstCategory::VALU;
     // Phase correction
-    the_inst.issue2inst = std::max(the_inst.issue2inst, 4l*(phase>=2));
+    the_inst.cycles = std::max(the_inst.cycles, 4*(phase>=2));
   } else if (token.inst_type == 12 || token.inst_type == 13) {  // Branch
     if (this->stall_started == 1)
       this->num_branch_stalls += 1;
 
     this->num_branch_instrs += 1;
-    the_inst.value = WaveInstCategory::NEXT;
+    the_inst.category = WaveInstCategory::NEXT;
     if (token.inst_type == 12) {
       this->num_branch_taken_instrs += 1;
-      the_inst.value = WaveInstCategory::JUMP;
+      the_inst.category = WaveInstCategory::JUMP;
     }
   } else if (token.inst_type == 7) {
-    the_inst.value = WaveInstCategory::SALU;
+    the_inst.category = WaveInstCategory::SALU;
     auto inst = Instruction{token.time, WaveInstCategory::PCINFO, 0, 0};
     this->last_jump_inst = instructions.size();
     instructions.push_back(inst);
@@ -191,12 +192,12 @@ void wave_t::apply_inst(Token& token)
 
   if (instructions.size() && stall_started)
   {
-    int64_t min_stall_cycles = 4l;
-    if (phase && the_inst.value == WaveInstCategory::LDS)
-      min_stall_cycles = 8ul;
+    int64_t min_stall_cycles = 4;
+    if (phase && the_inst.category == WaveInstCategory::LDS)
+      min_stall_cycles = 8;
 
     the_inst.time = stall_start_time;
-    the_inst.last = std::max(token.time - the_inst.time, min_stall_cycles);
+    the_inst.stall_time = std::max(token.time - the_inst.time, min_stall_cycles);
     stall_started = false;
   }
 
@@ -225,9 +226,9 @@ static uint64_t getGPULocation(const Token& token) {
 
 std::tuple<
   WaveArray,
-  std::vector<perfevent_t>,
+  std::vector<att_perfevent_t>,
   std::vector<occupancy_info_t>,
-  std::vector<uint64_t>
+  std::vector<pcinfo_t>
 >
 wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
 {
@@ -237,7 +238,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
   int64_t total_num_issue_cycles = 0;
   int num_waves_started = 0;
   int num_waves_completed = 0;
-  std::vector<perfevent_t> perfEvents{};
+  std::vector<att_perfevent_t> perfEvents{};
   std::vector<occupancy_info_t> occupancy = {};
 
   // data from all waves
@@ -265,7 +266,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
     }
     else if (token.type == SQTT_TOKEN_WAVE_START) // Wave start
     {
-      uint64_t wave_addr = csregister.get_wave_start(token);
+      pcinfo_t wave_addr = csregister.get_wave_start(token);
 
       if ((int)token.cu == target_cu && token.sh == 0)
       {
@@ -285,8 +286,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
         if (!wslot.size() || wslot.back().end_time != 0)
           wslot.push_back(wave_t(token));
 
-        Instruction inst{wslot.back().begin_time, WaveInstCategory::PCINFO, wave_addr, 0};
-        wslot.back().instructions.insert(wslot.back().instructions.begin(), inst);
+        wslot.back().instructions.insert(wslot.back().instructions.begin(), Instruction{wave_addr});
       }
 
       size_t kid = get_addr_unique_id(wave_addr);
@@ -337,7 +337,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
 #ifdef AMD_AQLPROFILE_SQTT_NPI
     else if (token.type == SQTT_PERFCOUNTER_TOKEN && token.sh == 0)
     {
-      perfEvents.push_back(perfevent_t{
+      perfEvents.push_back(att_perfevent_t{
         token.time - 4*token.cu,
         (uint16_t)token.cntr[0],
         (uint16_t)token.cntr[1],
@@ -368,17 +368,17 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
     if (!wave.instructions.size()) continue;
     auto& inst = wave.instructions.at(0);
     // If the wave has a invalid PC value, check if the codeobj information was not delayed relative to TTrace
-    if (inst.value != WaveInstCategory::PCINFO) continue;
-    if (inst.issue2inst >> 62) continue;
+    if (inst.category != WaveInstCategory::PCINFO) continue;
+    if (inst.pc.marker_id != 0) continue;
 
-    inst.issue2inst = csregister.get_wave_start_delayed(inst.issue2inst);
+    inst.pc = csregister.get_wave_start_delayed(inst.pc.addr);
   }
 
-  std::unordered_map<uint64_t, uint64_t> retroactive_addr_map{};
-  for (auto& [addr, id] : kernelID)
+  std::unordered_map<size_t, size_t> retroactive_addr_map{};
+  for (auto& [krn_addr, id] : kernelID)
   {
-    uint64_t v2pc = csregister.get_wave_start_delayed(addr);
-    if (v2pc != addr && kernelID.find(v2pc) != kernelID.end())
+    pcinfo_t v2pc = csregister.get_wave_start_delayed(krn_addr.addr);
+    if (v2pc != krn_addr && kernelID.find(v2pc) != kernelID.end())
       retroactive_addr_map[id] = kernelID.at(v2pc);
   }
 
@@ -389,10 +389,10 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
   if (bHasLostPackets)
     std::cout << "Warning: Packet lost!" << std::endl;
 
-  std::map<uint64_t, uint64_t> rev_map;
+  std::map<uint64_t, pcinfo_t> rev_map;
   for (auto& kv : kernelID) rev_map.insert({kv.second, kv.first});
 
-  std::vector<uint64_t> kid_map;
+  std::vector<pcinfo_t> kid_map;
   for (int key = 0; key < rev_map.size(); key++) kid_map.push_back(rev_map[key]);
 
   return std::make_tuple(SIMD, perfEvents, occupancy, kid_map);
@@ -407,7 +407,7 @@ void wave_t::apply_pc(Token& token, CodeobjTableTranslator& table)
   }
 
   if (last_jump_inst >= 0 && last_jump_inst < instructions.size())
-    instructions[last_jump_inst].issue2inst = table.ToPcV2(token.pc<<2);
+    instructions[last_jump_inst].pc = table.ToPcV2(token.pc<<2);
   this->last_jump_inst = -1;
 }
 
@@ -423,15 +423,15 @@ int64_t wave_t::apply_issue(uint64_t wave_status, int64_t token_time)
     int64_t immed_time = token_time;
     int64_t cycles_time = 4;
 
-    if (instructions.back().value != WaveInstCategory::PCINFO &&
-        instructions.back().value != WaveInstCategory::WAVE_NOT_FINISHED)
+    if (instructions.back().category != WaveInstCategory::PCINFO &&
+        instructions.back().category != WaveInstCategory::WAVE_NOT_FINISHED)
     {
-      int64_t last_cycles = std::max(instructions.back().issue2inst, instructions.back().last);
+      int64_t last_cycles = std::max(instructions.back().cycles, instructions.back().stall_time);
       immed_time = std::max(last_message_time, instructions.back().time + last_cycles);
     }
 
     cycles_time = token_time - immed_time;
-    instructions.push_back({immed_time, WaveInstCategory::IMMED, 0, std::max(cycles_time, 4l)});
+    instructions.push_back({immed_time, WaveInstCategory::IMMED, 0, std::max((int)cycles_time, 4)});
 
     this->last_message_time = 0;
     this->inst_time = token_time;

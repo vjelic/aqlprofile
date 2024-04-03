@@ -12,6 +12,9 @@ class Mi200Factory : public Gfx9Factory {
  public:
   explicit Mi200Factory(const AgentInfo* agent_info);
 
+  virtual int GetAccumLowID() const override { return 1; };
+  virtual int GetAccumHiID() const override { return 185; };
+
  protected:
   static const GpuBlockInfo* block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER];
 };

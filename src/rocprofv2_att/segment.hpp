@@ -25,115 +25,126 @@
 #include <random>
 #include <unordered_set>
 #include <algorithm>
+#include "src/core/include/aql_profile_v2.h"
 
 template<typename Type>
 class ordered_vector : public std::vector<Type>
 {
-  using Super = std::vector<Type>;
+    using Super = std::vector<Type>;
 public:
-  void insert(const Type& elem)
-  {
-    size_t loc = lower_bound(elem.begin());
-    if (this->size() && get(loc).begin() < elem.begin())
-      loc ++;
-    this->Super::insert(this->begin()+loc, elem);
-  }
-  bool remove(const Type& elem)
-  {
-    if (!this->size()) return false;
-    size_t loc = lower_bound(elem.begin());
-    if (get(loc) != elem) return false;
+    void insert(const Type& elem)
+    {
+        size_t loc = lower_bound(elem.begin());
+        if (this->size() && get(loc).begin() < elem.begin())
+            loc ++;
+        this->Super::insert(this->begin()+loc, elem);
+    }
+    bool remove(const Type& elem)
+    {
+        if (!this->size()) return false;
+        size_t loc = lower_bound(elem.begin());
+        if (get(loc) != elem) return false;
 
-    this->Super::erase(this->begin()+loc);
-    return true;
-  }
-  bool remove(uint64_t elem_begin)
-  {
-    if (!this->size()) return false;
-    size_t loc = lower_bound(elem_begin);
-    if (get(loc).begin() != elem_begin) return false;
+        this->Super::erase(this->begin()+loc);
+        return true;
+    }
+    bool remove(uint64_t elem_begin)
+    {
+        if (!this->size()) return false;
+        size_t loc = lower_bound(elem_begin);
+        if (get(loc).begin() != elem_begin) return false;
 
-    this->Super::erase(this->begin()+loc);
-    return true;
-  }
-  size_t lower_bound(size_t addr) const
-  {
-    if (!this->size()) return 0;
-    return binary_search(addr, 0, this->size()-1);
-  }
+        this->Super::erase(this->begin()+loc);
+        return true;
+    }
+    size_t lower_bound(size_t addr) const
+    {
+        if (!this->size()) return 0;
+        return binary_search(addr, 0, this->size()-1);
+    }
 
-  size_t binary_search(size_t addr, size_t s, size_t e) const
-  {
-    if (s >= e)
-      return s;
-    else if (s+1 == e)
-      return (get(e).begin() <= addr) ? e : s;
+    size_t binary_search(size_t addr, size_t s, size_t e) const
+    {
+        if (s >= e)
+            return s;
+        else if (s+1 == e)
+            return (get(e).begin() <= addr) ? e : s;
 
-    size_t mid = (s+e)/2;
-    if (get(mid).begin() <= addr)
-      return binary_search(addr, mid, e);
-    else
-      return binary_search(addr, s, mid);
-  }
-  const Type& get(size_t i) const { return this->operator[](i); }
+        size_t mid = (s+e)/2;
+        if (get(mid).begin() <= addr)
+            return binary_search(addr, mid, e);
+        else
+            return binary_search(addr, s, mid);
+    }
+    const Type& get(size_t i) const { return this->operator[](i); }
 };
 
 struct address_range_t
 {
-  uint64_t vbegin;
-  uint64_t size;
-  uint32_t id;
+    uint64_t vbegin;
+    uint64_t size;
+    uint64_t id;
 
-  bool operator<(const address_range_t& other) const { return vbegin < other.vbegin; }
-  bool inrange(uint64_t addr) const { return addr >= vbegin && addr < vbegin+size; };
-  uint64_t begin() const { return vbegin; }
+    bool operator<(const address_range_t& other) const { return vbegin < other.vbegin; }
+    bool inrange(uint64_t addr) const { return addr >= vbegin && addr < vbegin+size; };
+    uint64_t begin() const { return vbegin; }
 };
 
+inline bool operator==(const pcinfo_t& a, const pcinfo_t& b) {
+    return a.addr == b.addr && a.marker_id == b.marker_id;
+}
+inline bool operator!=(const pcinfo_t& a, const pcinfo_t& b) {
+    return a.addr != b.addr || a.marker_id != b.marker_id;
+}
+
+template <> struct std::hash<pcinfo_t> {
+    size_t operator()(const pcinfo_t& d) const { return d.addr ^ d.marker_id; }
+};
 
 /**
  * @brief Finds a candidate codeobj for the given vaddr
 */
 class CodeobjTableTranslator : protected ordered_vector<address_range_t>
 {
-  using Super = ordered_vector<address_range_t>;
+    using Super = ordered_vector<address_range_t>;
 public:
-  CodeobjTableTranslator() { reset(); }
+    CodeobjTableTranslator() { reset(); }
 
-  const address_range_t& find_codeobj_in_range(uint64_t addr)
-  {
-    if (cached_segment < size() && get(cached_segment).inrange(addr))
-      return get(cached_segment);
+    const address_range_t& find_codeobj_in_range(uint64_t addr)
+    {
+        if (cached_segment < size() && get(cached_segment).inrange(addr))
+            return get(cached_segment);
 
-    size_t lb = lower_bound(addr);
-    if (lb >= size() || !get(lb).inrange(addr))
-      throw std::string("segment addr out of range");
+        size_t lb = lower_bound(addr);
+        if (lb >= size() || !get(lb).inrange(addr))
+            throw std::string("segment addr out of range");
 
-    cached_segment = lb;
-    return get(cached_segment);
-  }
+        cached_segment = lb;
+        return get(cached_segment);
+    }
 
-  uint64_t find_codeobj_addr_in_range(uint64_t addr) {
-    return find_codeobj_in_range(addr).vbegin;
-  }
+    uint64_t find_codeobj_addr_in_range(uint64_t addr) {
+        return find_codeobj_in_range(addr).vbegin;
+    }
 
-  const address_range_t& get(size_t index) const { return data()[index]; }
+    const address_range_t& get(size_t index) const { return data()[index]; }
 
-  void insert(const address_range_t& elem) { this->Super::insert(elem); }
-  void insert_list(std::vector<address_range_t> arange)
-  {
-    for (auto& elem : arange) push_back(elem);
-    std::sort(
-      this->begin(),
-      this->end(),
-      [](const address_range_t& a, const address_range_t& b) { return a < b; }
-    );
-  };
+    void insert(const address_range_t& elem) { this->Super::insert(elem); }
+    void insert_list(std::vector<address_range_t> arange)
+    {
+        for (auto& elem : arange) push_back(elem);
+        std::sort(
+            this->begin(),
+            this->end(),
+            [](const address_range_t& a, const address_range_t& b) { return a < b; }
+        );
+    };
 
-  void reset() { cached_segment = ~0; }
-  void clear() { reset(); this->Super::clear(); }
-  bool remove(uint64_t addr) { reset(); return this->Super::remove(addr); }
+    void reset() { cached_segment = ~0; }
+    void clear() { reset(); this->Super::clear(); }
+    bool remove(uint64_t addr) { reset(); return this->Super::remove(addr); }
 
-  uint64_t ToPcV2(uint64_t pc);
+    pcinfo_t ToPcV2(uint64_t pc);
 private:
-  size_t cached_segment = ~0;
+    size_t cached_segment = ~0;
 };

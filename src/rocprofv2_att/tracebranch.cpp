@@ -28,12 +28,12 @@ size_t InstBranch::sequenceLengthMatch(const Instruction* insts, size_t num_inst
     size_t maxiter = std::min(sequence.size(), num_insts);
     for (; i<maxiter; i++)
     {
-        if (sequence[i].value == insts[i].value)
+        if (sequence[i].category == insts[i].category)
             continue;
         else if (i+2 < maxiter
-            && sequence[i+1].value == insts[i].value
-            && sequence[i].value == insts[i+1].value
-            && sequence[i+2].value == insts[i+2].value)
+            && sequence[i+1].category == insts[i].category
+            && sequence[i].category == insts[i+1].category
+            && sequence[i+2].category == insts[i+2].category)
             i += 1;
         else
             break;
@@ -47,10 +47,10 @@ FlattenTree InstBranch::get()
         return {{unique_id}, {sequence}};
 
     FlattenTree ret{{unique_id}, {sequence}};
-    for (auto& v : sequence) if (v.value != WaveInstCategory::PCINFO)
+    for (auto& v : sequence) if (v.category != WaveInstCategory::PCINFO)
     {
-        v.cycles = 0;
-        v.num_waves = 0;
+        v.latency = 0;
+        v.hitcount = 0;
     }
 
     for (auto& branch : branches)
@@ -87,7 +87,7 @@ int64_t InstBranch::recursive_insert(
         return this->unique_id;
     }
 
-    uint64_t insttype = insts[match_len].value;
+    uint64_t insttype = insts[match_len].category;
     if (match_len == sequence.size())
         for (auto& branch : branches)
             if (branch->category == insttype)
@@ -110,7 +110,7 @@ int64_t InstBranch::recursive_insert(
 }
 
 InstBranch::InstBranch(InstBranch& other, size_t match_len)
-    : category(other.sequence[match_len].value), unique_id(other.unique_id)
+    : category(other.sequence[match_len].category), unique_id(other.unique_id)
 {
     other.unique_id = get_unique_id();
     sequence = std::vector<InstructionExt>(other.sequence.begin()+match_len, other.sequence.end());

@@ -8,7 +8,7 @@
 
 #include "core/aql_profile_exception.h"
 #include "core/aql_profile_exception.h"
-#include "core/aql_profile.h"
+#include "core/aql_profile.hpp"
 
 namespace aql_profile {
 class CommandBufferMgr {
@@ -128,6 +128,8 @@ class CommandBufferMgr {
     return descr;
   }
 
+  static uint32_t Align(const uint32_t& size) { return (size + align_mask_) & ~align_mask_; }
+
  private:
   void Init(const descriptor_t& buffer, const bool& import) {
     buffer_ = buffer;
@@ -152,8 +154,6 @@ class CommandBufferMgr {
   uint32_t GetPreOffset() const { return GetRdOffset() + Align(info_.rdcmds_size); }
   uint32_t GetPostOffset() const { return GetPreOffset() + Align(info_.precmds_size); }
   uint32_t GetEndOffset() const { return GetPostOffset() + Align(info_.postcmds_size); }
-
-  static uint32_t Align(const uint32_t& size) { return (size + align_mask_) & ~align_mask_; }
 
   static const uint32_t align_size_ = 0x100;
   static const uint32_t align_mask_ = align_size_ - 1;

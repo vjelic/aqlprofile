@@ -5,8 +5,11 @@
 
 #include <iostream>
 #include <string>
+#include "include/aql_profile_v2.h"
 
 #include "core/aql_profile_exception.h"
+
+#define PUBLIC_API __attribute__((visibility("default")))
 
 namespace pm4_builder {
 class CmdBuilder;
@@ -31,20 +34,12 @@ class event_exception : public aql_profile_exc_val<event_t> {
   event_exception(const std::string& m, const event_t& ev) : aql_profile_exc_val(m, ev) {}
 };
 
-hsa_ven_amd_aqlprofile_info_data_t aqlprofile_sqttfilter_iterate_data(
-  void* sample_ptr,
-  uint64_t sample_capacity,
-  uint64_t sample_size,
-  uint32_t se_id,
-  int att_target_cu
-);
-
 }  // namespace aql_profile
 
 static std::ostream& operator<<(std::ostream& os, const aql_profile::event_t& ev) {
-  os << "event( block(" << ev.block_name << "." << ev.block_index << "), Id(" << ev.counter_id
-     << "))";
-  return os;
+    os << "event( block(" << ev.block_name << "." << ev.block_index << "), Id(" << ev.counter_id
+      << "))";
+    return os;
 }
 
 #endif  // SRC_CORE_AQL_PROFILE_H_

@@ -2,7 +2,7 @@
 
 #include <hsa/hsa_ven_amd_aqlprofile.h>
 #include "def/gpu_block_info.h"
-#include "core/aql_profile.h"
+#include "core/aql_profile.hpp"
 #include "core/pm4_factory.h"
 
 #include <cstdint>
@@ -37,14 +37,15 @@ struct EventDimension
     }
 };
 
+
 class EventKey
 {
 public:
-    hsa_agent_t agent;
+    uint64_t agent;
     hsa_ven_amd_aqlprofile_block_name_t block;
 
     bool operator==(const EventKey& other) const {
-        return  agent.handle == other.agent.handle && block == other.block;
+        return  agent == other.agent && block == other.block;
     }
     bool operator!=(const EventKey& other) const {
         return !(*this == other);
@@ -54,13 +55,14 @@ public:
 class EventAttribDimension
 {
 public:
-    EventAttribDimension(hsa_agent_t agent, hsa_ven_amd_aqlprofile_event_t event):
-        key({agent, event.block_name})
+    template<typename AgentType, typename EventType>
+    EventAttribDimension(AgentType agent, const EventType& event):
+        key({agent.handle, event.block_name})
     {
         EventDimension::init();
 
         aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(agent);
-        this->block_info = pm4_factory->GetBlockInfo(&event);
+        this->block_info = pm4_factory->GetBlockInfo(event.block_name);
 
         bIsGFX11 = pm4_factory->IsGFX11();
         bIsGFX9 = pm4_factory->IsGFX9();
@@ -109,6 +111,12 @@ public:
             dimensions.push_back({"INSTANCE", block_instance_count});
     }
 
+    size_t get_num_xccs() const { return num_xccs; };
+    size_t get_total_elements() const {
+        size_t acc = 1;
+        for (auto& d : dimensions) acc *= d.extent;
+        return acc;
+    }
     uint64_t get_num() const { return dimensions.size(); };
     EventDimension get_dim(uint64_t index) const { return dimensions.at(index); };
 
@@ -153,10 +161,11 @@ private:
     std::vector<EventDimension> dimensions;
 
 public:
-    static const EventAttribDimension& get(hsa_agent_t agent, hsa_ven_amd_aqlprofile_event_t event)
+    template<typename AgentType, typename EventType>
+    static const EventAttribDimension& get(AgentType agent, const EventType& event)
     {
         thread_local std::unique_ptr<EventAttribDimension> event_cache{nullptr};
-        EventKey key{agent, event.block_name};
+        EventKey key{agent.handle, event.block_name};
 
         if (!event_cache || event_cache->key != key)
             event_cache = std::make_unique<EventAttribDimension>(agent, event);

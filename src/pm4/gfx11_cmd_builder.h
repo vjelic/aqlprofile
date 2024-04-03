@@ -10,6 +10,7 @@
 
 #include "pm4/cmd_builder.h"
 #include "def/gfx11_def.h"
+
 namespace pm4_builder {
 
 /// @brief class Gfx11CmdBuilder implements the virtual class CmdBuilder
@@ -46,26 +47,28 @@ class Gfx11CmdBuilder : public CmdBuilder {
     BuildBarrierCommand(cmdbuf);
   }
 
-  void BuildCacheFlushPacket(CmdBuffer* cmdbuf){
+  void BuildCacheFlushPacket(CmdBuffer* cmdbuf, size_t addr, size_t size) override
+  {
     PM4MEC_ACQUIRE_MEM cache_flush{};
   // Initialize the command header
     cache_flush.header = MakePacket3Header(IT_ACQUIRE_MEM, sizeof(cache_flush));
 
   // Specify the base address of memory to invalidate.
   // The address must be 256 byte aligned.
-    cache_flush.coher_base_lo = 0x00;
-    cache_flush.bitfields6.coher_base_hi = 0x00;
+    cache_flush.coher_base_lo = uint32_t(addr>>8);
+    cache_flush.bitfields6.coher_base_hi = uint8_t(addr>>40);
 
   // Specify the size of memory to invalidate.
   // Size is specified in terms of 256 byte chunks. A coher_size
   // of 0xFFFFFFFF actually specified 0xFFFFFFFF00 (40 bits)
   // of memory. The field coher_size_hi specifies memory from
   // bits 40-64 for a total of 256 TB.
-    cache_flush.coher_size = 0xFFFFFFFF;
-    cache_flush.bitfields4.coher_size_hi = 0xFF;
+    size = ((addr%256+size)>>8) + ((size+0xFF)>>8) - (size>>8);
+    cache_flush.coher_size = uint32_t(size);
+    cache_flush.bitfields4.coher_size_hi = uint32_t(size>>32);
 
   // Specify the poll interval for determing if operation is complete
-    cache_flush.bitfields7.poll_interval = 0x04;
+    cache_flush.bitfields7.poll_interval = 0x10;
 
   // Program GCR Control Register. Initialize L2 Cache flush
   // for Non-Coherent memory blocks
@@ -81,7 +84,7 @@ class Gfx11CmdBuilder : public CmdBuilder {
     // Initialize the command header
     wait_reg_mem.header = MakePacket3Header(IT_WAIT_REG_MEM, sizeof(wait_reg_mem));
 
-    wait_reg_mem.bitfields7.poll_interval = 0x04;
+    wait_reg_mem.bitfields7.poll_interval = 0x10;
     wait_reg_mem.bitfields2.operation = operation__mec_wait_reg_mem__wait_reg_mem;
 
     // Apply the space to which addr belongs
@@ -277,6 +280,40 @@ class Gfx11CmdBuilder : public CmdBuilder {
     APPEND_COMMAND_WRAPPER(cmdbuf, indirect_buffer);
   }
   void BuildPredExecPacket(CmdBuffer* cmdbuf, uint32_t xcc_id = 0, uint32_t exec_count = 0) {}
+
+  void BuildMutexAcquirePacket(CmdBuffer* cmdbuf, size_t addr) override
+  {
+    constexpr uint32_t GL2_OP_ATOMIC_CMPSWAP_RTN_32 = 8;
+    PM4_MEC_ATOMIC_MEM atomic{};
+    atomic.header = MakePacket3Header(IT_ATOMIC_MEM, sizeof(atomic));
+
+    atomic.bitfields2.command = command__mec_atomic_mem__loop_until_compare_satisfied;
+    atomic.bitfields2.atomic = GL2_OP_ATOMIC_CMPSWAP_RTN_32;
+    atomic.bitfields9.loop_interval = 16;
+
+    atomic.addr_lo = uint32_t(addr);
+    atomic.addr_hi = addr >> 32;
+    atomic.src_data_lo = MakeMutexSlot();
+    atomic.cmp_data_lo = 0;
+
+    APPEND_COMMAND_WRAPPER(cmdbuf, atomic);
+  }
+
+  void BuildMutexReleasePacket(CmdBuffer* cmdbuf, size_t addr) override
+  {
+    constexpr uint32_t GL2_OP_ATOMIC_SWAP_RTN_32 = 7;
+    PM4_MEC_ATOMIC_MEM atomic{};
+    atomic.header = MakePacket3Header(IT_ATOMIC_MEM, sizeof(atomic));
+
+    atomic.bitfields2.command = command__mec_atomic_mem__single_pass_atomic;
+    atomic.bitfields2.atomic = GL2_OP_ATOMIC_SWAP_RTN_32;
+
+    atomic.addr_lo = uint32_t(addr);
+    atomic.addr_hi = addr >> 32;
+    atomic.src_data_lo = 0;
+
+    APPEND_COMMAND_WRAPPER(cmdbuf, atomic);
+  }
 };
 
 }  // namespace pm4_builder

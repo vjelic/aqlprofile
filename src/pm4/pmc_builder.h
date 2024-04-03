@@ -29,7 +29,7 @@ class CmdBuilder;
 template<typename Builder>
 class PrecExecBuilder {
 public:
-  PrecExecBuilder(Builder* builder, CmdBuffer* cmd_buffer, uint32_t target_xcc, bool is_mi300 = true)
+  PrecExecBuilder(Builder* builder, CmdBuffer* cmd_buffer, uint32_t target_xcc, bool is_mi300)
     : cmd_buffer_(cmd_buffer)
     , builder_{builder}
     , is_mi300_(is_mi300)
@@ -81,8 +81,7 @@ class PmcBuilder {
   virtual void Start(CmdBuffer* cmd_buffer, const counters_vector& counters_vec) = 0;
   // Generate stop profiling commands.
   // Return actual required data buffer size.
-  virtual uint32_t Stop(CmdBuffer* cmd_buffer, const counters_vector& counters_vec,
-                        void* data_buffer) = 0;
+  virtual void Stop(CmdBuffer* cmd_buffer, const counters_vector& counters_vec) = 0;
   // Generate read profiling commands.
   // Return actual required data buffer size.
   virtual uint32_t Read(CmdBuffer* cmd_buffer, const counters_vector& counters_vec,
@@ -156,7 +155,8 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
   }
 
   // Build PMC start PM4 comands
-  void Start(CmdBuffer* cmd_buffer, const counters_vector& counters_vec) {
+  void Start(CmdBuffer* cmd_buffer, const counters_vector& counters_vec) override
+  {
     // sdma performance monitor control value accumulator
     std::pair<reg_addr_t, uint32_t>
         sdma_select_accumulator[Primitives::SDMA_COUNTER_BLOCK_NUM_INSTANCES];
@@ -337,12 +337,14 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
         }
       }
     }
+
     // UMC start for all UMC chnnels/instances recorded earlier
-    if (! umcchs.empty()) {
+    if (!umcchs.empty())
+    {
       // insert master XCC PRED_EXEC packet here if it is MI300
       PrecExecBuilder<Builder> prec_exec_builder(this, cmd_buffer, VIRTUALXCCID_SELECT, xcc_number_ > 1);
-
-      for (const auto& i : umcchs) {
+      for (const auto& i : umcchs)
+      {
         uint32_t umc_index = i.first;
         uint64_t control_addr = i.second;
         // umc channel/instance clear
@@ -401,44 +403,18 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
     // Reset Grbm to its default state - broadcast
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
                                         Primitives::grbm_broadcast_value());
-    // Stop and freeze counters
-    if (counters_vec.get_attr() & CounterBlockCpmonAttr) {
-      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::CP_PERFMON_CNTL_ADDR,
-                                          Primitives::cp_perfmon_cntl_stop_value());
-      // After setting CP_PERFMON_CNTL_ADDR on GFX10, the first reg read is invalid if from SQ block
-      // Find a GRBM counter and copy it first
-      if (Primitives::GFXIP_LEVEL == 10)
-        for (auto& elem : counters_vec) {
-          if ((elem.block_info->attr & CounterBlockGRBMAttr) == 0) continue;
-          const auto& reg_info = get_reg_table(elem)[elem.index];
-          Builder::BuildCopyCounterDataPacket(cmd_buffer, reg_info.register_addr_lo,
-                                              reg_info.register_addr_hi, data_buffer, 3);
-          Builder::BuildWriteWaitIdlePacket(cmd_buffer);
-          break;
-        }
+
+    if (Primitives::GFXIP_LEVEL == 10)
+    for (auto& elem : counters_vec) {
+      if ((elem.block_info->attr & CounterBlockGRBMAttr) == 0) continue;
+      const auto& reg_info = get_reg_table(elem)[elem.index];
+      Builder::BuildCopyCounterDataPacket(cmd_buffer, reg_info.register_addr_lo,
+                                          reg_info.register_addr_hi, data_buffer, 3);
+      break;
     }
-    if (counters_vec.get_attr() & CounterBlockSrbmAttr)
-      Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::SRBM_PERFMON_CNTL_ADDR,
-                                          Primitives::srbm_stop_value());
-    // MC SEQ HBM Stop/Freeze all channels
-    if (counters_vec.get_attr() & CounterBlockMcSeqHbmAttr) {
-      // MC config to broadcast MCD tiles
-      Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::MC_CONFIG_MCD_ADDR,
-                                          Primitives::mc_hbm_broadcast_mcd_value());
-      // Stop for all channels
-      // MC_SEQ_PERFCOUNTER_RSLT_CNTL_M<CHANNEL>::ENABLE_ANY = 0
-      Builder::BuildWriteConfigRegPacket(cmd_buffer, Primitives::MC_SEQ_PERFCOUNTER_RSLT_CNTL_ADDR,
-                                         Primitives::mc_seq_hbm_stop_value());
-      Builder::BuildWriteConfigRegPacket(cmd_buffer,
-                                         Primitives::MC_SEQ_PERFCOUNTER_RSLT_CNTL_M1_ADDR,
-                                         Primitives::mc_seq_hbm_stop_value());
-      Builder::BuildWriteConfigRegPacket(cmd_buffer,
-                                         Primitives::MC_SEQ_PERFCOUNTER_RSLT_CNTL_M2_ADDR,
-                                         Primitives::mc_seq_hbm_stop_value());
-      Builder::BuildWriteConfigRegPacket(cmd_buffer,
-                                         Primitives::MC_SEQ_PERFCOUNTER_RSLT_CNTL_M3_ADDR,
-                                         Primitives::mc_seq_hbm_stop_value());
-    }
+
+    Builder::BuildWriteWaitIdlePacket(cmd_buffer);
+
 #if defined(_GFX10_PRIMITIVES_H_) || defined (_GFX11_PRIMITIVES_H_)
     // Stop GUS counters
     if (counters_vec.get_attr() & CounterBlockGusAttr)
@@ -456,6 +432,10 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       const auto* reg_table = get_reg_table(counter_des);
       const auto& reg_info = reg_table[counter_des.index];
 
+      // Skip UMC counters
+      if (block_info->attr & CounterBlockUmcAttr)
+        continue;
+
       // Reset Grbm to its default state - broadcast
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
                                           Primitives::grbm_broadcast_value());
@@ -464,7 +444,6 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
         Builder::BuildWritePConfigRegPacket(cmd_buffer, reg_info.control_addr,
                                             Primitives::mc_seq_config_val(counter_des));
         uint32_t* data = reinterpret_cast<uint32_t*>(data_buffer) + read_counter;
-        *reinterpret_cast<uint64_t*>(data) = 0;
         Builder::BuildCopyCounterDataPacket(cmd_buffer, reg_info.register_addr_lo,
                                             reg_info.register_addr_hi, data,
                                             Primitives::mc_channel_mask(counter_des));
@@ -511,24 +490,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
         }
         // Read SDMA
         uint32_t* data = reinterpret_cast<uint32_t*>(data_buffer) + read_counter;
-        if (data_buffer != 0) {
-          *reinterpret_cast<uint64_t*>(data) = 0;
-        }
         Builder::BuildCopyCounterDataPacket(cmd_buffer, reg_info.register_addr_lo, 0x0, data, 0x1);
-        read_counter += 2;
-      } else if (block_info->attr & CounterBlockUmcAttr) {
-        // Stop UMC: this code path appples only to non-MI300
-        const uint32_t mask = 1u << counter_des.block_des.index;
-        if ((umc_mask & mask) == 0) {
-          umc_mask |= mask;
-          Builder::BuildWritePConfigRegPacket(cmd_buffer, reg_info.control_addr, Primitives::umc_stop_value());
-        }
-        // Read UMC
-        uint32_t* data = reinterpret_cast<uint32_t*>(data_buffer) + read_counter;
-        if (data_buffer != 0) {
-          *reinterpret_cast<uint64_t*>(data) = 0;
-        }
-        Builder::BuildCopyCounterDataPacket(cmd_buffer, reg_info.register_addr_lo, reg_info.register_addr_hi, data, 3);
         read_counter += 2;
       } else {
         const uint32_t se_end_index = (block_info->attr & CounterBlockSeAttr) ? se_number_ : 1;
@@ -551,8 +513,6 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
 
           if (bIsWGPcounter) {
             for (int wgp=0; wgp<wgp_per_sa; wgp++) {
-              if (data_buffer)
-                memset(reinterpret_cast<uint32_t*>(data_buffer)+read_counter, 0, sizeof(uint64_t));
               grbm_value = Primitives::grbm_se_sh_wgp_index_value(se_index, wgp, sarray);
               Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR, grbm_value);
               Builder::BuildCopyCounterDataPacket(
@@ -585,102 +545,94 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
   }
 
   // Build PMC stop PM4 comands
-  uint32_t Stop(CmdBuffer* cmd_buffer, const counters_vector& counters_vec, void* data_buffer) {
-    // Issue barrier command to wait for dispatch to complete
-    Builder::BuildWriteWaitIdlePacket(cmd_buffer);
-    // Generate read commands
-    const uint32_t data_size = ReadPackets(cmd_buffer, counters_vec, data_buffer);
+  void Stop(CmdBuffer* cmd_buffer, const counters_vector& counters_vec) override
+  {
+    // Reset Grbm to its default state - broadcast
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,
+                                        Primitives::grbm_broadcast_value());
+    if (counters_vec.get_attr() & CounterBlockSrbmAttr)
+      Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::SRBM_PERFMON_CNTL_ADDR,
+                                          Primitives::srbm_stop_value());
+    // MC SEQ HBM Stop/Freeze all channels
+    if (counters_vec.get_attr() & CounterBlockMcSeqHbmAttr) {
+      // MC config to broadcast MCD tiles
+      Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::MC_CONFIG_MCD_ADDR,
+                                          Primitives::mc_hbm_broadcast_mcd_value());
+      // Stop for all channels
+      // MC_SEQ_PERFCOUNTER_RSLT_CNTL_M<CHANNEL>::ENABLE_ANY = 0
+      Builder::BuildWriteConfigRegPacket(cmd_buffer, Primitives::MC_SEQ_PERFCOUNTER_RSLT_CNTL_ADDR,
+                                         Primitives::mc_seq_hbm_stop_value());
+      Builder::BuildWriteConfigRegPacket(cmd_buffer,
+                                         Primitives::MC_SEQ_PERFCOUNTER_RSLT_CNTL_M1_ADDR,
+                                         Primitives::mc_seq_hbm_stop_value());
+      Builder::BuildWriteConfigRegPacket(cmd_buffer,
+                                         Primitives::MC_SEQ_PERFCOUNTER_RSLT_CNTL_M2_ADDR,
+                                         Primitives::mc_seq_hbm_stop_value());
+      Builder::BuildWriteConfigRegPacket(cmd_buffer,
+                                         Primitives::MC_SEQ_PERFCOUNTER_RSLT_CNTL_M3_ADDR,
+                                         Primitives::mc_seq_hbm_stop_value());
+    }
+  
+    // Issue barrier command to wait commands to complete
+    if (counters_vec.get_attr() & CounterBlockCpmonAttr)
+      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::CP_PERFMON_CNTL_ADDR,
+                                          Primitives::cp_perfmon_cntl_stop_value());
+
     // Enable RLC Perfmon Clock Gating. On Vega this
     // was disabled during Perf Cntrs collection session
     if (Primitives::GFXIP_LEVEL == 9)
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_PERFMON_CLK_CNTL_ADDR, 0);
-    // Issue barrier command to wait commands to complete
+
     Builder::BuildWriteWaitIdlePacket(cmd_buffer);
-    // Return amount of data to read
-    return data_size;
   }
 
   // Build PMC read PM4 comands
-  uint32_t Read(CmdBuffer* cmd_buffer, const counters_vector& counters_vec, void* data_buffer) {
-    // Generate read commands
-    const uint32_t data_size = ReadPackets(cmd_buffer, counters_vec, data_buffer);
-    // Start the counter list
-    if (counters_vec.get_attr() & CounterBlockCpmonAttr)
-      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::CP_PERFMON_CNTL_ADDR,
-                                          Primitives::cp_perfmon_cntl_start_value());
-    if (counters_vec.get_attr() & CounterBlockSrbmAttr)
-      Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::SRBM_PERFMON_CNTL_ADDR,
-                                          Primitives::srbm_start_value());
-    // Issue barrier command to wait commands to complete
-    Builder::BuildWriteWaitIdlePacket(cmd_buffer);
-    // Return amount of data to read
-    return data_size;
-  }
-
-  // Build PMC read PM4 packets
-  uint32_t ReadPackets(CmdBuffer* cmd_buffer, const counters_vector& counters_vec,
-                       void* data_buffer) {
+  uint32_t Read(CmdBuffer* cmd_buffer, const counters_vector& counters_vec, void* data_buffer) override
+  {
     uint32_t read_counter = 0;
-    if (xcc_number_ > 1) {
-      auto counters_attr = counters_vec.get_attr();
-      // counters have UMC events: MI300 Loop over MI300 XCCs for each counter_des
-      for (size_t xcc_selected = 0; xcc_selected < xcc_number_; ++xcc_selected) {
-        if (counters_attr & CounterBlockUmcAttr) {
-          // counters have UMC event
-          for (const auto& counter_des : counters_vec) {
-            // counters have UMC counters we loop over each counters
-            const auto* block_info = counter_des.block_info;
-            const auto& block_des = counter_des.block_des;
-            const auto* reg_table = get_reg_table(counter_des);
-            const auto& reg_info = reg_table[counter_des.index];
+    auto counters_attr = counters_vec.get_attr();
 
-            if (block_info->attr & CounterBlockUmcAttr) {
-              if (xcc_selected == 0) {
-                // MI300 UMC event: insert master XCC PRED_EXEC packet here
-                PrecExecBuilder<Builder> prec_exec_builder(this, cmd_buffer, VIRTUALXCCID_SELECT);
+    // counters have UMC events: MI300 Loop over MI300 XCCs for each counter_des
+    if (counters_attr & CounterBlockUmcAttr)
+    for (const auto& counter_des : counters_vec)
+    {
+      const auto* block_info = counter_des.block_info;
+      if (block_info->attr & CounterBlockUmcAttr)
+      {
+        const auto& block_des = counter_des.block_des;
+        const auto* reg_table = get_reg_table(counter_des);
+        const auto& reg_info = reg_table[counter_des.index];
+        // MI300 UMC event: insert master XCC PRED_EXEC packet here
+        PrecExecBuilder<Builder> prec_exec_builder(this, cmd_buffer, VIRTUALXCCID_SELECT, xcc_number_ > 1);
 
-                const auto umc_index = counter_des.block_des.index;
-                const auto target_aid_index = umc_index >> 5;
+        const auto umc_index = counter_des.block_des.index;
+        const auto target_aid_index = umc_index >> 5;
 
-                // Stop UMC
-                auto smn_control_addr = get_smn_addr(reg_info.control_addr, target_aid_index);
-                Builder::BuildWritePConfigRegPacket(cmd_buffer, smn_control_addr, Primitives::umc_stop_value());
+        // Stop UMC
+        auto smn_control_addr = get_smn_addr(reg_info.control_addr, target_aid_index);
+        Builder::BuildWritePConfigRegPacket(cmd_buffer, smn_control_addr, Primitives::umc_stop_value());
 
-                // Read UMC
-                uint32_t* smn_data_buffer = reinterpret_cast<uint32_t*>(data_buffer) + read_counter;
-                auto smn_register_addr_lo = get_smn_addr(reg_info.register_addr_lo, target_aid_index);
-                auto smn_register_addr_hi = get_smn_addr(reg_info.register_addr_hi, target_aid_index);
-                Builder::BuildCopyCounterDataPacket(cmd_buffer, smn_register_addr_lo, smn_register_addr_hi,
-                                                    smn_data_buffer, 3);
-                read_counter += 2;
-              }
-            } else {
-              // MI300 non-UMC event: insert master XCC PRED_EXEC packet here
-              PrecExecBuilder<Builder> prec_exec_builder(this, cmd_buffer, xcc_selected);
-
-              counters_vector xcc_counters_vec;
-              // To improve performance: accumulate counter_des as much as possible
-              xcc_counters_vec.push_back(counter_des);
-              ReadXccPackets(cmd_buffer, xcc_counters_vec, data_buffer, read_counter);
-            }
-          }
-        } else {
-          // MI300 all non-UMC events: insert XCC PRED_EXEC packet here
-          PrecExecBuilder<Builder> prec_exec_builder(this, cmd_buffer, xcc_selected);
-
-          ReadXccPackets(cmd_buffer, counters_vec, data_buffer, read_counter);
-        }
+        // Read UMC
+        uint32_t* smn_data_buffer = reinterpret_cast<uint32_t*>(data_buffer) + read_counter;
+        auto smn_register_addr_lo = get_smn_addr(reg_info.register_addr_lo, target_aid_index);
+        auto smn_register_addr_hi = get_smn_addr(reg_info.register_addr_hi, target_aid_index);
+        Builder::BuildCopyCounterDataPacket(cmd_buffer, smn_register_addr_lo, smn_register_addr_hi,
+                                            smn_data_buffer, 3);
+        read_counter += 2;
       }
-    } else {
-      // non-MI300: NO XCC at all, we process the whole counters_vec as before.
-      ReadXccPackets(cmd_buffer, counters_vec, data_buffer, read_counter);
     }
 
+    for (size_t xcc_selected = 0; xcc_selected < xcc_number_; ++xcc_selected)
+    {
+      PrecExecBuilder<Builder> prec_exec_builder(this, cmd_buffer, xcc_selected, xcc_number_ > 1);
+      ReadXccPackets(cmd_buffer, counters_vec, data_buffer, read_counter);
+    }
+ 
     // Return amount of data to read
     return read_counter * sizeof(uint32_t);
   }
 };
 
-}  // namespace pm4_builder
+};  // namespace pm4_builder
 
 #endif  // SRC_PM4_PMC_BUILDER_H_

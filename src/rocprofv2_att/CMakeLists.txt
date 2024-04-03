@@ -43,6 +43,9 @@ file(GLOB ROCMTOOLS_SUPPORT_FILES
   ${ROCMTOOLS_DIR}/gfx9/*.cpp
   ${ROCMTOOLS_DIR}/gfx10/*.cpp
   ${ROCMTOOLS_DIR}/gfx11/*.cpp
+  ${ROCMTOOLS_DIR}/stitch/pctranslator.cpp
+  ${ROCMTOOLS_DIR}/stitch/stitch.cpp
+  ${ROCMTOOLS_DIR}/stitch/codeservice.cpp
 )
 
 add_library(rocprofv2_att SHARED ${ROCMTOOLS_SUPPORT_FILES})
@@ -55,6 +58,7 @@ target_include_directories(rocprofv2_att PUBLIC
    ${CMAKE_CURRENT_BINARY_DIR}
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${PROJECT_SOURCE_DIR}/inc)
+  target_link_libraries(rocprofv2_att PRIVATE pthread hsa-runtime64::hsa-runtime64)
 
 install(
    TARGETS rocprofv2_att LIBRARY

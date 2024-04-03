@@ -30,9 +30,10 @@
 #include "gfx11/gfx11wave.h"
 #include "gfx11/gfx11token.h"
 #include "tracebranch.hpp"
+#include "stitch/stitch.hpp"
 
 std::shared_mutex WaveDataInternal::mutex;
-std::unordered_map<uint64_t, size_t> WaveDataInternal::kernelID{{0,0}};
+std::unordered_map<pcinfo_t, size_t> WaveDataInternal::kernelID{{{0,0},0}};
 std::atomic<size_t> WaveDataInternal::current_kernel_unique_id{1};
 
 template<typename WaveArrayType> FlattenTree getAggregatedData(WaveArrayType& wavearray);
@@ -61,20 +62,6 @@ template<> FlattenTree getAggregatedData(gfx9wave_t::WaveArray& wavearray)
 
     return branch.get();
 }
-
-union att_header_packet_t {
-  struct {
-    uint64_t reserved : 14;
-    uint64_t navi : 1;
-    uint64_t enable : 1;
-    uint64_t DSIMDM : 4;
-    uint64_t DCU : 5;
-    uint64_t DSA : 1;
-    uint64_t SEID : 6;
-    uint64_t reserved2 : 32;
-  };
-  uint64_t raw;
-};
 
 std::unique_ptr<CppReturnInfo>
 AnalyseBinary_GFX9_internal(const uint8_t* tokendata, int buffersize, int target_cu)
@@ -185,23 +172,29 @@ AnalyseBinary_GFX11_internal(const uint8_t* tokendata, int buffersize)
 
 // If target_cu < 0, find target_cu from software header
 std::unique_ptr<CppReturnInfo>
-AnalyseBinary_internal(const uint8_t* buffer, int BUFFER_SIZE, int target_cu)
+AnalyseBinary_internal(const uint8_t* buffer, int BUFFER_SIZE, bool bIsV2)
 {
     std::unique_ptr<CppReturnInfo> info{};
 
-    if (target_cu < 0) {
-        auto sw_header = *reinterpret_cast<const att_header_packet_t*>(buffer);
-        target_cu = sw_header.DCU;
+    auto gfx9_header = *reinterpret_cast<const att_header_packet_t*>(buffer);
+    if (gfx9_header.legacy_version == 0 && gfx9_header.gfx9_version2 == 4)
+    {
+        int target_cu = gfx9_header.DCU;
         buffer += sizeof(att_header_packet_t);
-    }
-    auto hw_header = *reinterpret_cast<const header_type*>(buffer);
-
-    if (hw_header.version == 3)
-        info = AnalyseBinary_GFX11_internal(buffer, BUFFER_SIZE);
-    else if (hw_header.version == 2 || hw_header.version == 1)
-        info = AnalyseBinary_GFX10_internal(buffer, BUFFER_SIZE);
-    else
         info = AnalyseBinary_GFX9_internal(buffer, BUFFER_SIZE, target_cu);
+    }
+    else if (gfx9_header.legacy_version != 0)
+    {
+        // V2 adds the header even for GFX10/11
+        if (bIsV2) buffer += sizeof(att_header_packet_t);
+
+        auto hw_header = *reinterpret_cast<const header_type*>(buffer);
+
+        if (hw_header.version == 3)
+            info = AnalyseBinary_GFX11_internal(buffer, BUFFER_SIZE);
+        else if (hw_header.version == 2 || hw_header.version == 1)
+            info = AnalyseBinary_GFX10_internal(buffer, BUFFER_SIZE);
+    }
 
     if (info.get() == nullptr) {
         std::cerr << "Invalid ATT data!" << std::endl;
@@ -234,7 +227,7 @@ python_return_info_t CppReturnInfo::fromCppReturn() const
     info.tracesizes = const_cast<uint64_t*>(tracesizes.data());
     info.tracedata = const_cast<InstructionExt**>(tracedata.data());
 
-    info.perfevents = const_cast<perfevent_t*>(perfevents.data());
+    info.perfevents = const_cast<att_perfevent_t*>(perfevents.data());
     info.num_events = perfevents.size();
     info.occupancy = const_cast<occupancy_info_t*>(occupancy.data());
     info.num_occupancy = occupancy.size();
@@ -260,7 +253,7 @@ size_t CppReturnInfo::GetMemoryNeededForSerialization() const
 {
     size_t needed_data = sizeof(fileoffset_info_t)
     + traces.size()*(sizeof(uint64_t)+sizeof(int64_t))
-    + perfevents.size()*sizeof(perfevent_t)
+    + perfevents.size()*sizeof(att_perfevent_t)
     + occupancy.size()*sizeof(occupancy_info_t)
     + kernel_ids_addr.size()*sizeof(void*);
 
@@ -323,8 +316,8 @@ std::unique_ptr<CppReturnInfo> CppReturnInfo::UnSerialize(const char* buffer, si
     READ_INC(&info, sizeof(fileoffset_info_t), numinfo);
     ret->flags = info.flags;
 
-    ret->kernel_ids_addr = std::vector<uint64_t>(info.num_kernel_ids);
-    READ_INC(ret->kernel_ids_addr.data(), sizeof(uint64_t), info.num_kernel_ids);
+    ret->kernel_ids_addr = std::vector<pcinfo_t>(info.num_kernel_ids);
+    READ_INC(ret->kernel_ids_addr.data(), sizeof(pcinfo_t), info.num_kernel_ids);
     
     ret->tracesizes = std::vector<uint64_t>(info.num_traces);
     READ_INC(ret->tracesizes.data(), sizeof(uint64_t), info.num_traces);
@@ -339,8 +332,8 @@ std::unique_ptr<CppReturnInfo> CppReturnInfo::UnSerialize(const char* buffer, si
         READ_INC(ret->tracedata.back(), sizeof(InstructionExt), tsize);
     }
 
-    ret->perfevents = std::vector<perfevent_t>(info.num_events);
-    READ_INC(ret->perfevents.data(), sizeof(perfevent_t), info.num_events);
+    ret->perfevents = std::vector<att_perfevent_t>(info.num_events);
+    READ_INC(ret->perfevents.data(), sizeof(att_perfevent_t), info.num_events);
 
     ret->occupancy = std::vector<occupancy_info_t>(info.num_occupancy);
     READ_INC(ret->occupancy.data(), sizeof(occupancy_info_t), info.num_occupancy);
@@ -354,7 +347,6 @@ std::mutex globalstate_lock;
 
 extern "C"
 {
-#ifdef AMD_AQLPROFILE_SQTT_NPI
     __attribute__((visibility("default")))
     python_return_info_t AnalyseBinary(const char* filename)
     {
@@ -371,7 +363,7 @@ extern "C"
         std::vector<uint64_t> buffer(BUFFER_SIZE/8+2, 0);
         file.read((char*)buffer.data(), BUFFER_SIZE);
 
-        auto globalstate = AnalyseBinary_internal((const uint8_t*)buffer.data(), BUFFER_SIZE, -1);
+        auto globalstate = AnalyseBinary_internal((const uint8_t*)buffer.data(), BUFFER_SIZE, true);
         python_return_info_t info = globalstate->fromCppReturn();
 
         {
@@ -382,36 +374,6 @@ extern "C"
         }
         return info;
     }
-#else
-    __attribute__((visibility("default")))
-    python_return_info_t AnalyseBinary(const char* filename)
-    {
-        const int BUFFER_SIZE = filesize(filename);
-
-        if (BUFFER_SIZE < 16) {
-            std::cout << "Invalid filename: " << filename << std::endl;
-            return {};
-        }
-
-        std::ifstream file(filename, std::ios::binary);
-        assert(file.good());
-
-        std::vector<char> buffer(BUFFER_SIZE+8, 0);
-        file.read(buffer.data(), BUFFER_SIZE);
-
-        auto globalstate = CppReturnInfo::UnSerialize(buffer.data()+8, BUFFER_SIZE-8);
-        python_return_info_t info = globalstate->fromCppReturn();
-
-        {
-            std::lock_guard<std::mutex> maplock(globalstate_lock);
-            map_globalstate[globalstate_unique_id] = std::move(globalstate);
-            info.id = globalstate_unique_id;
-            globalstate_unique_id += 1;
-        }
-        return info;
-    }
-#endif
-
     __attribute__((visibility("default")))
     void FreeBinary(uint64_t id)
     {
@@ -420,20 +382,15 @@ extern "C"
     }
 }
 
-uint64_t CodeobjTableTranslator::ToPcV2(uint64_t pc)
+pcinfo_t CodeobjTableTranslator::ToPcV2(uint64_t pc)
 {
-  pcinfo_t pcinfo;
-  try {
-    const address_range_t& codeobj = this->find_codeobj_in_range(pc);
-    // If offset does not fit in 34 bits, use raw PC values
-    if (pc - codeobj.vbegin > (1ul<<PCINFO_OFFSET_BITS))
-        throw std::string();
-    pcinfo.codeobj.header = 1;
-    pcinfo.codeobj.id = codeobj.id;
-    pcinfo.codeobj.offset = pc - codeobj.vbegin;
-  } catch (std::string& e) {
-    pcinfo.addr.header = 0;
-    pcinfo.addr.addr = pc;
-  }
-  return pcinfo.raw;
+    pcinfo_t pcinfo {.addr = pc, .marker_id = 0};
+    try {
+        const address_range_t& codeobj = this->find_codeobj_in_range(pc);
+        pcinfo.marker_id = codeobj.id;
+        pcinfo.addr = pc - codeobj.vbegin;
+    }
+    catch (std::string& e) {}
+    catch (std::out_of_range& e) {}
+    return pcinfo;
 }
