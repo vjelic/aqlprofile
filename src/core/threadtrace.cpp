@@ -115,7 +115,7 @@ hsa_status_t _internal_aqlprofile_att_iterate_data(
         size_t sample_size_plus_header = sample_size;
 
         char* sample_data_ptr = (char*)cpu_sample.data();
-        if (pm4_factory->GetGpuId() == aql_profile::GFX9_GPU_ID)
+        if (pm4_factory->GetGpuId() != aql_profile::GFX10_GPU_ID && pm4_factory->GetGpuId() != aql_profile::GFX11_GPU_ID)
         {
             auto* header = reinterpret_cast<att_header_packet_t*>(cpu_sample.data());
             *header = getHeaderPacket(se_index, target_cu, 0xF);

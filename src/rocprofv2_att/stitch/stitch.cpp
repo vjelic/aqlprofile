@@ -67,6 +67,10 @@ void Stitcher::stitch(std::vector<InstructionExt>& insts)
             pcskip.push_back(inst_index);
             inst_index ++;
         }
+        else if (inst.category == WaveInstCategory::WAVE_NOT_FINISHED)
+        {
+            break;
+        }
 
         STITCH_ASSERT(next.get());
         line = std::move(next);
