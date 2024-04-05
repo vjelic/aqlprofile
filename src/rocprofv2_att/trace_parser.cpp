@@ -255,7 +255,7 @@ size_t CppReturnInfo::GetMemoryNeededForSerialization() const
     + traces.size()*(sizeof(uint64_t)+sizeof(int64_t))
     + perfevents.size()*sizeof(att_perfevent_t)
     + occupancy.size()*sizeof(occupancy_info_t)
-    + kernel_ids_addr.size()*sizeof(void*);
+    + kernel_ids_addr.size()*sizeof(pcinfo_t);
 
     for (auto& trace : traces)
         needed_data += trace.size()*sizeof(InstructionExt);
@@ -270,7 +270,7 @@ size_t CppReturnInfo::GetMemoryNeededForSerialization() const
     if (spaceleft <= 0) return offset;                                                \
 }
 
-size_t CppReturnInfo::Serialize(char* const buffer, size_t buffersize) const
+size_t CppReturnInfo::Serialize(uint8_t* const buffer, size_t buffersize) const
 {
     size_t offset = 0;
     int64_t spaceleft = buffersize;
@@ -284,7 +284,7 @@ size_t CppReturnInfo::Serialize(char* const buffer, size_t buffersize) const
     info.num_occupancy = occupancy.size();
 
     WRITE_INC(&info, sizeof(info));
-    WRITE_INC(kernel_ids_addr.data(), kernel_ids_addr.size()*sizeof(uint64_t));
+    WRITE_INC(kernel_ids_addr.data(), kernel_ids_addr.size()*sizeof(pcinfo_t));
     WRITE_INC(tracesizes.data(), tracesizes.size()*sizeof(uint64_t));
     WRITE_INC(traceIDs.data(), traceIDs.size()*sizeof(uint64_t));
 
@@ -305,7 +305,7 @@ size_t CppReturnInfo::Serialize(char* const buffer, size_t buffersize) const
     if (spaceleft <= 0) return ret;                                                   \
 }
 
-std::unique_ptr<CppReturnInfo> CppReturnInfo::UnSerialize(const char* buffer, size_t buffersize)
+std::unique_ptr<CppReturnInfo> CppReturnInfo::UnSerialize(const uint8_t* buffer, size_t buffersize)
 {
     size_t offset = 0;
     int64_t spaceleft = buffersize;
@@ -347,6 +347,7 @@ std::mutex globalstate_lock;
 
 extern "C"
 {
+#ifdef AMD_AQLPROFILE_SQTT_NPI
     __attribute__((visibility("default")))
     python_return_info_t AnalyseBinary(const char* filename)
     {
@@ -374,6 +375,36 @@ extern "C"
         }
         return info;
     }
+#else
+    __attribute__((visibility("default")))
+    python_return_info_t AnalyseBinary(const char* filename)
+    {
+        const int BUFFER_SIZE = filesize(filename);
+
+        if (BUFFER_SIZE < 16) {
+            std::cout << "Invalid filename: " << filename << std::endl;
+            return {};
+        }
+
+        std::ifstream file(filename, std::ios::binary);
+        assert(file.good());
+
+        std::vector<char> buffer(BUFFER_SIZE+8, 0);
+        file.read(buffer.data(), BUFFER_SIZE);
+
+        auto globalstate = CppReturnInfo::UnSerialize((uint8_t*)buffer.data()+8, BUFFER_SIZE-8);
+        python_return_info_t info = globalstate->fromCppReturn();
+
+        {
+            std::lock_guard<std::mutex> maplock(globalstate_lock);
+            map_globalstate[globalstate_unique_id] = std::move(globalstate);
+            info.id = globalstate_unique_id;
+            globalstate_unique_id += 1;
+        }
+        return info;
+    }
+#endif
+
     __attribute__((visibility("default")))
     void FreeBinary(uint64_t id)
     {

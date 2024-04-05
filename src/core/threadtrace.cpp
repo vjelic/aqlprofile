@@ -124,7 +124,15 @@ hsa_status_t _internal_aqlprofile_att_iterate_data(
         }
 
         memorymgr->CopyMemory((void*)sample_data_ptr, sample_ptr, sample_size);
+#ifdef AMD_AQLPROFILE_SQTT_NPI
         callback(se_index, (void*)cpu_sample.data(), sample_size_plus_header, userdata);
+#else
+        auto return_info = AnalyseBinary_internal((uint8_t*)cpu_sample.data(), sample_size_plus_header, false);
+        std::vector<uint8_t> mem;
+        mem.resize(return_info->GetMemoryNeededForSerialization());
+        return_info->Serialize(mem.data(), mem.size());
+        callback(se_index, (void*)mem.data(), mem.size(), userdata);
+#endif
     }
 
     return status;
@@ -139,7 +147,6 @@ hsa_status_t _internal_aqlprofile_att_create_packets(
     aqlprofile_memory_copy_t copy_fn,
     void* userdata
 ) {
-#ifdef AMD_AQLPROFILE_SQTT_NPI
     pm4_builder::CmdBuffer start_cmd;
     pm4_builder::CmdBuffer stop_cmd;
 
@@ -264,9 +271,6 @@ hsa_status_t _internal_aqlprofile_att_create_packets(
     aql_profile::PopulateAql(cmdbuf, stop_cmd.Size(), cmd_writer, &packets->stop_packet);
 
     return HSA_STATUS_SUCCESS;
-#else
-    return HSA_STATUS_ERROR;
-#endif
 }
 
 // Method to populate the provided AQL packet with ATT Markers

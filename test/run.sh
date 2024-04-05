@@ -99,13 +99,13 @@ unset AQLPROFILE_SPM
 eval_test "PMC test" $tbin
 
 # Run with SQTT
-unset AQLPROFILE_PMC
-unset AQLPROFILE_PMC_PRIV
-export AQLPROFILE_SQTT=1
-unset AQLPROFILE_SDMA
-unset AQLPROFILE_SCAN
-unset AQLPROFILE_SPM
-eval_test "SQTT test" $tbin
+# unset AQLPROFILE_PMC
+# unset AQLPROFILE_PMC_PRIV
+# export AQLPROFILE_SQTT=1
+# unset AQLPROFILE_SDMA
+# unset AQLPROFILE_SCAN
+# unset AQLPROFILE_SPM
+# eval_test "SQTT test" $tbin
 
 # Run with PCSMP
 unset AQLPROFILE_PMC

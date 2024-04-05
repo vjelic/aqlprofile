@@ -104,7 +104,11 @@ PUBLIC_API hsa_status_t aqlprofile_att_parse_data(
 
     while (remaining && buffer_size)
     {
+#ifdef AMD_AQLPROFILE_SQTT_NPI
         auto ret = AnalyseBinary_internal(buffer, buffer_size, false);
+#else
+        auto ret = CppReturnInfo::UnSerialize(buffer, buffer_size);
+#endif
 
         auto& traceids = ret->traceIDs;
         trace_callback(TRACE_IDS, shader, (void*)traceids.data(), traceids.size(), cbdata);

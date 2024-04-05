@@ -238,8 +238,8 @@ struct CppReturnInfo
 
     python_return_info_t fromCppReturn() const;
     size_t GetMemoryNeededForSerialization() const;
-    size_t Serialize(char* buffer, size_t buffersize) const;
-    static std::unique_ptr<CppReturnInfo> UnSerialize(const char* buffer, size_t buffersize);
+    size_t Serialize(uint8_t* buffer, size_t buffersize) const;
+    static std::unique_ptr<CppReturnInfo> UnSerialize(const uint8_t* buffer, size_t buffersize);
 };
 
 struct fileoffset_info_t
