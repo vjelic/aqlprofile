@@ -308,7 +308,7 @@ hsa_status_t _internal_aqlprofile_att_codeobj_load_marker(
 
     void* cmdbuffer = memorymgr->AddMarkerCmdBuffer(commands.Size());
 
-    memcpy(cmdbuffer, commands.Data(), commands.Size());
+    memorymgr->CopyMemory(cmdbuffer, commands.Data(), commands.Size());
     aql_profile::PopulateAql(cmdbuffer, commands.Size(), cmd_writer, packets);
 
     return HSA_STATUS_SUCCESS;

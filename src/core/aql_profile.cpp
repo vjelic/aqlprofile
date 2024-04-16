@@ -224,7 +224,6 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
         if (profile->output_buffer.ptr != NULL)
           return HSA_STATUS_ERROR_INVALID_ARGUMENT;
       }
-#ifdef AMD_AQLPROFILE_SQTT_NDA
     } else if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_TRACE) {
       pm4_builder::TraceConfig trace_config{};
       memset((char*)&trace_config, 0, sizeof(pm4_builder::TraceConfig));
@@ -332,7 +331,6 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
         // Generate stop commands
         spm_builder->End(&commands, &trace_config);
       }
-#endif
     } else {
       ERR_LOGGING << "Bad profile type (" << profile->type << ")";
       return HSA_STATUS_ERROR_INVALID_ARGUMENT;
@@ -434,10 +432,10 @@ hsa_ven_amd_aqlprofile_get_info(const hsa_ven_amd_aqlprofile_profile_t* profile,
     aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile);
     switch (attribute) {
       case HSA_VEN_AMD_AQLPROFILE_INFO_COMMAND_BUFFER_SIZE:
-        *(uint32_t*)value = 0x1000;  // a current approximation as 4K is big enough
+        *(uint32_t*)value = 0x2000;  // a current approximation as 4K is big enough
         break;
       case HSA_VEN_AMD_AQLPROFILE_INFO_PMC_DATA_SIZE:
-        *(uint32_t*)value = 0x1000;  // a current approximation as 4K is big enough
+        *(uint32_t*)value = 0x1800;  // a current approximation as 4K is big enough
         break;
       case HSA_VEN_AMD_AQLPROFILE_INFO_PMC_DATA:
         reinterpret_cast<hsa_ven_amd_aqlprofile_info_data_t*>(value)->pmc_data.result = 0;
@@ -718,7 +716,16 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
               info.sample_id = se_index;
               info.trace_data.ptr = sample_ptr;
               info.trace_data.size = sample_size;
+
 #ifdef AMD_AQLPROFILE_SQTT_NDA
+              status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, &info, data);
+#else
+              auto return_info = AnalyseBinary_internal((uint8_t*)sample_ptr, sample_size, false);
+              size_t used_data = std::min(sample_capacity, return_info->GetMemoryNeededForSerialization());
+              return_info->Serialize((uint8_t*)sample_ptr, used_data);
+              info.trace_data.size = used_data;
+              if (used_data < sample_size)
+                memset((uint8_t*)sample_ptr + used_data, 0, sample_size-used_data);
               status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, &info, data);
 #endif
             }
