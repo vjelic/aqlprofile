@@ -124,7 +124,7 @@ hsa_status_t _internal_aqlprofile_att_iterate_data(
         }
 
         memorymgr->CopyMemory((void*)sample_data_ptr, sample_ptr, sample_size);
-#ifdef AMD_AQLPROFILE_SQTT_NPI
+#ifdef AMD_AQLPROFILE_SQTT_NDA
         callback(se_index, (void*)cpu_sample.data(), sample_size_plus_header, userdata);
 #else
         auto return_info = AnalyseBinary_internal((uint8_t*)cpu_sample.data(), sample_size_plus_header, false);

@@ -17,6 +17,7 @@
 #include "pm4/sqtt_builder.h"
 
 #include "core/commandbuffermgr.hpp"
+#include "src/rocprofv2_att/trace_parser.hpp"
 
 #define CONSTRUCTOR_API __attribute__((constructor))
 #define DESTRUCTOR_API __attribute__((destructor))
@@ -223,7 +224,7 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
         if (profile->output_buffer.ptr != NULL)
           return HSA_STATUS_ERROR_INVALID_ARGUMENT;
       }
-#ifdef AMD_AQLPROFILE_SQTT_NPI
+#ifdef AMD_AQLPROFILE_SQTT_NDA
     } else if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_TRACE) {
       pm4_builder::TraceConfig trace_config{};
       memset((char*)&trace_config, 0, sizeof(pm4_builder::TraceConfig));
@@ -717,7 +718,7 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
               info.sample_id = se_index;
               info.trace_data.ptr = sample_ptr;
               info.trace_data.size = sample_size;
-#ifdef AMD_AQLPROFILE_SQTT_NPI
+#ifdef AMD_AQLPROFILE_SQTT_NDA
               status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, &info, data);
 #endif
             }

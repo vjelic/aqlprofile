@@ -64,7 +64,7 @@ enum trace_type_ids_t
     OCCUPANCY,
     PERFEVENT,
     WAVES,
-    SHADER_NPI_DATA,
+    SHADER_NDA_DATA,
 };
 
 std::unordered_map<int, std::string> trace_type_ids = {
@@ -72,10 +72,10 @@ std::unordered_map<int, std::string> trace_type_ids = {
     {TRACE_IDS, "traceids",},
     {TRACE_DATA, "tracedata"},
     {OCCUPANCY, "occupancy"},
-#ifdef AMD_AQLPROFILE_SQTT_NPI
+#ifdef AMD_AQLPROFILE_SQTT_NDA
     {PERFEVENT, "perfevent"},
     {WAVES, "waves"},
-    {SHADER_NPI_DATA, "generic_data"},
+    {SHADER_NDA_DATA, "SHADER_NDA_DATA"},
 #endif
 };
 
@@ -104,7 +104,7 @@ PUBLIC_API hsa_status_t aqlprofile_att_parse_data(
 
     while (remaining && buffer_size)
     {
-#ifdef AMD_AQLPROFILE_SQTT_NPI
+#ifdef AMD_AQLPROFILE_SQTT_NDA
         auto ret = AnalyseBinary_internal(buffer, buffer_size, false);
 #else
         auto ret = CppReturnInfo::UnSerialize(buffer, buffer_size);
@@ -127,7 +127,7 @@ PUBLIC_API hsa_status_t aqlprofile_att_parse_data(
             trace_callback(TRACE_DATA, traceids.at(t), (void*)trace.data(), trace.size(), cbdata);
         }
 
-#ifdef AMD_AQLPROFILE_SQTT_NPI
+#ifdef AMD_AQLPROFILE_SQTT_NDA
         trace_callback(WAVES, 0, (void*)ret->waves.data(), ret->waves.size(), cbdata);
 #endif
 

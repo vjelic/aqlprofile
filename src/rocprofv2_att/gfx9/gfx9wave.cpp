@@ -334,7 +334,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens, int target_cu)
       int64_t active_cycles = array_apply_issue(token, SIMD);
       total_num_issue_cycles += active_cycles;
     }
-#ifdef AMD_AQLPROFILE_SQTT_NPI
+#ifdef AMD_AQLPROFILE_SQTT_NDA
     else if (token.type == SQTT_PERFCOUNTER_TOKEN && token.sh == 0)
     {
       perfEvents.push_back(att_perfevent_t{

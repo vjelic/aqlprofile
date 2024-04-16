@@ -36,7 +36,7 @@
 #include "thread_trace_viewer_def.h"
 #include "../core/include/aql_profile_v2.h"
 
-//#define AMD_AQLPROFILE_SQTT_NPI
+//#define AMD_AQLPROFILE_SQTT_NDA
 #define SQTT_PARSER_VERSION 5
 #define OCCUPANCY_RESOLUTION 8
 
@@ -53,7 +53,7 @@ struct occupancy_info_t : public att_occupancy_info_t
         this->enable = enable;
         this->cu = cu;
         this->time = time/OCCUPANCY_RESOLUTION;
-#ifndef AMD_AQLPROFILE_SQTT_NPI
+#ifndef AMD_AQLPROFILE_SQTT_NDA
         this->time &= ~0x7ul; // Makes the time information have a granularity of 64 cycles
         this->simd = 0;
         this->slot = 0;
@@ -232,7 +232,7 @@ struct CppReturnInfo
     std::vector<std::vector<InstructionExt>> traces;
     std::vector<occupancy_info_t> occupancy;
     std::vector<att_perfevent_t> perfevents;
-#ifdef AMD_AQLPROFILE_SQTT_NPI
+#ifdef AMD_AQLPROFILE_SQTT_NDA
     std::vector<WaveDataNPI> waves;
 #endif
 

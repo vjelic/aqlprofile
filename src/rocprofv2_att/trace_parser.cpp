@@ -30,6 +30,7 @@
 #include "gfx11/gfx11wave.h"
 #include "gfx11/gfx11token.h"
 #include "tracebranch.hpp"
+#include "trace_parser.hpp"
 #include "stitch/stitch.hpp"
 
 std::shared_mutex WaveDataInternal::mutex;
@@ -81,7 +82,7 @@ AnalyseBinary_GFX9_internal(const uint8_t* tokendata, int buffersize, int target
     info->flags.isNavi = false;
     std::tie(info->traceIDs, info->traces) = getAggregatedData(wavearray);
 
-#ifdef AMD_AQLPROFILE_SQTT_NPI
+#ifdef AMD_AQLPROFILE_SQTT_NDA
     int num_waves = 0;
     for (auto& Wave_j : wavearray)
         for (auto& Wave_ij : Wave_j)
@@ -118,7 +119,7 @@ AnalyseBinary_GFX10_internal(const uint8_t* tokendata, int buffersize)
     info->flags.isNavi = true;
     std::tie(info->traceIDs, info->traces) = getAggregatedData(wavearray);
 
-#ifdef AMD_AQLPROFILE_SQTT_NPI
+#ifdef AMD_AQLPROFILE_SQTT_NDA
     int num_waves = 0;
     for (auto& Wave_ij : wavearray)
         num_waves += Wave_ij.size();
@@ -152,7 +153,7 @@ AnalyseBinary_GFX11_internal(const uint8_t* tokendata, int buffersize)
     info->flags.isNavi = true;
     std::tie(info->traceIDs, info->traces) = getAggregatedData(wavearray);
 
-#ifdef AMD_AQLPROFILE_SQTT_NPI
+#ifdef AMD_AQLPROFILE_SQTT_NDA
     int num_waves = 0;
     for (auto& Wave_ij : wavearray)
         num_waves += Wave_ij.size();
@@ -211,7 +212,7 @@ AnalyseBinary_internal(const uint8_t* buffer, int BUFFER_SIZE, bool bIsV2)
 
     info->flags.isValid = true;
     info->flags.version = SQTT_PARSER_VERSION;
-#ifdef AMD_AQLPROFILE_SQTT_NPI
+#ifdef AMD_AQLPROFILE_SQTT_NDA
     info->flags.npiWaveData = true;
 #endif
     return info;
@@ -234,7 +235,7 @@ python_return_info_t CppReturnInfo::fromCppReturn() const
     info.kernel_id_addr = (void*)kernel_ids_addr.data();
     info.num_kernel_ids = kernel_ids_addr.size();
 
-#ifdef AMD_AQLPROFILE_SQTT_NPI
+#ifdef AMD_AQLPROFILE_SQTT_NDA
     info.wavenpi = (void*)waves.data();
     info.num_waves = waves.size();
 #endif
@@ -347,7 +348,7 @@ std::mutex globalstate_lock;
 
 extern "C"
 {
-#ifdef AMD_AQLPROFILE_SQTT_NPI
+#ifdef AMD_AQLPROFILE_SQTT_NDA
     __attribute__((visibility("default")))
     python_return_info_t AnalyseBinary(const char* filename)
     {
