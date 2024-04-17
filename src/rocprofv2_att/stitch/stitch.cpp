@@ -27,7 +27,7 @@ std::unordered_map<InstCategory, std::string> assemblyLine::categories =
   {InstCategory::NEGATIVE, "NEGATIVE"},
 };
 
-void Stitcher::stitch(std::vector<InstructionExt>& insts)
+size_t Stitcher::stitch(std::vector<InstructionExt>& insts)
 {
     STITCH_ASSERT(insts.size());
 
@@ -48,7 +48,7 @@ void Stitcher::stitch(std::vector<InstructionExt>& insts)
         try {
             next = watchlist->getcode(firstinst.pc);
         } catch (...) {
-            return;
+            return 0;
         }
 
         pcskip.push_back(0);
@@ -176,17 +176,12 @@ void Stitcher::stitch(std::vector<InstructionExt>& insts)
         }
     }
 
-    if (inst_index != insts.size())
-    {
-        std::cout << "Warning - Stitching rate: " << inst_index << " of " << insts.size() << std::endl;
-    }
-    else
+    if (inst_index == insts.size())
     {
         //while (line.get() && line->line.find("s_endpgm") != 0)
         //    line = watchlist->getcode(line->next);
-
-        std::cout << "Successfuly parsed " << inst_index << " tokens" << std::endl;
     }
+    return inst_index;
 }
 
 Stitcher::Stitcher(

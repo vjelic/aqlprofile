@@ -64,7 +64,7 @@ enum trace_type_ids_t
     OCCUPANCY,
     PERFEVENT,
     WAVES,
-    SHADER_NDA_DATA,
+    WARNING
 };
 
 std::unordered_map<int, std::string> trace_type_ids = {
@@ -75,8 +75,8 @@ std::unordered_map<int, std::string> trace_type_ids = {
 #ifdef AMD_AQLPROFILE_SQTT_NDA
     {PERFEVENT, "perfevent"},
     {WAVES, "waves"},
-    {SHADER_NDA_DATA, "SHADER_NDA_DATA"},
 #endif
+    {WARNING, "warning"}
 };
 
 PUBLIC_API void aqlprofile_att_parser_iterate_event_list(
@@ -122,9 +122,17 @@ PUBLIC_API hsa_status_t aqlprofile_att_parse_data(
 
         for (size_t t=0; t<ret->traces.size(); t++) if (ret->traces[t].size() > 1)
         {
-            stitcher->stitch(ret->traces.at(t));
+            size_t stitch_rate = stitcher->stitch(ret->traces.at(t));
             std::vector<InstructionExt>& trace = ret->traces.at(t);
             trace_callback(TRACE_DATA, traceids.at(t), (void*)trace.data(), trace.size(), cbdata);
+
+            if (stitch_rate != ret->traces.at(t).size())
+            {
+                std::string diag =  "Stitching rate: " + std::to_string(stitch_rate)
+                                    + " of " + std::to_string(ret->traces.at(t).size());
+                trace_callback(WARNING, traceids.at(t), (void*)diag.data(), diag.size(), cbdata);
+            }
+
         }
 
 #ifdef AMD_AQLPROFILE_SQTT_NDA

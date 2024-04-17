@@ -200,7 +200,7 @@ public:
     Stitcher(std::shared_ptr<ICodeServicer>& service, bool bGFX9);
     Stitcher(std::vector<assemblyLinePtr>& code, std::unordered_map<int, int>& jumps, bool bGFX9);
 
-    void stitch(std::vector<InstructionExt>& trace);
+    size_t stitch(std::vector<InstructionExt>& trace);
     std::vector<assemblyLinePtr> raw_code;
 private:
     const bool bGFX9;
