@@ -178,8 +178,10 @@ AnalyseBinary_internal(const uint8_t* buffer, int BUFFER_SIZE, bool bIsV2)
     std::unique_ptr<CppReturnInfo> info{};
 
     auto gfx9_header = *reinterpret_cast<const att_header_packet_t*>(buffer);
-    if (gfx9_header.legacy_version == 0 && gfx9_header.gfx9_version2 == 4)
-    {
+    if (
+        (gfx9_header.legacy_version == 0 || gfx9_header.legacy_version == 0x11)
+        && gfx9_header.gfx9_version2 == 4
+    ) {
         int target_cu = gfx9_header.DCU;
         buffer += sizeof(att_header_packet_t);
         info = AnalyseBinary_GFX9_internal(buffer, BUFFER_SIZE, target_cu);

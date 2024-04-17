@@ -22,7 +22,7 @@
 inline att_header_packet_t getHeaderPacket(int SE, int CU, int SIMD)
 {
     att_header_packet_t header{.raw = 0};
-    header.legacy_version = 0;
+    header.legacy_version = 0x11; // The thread trace viewer only sees gfx9 for 0x11
     header.gfx9_version2 = 4;
     header.SEID = SE;
     header.DCU = CU;
