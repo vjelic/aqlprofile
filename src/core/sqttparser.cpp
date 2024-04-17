@@ -105,7 +105,7 @@ PUBLIC_API hsa_status_t aqlprofile_att_parse_data(
     while (remaining && buffer_size)
     {
 #ifdef AMD_AQLPROFILE_SQTT_NDA
-        auto ret = AnalyseBinary_internal(buffer, buffer_size, false);
+        auto ret = AnalyseBinary_internal(buffer, buffer_size, -1);
 #else
         auto ret = CppReturnInfo::UnSerialize(buffer, buffer_size);
 #endif

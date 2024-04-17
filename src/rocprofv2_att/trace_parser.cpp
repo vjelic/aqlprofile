@@ -173,30 +173,33 @@ AnalyseBinary_GFX11_internal(const uint8_t* tokendata, int buffersize)
 
 // If target_cu < 0, find target_cu from software header
 std::unique_ptr<CppReturnInfo>
-AnalyseBinary_internal(const uint8_t* buffer, int BUFFER_SIZE, bool bIsV2)
+AnalyseBinary_internal(const uint8_t* buffer, int BUFFER_SIZE, int gfx9_target_cu)
 {
     std::unique_ptr<CppReturnInfo> info{};
 
-    auto gfx9_header = *reinterpret_cast<const att_header_packet_t*>(buffer);
-    if (
-        (gfx9_header.legacy_version == 0 || gfx9_header.legacy_version == 0x11)
-        && gfx9_header.gfx9_version2 == 4
-    ) {
-        int target_cu = gfx9_header.DCU;
-        buffer += sizeof(att_header_packet_t);
-        info = AnalyseBinary_GFX9_internal(buffer, BUFFER_SIZE, target_cu);
-    }
-    else if (gfx9_header.legacy_version != 0)
+    if (gfx9_target_cu < 0)
     {
-        // V2 adds the header even for GFX10/11
-        if (bIsV2) buffer += sizeof(att_header_packet_t);
+        auto gfx9_header = *reinterpret_cast<const att_header_packet_t*>(buffer);
+        if (
+            (gfx9_header.legacy_version == 0 || gfx9_header.legacy_version == 0x11)
+            && gfx9_header.gfx9_version2 == 4
+        ) {
+            buffer += sizeof(att_header_packet_t);
+            info = AnalyseBinary_GFX9_internal(buffer, BUFFER_SIZE, gfx9_header.DCU);
+        }
+        else if (gfx9_header.legacy_version != 0)
+        {
+            auto hw_header = *reinterpret_cast<const header_type*>(buffer);
 
-        auto hw_header = *reinterpret_cast<const header_type*>(buffer);
-
-        if (hw_header.version == 3)
-            info = AnalyseBinary_GFX11_internal(buffer, BUFFER_SIZE);
-        else if (hw_header.version == 2 || hw_header.version == 1)
-            info = AnalyseBinary_GFX10_internal(buffer, BUFFER_SIZE);
+            if (hw_header.version == 3)
+                info = AnalyseBinary_GFX11_internal(buffer, BUFFER_SIZE);
+            else if (hw_header.version == 2 || hw_header.version == 1)
+                info = AnalyseBinary_GFX10_internal(buffer, BUFFER_SIZE);
+        }
+    }
+    else
+    {
+        info = AnalyseBinary_GFX9_internal(buffer, BUFFER_SIZE, gfx9_target_cu);
     }
 
     if (info.get() == nullptr) {
@@ -367,7 +370,7 @@ extern "C"
         std::vector<uint64_t> buffer(BUFFER_SIZE/8+2, 0);
         file.read((char*)buffer.data(), BUFFER_SIZE);
 
-        auto globalstate = AnalyseBinary_internal((const uint8_t*)buffer.data(), BUFFER_SIZE, true);
+        auto globalstate = AnalyseBinary_internal((const uint8_t*)buffer.data(), BUFFER_SIZE, -1);
         python_return_info_t info = globalstate->fromCppReturn();
 
         {

@@ -254,7 +254,7 @@ struct fileoffset_info_t
 };
 
 std::unique_ptr<CppReturnInfo>
-AnalyseBinary_internal(const uint8_t* buffer, int BUFFER_SIZE, bool bIsV2);
+AnalyseBinary_internal(const uint8_t* buffer, int BUFFER_SIZE, int gfx9_target_cu);
 
 template<typename Type>
 class PipeArray : public std::array<std::array<Type, 4>, 2>

@@ -115,10 +115,10 @@ hsa_status_t _internal_aqlprofile_att_iterate_data(
         size_t sample_size_plus_header = sample_size;
 
         char* sample_data_ptr = (char*)cpu_sample.data();
-        if (pm4_factory->GetGpuId() != aql_profile::GFX10_GPU_ID && pm4_factory->GetGpuId() != aql_profile::GFX11_GPU_ID)
+        if (pm4_factory->GetGpuId() < aql_profile::GFX10_GPU_ID)
         {
             auto* header = reinterpret_cast<att_header_packet_t*>(cpu_sample.data());
-            *header = getHeaderPacket(se_index, target_cu, 0xF);
+            *header = getHeaderPacket(se_index, target_cu, memorymgr->GetSimdMask());
             sample_data_ptr += sizeof(att_header_packet_t);
             sample_size_plus_header = sample_size + sizeof(att_header_packet_t);
         }
@@ -127,7 +127,7 @@ hsa_status_t _internal_aqlprofile_att_iterate_data(
 #ifdef AMD_AQLPROFILE_SQTT_NDA
         callback(se_index, (void*)cpu_sample.data(), sample_size_plus_header, userdata);
 #else
-        auto return_info = AnalyseBinary_internal((uint8_t*)cpu_sample.data(), sample_size_plus_header, false);
+        auto return_info = AnalyseBinary_internal((uint8_t*)cpu_sample.data(), sample_size_plus_header, -1);
         std::vector<uint8_t> mem;
         mem.resize(return_info->GetMemoryNeededForSerialization());
         return_info->Serialize(mem.data(), mem.size());

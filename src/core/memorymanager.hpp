@@ -219,6 +219,13 @@ public:
     void CopyATTParams(hsa_ven_amd_aqlprofile_parameter_t* params, size_t count) {
         for (size_t i=0; i<count; i++)
             this->att_params.push_back(params[i]);
+        for (auto& param : att_params)
+        {
+            if (param.parameter_name == HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_COMPUTE_UNIT_TARGET)
+                target_cu = param.value;
+            else if (param.parameter_name == HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_SIMD_SELECTION)
+                simd_mask = param.value;
+        }
     }
 
     template<typename Type> Type*
@@ -228,7 +235,11 @@ public:
         this->copy_fn(dst, src, size, this->userdata);
     }
 
+    int GetSimdMask() const { return simd_mask; }
+
 protected:
+    int target_cu = -1;
+    int simd_mask = 0xF;
     aqlprofile_memory_copy_t copy_fn;
     std::vector<hsa_ven_amd_aqlprofile_parameter_t> att_params;
 

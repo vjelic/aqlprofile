@@ -720,7 +720,11 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
 #ifdef AMD_AQLPROFILE_SQTT_NDA
               status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, &info, data);
 #else
-              auto return_info = AnalyseBinary_internal((uint8_t*)sample_ptr, sample_size, false);
+              int gfx9_target_cu = -1;
+              if (pm4_factory->GetGpuId() < aql_profile::GFX10_GPU_ID)
+                gfx9_target_cu = sqttbuilder->GetTargetCU(se_index);
+
+              auto return_info = AnalyseBinary_internal((uint8_t*)sample_ptr, sample_size, gfx9_target_cu);
               size_t used_data = std::min(sample_capacity, return_info->GetMemoryNeededForSerialization());
               return_info->Serialize((uint8_t*)sample_ptr, used_data);
               info.trace_data.size = used_data;
