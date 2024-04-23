@@ -139,7 +139,7 @@ size_t Stitcher::stitch(std::vector<InstructionExt>& insts)
         }
         else
         {
-            std::cout << "match? " << inst.category << ' '; line->print();
+            // std::cout << "match? " << inst.category << ' '; line->print();
             bMatched = false;
             if (insts.size() > inst_index+1 && watchlist->try_match_swapped(inst, insts.at(inst_index+1), *line))
             {
