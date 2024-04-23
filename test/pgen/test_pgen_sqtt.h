@@ -94,7 +94,11 @@ class TestPGenSqtt : public TestPGen {
 
     // Application is allocating the output buffer
     // AllocateLocal(buffer_alignment_, buffer_size_, MODE_DEV_ACC)
+#ifdef AMD_AQLPROFILE_SQTT_NDA
     profile_.output_buffer.ptr = GetRsrcFactory()->AllocateLocalMemory(GetAgentInfo(), buffer_size_);
+#else
+    profile_.output_buffer.ptr = GetRsrcFactory()->AllocateSysMemory(GetAgentInfo(), buffer_size_);
+#endif
     profile_.output_buffer.size = buffer_size_;
 
     TEST_ASSERT(profile_.output_buffer.ptr != NULL);
@@ -116,11 +120,6 @@ class TestPGenSqtt : public TestPGen {
   bool BuildPackets() { return true; }
 
   bool DumpData() {
-#ifndef AMD_AQLPROFILE_SQTT_NPI
-    TEST_ASSERT(true);
-    return true;
-#endif
-
     std::clog << "TestPGenSqtt::DumpData :" << std::endl;
 
     bool bSomeSECollected = false;
@@ -141,6 +140,7 @@ class TestPGenSqtt : public TestPGen {
       TEST_ASSERT(status == HSA_STATUS_SUCCESS);
       if (status != HSA_STATUS_SUCCESS) return false;
 
+#ifdef AMD_AQLPROFILE_SQTT_NDA
       {
         std::ofstream out_file("sqtt_dump_" + std::to_string(it->sample_id) + ".txt");
         if (out_file.is_open())
@@ -159,6 +159,7 @@ class TestPGenSqtt : public TestPGen {
         if (out_file.is_open())
           out_file.write(static_cast<const char*>(sys_buf), it->trace_data.size);
       }
+#endif
 
       try {
         bSomeSECollected |= test_buffer(static_cast<const char*>(sys_buf), it->trace_data.size);

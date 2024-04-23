@@ -185,6 +185,7 @@ AnalyseBinary_internal(const uint8_t* buffer, int BUFFER_SIZE, int gfx9_target_c
             && gfx9_header.gfx9_version2 == 4
         ) {
             buffer += sizeof(att_header_packet_t);
+            BUFFER_SIZE -= sizeof(att_header_packet_t);
             info = AnalyseBinary_GFX9_internal(buffer, BUFFER_SIZE, gfx9_header.DCU);
         }
         else if (gfx9_header.legacy_version != 0)
