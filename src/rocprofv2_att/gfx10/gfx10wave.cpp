@@ -28,11 +28,9 @@
 #include <unordered_set>
 #include "gfx10wave.h"
 #include "../gfx11/gfx11wave.h"
+#include "../gfx12/gfx12wave.h"
 #include "../segment.hpp"
 #include <map>
-
-int gfx10wave_t::dp_cycles = 1;
-int gfx10wave_t::dp_derate = 1;
 
 struct alu_user_inst_t {
   uint8_t bValid;
@@ -137,7 +135,7 @@ enum EINST {
     flat_wr_3,
     flat_wr_4,
     flat_wr_5,
-    sgmem_rd=35,
+    sgmem_rd,
     sgmem_wr_1,
     sgmem_wr_2,
     sgmem_wr_3,
@@ -182,6 +180,19 @@ enum EINST {
     img_wr_7,
     img_wr_8,
     img_sample_end=78,
+
+    other_simd_start = 79,
+    other_simd_end = 102,
+    raytrace8,
+    raytrace9,
+    raytrace11,
+    raytrace12,
+
+    lds_dir_load=110,
+    lds_param_load,
+    subv_loop_begin,
+    subv_loop_end,
+
     einst_final
 };
 
@@ -254,12 +265,23 @@ static std::unordered_map<EINST, std::pair<WaveInstCategory, uint16_t>> table_in
     {EINST::img_sample_10, {WaveInstCategory::VMEM, 10}},
     {EINST::img_sample_11, {WaveInstCategory::VMEM, 11}},
     {EINST::img_sample_12, {WaveInstCategory::VMEM, 12}},
+
+    // TODO: Add raytrace category
+    {EINST::raytrace8, {WaveInstCategory::VMEM, 8}},
+    {EINST::raytrace9, {WaveInstCategory::VMEM, 9}},
+    {EINST::raytrace11, {WaveInstCategory::VMEM, 11}},
+    {EINST::raytrace12, {WaveInstCategory::VMEM, 12}},
+
+    {EINST::lds_dir_load, {WaveInstCategory::LDS, 1}},
+    {EINST::lds_param_load, {WaveInstCategory::LDS, 1}},
+    {EINST::subv_loop_begin, {WaveInstCategory::SALU, 1}},
+    {EINST::subv_loop_end, {WaveInstCategory::SALU, 1}}
 };
 
 std::pair<WaveInstCategory, uint16_t> gfx10wave_t::inst_map_to_gfx9(int einst)
 {
   static thread_local auto empty = std::pair<WaveInstCategory, uint16_t>{WaveInstCategory::NONE, 0};
-  if (einst >= 80 && einst <= 101)
+  if (einst >= EINST::other_simd_start && einst <= EINST::other_simd_end)
     return empty;
 
   try {
@@ -338,15 +360,16 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
         header_type header { .raw = token.contents };
         target_wgp = header.DWGP;
         target_simd = header.DSIMD;
-        dp_cycles = header.DPRate & ((tt_version == 3) ? 0x7 : 0xF);
-        dp_cycles = (1<<dp_cycles)/2;
-        dp_derate = (tt_version == 3) ? (1<<header.dp_derate)/2 : 1;
         tt_version = header.version;
         break;
       }
       case gfx10type::WAVE_START:
       {
-        wstart_type start { .raw = token.contents };
+        wstart_type_common start;
+        if (tt_version >= 4)
+          start = wstart_type_gfx12{ .raw = token.contents }.get();
+        else
+          start = wstart_type_gfx10 { .raw = token.contents }.get();
         pcinfo_t wave_addr = csregister.get_wave_start(start);
 
         size_t kid = get_addr_unique_id(wave_addr);
@@ -360,7 +383,11 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
         break;
       }
       case gfx10type::WAVE_END: {
-        wend_type end { .raw = token.contents };
+        wend_type_common end;
+        if (tt_version >= 4)
+          end = wend_type_gfx12{ .raw = token.contents }.get();
+        else
+          end = wend_type_gfx10{ .raw = token.contents }.get();
         if (end.wgp == target_wgp && end.simd == target_simd && end.sa == 0) {
           empty_wave_check(SIMD[end.wid].size());
           SIMD[end.wid].back().complete_wave(token);
@@ -380,7 +407,11 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
         break;
       }
       case gfx10type::INST: {
-        inst_type inst { .raw = token.contents };
+        inst_type_common inst;
+        if (tt_version >= 4)
+          inst = inst_type_gfx12{ .raw = token.contents }.get();
+        else
+          inst = inst_type_gfx10{ .raw = token.contents }.get();
         auto& simd = SIMD[inst.wid];
         empty_wave_check(simd.size());
         simd.back().apply_inst(token, inst, tt_version);
@@ -421,10 +452,16 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
         break;
       }
 #endif
-      case gfx10type::NEW_PC: {
-        new_pc_type pc { .raw = token.contents };
+      case gfx10type::NEW_PC_GFX10: {
+        new_pc_type_gfx10 pc { .raw = token.contents };
         if (pc.wave < SIMD.size() && SIMD[pc.wave].size())
           SIMD[pc.wave].back().new_pc((uint64_t)token.time, pc.pc, csregister.table);
+        break;
+      }
+      case gfx10type::NEW_PC_GFX12: {
+        new_pc_type_gfx12 pc1 { .raw = token.contents };
+        if (pc1.wave < SIMD.size() && SIMD[pc1.wave].size())
+          SIMD[pc1.wave].back().new_pc((uint64_t)token.time, pc1.pc, csregister.table);
         break;
       }
       case gfx10type::REG: {
@@ -541,15 +578,8 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
 
 void wave_t::new_pc(int64_t time, int64_t pc, CodeobjTableTranslator& table)
 {
-  if (last_jump_inst >= 0 && last_jump_inst < instructions.size())
-    time = instructions.at(last_jump_inst).time;
-
   Instruction inst{table.ToPcV2(pc<<2)};
-  if (last_jump_inst >= 0)
-    instructions.emplace(instructions.begin()+last_jump_inst+1, inst);
-  else
-    instructions.push_back(inst);
-  last_jump_inst = -1;
+  instructions.push_back(inst);
 }
 
 void wave_t::set_state_exec(int64_t time, int64_t duration) {
@@ -606,21 +636,15 @@ void wave_t::apply_immediate(Token token) {
   set_state_exec(token.time, 0);
 }
 
-void wave_t::apply_inst(Token token, inst_type inst, int tt_version) {
+void wave_t::apply_inst(Token token, inst_type_common inst, int tt_version) {
   bool bGFX11 = tt_version >= 3;
   this->end_time = token.time;
 
-  auto mapped = bGFX11 ? gfx11wave_t::inst_map_to_gfx9(inst.inst)
-                       : gfx10wave_t::inst_map_to_gfx9(inst.inst);
+  auto mapped = inst.bGFX12 ? gfx12wave_t::inst_map_to_gfx9(inst.inst) :
+                (bGFX11 ? gfx11wave_t::inst_map_to_gfx9(inst.inst)
+                       : gfx10wave_t::inst_map_to_gfx9(inst.inst));
   if (mapped.first == WaveInstCategory::NONE)
     return;
-
-  if (inst.inst == EINST::valub_dfdp_derate)
-    mapped.second = dp_cycles*dp_derate;
-  else if (inst.inst == EINST::valub_dfdp)
-    mapped.second = dp_cycles;
-  else if (inst.inst == EINST::jump)
-    last_jump_inst = this->instructions.size();
   
   update_immediate(token.time);
   this->instructions.push_back({token.time, mapped.first, 0, mapped.second});

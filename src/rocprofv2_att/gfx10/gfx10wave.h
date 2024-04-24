@@ -45,11 +45,10 @@ struct gfx10wave_t : public WaveDataInternal {
   int64_t issue_time = 0;  // use to calculate instruction cycles
   int64_t inst_time = 0;   // use to calculate instruction cycles */
 
-  int last_jump_inst = -1;
   bool ImmFromBranch = false;
 
   void complete_wave(gfx10Token& token);
-  void apply_inst(gfx10Token token, inst_type inst, int tt_version);
+  void apply_inst(gfx10Token token, inst_type_common inst, int tt_version);
   void apply_valu_inst(gfx10Token token, valu_inst_type inst);
   void apply_immediate(gfx10Token token);
   void update_immediate(int64_t token_time);
@@ -57,9 +56,7 @@ struct gfx10wave_t : public WaveDataInternal {
   void new_pc(int64_t time, int64_t pc_value, class CodeobjTableTranslator& table);
   operator bool() const { return true; } // TODO: Change based on cur_state
 
-  static constexpr uint64_t SQTT_CFG_WAVES = 16;
-  static int dp_cycles;
-  static int dp_derate;
+  static constexpr uint64_t SQTT_CFG_WAVES = 32;
 
   typedef std::array<std::vector<gfx10wave_t>, SQTT_CFG_WAVES> WaveArray;
   static std::tuple<

@@ -41,6 +41,28 @@ union timestamp_gfx11_type {
     }
 };
 
+union util_ctr_gfx11_type {
+    struct {
+        uint64_t header : 7;
+        uint64_t tm : 2;
+        uint64_t cID : 2;
+        uint64_t spi_busy : 4;
+        uint64_t vdata0 : 4;
+        uint64_t vdata1 : 4;
+        uint64_t sdata0 : 4;
+        uint64_t sdata1 : 4;
+        uint64_t lds0 : 4;
+        uint64_t lds1 : 4;
+        uint64_t exp0 : 4;
+        uint64_t exp1 : 4;
+        uint64_t SA : 1;
+    };
+    uint64_t raw;
+
+    static const int ctr_size = 4;
+    void print() const {}
+};
+
 class gfx11Token : public gfx10Token {
 public:
     gfx11Token() = default;
@@ -48,5 +70,5 @@ public:
         gfx10Token(globaltime, _contents, _type) {}
 
     static std::vector<gfx10Token> parse(const uint8_t* buffer, const int BUFFER_SIZE);
-    static std::array<uint8_t, 32> TOKEN_LEN;
+    static std::array<uint8_t, 64> TOKEN_LEN;
 };

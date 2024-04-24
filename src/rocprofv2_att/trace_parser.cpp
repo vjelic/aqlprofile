@@ -29,6 +29,8 @@
 #include "gfx10/gfx10token.h"
 #include "gfx11/gfx11wave.h"
 #include "gfx11/gfx11token.h"
+#include "gfx12/gfx12wave.h"
+#include "gfx12/gfx12token.h"
 #include "tracebranch.hpp"
 #include "trace_parser.hpp"
 #include "stitch/stitch.hpp"
@@ -174,6 +176,46 @@ AnalyseBinary_GFX11_internal(const uint8_t* tokendata, int buffersize)
     return info;
 }
 
+std::unique_ptr<CppReturnInfo>
+AnalyseBinary_GFX12_internal(const uint8_t* tokendata, int buffersize)
+{
+    [[maybe_unused]] static bool bSetDouble = [](size_t header)
+    {
+        gfx12wave_t::set_double_rate(header);
+        return true;
+    }(*reinterpret_cast<const size_t*>(tokendata));
+
+    auto info = std::make_unique<CppReturnInfo>();
+    std::vector<gfx10Token> tokens = gfx12Token::parse(tokendata, buffersize);
+    gfx10wave_t::WaveArray wavearray;
+    std::tie(
+        wavearray,
+        info->perfevents,
+        info->occupancy,
+        info->kernel_ids_addr
+    ) = gfx12wave_t::sqtt_simd_analysis(tokens);
+
+    info->flags.isNavi = true;
+    std::tie(info->traceIDs, info->traces) = getAggregatedData(wavearray);
+
+#ifdef AMD_AQLPROFILE_SQTT_NDA
+    int num_waves = 0;
+    for (auto& Wave_ij : wavearray)
+        num_waves += Wave_ij.size();
+
+    info->waves = std::vector<WaveDataNPI>(num_waves);
+    num_waves = 0;
+
+    for (uint64_t wave_id = 0; wave_id < gfx12wave_t::SQTT_CFG_WAVES; wave_id++)
+    for (gfx10wave_t& wave : wavearray[wave_id])
+    {
+        info->waves[num_waves].Copy(wave);
+        num_waves += 1;
+    }
+#endif
+    return info;
+}
+
 // If target_cu < 0, find target_cu from software header
 std::unique_ptr<CppReturnInfo>
 AnalyseBinary_internal(const uint8_t* buffer, int BUFFER_SIZE, int gfx9_target_cu)
@@ -195,7 +237,9 @@ AnalyseBinary_internal(const uint8_t* buffer, int BUFFER_SIZE, int gfx9_target_c
         {
             auto hw_header = *reinterpret_cast<const header_type*>(buffer);
 
-            if (hw_header.version == 3)
+            if (hw_header.version == 4)
+                info = AnalyseBinary_GFX12_internal(buffer, BUFFER_SIZE);
+            else if (hw_header.version == 3)
                 info = AnalyseBinary_GFX11_internal(buffer, BUFFER_SIZE);
             else if (hw_header.version == 2 || hw_header.version == 1)
                 info = AnalyseBinary_GFX10_internal(buffer, BUFFER_SIZE);

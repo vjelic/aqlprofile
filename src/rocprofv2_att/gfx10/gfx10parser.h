@@ -56,6 +56,6 @@ public:
     };
 
     private:
-        static std::unordered_map<int, std::pair<int16_t,int16_t>> time_bits;
+        static std::unordered_map<int, std::pair<int,int>> time_bits;
         static std::vector<encoding_t> bit_encodings;
 };

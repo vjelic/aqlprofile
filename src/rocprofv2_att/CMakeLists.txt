@@ -43,6 +43,7 @@ file(GLOB ROCMTOOLS_SUPPORT_FILES
   ${ROCMTOOLS_DIR}/gfx9/*.cpp
   ${ROCMTOOLS_DIR}/gfx10/*.cpp
   ${ROCMTOOLS_DIR}/gfx11/*.cpp
+  ${ROCMTOOLS_DIR}/gfx12/*.cpp
   ${ROCMTOOLS_DIR}/stitch/pctranslator.cpp
   ${ROCMTOOLS_DIR}/stitch/stitch.cpp
   ${ROCMTOOLS_DIR}/stitch/codeservice.cpp

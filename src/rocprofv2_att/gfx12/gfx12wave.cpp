@@ -18,20 +18,17 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  THE SOFTWARE. */
 
-/// TODO(gbaraldi): vmem_other_simd
 /// TODO(gbaraldi): num_insts statistics
-/// TODO(gbaraldi): timing from branch == immediate
-/// TODO(gbaraldi): jump reports newPC!
 /// TODO(gbaraldi): skipped insts spam IMMED tokens
 
 #include <cassert>
 #include <vector>
 #include <algorithm>
 #include <utility>
-#include "gfx11wave.h"
+#include "gfx12wave.h"
 
 /*
-std::unordered_map<int, const char*> gfx11wave_t::INST_NAMES = {
+std::unordered_map<int, const char*> gfx12wave_t::INST_NAMES = {
     {0, "salu"},
     {1, "smem_rd"},
     {2, "smem_wr"},
@@ -94,8 +91,8 @@ std::unordered_map<int, const char*> gfx11wave_t::INST_NAMES = {
     {101, "vmem_other_12"},
 }; */
 
-using WaveArray = gfx11wave_t::WaveArray;
-typedef gfx11wave_t wave_t;
+using WaveArray = gfx12wave_t::WaveArray;
+typedef gfx12wave_t wave_t;
 typedef gfx10Token Token;
 
 enum EINST {
@@ -115,17 +112,15 @@ enum EINST {
     valub_2,
     valub_4,
     valub_16,
-    valub_dfdp,
-    valub_dfdp_derate,
     vinterp=18,
     barrier,
     expreq_gds,
     expreq_gfx,
     flat_rd_2=28,
+    flat_wr_2,
     flat_wr_3,
     flat_wr_4,
     flat_wr_5,
-    flat_wr_6,
     sgmem_rd_1,
     sgmem_rd_2,
     sgmem_wr_1,
@@ -180,16 +175,33 @@ enum EINST {
     raytrace9,
     raytrace11,
     raytrace12,
-
     lds_dir_load=110,
     lds_param_load,
-    subv_loop_begin,
-    subv_loop_end,
-    salu_wr_exec,
+    salu_wr_exec=114,
     valu1_wr_exec,
     valu_b2_wr_exec,
     rfe,
     lds_bvh_6,
+    lds_bvh_10=121,
+    barrier_signal,
+    dyn_vgpr=135,
+    try_lock,
+    unlock,
+    barrier_join,
+    wmma8=140,
+    wmma16,
+    wmma32,
+    wmma64,
+    valu_dfdp=146,
+    valu_derate,
+    icpref=150,
+    kcpref,
+    salu_float3,
+    valu_scl_trans,
+    salu2=155,
+    salu5,
+    vmem_other_simd_start=188,  
+    block_store=222,
     einst_final
 };
 
@@ -210,15 +222,13 @@ static std::unordered_map<EINST, std::pair<WaveInstCategory, uint16_t>> table_in
     {EINST::valub_2, {WaveInstCategory::VALU, 2}},
     {EINST::valub_4, {WaveInstCategory::VALU, 4}},
     {EINST::valub_16, {WaveInstCategory::VALU, 16}},
-    {EINST::valub_dfdp, {WaveInstCategory::VALU, 1}},
-    {EINST::valub_dfdp_derate, {WaveInstCategory::VALU, 1}},
     {EINST::vinterp, {WaveInstCategory::VALU, 1}},
     {EINST::barrier, {WaveInstCategory::IMMED, 1}},
     {EINST::flat_rd_2, {WaveInstCategory::FLAT, 2}},
+    {EINST::flat_wr_2, {WaveInstCategory::FLAT, 2}},
     {EINST::flat_wr_3, {WaveInstCategory::FLAT, 3}},
     {EINST::flat_wr_4, {WaveInstCategory::FLAT, 4}},
     {EINST::flat_wr_5, {WaveInstCategory::FLAT, 5}},
-    {EINST::flat_wr_6, {WaveInstCategory::FLAT, 6}},
     {EINST::sgmem_rd_1, {WaveInstCategory::FLAT, 1}},
     {EINST::sgmem_rd_2, {WaveInstCategory::FLAT, 2}},
     {EINST::sgmem_wr_1, {WaveInstCategory::FLAT, 1}},
@@ -261,20 +271,58 @@ static std::unordered_map<EINST, std::pair<WaveInstCategory, uint16_t>> table_in
 
     {EINST::lds_dir_load, {WaveInstCategory::LDS, 1}},
     {EINST::lds_param_load, {WaveInstCategory::LDS, 1}},
-    {EINST::subv_loop_begin, {WaveInstCategory::SALU, 1}},
-    {EINST::subv_loop_end, {WaveInstCategory::SALU, 1}},
     {EINST::salu_wr_exec, {WaveInstCategory::SALU, 1}},
     {EINST::valu1_wr_exec, {WaveInstCategory::VALU, 1}},
     {EINST::valu_b2_wr_exec, {WaveInstCategory::VALU, 2}},
+
     {EINST::rfe, {WaveInstCategory::SALU, 1}},
     {EINST::lds_bvh_6, {WaveInstCategory::LDS, 6}},
+    {EINST::lds_bvh_10, {WaveInstCategory::LDS, 10}},
+    {EINST::barrier_signal, {WaveInstCategory::IMMED, 1}},
+    {EINST::dyn_vgpr, {WaveInstCategory::SALU, 1}},
+    {EINST::try_lock, {WaveInstCategory::SALU, 1}},
+    {EINST::unlock, {WaveInstCategory::SALU, 1}},
+    {EINST::barrier_join, {WaveInstCategory::IMMED, 1}},
+
+    {EINST::wmma8, {WaveInstCategory::VALU, 8}},
+    {EINST::wmma16, {WaveInstCategory::VALU, 16}},
+    {EINST::wmma32, {WaveInstCategory::VALU, 32}},
+    {EINST::wmma64, {WaveInstCategory::VALU, 64}},
+    {EINST::valu_dfdp, {WaveInstCategory::VALU, 1}},
+    {EINST::valu_derate, {WaveInstCategory::VALU, 1}},
+
+    {EINST::icpref, {WaveInstCategory::SALU, 1}},
+    {EINST::kcpref, {WaveInstCategory::SALU, 1}},
+    {EINST::salu_float3, {WaveInstCategory::SALU, 3}},
+
+    // TODO: Get cycles
+    {EINST::valu_scl_trans, {WaveInstCategory::VALU, 1}},
+    {EINST::salu2, {WaveInstCategory::SALU, 2}},
+    {EINST::salu5, {WaveInstCategory::VALU, 5}},
+    {EINST::valu_scl_trans, {WaveInstCategory::VALU, 1}},
 };
 
-std::pair<WaveInstCategory, uint16_t> gfx11wave_t::inst_map_to_gfx9(int einst)
+void gfx12wave_t::set_double_rate(size_t contents)
+{
+  header_type header { .raw = contents };
+  int dprate = 1<<(header.DPRate-1);
+  table_inst_map_to_gfx9.at(EINST::valu_dfdp).second = dprate;
+  table_inst_map_to_gfx9.at(EINST::valu_derate).second = dprate*(1<<(header.dp_derate));
+}
+
+std::pair<WaveInstCategory, uint16_t> gfx12wave_t::inst_map_to_gfx9(int einst)
 {
   static thread_local auto empty = std::pair<WaveInstCategory, uint16_t>{WaveInstCategory::NONE, 0};
+
   if (einst >= EINST::other_simd_start && einst <= EINST::other_simd_end)
+  {
     return empty;
+  }
+  else if (einst >= (int)EINST::vmem_other_simd_start)
+  {
+    if (einst < (int)EINST::block_store) return empty;
+    return {WaveInstCategory::VMEM, einst + 1 - (int)EINST::block_store};
+  }
 
   try {
     return table_inst_map_to_gfx9.at((EINST)einst);
@@ -283,4 +331,4 @@ std::pair<WaveInstCategory, uint16_t> gfx11wave_t::inst_map_to_gfx9(int einst)
   }
 }
 
-wave_t::gfx11wave_t(Token& token) {}
+wave_t::gfx12wave_t(Token& token) {}

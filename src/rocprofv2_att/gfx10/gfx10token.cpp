@@ -32,7 +32,7 @@
 
 typedef gfx10Token Token;
 
-std::unordered_map<int, std::pair<int16_t,int16_t>> gfx10TokenLookupTable::time_bits = {
+std::unordered_map<int, std::pair<int,int>> gfx10TokenLookupTable::time_bits = {
     {gfx10type::INST, {4,7}},
     {gfx10type::VALU_INST, {3,6}},
     {gfx10type::VMEM_EXEC, {4,6}},
@@ -40,7 +40,7 @@ std::unordered_map<int, std::pair<int16_t,int16_t>> gfx10TokenLookupTable::time_
     {gfx10type::IMM_ONE, {4,7}},
     {gfx10type::IMMEDIATE, {5,8}},
     {gfx10type::WAVE_READY, {5,8}},
-    {gfx10type::NEW_PC, {8,11}},
+    {gfx10type::NEW_PC_GFX10, {8,11}},
     {gfx10type::WAVE_START, {5,7}},
     {gfx10type::WAVE_START_EXT, {5,7}},
     {gfx10type::WAVE_ALLOC, {5,8}},
@@ -70,7 +70,7 @@ std::vector<encoding_t> gfx10TokenLookupTable::bit_encodings = {
     {gfx10type::IMM_ONE, {1,0,1,1}},
     {gfx10type::IMMEDIATE, {0,0,1,0,0}},
     {gfx10type::WAVE_READY, {0,0,1,0,1}},
-    {gfx10type::NEW_PC, {1,0,0,0,0,1,0}},
+    {gfx10type::NEW_PC_GFX10, {1,0,0,0,0,1,0}},
     // global
     {gfx10type::WAVE_START, {0,0,1,1,0}},
     {gfx10type::WAVE_START_EXT, {0,0,1,1,1}},
@@ -85,7 +85,7 @@ std::vector<encoding_t> gfx10TokenLookupTable::bit_encodings = {
     {gfx10type::MISC_GFX10, {1,0,0,0,1,0,1}},
     {gfx10type::EVENT, {1,0,0,0,0,1,1,0}},
     {gfx10type::EVENT_SYNC, {1,0,0,0,0,1,1,1}},
-    //{gfx10type::EVENT, {1,0,0,0,0,1,1}},
+
     {gfx10type::REG, {1,0,0,1}},
     {gfx10type::REG_INIT, {1,0,0,0,1,1,1}},
     {gfx10type::TIMESTAMP, {1,0,0,0,0,0,0}},
@@ -103,7 +103,7 @@ std::unordered_map<uint8_t, std::string> TOKEN_NAMES = {
     {gfx10type::IMM_ONE,"imm_one"},
     {gfx10type::IMMEDIATE,"immediate"},
     {gfx10type::WAVE_READY,"wave_ready"},
-    {gfx10type::NEW_PC,"new_pc"},
+    {gfx10type::NEW_PC_GFX10,"new_pc"},
     // global
     {gfx10type::WAVE_START,"wave_start"},
     {gfx10type::WAVE_START_EXT,"wave_start_ext"},
@@ -125,7 +125,7 @@ std::unordered_map<uint8_t, std::string> TOKEN_NAMES = {
     {gfx10type::HEADER,"header"},
 }; //*/
 
-std::array<uint8_t, 32> gfx10Token::TOKEN_LEN = {
+std::array<uint8_t, 64> gfx10Token::TOKEN_LEN = {
     /*UNKNOWN*/ 8,
     /*VALU_INST*/ 12,
     /*VMEM_EXEC*/ 8,
@@ -154,10 +154,6 @@ std::array<uint8_t, 32> gfx10Token::TOKEN_LEN = {
     /*PERF*/ 4,
     /*MISC_GFX11*/ 24,
     /*UTIL_COUNTER*/ 64,
-    /*28*/ 4,
-    /*29*/ 4,
-    /*30*/ 4,
-    /*31*/ 4,
 };
 
 gfx10TokenLookupTable::gfx10TokenLookupTable(): std::array<uint8_t, 256>({}) {
@@ -175,6 +171,9 @@ void gfx10TokenLookupTable::AddEncoding(const encoding_t& encoding) {
 
 std::vector<Token> Token::parse(const uint8_t* buffer, const int BUFFER_SIZE) {
     gfx10TokenLookupTable lookupbits;
+
+    for (size_t i=GFX10_TYPE_LAST; i<TOKEN_LEN.size(); i++)
+        TOKEN_LEN[i] = 4;
 
     uint64_t current = 0;
     int bits_toread = 64;

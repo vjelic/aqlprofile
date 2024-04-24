@@ -28,6 +28,8 @@ set ( LIB_SRC
   ${LIB_DIR}/rocprofv2_att/gfx10/gfx10token.cpp
   ${LIB_DIR}/rocprofv2_att/gfx11/gfx11wave.cpp
   ${LIB_DIR}/rocprofv2_att/gfx11/gfx11token.cpp
+  ${LIB_DIR}/rocprofv2_att/gfx12/gfx12wave.cpp
+  ${LIB_DIR}/rocprofv2_att/gfx12/gfx12token.cpp
 
   ${LIB_DIR}/rocprofv2_att/stitch/pctranslator.cpp
   ${LIB_DIR}/rocprofv2_att/stitch/stitch.cpp

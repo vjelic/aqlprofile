@@ -20,14 +20,17 @@
 
 #pragma once
 #include <unordered_map>
-#include "gfx11token.h"
+#include "gfx12token.h"
 
-class gfx11TokenLookupTable : public gfx10TokenLookupTable {
+class gfx12TokenLookupTable : public gfx11TokenLookupTable {
 public:
-    gfx11TokenLookupTable() {
-        // Replaces MISC_GFX10 with MISC_GFX11 in the encoding table
-        AddEncoding({gfx10type::MISC_GFX11, {1,0,0,0,1,0,1}});
-        AddEncoding({gfx10type::UTIL_COUNTER_GFX11, {1,0,0,0,1,1,0}});
+    gfx12TokenLookupTable() {
+        AddEncoding({gfx10type::INST, {0,1,0}});
+        AddEncoding({gfx10type::SHADER_DATA, {0,1,1,0,0,0,0}});
+        AddEncoding({gfx10type::SHADER_DATA_SHORT, {0,1,1,0,1,0,1}});
+        AddEncoding({gfx10type::EXEC_POPCOUNT1, {0,1,1,0,0,1,1}});
+        AddEncoding({gfx10type::EXEC_POPCOUNT3, {0,1,1,0,1,0}});
+        AddEncoding({gfx10type::NEW_PC_GFX12, {1,0,0,0,0,1,0}});
     }
     int64_t getDelta(gfx10type type, uint64_t contents) {
         auto res = time_bits[type];
@@ -37,13 +40,12 @@ public:
     };
     int64_t getTime(gfx10type type, uint64_t contents, int64_t cur_time) {
         if (type == gfx10type::TIMESTAMP) {
-            timestamp_gfx11_type stamp { .raw = contents };
-            if (stamp.type <= 1)
+            timestamp_gfx12_type stamp { .raw = contents };
+            // if (stamp.pl) std::cout << "Packet lost!" << std::endl;
+            // if (stamp.tl) std::cout << "Time lost!" << std::endl;
+
+            if (stamp.rt == 0)
                 return stamp.time + cur_time;
-            /*else if (!bInitTime && stamp.time >= cur_time) {
-                bInitTime = true;
-                return stamp.time;
-            }*/
             return cur_time;
         }
         return getDelta(type, contents) + cur_time;
