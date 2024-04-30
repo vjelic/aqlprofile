@@ -401,17 +401,6 @@ hsa_status_t aqlprofile_iterate_event_coord(
   void* userdata
 );
 
-typedef union
-{
-    uint64_t raw;
-    struct {
-        uint64_t isValid : 1;
-        uint64_t isNavi : 1;
-        uint64_t npiWaveData : 1;
-        uint64_t version : 13;
-    };
-} att_output_flags_t;
-
 typedef struct
 {
     int64_t time;

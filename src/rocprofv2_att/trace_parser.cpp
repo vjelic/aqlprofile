@@ -277,11 +277,16 @@ size_t CppReturnInfo::GetMemoryNeededForSerialization() const
     if (spaceleft <= 0) return offset;                                                \
 }
 
-size_t CppReturnInfo::Serialize(uint8_t* const buffer, size_t buffersize) const
+size_t CppReturnInfo::Serialize(uint8_t* const buffer, size_t buffersize, bool v2gfx9) const
 {
     size_t offset = 0;
     int64_t spaceleft = buffersize;
     fileoffset_info_t info{};
+
+    uint64_t header = ~0ul;
+    WRITE_INC(&header, sizeof(header));
+    if (!v2gfx9)
+        WRITE_INC(&header, sizeof(header));
 
     info.flags = flags;
     info.id = 0;
@@ -298,8 +303,8 @@ size_t CppReturnInfo::Serialize(uint8_t* const buffer, size_t buffersize) const
     for (auto& trace : traces)
         WRITE_INC(trace.data(), trace.size()*sizeof(InstructionExt));
 
-    WRITE_INC(perfevents.data(), perfevents.size()*sizeof(uint64_t));
-    WRITE_INC(occupancy.data(), occupancy.size()*sizeof(uint64_t));
+    WRITE_INC(perfevents.data(), perfevents.size()*sizeof(att_perfevent_t));
+    WRITE_INC(occupancy.data(), occupancy.size()*sizeof(occupancy_info_t));
 
     return offset;
 }
@@ -318,9 +323,15 @@ std::unique_ptr<CppReturnInfo> CppReturnInfo::UnSerialize(const uint8_t* buffer,
     int64_t spaceleft = buffersize;
     auto ret = std::make_unique<CppReturnInfo>();
 
+    {
+        uint64_t header = ~0ul;
+        READ_INC(&header, sizeof(header), 1);
+        READ_INC(&header, sizeof(header), 1);
+    }
+
     fileoffset_info_t info;
     size_t numinfo = 1;
-    READ_INC(&info, sizeof(fileoffset_info_t), numinfo);
+    READ_INC(&info, sizeof(info), numinfo);
     ret->flags = info.flags;
 
     ret->kernel_ids_addr = std::vector<pcinfo_t>(info.num_kernel_ids);
@@ -399,7 +410,7 @@ extern "C"
         std::vector<char> buffer(BUFFER_SIZE+8, 0);
         file.read(buffer.data(), BUFFER_SIZE);
 
-        auto globalstate = CppReturnInfo::UnSerialize((uint8_t*)buffer.data()+8, BUFFER_SIZE-8);
+        auto globalstate = CppReturnInfo::UnSerialize((uint8_t*)buffer.data(), BUFFER_SIZE);
         python_return_info_t info = globalstate->fromCppReturn();
 
         {

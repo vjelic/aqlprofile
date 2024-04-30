@@ -130,7 +130,7 @@ hsa_status_t _internal_aqlprofile_att_iterate_data(
         auto return_info = AnalyseBinary_internal((uint8_t*)cpu_sample.data(), sample_size_plus_header, -1);
         std::vector<uint8_t> mem;
         mem.resize(return_info->GetMemoryNeededForSerialization());
-        return_info->Serialize(mem.data(), mem.size());
+        return_info->Serialize(mem.data(), mem.size(), false);
         callback(se_index, (void*)mem.data(), mem.size(), userdata);
 #endif
     }

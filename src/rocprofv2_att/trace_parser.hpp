@@ -201,6 +201,17 @@ struct WaveDataNPI : public wave_data_t
     ~WaveDataNPI() { Delete(); }
 };
 
+typedef union
+{
+    uint64_t raw;
+    struct {
+        uint64_t isValid : 1;
+        uint64_t isNavi : 1;
+        uint64_t npiWaveData : 1;
+        uint64_t version : 13;
+    };
+} att_output_flags_t;
+
 struct python_return_info_t
 {
     att_output_flags_t flags;
@@ -238,7 +249,7 @@ struct CppReturnInfo
 
     python_return_info_t fromCppReturn() const;
     size_t GetMemoryNeededForSerialization() const;
-    size_t Serialize(uint8_t* buffer, size_t buffersize) const;
+    size_t Serialize(uint8_t* buffer, size_t buffersize, bool v2gfx9) const;
     static std::unique_ptr<CppReturnInfo> UnSerialize(const uint8_t* buffer, size_t buffersize);
 };
 
