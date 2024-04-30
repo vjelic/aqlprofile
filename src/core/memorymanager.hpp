@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <memory>
 #include "include/aql_profile_v2.h"
+#include <stdexcept>
 
 struct EventRequest: public aqlprofile_pmc_event_t
 {
@@ -102,7 +103,7 @@ public:
         std::lock_guard<std::mutex> lk(managers_map_mutex);
         try {
             return managers.at(handle);
-        } catch(std::out_of_range& e) {
+        } catch(std::exception& e) {
             return nullptr;
         }
     }
