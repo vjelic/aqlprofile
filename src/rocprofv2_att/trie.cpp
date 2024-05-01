@@ -39,6 +39,7 @@ std::unordered_map<std::string, InstCategory> Trie::type_dict = {
     {"s_setvskip", InstCategory::IMMED},
     {"s_ttracedata", InstCategory::IMMED},
     {"s_clause", InstCategory::IMMED},
+    {"s_call", InstCategory::SALU},
 
     {"s_load", InstCategory::SMEM},
     {"s_buffer", InstCategory::SMEM},
@@ -47,7 +48,7 @@ std::unordered_map<std::string, InstCategory> Trie::type_dict = {
     {"s_scratch", InstCategory::SMEM},
     {"s_store", InstCategory::SMEM},
     {"s_dcache", InstCategory::SMEM},
-    {"s_getreg", InstCategory::SALU}, // Check!
+    {"s_getreg", InstCategory::SALU},
     {"s_setreg", InstCategory::SMEM},
     {"s_memrealtime", InstCategory::SMEM},
 
@@ -57,9 +58,11 @@ std::unordered_map<std::string, InstCategory> Trie::type_dict = {
     {"tbuffer_", InstCategory::VMEM},
 
     {"flat_load", InstCategory::FLAT},
-    {"global_load", InstCategory::FLAT},
     {"flat_store", InstCategory::FLAT},
+    {"flat_atomic", InstCategory::FLAT},
+    {"global_load", InstCategory::FLAT},
     {"global_store", InstCategory::FLAT},
+    {"global_atomic", InstCategory::FLAT},
     {"scratch_", InstCategory::FLAT},
 
     {"ds_", InstCategory::LDS},
