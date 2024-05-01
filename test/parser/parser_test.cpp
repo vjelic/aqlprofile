@@ -21,6 +21,11 @@ std::unique_ptr<CppReturnInfo> CppReturnInfo::UnSerialize(const char* buffer, si
     int64_t spaceleft = buffersize;
     auto ret = std::make_unique<CppReturnInfo>();
 
+    {
+        uint64_t header; // Remove 0xF headers
+        READ_INC(&header, sizeof(header), 1);
+    }
+
     fileoffset_info_t info;
     size_t numinfo = 1;
     READ_INC(&info, sizeof(fileoffset_info_t), numinfo);
@@ -31,11 +36,6 @@ std::unique_ptr<CppReturnInfo> CppReturnInfo::UnSerialize(const char* buffer, si
 
     ret->tracesizes = std::vector<uint64_t>(info.num_traces);
     READ_INC(ret->tracesizes.data(), sizeof(uint64_t), info.num_traces);
-
-    std::cout << "Trace sizes: ";
-    for (size_t tsize : ret->tracesizes)
-        std::cout << tsize << ',';
-    std::cout << std::endl;
 
     ret->traceIDs = std::vector<int64_t>(info.num_traces);
     READ_INC(ret->traceIDs.data(), sizeof(uint64_t), info.num_traces);
