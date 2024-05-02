@@ -440,6 +440,6 @@ pcinfo_t CodeobjTableTranslator::ToPcV2(uint64_t pc)
         pcinfo.addr = pc - codeobj.vbegin;
     }
     catch (std::string& e) {}
-    catch (std::out_of_range& e) {}
+    catch (std::exception& e) {}
     return pcinfo;
 }
