@@ -66,7 +66,7 @@ assemblyLinePtr PCTranslator::setpc(
 }
 assemblyLinePtr PCTranslator::swappc(
     const assemblyLine& source,
-    const assemblyLine& next_line,
+    const assemblyLine& /* next_line */,
     const InstructionExt& next_inst
 ) {
     return getcode(next_inst.pc);

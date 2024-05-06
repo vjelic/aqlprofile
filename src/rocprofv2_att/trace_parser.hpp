@@ -40,6 +40,16 @@
 #define SQTT_PARSER_VERSION 5
 #define OCCUPANCY_RESOLUTION 8
 
+typedef union
+{
+    struct {
+        uint32_t isUnload   : 1;  // 0 if code object is being loaded, 1 for unload
+        uint32_t bFromStart : 1;  // Has this code object been loaded before thread trace started?
+        uint32_t legacy_id  : 30; // Legacy code object ID, if it fits in 30 bits.
+    };
+    uint32_t raw;
+} aqlprofile_att_header_marker_t;
+
 struct occupancy_info_t : public att_occupancy_info_t
 {
     occupancy_info_t() = default;

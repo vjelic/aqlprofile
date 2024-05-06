@@ -475,7 +475,7 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
     unsigned channel
   ) override
   {
-    ttv_user_data_header_codeobj header;
+    ttv_user_data_header_codeobj header{};
     header.opcode = thread_trace_viewer_user_data_opcode_codeobj;
     header.type = channel;
     auto userdata_channel = Primitives::SQ_THREAD_TRACE_USERDATA_2;

@@ -207,14 +207,6 @@ public:
         trace_control_buf = AllocMemory(size, flags);
     }
 
-    [[nodiscard]] void* AddMarkerCmdBuffer(size_t size)
-    {
-        aqlprofile_buffer_desc_flags_t flags{};
-        flags.host_access = flags.device_access = true;
-        this->marker_cmd_buffer.emplace_back(AllocMemory(size, flags));
-        return this->marker_cmd_buffer.back().get();
-    }
-
     const std::vector<hsa_ven_amd_aqlprofile_parameter_t>& GetATTParams() const { return att_params; }
     void CopyATTParams(hsa_ven_amd_aqlprofile_parameter_t* params, size_t count) {
         for (size_t i=0; i<count; i++)
@@ -242,7 +234,24 @@ protected:
     int simd_mask = 0xF;
     aqlprofile_memory_copy_t copy_fn;
     std::vector<hsa_ven_amd_aqlprofile_parameter_t> att_params;
-
     std::unique_ptr<void, MemoryDeleter> trace_control_buf = nullptr;
-    std::vector<std::unique_ptr<void, MemoryDeleter>> marker_cmd_buffer;
+};
+
+class CodeobjMemoryManager: public MemoryManager
+{
+public:
+    CodeobjMemoryManager(
+        hsa_agent_t agent,
+        aqlprofile_memory_alloc_callback_t alloc,
+        aqlprofile_memory_dealloc_callback_t dealloc,
+        size_t size,
+        void* data
+    ): MemoryManager(agent, alloc, dealloc, data) {
+        aqlprofile_buffer_desc_flags_t flags{};
+        flags.host_access = flags.device_access = true;
+        this->cmd_buffer = AllocMemory(size, flags);
+    }
+
+    void CreateOutputBuf(size_t size) override {};
+    std::unique_ptr<void, MemoryDeleter> cmd_buffer;
 };
