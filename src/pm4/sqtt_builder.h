@@ -257,7 +257,7 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
                                               Primitives::sqtt_buffer_size_value(base_step, 0));
           // Program the thread trace ctrl register
           Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_CTRL_ADDR,
-                                              Primitives::sqtt_ctrl_value());
+                                              Primitives::sqtt_ctrl_value(true));
           // Issue a CSPartialFlush cmd including cache flush
           if (config->concurrent == 0) Builder::BuildWriteWaitIdlePacket(cmd_buffer);
           // Program the thread trace mode register, mode ON
@@ -271,6 +271,11 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
       SetGRBMToBroadcast(cmd_buffer);
       Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_STATUS_ADDR, 0);
 
+      if (Primitives::GFXIP_LEVEL == 12) {
+        WriteConfigPacket(cmd_buffer, Primitives::SPI_SQG_EVENT_CTL_ADDR,
+                                            Primitives::spi_sqg_event_ctl(true));
+      }
+
       for (uint64_t index = 0; index < se_number_total; index ++)
       {
         config->se_base_addresses[index] = base_addr;
@@ -279,15 +284,27 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
         const unsigned baddr_lo = Low32(base_addr >> Primitives::TT_BUFF_ALIGN_SHIFT);
         const unsigned baddr_hi = High32(base_addr >> Primitives::TT_BUFF_ALIGN_SHIFT);
         const uint32_t sqtt_size = bMaskedIn ? base_step : config->capacity_per_disabled_se;
-        const uint32_t sqtt_reg_size = Primitives::sqtt_buffer_size_value(sqtt_size, baddr_hi);
-        const uint32_t ctrl_val = Primitives::sqtt_ctrl_value();
-        
+        const uint32_t ctrl_val = Primitives::sqtt_ctrl_value(true);
+
         Select_GRBM_SE_SH0(cmd_buffer, index);
 
-        // Program size of buffer to use for thread trace
-        WriteConfigPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_SIZE_ADDR, sqtt_reg_size);
-        // Program base address of buffer to use for thread trace
-        WriteConfigPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_BASE_ADDR, baddr_lo);
+        if (Primitives::GFXIP_LEVEL == 12) {
+          WriteConfigPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_BUF0_SIZE_ADDR,
+                            Primitives::sqtt_buffer0_size_value(sqtt_size));
+
+          WriteConfigPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_BUF0_BASE_LO_ADDR,
+                            baddr_lo);
+
+          WriteConfigPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_BUF0_BASE_HI_ADDR,
+                            baddr_hi);
+          WriteConfigPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_WPTR_ADDR, 0);
+        } else {
+          const uint32_t sqtt_reg_size = Primitives::sqtt_buffer_size_value(sqtt_size, baddr_hi);
+          // Program size of buffer to use for thread trace
+          WriteConfigPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_SIZE_ADDR, sqtt_reg_size);
+          // Program base address of buffer to use for thread trace
+          WriteConfigPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_BASE_ADDR, baddr_lo);
+        }
 
         // Program the thread trace mask
         const uint32_t mask_value = Primitives::sqtt_mask_value(config->targetCu, config->simd_sel, config->vmIdMask);
@@ -375,12 +392,15 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
                                           Primitives::sqtt_zero_size_value());
       // Program the thread trace ctrl register
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_CTRL_ADDR,
-                                          Primitives::sqtt_ctrl_value());
+                                          Primitives::sqtt_ctrl_value(true));
       // Issue a CSPartialFlush cmd including cache flush
       Builder::BuildWriteWaitIdlePacket(cmd_buffer);
     } else {
       SetGRBMToBroadcast(cmd_buffer);
       Builder::BuildWriteShRegPacket(cmd_buffer, Primitives::COMPUTE_THREAD_TRACE_ENABLE_ADDR, 0);
+
+      if (Primitives::GFXIP_LEVEL >= 12)
+        Builder::BuildThreadTraceEventFinish(cmd_buffer);
 
       {
         // Wait for FINISH_PENDING
@@ -390,7 +410,7 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
       }
 
       // Program the thread trace ctrl register to set mode to 0
-      const uint32_t ctrl_val = Primitives::sqtt_ctrl_value() & 0xffffffc0;
+      const uint32_t ctrl_val = Primitives::sqtt_ctrl_value(false);
       WriteConfigPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_CTRL_ADDR, ctrl_val);
   
       {

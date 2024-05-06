@@ -32,6 +32,7 @@ class gfx11_cntx_prim {
   static const uint32_t MC_PERFCOUNTER_RSLT_CNTL__ENABLE_ANY_MASK_PRM = 0x01000000L;
   static const uint32_t MC_PERFCOUNTER_RSLT_CNTL__CLEAR_ALL_MASK_PRM = 0x02000000L;
 
+  static const uint32_t SPI_SQG_EVENT_CTL_ADDR = 0;
   static const uint32_t SQ_PERFCOUNTER_CTRL_ADDR = mmSQ_PERFCOUNTER_CTRL;
   static const uint32_t SQ_PERFCOUNTER_CTRL2_ADDR = mmSQ_PERFCOUNTER_CTRL2;
   static const uint32_t SQ_PERFCOUNTER_MASK_ADDR = 0xD9E1;
@@ -40,6 +41,9 @@ class gfx11_cntx_prim {
   static const uint32_t SQ_THREAD_TRACE_TOKEN_MASK_ADDR = mmSQ_THREAD_TRACE_TOKEN_MASK;
   static const uint32_t SQ_THREAD_TRACE_TOKEN_MASK2_ADDR = 0;
   static const uint32_t SQ_THREAD_TRACE_MODE_ADDR = 0;
+  static const uint32_t SQ_THREAD_TRACE_BUF0_BASE_LO_ADDR = 0;
+  static const uint32_t SQ_THREAD_TRACE_BUF0_BASE_HI_ADDR = 0;
+  static const uint32_t SQ_THREAD_TRACE_BUF0_SIZE_ADDR = 0;
   static const uint32_t SQ_THREAD_TRACE_BASE_ADDR = mmSQ_THREAD_TRACE_BUF0_BASE;
   static const uint32_t SQ_THREAD_TRACE_BASE2_ADDR = 0;
   static const uint32_t SQ_THREAD_TRACE_SIZE_ADDR = mmSQ_THREAD_TRACE_BUF0_SIZE;
@@ -672,12 +676,19 @@ class gfx11_cntx_prim {
 #endif
   }
 
+  static uint32_t sqtt_buffer0_size_value(uint32_t size_val) { return 0; }
+
+  static uint32_t spi_sqg_event_ctl(bool enableSqgEvents) { return 0; }
+
   static uint32_t sqtt_zero_size_value() { return 0; }
 
   // Thread trace ctrl register value
-  static uint32_t sqtt_ctrl_value() {
+  static uint32_t sqtt_ctrl_value(bool on) {
     regSQ_THREAD_TRACE_CTRL ctrl{};
-    ctrl.bits.MODE = 1;
+    if (on)
+      ctrl.bits.MODE = SQ_TT_MODE_ON;
+    else
+      ctrl.bits.MODE = SQ_TT_MODE_OFF;
     ctrl.bits.HIWATER = 5;
     ctrl.bits.UTIL_TIMER = 1;
     ctrl.bits.RT_FREQ = 2;

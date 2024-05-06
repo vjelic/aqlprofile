@@ -303,11 +303,21 @@ class Gfx9CmdBuilder : public CmdBuilder {
 
     if (count & 1) {
       // Insert a NOP spacer
-      PM4MEC_NOP nop{};
-      nop.header = MakePacket3Header(IT_NOP, sizeof(nop));
-      APPEND_COMMAND_WRAPPER(cmdbuf, nop);
+      BuildNopPacket(cmdbuf, 1);
     }
   }
+
+  void BuildNopPacket(CmdBuffer* cmdbuf, uint32_t num_dwords) {
+      PM4MEC_NOP nop{};
+      nop.header = MakePacket3Header(IT_NOP, num_dwords);
+      APPEND_COMMAND_WRAPPER(cmdbuf, nop);
+      if (num_dwords > 1) {
+        std::vector<uint32_t> data_block((num_dwords - 1), 0);
+        APPEND_COMMAND_WRAPPER(cmdbuf, data_block.data(), (num_dwords - 1));
+      }
+  }
+
+  void BuildThreadTraceEventFinish(CmdBuffer* cmdBuf) {}
 
   void BuildIndirectBufferCmd(CmdBuffer* cmdbuf, const void* cmd_addr, std::size_t cmd_size) {
     // Verify the address is 4-byte aligned

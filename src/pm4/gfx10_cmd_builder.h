@@ -46,7 +46,7 @@ class Gfx10CmdBuilder : public Gfx9CmdBuilder {
     return ((addr >= CONFIG_SPACE_START) && (addr <= CONFIG_SPACE_END));
   }
 
-void BuildBarrierCommand(CmdBuffer* cmdBuf) override {
+  void BuildBarrierCommand(CmdBuffer* cmdBuf) override {
     PM4MEC_EVENT_WRITE event_write{};
 
     // Initialize the command header

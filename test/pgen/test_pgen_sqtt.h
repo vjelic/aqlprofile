@@ -174,6 +174,8 @@ class TestPGenSqtt : public TestPGen {
           std::cerr << "SQTT Parser for " << it->sample_id << " generic test error. " << e.what() << std::endl;
           bSomeSEFailed = true;
       }
+
+      GetRsrcFactory()->FreeMemory(sys_buf);
     }
     TEST_ASSERT(bSomeSECollected == true);
     TEST_ASSERT(bSomeSEFailed == false);

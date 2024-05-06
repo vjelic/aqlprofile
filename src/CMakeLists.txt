@@ -17,6 +17,7 @@ set ( LIB_SRC
   ${LIB_DIR}/core/gfx940_factory.cpp
   ${LIB_DIR}/core/gfx10_factory.cpp
   ${LIB_DIR}/core/gfx11_factory.cpp
+  ${LIB_DIR}/core/gfx12_factory.cpp
   ${LIB_DIR}/util/hsa_rsrc_factory.cpp
 
   ${LIB_DIR}/rocprofv2_att/trace_parser.cpp
@@ -55,24 +56,31 @@ set ( GFX10_HEADER "${DEF_DIR}/gfx10_def.h" )
 set ( GFX11_TEMPL "${SCRIPT_DIR}/gfx11_def.h" )
 set ( GFX11_DEF "${GFXIP_DIR}/gfx11_def.h" )
 set ( GFX11_HEADER "${DEF_DIR}/gfx11_def.h" )
+set ( GFX12_TEMPL "${SCRIPT_DIR}/gfx12_def.h" )
+set ( GFX12_DEF "${GFXIP_DIR}/gfx12_def.h" )
+set ( GFX12_HEADER "${DEF_DIR}/gfx12_def.h" )
 include_directories ( ${ROOT_DIR} )
 add_custom_target( mygenreset
   COMMAND sh -xc "cp ${BINFO_TEMPL} ${BINFO_HEADER}"
   COMMAND sh -xc "cp ${GFX9_TEMPL} ${GFX9_HEADER}"
   COMMAND sh -xc "cp ${GFX10_TEMPL} ${GFX10_HEADER}"
   COMMAND sh -xc "cp ${GFX11_TEMPL} ${GFX11_HEADER}"
+  COMMAND sh -xc "cp ${GFX12_TEMPL} ${GFX12_HEADER}"
 )
 add_custom_target( mygen
   COMMAND sh -xc "cp ${BINFO_TEMPL} ${BINFO_HEADER}"
   COMMAND sh -xc "cp ${GFX9_TEMPL} ${GFX9_HEADER}"
   COMMAND sh -xc "cp ${GFX10_TEMPL} ${GFX10_HEADER}"
   COMMAND sh -xc "cp ${GFX11_TEMPL} ${GFX11_HEADER}"
+  COMMAND sh -xc "cp ${GFX12_TEMPL} ${GFX12_HEADER}"
   COMMAND sh -xc "sed '/gfx9_def/ s/.*//' ${GFX9_TEMPL} >${GFX9_HEADER}"
   COMMAND sh -xc "${ROOT_DIR}/script/errextr.sh ${GFX9_HEADER} ${GFX9_DEF}"
   COMMAND sh -xc "sed '/gfx10_def/ s/.*//' ${GFX10_TEMPL} >${GFX10_HEADER}"
   COMMAND sh -xc "${ROOT_DIR}/script/errextr.sh ${GFX10_HEADER} ${GFX10_DEF}"
   COMMAND sh -xc "sed '/gfx11_def/ s/.*//' ${GFX11_TEMPL} >${GFX11_HEADER}"
   COMMAND sh -xc "${ROOT_DIR}/script/errextr.sh ${GFX11_HEADER} ${GFX11_DEF}"
+  COMMAND sh -xc "sed '/gfx12_def/ s/.*//' ${GFX12_TEMPL} >${GFX12_HEADER}"
+  COMMAND sh -xc "${ROOT_DIR}/script/errextr.sh ${GFX12_HEADER} ${GFX12_DEF}"
   COMMAND sh -xc "head -n1 ${BINFO_TEMPL} >${BINFO_HEADER}"
   COMMAND sh -xc "sed 's/_GPU_BLOCKINFO_H_/SRC_DEF_GPU_BLOCK_INFO_H_/' ${BINFO_DEF} >>${BINFO_HEADER}"
 )

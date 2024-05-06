@@ -80,6 +80,15 @@ class CmdBuffer {
     (void)expander{0, (Append(std::forward<Ts>(packets)), 0)...};
   }
 
+  /// @brief Append num_dwords of data to the buffer
+  /// @param data_pointer points to the data to append
+  /// @param num_dwords number of dwords
+  void Append(uint32_t* data_pointer, uint32_t num_dwords) {
+    size_t pos = data_.size();
+    data_.resize(pos + num_dwords);
+    memcpy(&data_[pos], data_pointer, num_dwords);
+  }
+
   /// @brief Return size of Gpu commands in bytes in the underlying buffer
   size_t Size() const { return data_.size() * sizeof(data_[0]); }
 
@@ -167,6 +176,16 @@ class CmdBuilder {
     static std::atomic<size_t> slot{1};
     return uint32_t(slot.fetch_add(1)) | (1u<<31);
   }
+
+  /// @brief Builds a NOP packet
+  /// @param cmdBuf command buffer to be appended with launch command
+  /// @param num_dwords number of dwords of the whole NOP packet, including the Header
+  virtual void BuildNopPacket(CmdBuffer* cmdbuf, uint32_t num_dwords) = 0;
+
+  /// @brief Builds a TT Finish Event
+  /// @param cmdBuf  command buffer to be appended with launch command
+  virtual void BuildThreadTraceEventFinish(CmdBuffer* cmdBuf) = 0;
+
   /// @brief Release resources used by CmdBuilder
   virtual ~CmdBuilder(){};
 

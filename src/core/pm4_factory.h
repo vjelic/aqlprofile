@@ -44,10 +44,11 @@ enum gpu_id_t {
   INVAL_GPU_ID,  // invalid GPU id
   GFX9_GPU_ID,   // generic Gfx9 id
   MI100_GPU_ID,  // Mi100 GPU id
-  MI200_GPU_ID,   // Mi200 GPU id
-  MI300_GPU_ID,   // Mi300 GPU id
+  MI200_GPU_ID,  // Mi200 GPU id
+  MI300_GPU_ID,  // Mi300 GPU id
   GFX10_GPU_ID,  // generic Gfx10 id
-  GFX11_GPU_ID   // generic Gfx11 id
+  GFX11_GPU_ID,  // generic Gfx11 id
+  GFX12_GPU_ID,  // generic Gfx12 id
 };
 
 // Block info map class
@@ -247,6 +248,8 @@ class Pm4Factory {
   static Pm4Factory* Gfx10Create(const AgentInfo* agent_info);
   // Create GFX11 generic factory
   static Pm4Factory* Gfx11Create(const AgentInfo* agent_info);
+  // Create GFX12 generic factory
+  static Pm4Factory* Gfx12Create(const AgentInfo* agent_info);
   // Create MI100 factory
   static Pm4Factory* Mi100Create(const AgentInfo* agent_info);
   // Create MI200 factory
@@ -291,6 +294,9 @@ inline Pm4Factory* Pm4Factory::Create(const AgentInfo* agent_info,  gpu_id_t gpu
       // Create Gfx11 generic factory
       case GFX11_GPU_ID:
         it->second = Gfx11Create(agent_info);
+        break;
+      case GFX12_GPU_ID:
+        it->second = Gfx12Create(agent_info);
         break;
       // Create MI100 generic factory
       case MI100_GPU_ID:
@@ -372,15 +378,16 @@ inline bool Pm4Factory::CheckConcurrent(const profile_t* profile) {
 inline gpu_id_t Pm4Factory::GetGpuId(std::string_view gfx_ip) {
   std::vector<std::pair<std::string, gpu_id_t>> gfxip_map = {
     {"gfx908", MI100_GPU_ID},
-    {"gfx90a", MI200_GPU_ID},    
+    {"gfx90a", MI200_GPU_ID},
     {"gfx900", GFX9_GPU_ID},
     {"gfx902", GFX9_GPU_ID},
     {"gfx906", GFX9_GPU_ID},
     {"gfx94", MI300_GPU_ID},
-    {"gfx11", GFX11_GPU_ID},
     {"gfx10", GFX10_GPU_ID},
+    {"gfx11", GFX11_GPU_ID},
+    {"gfx12", GFX12_GPU_ID},
   };
-  
+
   for (const auto& [name, id] : gfxip_map) {
     if (gfx_ip.rfind(name, 0) == 0) {
       return id;

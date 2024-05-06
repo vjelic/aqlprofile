@@ -95,6 +95,8 @@ class TestPGenPmc : public TestPGen {
                   << it->counter_id << ")" << std::endl;
       } else {
         event_vec_filtered.push_back(*it);
+        std::cerr << "Good event: block (" << it->block_name << "_" << it->block_index << ") id ("
+                  << it->counter_id << ")" << std::endl;
       }
     }
     const size_t event_count = event_vec_filtered.size();
@@ -143,7 +145,8 @@ class TestPGenPmc : public TestPGen {
     profile_.output_buffer.ptr =
         GetRsrcFactory()->AllocateKernArgMemory(GetAgentInfo(), output_buffer_size);
     TEST_ASSERT(profile_.output_buffer.ptr != NULL);
-    memset(profile_.output_buffer.ptr, 0x77, output_buffer_size);
+    // aqlprofile expects the caller to zero the memory
+    memset(profile_.output_buffer.ptr, 0x0, output_buffer_size);
     TEST_ASSERT((reinterpret_cast<uintptr_t>(profile_.output_buffer.ptr) &
                  (output_buffer_alignment - 1)) == 0);
 

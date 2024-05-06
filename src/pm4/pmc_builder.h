@@ -133,7 +133,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
   }
 
   int GetNumWGPs() override {
-    if (Primitives::GFXIP_LEVEL == 11)
+    if (Primitives::GFXIP_LEVEL >= 11)
       return wgp_per_sa;
     return 1;
   };
@@ -210,7 +210,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_PERFCOUNTER_CTRL_ADDR,
                                           Primitives::sq_control_enable_value());
     }
-    if (Primitives::GFXIP_LEVEL == 11 && (counters_vec.get_attr() & (CounterBlockTcAttr|CounterBlockSqAttr))) {
+    if (Primitives::GFXIP_LEVEL >= 11 && (counters_vec.get_attr() & (CounterBlockTcAttr|CounterBlockSqAttr))) {
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_PERFCOUNTER_CTRL2_ADDR,
                                           Primitives::sq_control2_enable_value());
     }
@@ -511,7 +511,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
             grbm_value = Primitives::grbm_se_index_value(se_index);
           }
 
-          bool bIsWGPcounter = Primitives::GFXIP_LEVEL == 11 && (block_info->attr & CounterBlockSqAttr);
+          bool bIsWGPcounter = Primitives::GFXIP_LEVEL >= 11 && (block_info->attr & CounterBlockSqAttr);
 
           if (bIsWGPcounter) {
             for (int wgp=0; wgp<wgp_per_sa; wgp++) {
