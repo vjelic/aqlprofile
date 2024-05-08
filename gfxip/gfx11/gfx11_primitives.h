@@ -563,8 +563,8 @@ class gfx11_cntx_prim {
   }
 
   static const uint32_t SQTT_TOKEN_REG_USERDATA = 1<<3;
-  static const uint32_t SQTT_TOKEN_VALU = 1<<1;
-  static const uint32_t SQTT_TOKEN_ALUEXEC = 1<<2;
+  static const uint32_t SQTT_TOKEN_ALUEXEC = 1<<1;
+  static const uint32_t SQTT_TOKEN_VALU = 1<<2;
   static const uint32_t SQTT_TOKEN_WAVE = 1<<4;
   static const uint32_t SQTT_TOKEN_REG = 1<<5;
   static const uint32_t SQTT_TOKEN_IMMED = 1<<6;
@@ -581,7 +581,7 @@ class gfx11_cntx_prim {
     regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
     token_mask.bits.REG_EXCLUDE = 0x3;
     token_mask.bits.REG_INCLUDE = SQTT_TOKEN_REG_USERDATA;
-    token_mask.bits.TOKEN_EXCLUDE = (SQTT_TOKEN_VALU | SQTT_TOKEN_ALUEXEC
+    token_mask.bits.TOKEN_EXCLUDE = (SQTT_TOKEN_VALU
                                   | SQTT_TOKEN_WAVE | SQTT_TOKEN_REG
                                   | SQTT_TOKEN_IMMED | SQTT_TOKEN_INST) ^ 0x7FF;
     return token_mask.u32All;

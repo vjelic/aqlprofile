@@ -256,11 +256,16 @@ static std::unordered_map<EINST, std::pair<WaveInstCategory, uint16_t>> table_in
     {EINST::img_sample_12, {WaveInstCategory::VMEM, 12}},
 };
 
-std::pair<WaveInstCategory, uint16_t> gfx10wave_t::inst_map_to_gfx9(int einst) {
+std::pair<WaveInstCategory, uint16_t> gfx10wave_t::inst_map_to_gfx9(int einst)
+{
+  static thread_local auto empty = std::pair<WaveInstCategory, uint16_t>{WaveInstCategory::NONE, 0};
+  if (einst >= 80 && einst <= 101)
+    return empty;
+
   try {
     return table_inst_map_to_gfx9.at((EINST)einst);
   } catch (...) {
-    return {WaveInstCategory::NONE, 0};
+    return empty;
   }
 }
 
@@ -301,7 +306,9 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
 
   std::vector<att_perfevent_t> perfEvents{};
   std::vector<occupancy_info_t> occupancy = {};
+#ifdef ALU_EXEC_INCLUDE
   std::vector<alu_user_inst_t> alu_stack = {};
+#endif
   int alu_exec_count = 0;
 
   int target_wgp = 0;
@@ -383,9 +390,9 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
         valu_inst_type vinst { .raw = token.contents };
         auto& simd = SIMD[vinst.wid];
         empty_wave_check(simd.size());
-        alu_stack.push_back(alu_user_inst_t{
-          true, (uint16_t)vinst.wid, uint16_t(simd.size()-1), simd.back().instructions.size()
-        });
+#ifdef ALU_EXEC_INCLUDE
+        alu_stack.push_back(alu_user_inst_t{true, (uint16_t)vinst.wid, uint16_t(simd.size()-1), simd.back().instructions.size()});
+#endif
         simd.back().apply_valu_inst(token, vinst);
         break;
       }
@@ -402,6 +409,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
             SIMD[i].back().apply_immediate(token);
         break;
       }
+#ifdef ALU_EXEC_INCLUDE
       case gfx10type::ALU_EXEC: {
         alu_exec_type alux;
         if (alu_exec_count >= alu_stack.size()) {
@@ -412,6 +420,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
         alu_exec_count += 1;
         break;
       }
+#endif
       case gfx10type::NEW_PC: {
         new_pc_type pc { .raw = token.contents };
         if (pc.wave < SIMD.size() && SIMD[pc.wave].size())
@@ -496,7 +505,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
     if (retroactive_addr_map.find(occ.kernel_id) != retroactive_addr_map.end())
       occ.kernel_id = retroactive_addr_map.at(occ.kernel_id);
 
-
+#ifdef ALU_EXEC_INCLUDE
   if (alu_stack.size() == alu_exec_count)
   for (int a=0; a<alu_stack.size(); a++) {
     auto& alu = alu_stack[a];
@@ -516,6 +525,7 @@ wave_t::sqtt_simd_analysis(std::vector<Token>& tokens) {
       delay_time = std::min(delay_time, (int64_t)inst_vector[alu.inst+1].time - inst_time);
     inst.stall_time = delay_time;
   }
+#endif
 
   if (bHasLostPackets)
     std::cout << "Warning: Packet lost!" << std::endl;
@@ -598,13 +608,7 @@ void wave_t::apply_immediate(Token token) {
 
 void wave_t::apply_inst(Token token, inst_type inst, int tt_version) {
   bool bGFX11 = tt_version >= 3;
-  /*auto& names = bGFX11 ? gfx11wave_t::INST_NAMES : gfx10wave_t::INST_NAMES;
-  if (names.find(inst.inst) == names.end())
-    std::cout << tt_version << ": Unknown inst: " << inst.inst << std::endl; */
-
   this->end_time = token.time;
-  //if (inst.inst == EINST::branch_not_taken)
-  //  ImmFromBranch = true;
 
   auto mapped = bGFX11 ? gfx11wave_t::inst_map_to_gfx9(inst.inst)
                        : gfx10wave_t::inst_map_to_gfx9(inst.inst);
@@ -617,9 +621,10 @@ void wave_t::apply_inst(Token token, inst_type inst, int tt_version) {
     mapped.second = dp_cycles;
   else if (inst.inst == EINST::jump)
     last_jump_inst = this->instructions.size();
-
+  
   update_immediate(token.time);
   this->instructions.push_back({token.time, mapped.first, 0, mapped.second});
+
   set_state_exec(token.time, mapped.second);
   num_issued_instrs += 1;
 

@@ -176,12 +176,10 @@ void gfx10TokenLookupTable::AddEncoding(const encoding_t& encoding) {
 std::vector<Token> Token::parse(const uint8_t* buffer, const int BUFFER_SIZE) {
     gfx10TokenLookupTable lookupbits;
 
-    auto t0 = std::chrono::system_clock::now();
     uint64_t current = 0;
     int bits_toread = 64;
-    int bit_ptr = 0;
+    size_t bit_ptr = 0;
 
-    auto t1 = std::chrono::system_clock::now();
     std::vector<Token> tokens;
     tokens.reserve(BUFFER_SIZE);
 
@@ -203,10 +201,5 @@ std::vector<Token> Token::parse(const uint8_t* buffer, const int BUFFER_SIZE) {
         tokens.push_back( Token{globaltime, current, type} );
     }
 
-    auto t2 = std::chrono::system_clock::now();
-
-    /*std::cout << "Read: " << (t1-t0).count()/1000.0f << std::endl;
-    std::cout << "Parsed: " << (t2-t1).count()/1000.0f << std::endl;
-    std::cout << "Num waves: " << num_waves << std::endl; */
     return tokens;
 }

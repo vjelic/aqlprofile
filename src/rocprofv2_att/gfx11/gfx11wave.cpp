@@ -245,12 +245,16 @@ std::unordered_map<EINST, std::pair<WaveInstCategory, uint16_t>> table_inst_map_
     {EINST::img_sample_12, {WaveInstCategory::VMEM, 12}},
 };
 
+std::pair<WaveInstCategory, uint16_t> gfx11wave_t::inst_map_to_gfx9(int einst)
+{
+  static thread_local auto empty = std::pair<WaveInstCategory, uint16_t>{WaveInstCategory::NONE, 0};
+  if (einst >= 80 && einst <= 101)
+    return empty;
 
-std::pair<WaveInstCategory, uint16_t> gfx11wave_t::inst_map_to_gfx9(int einst) {
   try {
     return table_inst_map_to_gfx9.at((EINST)einst);
   } catch (...) {
-    return {WaveInstCategory::NONE, 0};
+    return empty;
   }
 }
 

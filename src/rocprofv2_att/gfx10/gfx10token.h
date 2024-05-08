@@ -391,11 +391,11 @@ class gfx10Token {
 public:
     gfx10Token() = default;
     gfx10Token(int64_t globaltime, uint64_t _contents, gfx10type _type):
-        time(globaltime), contents(_contents), type(_type) {} 
+        time(globaltime), contents(_contents), type(_type) {}
     int64_t time;
     uint64_t contents;
     gfx10type type;
-    virtual void print() const { /*std::cout << "Undefined" << std::endl;*/ };
+    /* virtual void print() const { std::cout << "Undefined" << std::endl; }; */
 
     static std::vector<gfx10Token> parse(const uint8_t* buffer, const int BUFFER_SIZE);
     static std::array<uint8_t, 32> TOKEN_LEN;

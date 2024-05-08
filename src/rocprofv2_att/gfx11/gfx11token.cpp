@@ -101,12 +101,10 @@ std::array<uint8_t, 32> gfx11Token::TOKEN_LEN = {
 std::vector<gfx10Token> Token::parse(const uint8_t* buffer, const int BUFFER_SIZE) {
     gfx11TokenLookupTable lookupbits;
 
-    auto t0 = std::chrono::system_clock::now();
     uint64_t current = 0;
     int bits_toread = 64;
-    int bit_ptr = 0;
+    size_t bit_ptr = 0;
 
-    auto t1 = std::chrono::system_clock::now();
     std::vector<gfx10Token> tokens;
     tokens.reserve(BUFFER_SIZE);
 
@@ -124,9 +122,8 @@ std::vector<gfx10Token> Token::parse(const uint8_t* buffer, const int BUFFER_SIZ
         bits_toread = token_len;
 
         globaltime = lookupbits.getTime(type, current, globaltime);
-        tokens.push_back( Token{globaltime, current, type} );
+        tokens.emplace_back( Token{globaltime, current, type} );
     }
 
-    auto t2 = std::chrono::system_clock::now();
     return tokens;
 }
