@@ -74,6 +74,7 @@ size_t Stitcher::stitch(std::vector<InstructionExt>& insts)
 
         STITCH_ASSERT(next.get());
         line = std::move(next);
+        if (!line) return 0;
         try {
             next = watchlist->getcode(line->next);
         }
@@ -88,7 +89,8 @@ size_t Stitcher::stitch(std::vector<InstructionExt>& insts)
         bool bMatched = true;
         if (line->cat == InstCategory::GETPC)
         {
-            watchlist->getpc(*line, *next);
+            if (next)
+                watchlist->getpc(*line, *next);
             bMatched = inst.category == WaveInstCategory::SALU || inst.category == WaveInstCategory::JUMP;
         }
         else if (line->cat == InstCategory::SETPC || line->cat == InstCategory::SWAPPC)
@@ -96,7 +98,7 @@ size_t Stitcher::stitch(std::vector<InstructionExt>& insts)
             if (line->cat == InstCategory::SETPC)
                 next = watchlist->setpc(*line, insts.at(inst_index+1));
             else
-                next = watchlist->swappc(*line, *next, insts.at(inst_index+1));
+                next = watchlist->swappc(*line, next?*next:assemblyLine{}, insts.at(inst_index+1));
 
             bMatched = inst.category == WaveInstCategory::SALU || inst.category == WaveInstCategory::JUMP;
 

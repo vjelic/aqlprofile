@@ -274,42 +274,54 @@ hsa_status_t _internal_aqlprofile_att_create_packets(
 }
 
 // Method to populate the provided AQL packet with ATT Markers
-hsa_status_t _internal_aqlprofile_att_codeobj_load_marker(
-    hsa_ext_amd_aql_pm4_packet_t* packets,
-    aqlprofile_handle_t handle,
-    aqlprofile_att_header_marker_t header,
-    uint64_t id,
-    uint64_t addr,
-    uint64_t size
+hsa_status_t _internal_aqlprofile_att_codeobj_marker(
+    hsa_ext_amd_aql_pm4_packet_t*        packet,
+    aqlprofile_handle_t*                 handle,
+    aqlprofile_att_codeobj_data_t        data,
+    aqlprofile_memory_alloc_callback_t   alloc_cb,
+    aqlprofile_memory_dealloc_callback_t dealloc_cb,
+    void*                                userdata
 ) {
-    auto shared_memorymgr = MemoryManager::GetManager(handle.handle);
-    TraceMemoryManager* memorymgr = dynamic_cast<TraceMemoryManager*>(shared_memorymgr.get());
-    if (!memorymgr)
-        return HSA_STATUS_ERROR_INVALID_ARGUMENT;
-
-    aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(memorymgr->GetAgent());
+    aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(data.agent);
     pm4_builder::SqttBuilder* sqttbuilder = pm4_factory->GetSqttBuilder();
     pm4_builder::CmdBuilder* cmd_writer = pm4_factory->GetCmdBuilder();
     pm4_builder::CmdBuffer commands;
 
-    if (!header.isUnload)
+    if (!data.isUnload)
     {
-        sqttbuilder->InsertMarker(&commands, uint32_t(addr), ATT_MARKER_ADDR_LO_CHANNEL);
-        sqttbuilder->InsertMarker(&commands, addr >> 32,     ATT_MARKER_ADDR_HI_CHANNEL);
-        sqttbuilder->InsertMarker(&commands, uint32_t(size), ATT_MARKER_SIZE_LO_CHANNEL);
-        sqttbuilder->InsertMarker(&commands, size >> 32,     ATT_MARKER_SIZE_HI_CHANNEL);
+        sqttbuilder->InsertMarker(&commands, uint32_t(data.addr), ATT_MARKER_ADDR_LO_CHANNEL);
+        sqttbuilder->InsertMarker(&commands, data.addr >> 32,     ATT_MARKER_ADDR_HI_CHANNEL);
+        sqttbuilder->InsertMarker(&commands, uint32_t(data.size), ATT_MARKER_SIZE_LO_CHANNEL);
+        sqttbuilder->InsertMarker(&commands, data.size >> 32,     ATT_MARKER_SIZE_HI_CHANNEL);
     }
-    if (!header.legacy_id)
+
+    aqlprofile_att_header_marker_t header{};
+    header.bFromStart = data.fromStart;
+    header.isUnload = data.isUnload;
+
+    if (data.id >= (1<<30))
     {
-        sqttbuilder->InsertMarker(&commands, uint32_t(id), ATT_MARKER_ID_LO_CHANNEL);
-        sqttbuilder->InsertMarker(&commands, id >> 32,     ATT_MARKER_ID_HI_CHANNEL);
+        sqttbuilder->InsertMarker(&commands, uint32_t(data.id), ATT_MARKER_ID_LO_CHANNEL);
+        sqttbuilder->InsertMarker(&commands, data.id >> 32,     ATT_MARKER_ID_HI_CHANNEL);
     }
+    else
+        header.legacy_id = data.id;
+
     sqttbuilder->InsertMarker(&commands, header.raw, ATT_MARKER_HEADER_CHANNEL);
 
-    void* cmdbuffer = memorymgr->AddMarkerCmdBuffer(commands.Size());
+    auto memorymgr = std::make_shared<CodeobjMemoryManager>(
+        data.agent,
+        alloc_cb,
+        dealloc_cb,
+        commands.Size(),
+        userdata
+    );
+    MemoryManager::RegisterManager(memorymgr);
+    handle->handle = memorymgr->GetHandler();
+    void* cmdbuffer = memorymgr->cmd_buffer.get();
 
-    memorymgr->CopyMemory(cmdbuffer, commands.Data(), commands.Size());
-    aql_profile::PopulateAql(cmdbuffer, commands.Size(), cmd_writer, packets);
+    memcpy(cmdbuffer, commands.Data(), commands.Size());
+    aql_profile::PopulateAql(cmdbuffer, commands.Size(), cmd_writer, packet);
 
     return HSA_STATUS_SUCCESS;
 }
@@ -320,16 +332,16 @@ extern "C" {
 
 // Method to populate the provided AQL packet with ATT Markers
 PUBLIC_API hsa_status_t
-aqlprofile_att_codeobj_load_marker(
-    hsa_ext_amd_aql_pm4_packet_t* packets,
-    aqlprofile_handle_t handle,
-    aqlprofile_att_header_marker_t header,
-    uint64_t id,
-    uint64_t addr,
-    uint64_t size
+aqlprofile_att_codeobj_marker(
+    hsa_ext_amd_aql_pm4_packet_t*        packet,
+    aqlprofile_handle_t*                 handle,
+    aqlprofile_att_codeobj_data_t        data,
+    aqlprofile_memory_alloc_callback_t   alloc_cb,
+    aqlprofile_memory_dealloc_callback_t dealloc_cb,
+    void*                                userdata
 ) {
     try {
-        return aql_profile_v2::_internal_aqlprofile_att_codeobj_load_marker(packets, handle, header, id, addr, size);
+        return aql_profile_v2::_internal_aqlprofile_att_codeobj_marker(packet, handle, data, alloc_cb, dealloc_cb, userdata);
     } catch (hsa_status_t err) {
         ERR_LOGGING << err;
         return err;
