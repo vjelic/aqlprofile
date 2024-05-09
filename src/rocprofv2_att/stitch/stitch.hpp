@@ -10,8 +10,6 @@
 #include "../trie.h"
 #include "../trace_parser.hpp"
 
-#define STITCH_ASSERT(x) if (!(x)) { std::cerr << __FILE__ << ':' << __LINE__ << " error!" << std::endl; exit(1); }
-
 typedef std::string String;
 typedef std::string_view StringView;
 typedef std::shared_mutex SharedMutex;
@@ -27,13 +25,13 @@ struct assemblyLine
     size_t index;
     size_t line_num;
 
-    static std::unordered_map<InstCategory, std::string> categories;
+    /*static std::unordered_map<InstCategory, std::string> categories;
 
     void print()
     {
         std::cout << int(cat) << " t " << categories.at(cat) << " addr: " << std::hex << addr.addr
                   << " next " << next.addr << std::dec << ' ' << line << " : " << loc << std::endl;
-    }
+    }*/
 };
 typedef std::shared_ptr<assemblyLine> assemblyLinePtr;
 

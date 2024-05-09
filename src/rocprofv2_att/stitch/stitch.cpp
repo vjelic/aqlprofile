@@ -6,8 +6,11 @@
 #include "../trie.h"
 #include "../trace_parser.hpp"
 
-#define MAX_FAILED_STTICHES 1000
+#define MAX_FAILED_STTICHES 10000
 
+#define STITCH_ASSERT(x) if (!(x)) { std::cerr << __FILE__ << ':' << __LINE__ << " error!" << std::endl; return inst_index; }
+
+/*
 std::unordered_map<InstCategory, std::string> assemblyLine::categories =
 {
   {InstCategory::SKIP, "SKIP"},
@@ -26,15 +29,16 @@ std::unordered_map<InstCategory, std::string> assemblyLine::categories =
   {InstCategory::DONT_KNOW, "DONT_KNOW"},
   {InstCategory::NEGATIVE, "NEGATIVE"},
 };
+*/
 
 size_t Stitcher::stitch(std::vector<InstructionExt>& insts)
 {
-    STITCH_ASSERT(insts.size());
-
     std::vector<int> pcskip;
     int num_failed_stitches = 0;
     int inst_index = 0;
     int skipped_immed = 0;
+
+    STITCH_ASSERT(insts.size());
 
     assemblyLinePtr line;
     assemblyLinePtr next;
@@ -52,7 +56,6 @@ size_t Stitcher::stitch(std::vector<InstructionExt>& insts)
         }
 
         pcskip.push_back(0);
-        //watchlist->addsymbol();
         inst_index ++;
     }
     else
@@ -169,7 +172,6 @@ size_t Stitcher::stitch(std::vector<InstructionExt>& insts)
             inst.pc = line->addr;
             inst_index ++;
             num_failed_stitches = 0;
-            //inst.asmline = reverse_map[line]
             if (!bMatched) skipped_immed ++;
         }
         else
@@ -178,11 +180,11 @@ size_t Stitcher::stitch(std::vector<InstructionExt>& insts)
         }
     }
 
-    if (inst_index == insts.size())
+    /*if (inst_index == insts.size())
     {
-        //while (line.get() && line->line.find("s_endpgm") != 0)
-        //    line = watchlist->getcode(line->next);
-    }
+        while (line.get() && line->line.find("s_endpgm") != 0)
+            line = watchlist->getcode(line->next);
+    }*/
     return inst_index;
 }
 
