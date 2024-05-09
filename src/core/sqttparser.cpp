@@ -132,7 +132,6 @@ PUBLIC_API hsa_status_t aqlprofile_att_parse_data(
                                     + " of " + std::to_string(ret->traces.at(t).size());
                 trace_callback(WARNING, traceids.at(t), (void*)diag.data(), diag.size(), cbdata);
             }
-
         }
 
 #ifdef AMD_AQLPROFILE_SQTT_NDA
