@@ -22,6 +22,9 @@
 
 std::unordered_map<std::string, InstCategory> Trie::type_dict = {
     {"s_waitcnt", InstCategory::IMMED},
+    {"s_wait_idle", InstCategory::IMMED},
+    {"s_wait_event", InstCategory::IMMED},
+    {"s_wait_dep", InstCategory::IMMED},
     {"s_nop", InstCategory::IMMED},
     {"s_sleep", InstCategory::IMMED},
     {"s_wakeup", InstCategory::IMMED},
@@ -71,10 +74,13 @@ std::unordered_map<std::string, InstCategory> Trie::type_dict = {
     {"s_and", InstCategory::SALU},
     {"s_or", InstCategory::SALU},
     {"s_pack", InstCategory::SALU},
-    {"s_bitreplicate", InstCategory::SALU},
 
+    {"s_round", InstCategory::SALU},
+    {"s_denorm", InstCategory::SALU},
+    {"s_ctz", InstCategory::SALU},
+    {"s_cls", InstCategory::SALU},
     {"s_cmp", InstCategory::SALU},
-    {"s_bitcmp", InstCategory::SALU},
+    {"s_bit", InstCategory::SALU},
     {"s_set_gpr", InstCategory::SALU},
     {"s_mov", InstCategory::SALU},
     {"s_mul", InstCategory::SALU},
@@ -94,7 +100,6 @@ std::unordered_map<std::string, InstCategory> Trie::type_dict = {
     {"s_ff", InstCategory::SALU},
     {"s_flbit", InstCategory::SALU},
     {"s_sext", InstCategory::SALU},
-    {"s_bitset", InstCategory::SALU},
     {"s_cselect", InstCategory::SALU},
     {"s_xor", InstCategory::SALU},
     {"s_xnor", InstCategory::SALU},
