@@ -49,7 +49,7 @@ std::unordered_map<std::string, InstCategory> Trie::type_dict = {
     {"s_store", InstCategory::SMEM},
     {"s_dcache", InstCategory::SMEM},
     {"s_getreg", InstCategory::SALU},
-    {"s_setreg", InstCategory::SMEM},
+    {"s_setreg", InstCategory::SALU},
     {"s_memrealtime", InstCategory::SMEM},
 
     {"v_load", InstCategory::VMEM},
