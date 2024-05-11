@@ -58,8 +58,8 @@ private:
 
 enum trace_type_ids_t
 {
-    KERNEL_ID_ADDR = 1,
-    TRACE_IDS,
+    GFXIP = 1,
+    KERNEL_ID_ADDR,
     TRACE_DATA,
     OCCUPANCY,
     PERFEVENT,
@@ -68,8 +68,8 @@ enum trace_type_ids_t
 };
 
 std::unordered_map<int, std::string> trace_type_ids = {
+    {GFXIP, "gfxip"},
     {KERNEL_ID_ADDR, "kernel_ids_addr"},
-    {TRACE_IDS, "traceids",},
     {TRACE_DATA, "tracedata"},
     {OCCUPANCY, "occupancy"},
 #ifdef AMD_AQLPROFILE_SQTT_NDA
@@ -110,8 +110,7 @@ PUBLIC_API hsa_status_t aqlprofile_att_parse_data(
         auto ret = CppReturnInfo::UnSerialize(buffer, buffer_size);
 #endif
 
-        auto& traceids = ret->traceIDs;
-        trace_callback(TRACE_IDS, shader, (void*)traceids.data(), traceids.size(), cbdata);
+        trace_callback(GFXIP, 0, reinterpret_cast<void*>(ret->flags.gfxip), 0, cbdata);
         auto& kernels = ret->kernel_ids_addr;
         trace_callback(KERNEL_ID_ADDR, shader, (void*)kernels.data(), kernels.size(), cbdata);
         auto& occ = ret->occupancy;
@@ -124,13 +123,13 @@ PUBLIC_API hsa_status_t aqlprofile_att_parse_data(
         {
             size_t stitch_rate = stitcher->stitch(ret->traces.at(t));
             std::vector<InstructionExt>& trace = ret->traces.at(t);
-            trace_callback(TRACE_DATA, traceids.at(t), (void*)trace.data(), trace.size(), cbdata);
+            trace_callback(TRACE_DATA, ret->traceIDs.at(t), (void*)trace.data(), trace.size(), cbdata);
 
             if (stitch_rate != ret->traces.at(t).size())
             {
                 std::string diag =  "Stitching rate: " + std::to_string(stitch_rate)
                                     + " of " + std::to_string(ret->traces.at(t).size());
-                trace_callback(WARNING, traceids.at(t), (void*)diag.data(), diag.size(), cbdata);
+                trace_callback(WARNING, ret->traceIDs.at(t), (void*)diag.data(), diag.size(), cbdata);
             }
         }
 

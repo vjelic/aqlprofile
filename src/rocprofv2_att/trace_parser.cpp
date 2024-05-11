@@ -68,6 +68,7 @@ std::unique_ptr<CppReturnInfo>
 AnalyseBinary_GFX9_internal(const uint8_t* tokendata, int buffersize, int target_cu)
 {
     auto info = std::make_unique<CppReturnInfo>();
+    info->flags.gfxip = 9;
     std::vector<gfx9Token> tokens = gfx9Token::parse(tokendata, buffersize);
     gfx9Token::patch_time(tokens);
 
@@ -107,6 +108,7 @@ std::unique_ptr<CppReturnInfo>
 AnalyseBinary_GFX10_internal(const uint8_t* tokendata, int buffersize)
 {
     auto info = std::make_unique<CppReturnInfo>();
+    info->flags.gfxip = 10;
     std::vector<gfx10Token> tokens = gfx10Token::parse(tokendata, buffersize);
     gfx10wave_t::WaveArray wavearray;
     std::tie(
@@ -141,6 +143,8 @@ std::unique_ptr<CppReturnInfo>
 AnalyseBinary_GFX11_internal(const uint8_t* tokendata, int buffersize)
 {
     auto info = std::make_unique<CppReturnInfo>();
+    info->flags.gfxip = 11;
+    info->flags.isNavi = true;
     std::vector<gfx10Token> tokens = gfx11Token::parse(tokendata, buffersize);
     gfx10wave_t::WaveArray wavearray;
     std::tie(
@@ -150,7 +154,6 @@ AnalyseBinary_GFX11_internal(const uint8_t* tokendata, int buffersize)
         info->kernel_ids_addr
     ) = gfx11wave_t::sqtt_simd_analysis(tokens);
 
-    info->flags.isNavi = true;
     std::tie(info->traceIDs, info->traces) = getAggregatedData(wavearray);
 
 #ifdef AMD_AQLPROFILE_SQTT_NDA
