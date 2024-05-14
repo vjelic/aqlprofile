@@ -593,7 +593,6 @@ class gfx11_cntx_prim {
 #if SQTT_PRIM_ENABLED
     regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
     token_mask.bits.REG_EXCLUDE = 0x3;
-    token_mask.bits.REG_INCLUDE = SQTT_TOKEN_REG_USERDATA;
     token_mask.bits.INST_EXCLUDE = 0x3;
     token_mask.bits.TOKEN_EXCLUDE = 0x7FF;
     return token_mask.u32All;
@@ -605,9 +604,9 @@ class gfx11_cntx_prim {
   static uint32_t sqtt_token_mask_occupancy_value() {
 #if SQTT_PRIM_ENABLED
     regSQ_THREAD_TRACE_TOKEN_MASK token_mask{};
-    token_mask.bits.REG_INCLUDE = 0x8;
+    token_mask.bits.REG_INCLUDE = SQTT_TOKEN_REG_USERDATA;
     token_mask.bits.INST_EXCLUDE = 0x3;
-    token_mask.bits.TOKEN_EXCLUDE = 0x7FF;
+    token_mask.bits.TOKEN_EXCLUDE = (SQTT_TOKEN_WAVE | SQTT_TOKEN_REG) ^ 0x7FF;
     return token_mask.u32All;
 #else
     return 0;

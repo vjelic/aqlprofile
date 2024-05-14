@@ -219,6 +219,8 @@ typedef union
         uint64_t isNavi : 1;
         uint64_t npiWaveData : 1;
         uint64_t version : 13;
+        uint64_t gfxip : 8;
+        uint64_t reserved : 40;
     };
 } att_output_flags_t;
 
