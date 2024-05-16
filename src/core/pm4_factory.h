@@ -274,7 +274,8 @@ inline Pm4Factory* Pm4Factory::Create(const AgentInfo* agent_info,  gpu_id_t gpu
   instances_t::iterator it = ret.first;
 
   concurrent_create_mode_ = concurrent;
-  spm_kfd_mode_ = (getenv("ROCP_SPM_KFD_MODE") != NULL);
+  static bool spm_kfd = getenv("ROCP_SPM_KFD_MODE") != NULL;
+  spm_kfd_mode_ = spm_kfd;
 
   // Create a factory implementation for the GPU id
   if (ret.second) {
@@ -334,11 +335,6 @@ inline Pm4Factory* Pm4Factory::Create(const hsa_agent_t agent, bool concurrent) 
     throw aql_profile_exc_msg("Pm4Factory::Create() bad agent");
   }
 
-  const char* override_id = getenv("HSA_VEN_AMD_AQLPROFILE_DID");
-  if (override_id != NULL) {
-    device_id = atoi(override_id);
-  }
-
   const gpu_id_t gpu_id = GetGpuId(agent_name.data());
   return Pm4Factory::Create(agent_info, gpu_id, concurrent);
 }
@@ -374,7 +370,7 @@ inline bool Pm4Factory::CheckConcurrent(const profile_t* profile) {
 
 // Return GPU id for a given agent
 inline gpu_id_t Pm4Factory::GetGpuId(std::string_view gfx_ip) {
-  static std::vector<std::pair<std::string, gpu_id_t>> gfxip_map = {
+  std::vector<std::pair<std::string, gpu_id_t>> gfxip_map = {
     {"gfx908", MI100_GPU_ID},
     {"gfx90a", MI200_GPU_ID},    
     {"gfx900", GFX9_GPU_ID},
