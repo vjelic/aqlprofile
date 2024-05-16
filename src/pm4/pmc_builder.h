@@ -578,6 +578,11 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::CP_PERFMON_CNTL_ADDR,
                                           Primitives::cp_perfmon_cntl_stop_value());
 
+    // Enable RLC Perfmon Clock Gating. On Vega this
+    // was disabled during Perf Cntrs collection session
+    if (Primitives::GFXIP_LEVEL == 9)
+      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_PERFMON_CLK_CNTL_ADDR, 0);
+
     Builder::BuildWriteWaitIdlePacket(cmd_buffer);
   }
 
@@ -586,6 +591,10 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
   {
     uint32_t read_counter = 0;
     auto counters_attr = counters_vec.get_attr();
+
+    if (counters_vec.get_attr() & CounterBlockCpmonAttr)
+        Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::CP_PERFMON_CNTL_ADDR,
+                                          Primitives::cp_perfmon_cntl_read_value());
 
     // counters have UMC events: MI300 Loop over MI300 XCCs for each counter_des
     if (counters_attr & CounterBlockUmcAttr)
@@ -623,10 +632,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       ReadXccPackets(cmd_buffer, counters_vec, data_buffer, read_counter);
     }
  
-    // Enable RLC Perfmon Clock Gating. On Vega this
-    // was disabled during Perf Cntrs collection session
-    if (Primitives::GFXIP_LEVEL == 9)
-      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::RLC_PERFMON_CLK_CNTL_ADDR, 0);
+    Builder::BuildCacheFlushPacket(cmd_buffer, size_t(data_buffer), read_counter * sizeof(uint32_t));
 
     // Return amount of data to read
     return read_counter * sizeof(uint32_t);

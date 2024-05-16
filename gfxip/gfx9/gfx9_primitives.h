@@ -188,6 +188,13 @@ class gfx9_cntx_prim {
   static uint32_t cp_perfmon_cntl_stop_value() {
     regCP_PERFMON_CNTL cp_perfmon_cntl{};
     cp_perfmon_cntl.bits.PERFMON_STATE = 2;
+    return cp_perfmon_cntl.u32All;
+  }
+
+  // CP_PERFMON_CNTL value to stop/freeze counters
+  static uint32_t cp_perfmon_cntl_read_value() {
+    regCP_PERFMON_CNTL cp_perfmon_cntl{};
+    cp_perfmon_cntl.bits.PERFMON_STATE = 1;
     cp_perfmon_cntl.bits.PERFMON_SAMPLE_ENABLE = 1;
     return cp_perfmon_cntl.u32All;
   }
