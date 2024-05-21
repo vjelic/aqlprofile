@@ -400,10 +400,3 @@ public:
     static std::vector<gfx10Token> parse(const uint8_t* buffer, const int BUFFER_SIZE);
     static std::array<uint8_t, 32> TOKEN_LEN;
 };
-
-template<typename Type>
-class ParsedToken : public gfx10Token {
-public:
-    Type token() const { return *reinterpret_cast<Type*>(&contents); };
-    void print() const override { token().print(); };
-};
