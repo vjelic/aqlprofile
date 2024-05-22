@@ -101,7 +101,7 @@ pm4_builder::counters_vector CountersVec(
         (vec.get_attr() & CounterBlockSqAttr) != 0 &&
         (vec.get_attr() & CounterBlockGRBMAttr) == 0
     ) {
-        aqlprofile_pmc_event_t grbm_event;
+        aqlprofile_pmc_event_t grbm_event{0};
         grbm_event.block_name = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_GRBM;
         vec.push_back(GetCounter(pm4_factory, grbm_event, index_map));
     }
@@ -216,7 +216,7 @@ hsa_status_t _internal_aqlprofile_pmc_create_packets(
     pm4_builder::PmcBuilder* pmc_builder = pm4_factory->GetPmcBuilder();
 
     // Start outputbuf ptr
-    size_t output_bytes = 0;
+    size_t output_bytes = 8; // Extra space for GRBM block on gfx10
     for (auto& event : memorymgr->GetEvents())
         output_bytes += pm4_factory->GetBytesNeeded(event.block_name);
     memorymgr->CreateOutputBuf(output_bytes);
