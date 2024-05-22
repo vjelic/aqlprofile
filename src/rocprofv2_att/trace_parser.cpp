@@ -208,7 +208,7 @@ AnalyseBinary_internal(const uint8_t* buffer, int BUFFER_SIZE, int gfx9_target_c
 
     if (info.get() == nullptr) {
         std::cerr << "Invalid ATT data!" << std::endl;
-        exit(1);
+        return nullptr;
     }
 
     info->tracesizes = std::vector<uint64_t>(info->traceIDs.size());

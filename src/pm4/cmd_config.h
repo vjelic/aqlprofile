@@ -3,6 +3,7 @@
 #define SRC_PM4_CMD_CONFIG_H_
 
 #include <stdint.h>
+#include "pm4/trace_config.h"
 
 namespace pm4_builder {
 // Counters vector class
@@ -23,39 +24,6 @@ class counters_vector : public std::vector<counter_des_t> {
   uint32_t attr_;
 };
 
-// SqttBuilder config
-struct TraceConfig {
-  uint32_t targetCu;
-  uint32_t vmIdMask;
-  uint32_t simd_sel;
-  uint32_t occupancy_mode;
-  uint32_t deprecated_mask;
-  uint32_t deprecated_tokenMask;
-  uint32_t deprecated_tokenMask2;
-  // Sampling rate
-  uint32_t sampleRate;
-  // PERF
-  uint32_t perfMASK;
-  uint32_t perfCTRL;
-  uint32_t perfcounters[8];
-  uint8_t n_perfcounters;
-  // SPM mode
-  bool spm_sq_32bit_mode;
-  bool spm_kfd_mode;
-  bool mi100;
-
-  void* control_buffer_ptr;
-  uint32_t control_buffer_size;
-  void* data_buffer_ptr;
-  uint32_t data_buffer_size;
-
-  // SE number for tracing
-  uint32_t spm_se_number_total;
-  // concurrent kernels mode
-  uint32_t concurrent;
-  // SE mask for tracing; note -> replicated for all XCCs
-  uint64_t se_mask;
-};
 }  // namespace pm4_builder
 
 #endif  // SRC_PM4_CMD_CONFIG_H_

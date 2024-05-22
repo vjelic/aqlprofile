@@ -6,6 +6,7 @@
 #include <memory>
 #include "include/aql_profile_v2.h"
 #include <stdexcept>
+#include "pm4/trace_config.h"
 
 struct EventRequest: public aqlprofile_pmc_event_t
 {
@@ -229,6 +230,8 @@ public:
     }
 
     int GetSimdMask() const { return simd_mask; }
+
+    pm4_builder::TraceConfig config{};
 
 protected:
     int target_cu = -1;
