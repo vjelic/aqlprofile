@@ -29,13 +29,16 @@
 #include <mutex>
 #include <shared_mutex>
 
-typedef union {
+typedef union
+{
     uint64_t raw;
     struct {
         uint64_t isValid : 1;
         uint64_t isNavi : 1;
         uint64_t npiWaveData : 1;
         uint64_t version : 13;
+        uint64_t gfxip : 8;
+        uint64_t reserved : 40;
     };
 } _output_flags_t;
 
