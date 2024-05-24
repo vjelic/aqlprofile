@@ -72,9 +72,9 @@ hsa_status_t _internal_aqlprofile_att_iterate_data(
     // The samples sizes are returned in the control buffer
     for (uint64_t se_index = 0; se_index < se_number_total; se_index++)
     {
-        bool bMaskedIn = sqttbuilder->GetTargetCU(se_index) >= 0;
-        uint64_t sample_capacity = sqttbuilder->GetCapacity(se_index);
-        void* sample_ptr = reinterpret_cast<void*>(sqttbuilder->GetSEBaseAddr(se_index));
+        bool bMaskedIn = memorymgr->config.GetTargetCU(se_index) >= 0;
+        uint64_t sample_capacity = memorymgr->config.GetCapacity(se_index);
+        void* sample_ptr = reinterpret_cast<void*>(memorymgr->config.GetSEBaseAddr(se_index));
 
         // WPTR specifies the index in thread trace buffer where next token will be
         // written by hardware. The index is incremented by size of 32 bytes.
@@ -106,11 +106,11 @@ hsa_status_t _internal_aqlprofile_att_iterate_data(
     // The samples sizes are returned in the control buffer
     for (uint64_t se_index = 0; se_index < se_number_total; se_index++)
     {
-        int target_cu = sqttbuilder->GetTargetCU(se_index);
+        int target_cu = memorymgr->config.GetTargetCU(se_index);
         if (target_cu < 0)
             continue;
 
-        void* sample_ptr = reinterpret_cast<void*>(sqttbuilder->GetSEBaseAddr(se_index));
+        void* sample_ptr = reinterpret_cast<void*>(memorymgr->config.GetSEBaseAddr(se_index));
         size_t sample_size = sample_sizes.at(se_index);
         size_t sample_size_plus_header = sample_size;
 
@@ -151,9 +151,17 @@ hsa_status_t _internal_aqlprofile_att_create_packets(
     pm4_builder::CmdBuffer stop_cmd;
 
     aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile.agent);
-    pm4_builder::TraceConfig trace_config{};
 
-    memset((char*)&trace_config, 0, sizeof(pm4_builder::TraceConfig));
+    auto memorymgr = std::make_shared<TraceMemoryManager>(
+        profile.agent,
+        alloc_cb,
+        dealloc_cb,
+        copy_fn,
+        userdata
+    );
+
+    auto& trace_config = memorymgr->config;
+
     trace_config.vmIdMask = 0xF;
     trace_config.simd_sel = 0xF;
     trace_config.perfMASK = (1ul << 32) - 1;
@@ -217,10 +225,10 @@ hsa_status_t _internal_aqlprofile_att_create_packets(
             trace_config.perfCTRL = ((p->value & 0x1F) << 8) | 0xFFFF007F;
             break;
         case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERFCOUNTER_NAME:
-            if (trace_config.n_perfcounters < 8) {
-                trace_config.perfcounters[trace_config.n_perfcounters] = p->value;
-                trace_config.n_perfcounters++;
-            }
+            if (trace_config.perfcounters.size() < 8)
+                trace_config.perfcounters.push_back(p->value);
+            else
+                return HSA_STATUS_ERROR_INVALID_ARGUMENT;
             break;
         default:
             ERR_LOGGING << "Bad trace parameter name (" << p->parameter_name << ")";
@@ -229,13 +237,6 @@ hsa_status_t _internal_aqlprofile_att_create_packets(
 
     const size_t control_size = sizeof(pm4_builder::TraceControl) * se_number_total;
 
-    auto memorymgr = std::make_shared<TraceMemoryManager>(
-        profile.agent,
-        alloc_cb,
-        dealloc_cb,
-        copy_fn,
-        userdata
-    );
     memorymgr->CreateTraceControlBuf(control_size + THREAD_TRACE_PREFIX_SIZE);
     memorymgr->CreateOutputBuf(buffer_size);
     MemoryManager::RegisterManager(memorymgr);

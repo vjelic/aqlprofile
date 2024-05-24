@@ -6,6 +6,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <mutex>
 
 #include "core/counter_dimensions.hpp"
 
@@ -50,6 +51,13 @@ namespace aql_profile {
 // Command buffer partitioning manager
 // Supports Pre/Post commands partitioning
 // and prefix control partition
+
+static std::unordered_map<void*, pm4_builder::TraceConfig> configs;
+static std::mutex config_mut;
+
+#ifndef AMD_AQLPROFILE_SQTT_NDA
+  std::vector<size_t> cpu_data{};
+#endif
 
 static inline pm4_builder::counters_vector CountersVec(const profile_t* profile,
                                                        const Pm4Factory* pm4_factory) {
@@ -226,12 +234,6 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
       }
     } else if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_TRACE) {
       pm4_builder::TraceConfig trace_config{};
-      memset((char*)&trace_config, 0, sizeof(pm4_builder::TraceConfig));
-      trace_config.vmIdMask = 0xF;
-      trace_config.simd_sel = 0xF;
-      trace_config.perfMASK = (1ul << 32) - 1;
-      trace_config.se_mask = 0x11111111;
-
       const uint64_t se_number_total = pm4_factory->GetShaderEnginesNumber();
 
       if (profile->parameters) {
@@ -291,10 +293,8 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
               trace_config.perfCTRL = ((p->value & 0x1F) << 8) | 0xFFFF007F;
               break;
             case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERFCOUNTER_NAME:
-              if (trace_config.n_perfcounters < 8) {
-                trace_config.perfcounters[trace_config.n_perfcounters] = p->value;
-                trace_config.n_perfcounters++;
-              }
+              if (trace_config.perfcounters.size() < 8)
+                trace_config.perfcounters.push_back(p->value);
               break;
             default:
               ERR_LOGGING << "Bad trace parameter name (" << p->parameter_name << ")";
@@ -307,9 +307,6 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
       char* prefix_ptr = cmd_buffer_mgr.AddPrefix(control_size);
       auto* control_ptr = reinterpret_cast<pm4_builder::TraceControl*>(prefix_ptr);
 
-      trace_config.spm_kfd_mode = true;
-      trace_config.spm_sq_32bit_mode = true;
-      trace_config.sampleRate = 625;  // tbd
       trace_config.control_buffer_ptr = control_ptr;
       trace_config.control_buffer_size = control_size;
       trace_config.data_buffer_ptr = profile->output_buffer.ptr;
@@ -331,6 +328,7 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
         // Generate stop commands
         spm_builder->End(&commands, &trace_config);
       }
+      aql_profile::configs[profile->command_buffer.ptr] = trace_config;
     } else {
       ERR_LOGGING << "Bad profile type (" << profile->type << ")";
       return HSA_STATUS_ERROR_INVALID_ARGUMENT;
@@ -664,6 +662,7 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
       }
 
       if (mode != 2) {  // SQTT trace data, or SQTT pc sampling
+        auto& trace_config = aql_profile::configs.at(profile->command_buffer.ptr);
         pm4_builder::SqttBuilder* sqttbuilder = pm4_factory->GetSqttBuilder();
         const uint64_t se_number_total = pm4_factory->GetShaderEnginesNumber();
         // Control buffer was allocated as the CmdBuffer prefix partition
@@ -688,9 +687,9 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
         // The samples sizes are returned in the control buffer
         for (size_t se_index = 0; se_index < se_number_total; se_index++)
         {
-          bool bMaskedIn = sqttbuilder->GetTargetCU(se_index) >= 0;
-          uint64_t sample_capacity = sqttbuilder->GetCapacity(se_index);
-          void* sample_ptr = reinterpret_cast<void*>(sqttbuilder->GetSEBaseAddr(se_index));
+          bool bMaskedIn = trace_config.GetTargetCU(se_index) >= 0;
+          uint64_t sample_capacity = trace_config.GetCapacity(se_index);
+          void* sample_ptr = reinterpret_cast<void*>(trace_config.GetSEBaseAddr(se_index));
 
           // WPTR specifies the index in thread trace buffer where next token will be
           // written by hardware. The index is incremented by size of 32 bytes.
@@ -720,15 +719,27 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
 #ifdef AMD_AQLPROFILE_SQTT_NDA
               status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, &info, data);
 #else
-              bool bIsGFX9 = pm4_factory->GetGpuId() < aql_profile::GFX10_GPU_ID;
-              int gfx9_target_cu = bIsGFX9 ? sqttbuilder->GetTargetCU(se_index) : -1;
+              if (aql_profile::cpu_data.size()*sizeof(size_t) < sample_capacity)
+                aql_profile::cpu_data.resize(sample_capacity/sizeof(size_t)+0x1000);
 
-              auto return_info = AnalyseBinary_internal((uint8_t*)sample_ptr, sample_size, gfx9_target_cu);
-              size_t used_data = std::min(sample_capacity, return_info->GetMemoryNeededForSerialization());
-              return_info->Serialize((uint8_t*)sample_ptr, used_data, bIsGFX9);
+              hsa_memory_copy(aql_profile::cpu_data.data(), sample_ptr, sample_size);
+
+              bool bIsGFX9 = pm4_factory->GetGpuId() < aql_profile::GFX10_GPU_ID;
+              int gfx9_target_cu = bIsGFX9 ? trace_config.GetTargetCU(se_index) : -1;
+
+              size_t used_data = sample_capacity;
+              {
+                auto return_info = AnalyseBinary_internal((uint8_t*)aql_profile::cpu_data.data(), sample_size, gfx9_target_cu);
+                if (return_info == nullptr) return HSA_STATUS_ERROR;
+                used_data = std::min(used_data, return_info->GetMemoryNeededForSerialization());
+
+                return_info->Serialize((uint8_t*)aql_profile::cpu_data.data(), used_data, bIsGFX9);
+                if (used_data < sample_size)
+                  hsa_amd_memory_fill((uint8_t*)sample_ptr + used_data, 0, (sample_size-used_data)/4);
+                hsa_memory_copy(sample_ptr, aql_profile::cpu_data.data(), used_data);
+              }
+
               info.trace_data.size = used_data;
-              if (used_data < sample_size)
-                memset((uint8_t*)sample_ptr + used_data, 0, sample_size-used_data);
               status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, &info, data);
 #endif
             }
