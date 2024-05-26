@@ -182,7 +182,7 @@ class Pm4Factory {
   }
 
   virtual size_t GetBytesNeeded(uint32_t block_name) const {
-    return GetNumEvents(block_name)*sizeof(uint64_t);
+    return GetNumEvents(block_name) * GetXccNumber() * sizeof(uint64_t);
   }
 
   // Return block id for a given block name string
