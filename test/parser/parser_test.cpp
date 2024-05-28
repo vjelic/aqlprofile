@@ -15,6 +15,7 @@
     if (spaceleft <= 0) return ret;                                                   \
 }
 
+
 std::unique_ptr<CppReturnInfo> CppReturnInfo::UnSerialize(const char* buffer, size_t buffersize)
 {
     size_t offset = 0;
@@ -23,6 +24,7 @@ std::unique_ptr<CppReturnInfo> CppReturnInfo::UnSerialize(const char* buffer, si
 
     {
         uint64_t header; // Remove 0xF headers
+        READ_INC(&header, sizeof(header), 1);
         READ_INC(&header, sizeof(header), 1);
     }
 
