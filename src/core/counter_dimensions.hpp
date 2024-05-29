@@ -26,6 +26,7 @@ struct EventDimension
         if (dimension_list.size()) return;
 
         dimension_list.push_back("XCD");
+        dimension_list.push_back("AID");
         dimension_list.push_back("SE");
         dimension_list.push_back("SA");
         dimension_list.push_back("CU");
@@ -68,6 +69,10 @@ public:
         bIsGFX9 = pm4_factory->IsGFX9();
 
         num_xccs = pm4_factory->GetXccNumber();
+        if (num_xccs > 1 && HasAttr(CounterBlockUmcAttr)) { // For MI300 AID only
+            num_xccs = 1;
+            num_aid = 4;
+        }
         shader_engine = HasAttr(CounterBlockSeAttr);
         shader_array = HasAttr(CounterBlockSaAttr);
 
@@ -94,10 +99,13 @@ public:
 
         cu_num = (pm4_factory->GetComputeUnitNumber() + sas - 1) / sas;
         wgp_num = (pm4_factory->GetComputeUnitNumber()/2 + sas - 1) / sas;
-        block_instance_count = block_info->instance_count;
+        block_instance_count = HasAttr(CounterBlockUmcAttr) ? block_info->instance_count / num_aid
+                                                            : block_info->instance_count;
 
         if (num_xccs > 1)
             dimensions.push_back({"XCD", num_xccs});
+        if (num_aid > 1)
+            dimensions.push_back({"AID", num_aid});
         if (shader_engine)
             dimensions.push_back({"SE", pm4_factory->GetShaderEnginesNumber()});
         if (shader_array)
@@ -152,6 +160,7 @@ private:
     bool texture_cache = false;
 
     size_t num_xccs = 1;
+    size_t num_aid = 1;
     size_t se_num = 1;
     size_t sarrays = 1;
     size_t cu_num = 1;

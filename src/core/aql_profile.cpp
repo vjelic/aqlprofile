@@ -613,10 +613,12 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
         for (const hsa_ven_amd_aqlprofile_event_t* p = profile->events;
              p < profile->events + profile->event_count; ++p)
         {
-          if ((char*)samples >= (char*)profile->output_buffer.ptr + profile->output_buffer.size)
-            return HSA_STATUS_ERROR;
-
+          // this check needs to be the first check as it takes care of a corner case 
+          // in which a UMC event is the last event in profile->events
           if (pm4_factory->GetBlockInfo(p)->attr & CounterBlockUmcAttr) continue;
+
+          if ((char*)samples > (char*)profile->output_buffer.ptr + profile->output_buffer.size)
+            return HSA_STATUS_ERROR;
 
           // non-MI300A-AID counter event.
           uint32_t block_samples_count = 1;
