@@ -294,7 +294,7 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
               break;
             case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERFCOUNTER_NAME:
               if (trace_config.perfcounters.size() < 8)
-                trace_config.perfcounters.push_back(p->value);
+                trace_config.perfcounters.push_back({p->value, 0xF});
               break;
             default:
               ERR_LOGGING << "Bad trace parameter name (" << p->parameter_name << ")";

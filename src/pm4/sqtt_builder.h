@@ -10,7 +10,7 @@
 #include "src/rocprofv2_att/thread_trace_viewer_def.h"
 
 #define SQTT_PERFCOUNTER_TOKEN (1u << 14)
-#define SQTT_PERFCOUNTER_SIMD_EN (0xFu << 24)
+#define SQTT_PERFCOUNTER_SIMD_MASK 24
 
 namespace pm4_builder {
 class CmdBuffer;
@@ -139,9 +139,11 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::CP_PERFMON_CNTL_ADDR,
                                         Primitives::cp_perfmon_cntl_reset_value());
 
-    for (int perf = 0; perf < config->perfcounters.size() && perf < 8; perf++) {
+    for (int perf = 0; perf < config->perfcounters.size() && perf < 8; perf++)
+    {
+      size_t mask = config->perfcounters[perf].second << SQTT_PERFCOUNTER_SIMD_MASK;
       Builder::BuildWriteConfigRegPacket(cmd_buffer, Primitives::sqtt_perfcounter_addr(perf),
-                                          config->perfcounters[perf] | SQTT_PERFCOUNTER_SIMD_EN);
+                                        config->perfcounters[perf].first | mask);
     }
     Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_PERFCOUNTER_MASK_ADDR,
                                         config->perfMASK);
@@ -198,13 +200,13 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_PERF_MASK_ADDR,
                                           Primitives::sqtt_perf_mask_value());
 
-      if (config->perfcounters.size() && config->perfCTRL) StartPerfMon(cmd_buffer, config);
+      if (config->perfcounters.size()) StartPerfMon(cmd_buffer, config);
 
       // Program the thread trace token mask
       uint32_t token_mask_value = (config->occupancy_mode) ?
                               Primitives::sqtt_token_mask_occupancy_value() :
                               Primitives::sqtt_token_mask_on_value();
-      if (config->perfcounters.size() && config->perfCTRL) token_mask_value |= SQTT_PERFCOUNTER_TOKEN;
+      if (config->perfcounters.size()) token_mask_value |= SQTT_PERFCOUNTER_TOKEN;
       if (legacy_mode) token_mask_value = config->deprecated_tokenMask;
 
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::SQ_THREAD_TRACE_TOKEN_MASK_ADDR,
