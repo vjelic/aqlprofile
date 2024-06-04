@@ -53,7 +53,7 @@ struct CppReturnInfo
     std::vector<pcinfo_t> kernel_ids_addr;
     std::vector<int64_t> traceIDs;
     std::vector<uint64_t> tracesizes;
-    static std::unique_ptr<CppReturnInfo> UnSerialize(const char* buffer, size_t buffersize);
+    static std::unique_ptr<CppReturnInfo> UnSerialize(const char* buffer, size_t buffersize, bool bGfxip9);
 };
 
 struct fileoffset_info_t
@@ -67,4 +67,4 @@ struct fileoffset_info_t
     uint64_t num_occupancy;
 };
 
-[[nodiscard]] bool test_buffer(const char* buffer, size_t buf_size);
+[[nodiscard]] bool test_buffer(const char* buffer, size_t buf_size, bool bGfxip9);

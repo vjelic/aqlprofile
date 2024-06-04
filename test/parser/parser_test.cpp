@@ -16,7 +16,7 @@
 }
 
 
-std::unique_ptr<CppReturnInfo> CppReturnInfo::UnSerialize(const char* buffer, size_t buffersize)
+std::unique_ptr<CppReturnInfo> CppReturnInfo::UnSerialize(const char* buffer, size_t buffersize, bool bGfxip9)
 {
     size_t offset = 0;
     int64_t spaceleft = buffersize;
@@ -25,7 +25,7 @@ std::unique_ptr<CppReturnInfo> CppReturnInfo::UnSerialize(const char* buffer, si
     {
         uint64_t header; // Remove 0xF headers
         READ_INC(&header, sizeof(header), 1);
-        READ_INC(&header, sizeof(header), 1);
+        if (!bGfxip9) READ_INC(&header, sizeof(header), 1);
     }
 
     fileoffset_info_t info;
@@ -47,9 +47,9 @@ std::unique_ptr<CppReturnInfo> CppReturnInfo::UnSerialize(const char* buffer, si
 
 #ifndef AMD_AQLPROFILE_SQTT_NDA
 
-[[nodiscard]] bool test_buffer(const char* buffer, size_t buf_size)
+[[nodiscard]] bool test_buffer(const char* buffer, size_t buf_size, bool bGfxip9)
 {
-    auto info = CppReturnInfo::UnSerialize(buffer, buf_size);
+    auto info = CppReturnInfo::UnSerialize(buffer, buf_size, bGfxip9);
 
     size_t maxtrace = 0;
     for (size_t size : info->tracesizes)
@@ -73,37 +73,6 @@ std::unique_ptr<CppReturnInfo> CppReturnInfo::UnSerialize(const char* buffer, si
 
 #else
 
-[[nodiscard]] bool test_buffer(const char* buffer, size_t buf_size) { return true; }
+[[nodiscard]] bool test_buffer(const char* buffer, size_t buf_size, bool bGfxip9) { return true; }
 
 #endif
-
-bool test_fromfile(std::string_view filename)
-{
-    std::vector<char> buffer;
-    {
-        std::ifstream file(filename.data(), std::ios::in | std::ios::binary);
-
-        if (!file.is_open())
-        {
-            std::cerr << "Could not find .att file " + std::string(filename) << std::endl;
-            return false;
-        }
-
-        file.seekg(0, file.end);
-        buffer.resize(file.tellg());
-        file.seekg(0, file.beg);
-        file.read(buffer.data(), buffer.size());
-    }
-
-    try {
-        return test_buffer(buffer.data(), buffer.size());
-    } catch(std::string& s) {
-        std::cerr << "SQTT Parser for " << filename << " string test error: " << s << std::endl;
-    } catch(const char* s) {
-        std::cerr << "SQTT Parser for " << filename << " string test error: " << s << std::endl;
-    } catch(std::exception& e) {
-        std::cerr << "SQTT Parser for " << filename << " generic test error. " << e.what() << std::endl;
-    }
-
-    return false;
-}

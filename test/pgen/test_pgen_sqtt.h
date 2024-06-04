@@ -162,7 +162,8 @@ class TestPGenSqtt : public TestPGen {
 #endif
 
       try {
-        bSomeSECollected |= test_buffer(static_cast<const char*>(sys_buf), it->trace_data.size);
+        bool bGFX9 = std::string_view(GetAgentInfo()->gfxip).find("gfx9") != std::string::npos;
+        bSomeSECollected |= test_buffer(static_cast<const char*>(sys_buf), it->trace_data.size, bGFX9);
       } catch(std::string& s) {
           std::cerr << "SQTT Parser for " << it->sample_id << " string test error: " << s << std::endl;
           bSomeSEFailed = true;
