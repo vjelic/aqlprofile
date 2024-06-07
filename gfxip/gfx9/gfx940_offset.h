@@ -1060,4 +1060,41 @@
 #define mmUMCCH30_PerfMonCtr10_Hi                       0x1E4B61
 #define mmUMCCH31_PerfMonCtr10_Hi                       0x1E4F61
 
+// MI300 moved the MC_VM_L2 counters, and added an extra 8 config registers
+// the following are defined from the regspec
+#ifndef _greenland_OFFSET_HEADER
+#error "This file must be included after gfx9_offset.h for proper overriding of the following counters"
+#endif
+#undef mmMC_VM_L2_PERFCOUNTER0_CFG
+#undef mmMC_VM_L2_PERFCOUNTER1_CFG
+#undef mmMC_VM_L2_PERFCOUNTER2_CFG
+#undef mmMC_VM_L2_PERFCOUNTER3_CFG
+#undef mmMC_VM_L2_PERFCOUNTER4_CFG
+#undef mmMC_VM_L2_PERFCOUNTER5_CFG
+#undef mmMC_VM_L2_PERFCOUNTER6_CFG
+#undef mmMC_VM_L2_PERFCOUNTER7_CFG
+#undef mmMC_VM_L2_PERFCOUNTER_RSLT_CNTL
+#undef mmMC_VM_L2_PERFCOUNTER_LO
+#undef mmMC_VM_L2_PERFCOUNTER_HI
+
+#define mmMC_VM_L2_PERFCOUNTER0_CFG 0xDD46
+#define mmMC_VM_L2_PERFCOUNTER1_CFG 0xDD47
+#define mmMC_VM_L2_PERFCOUNTER2_CFG 0xDD48
+#define mmMC_VM_L2_PERFCOUNTER3_CFG 0xDD49
+#define mmMC_VM_L2_PERFCOUNTER4_CFG 0xDD4A
+#define mmMC_VM_L2_PERFCOUNTER5_CFG 0xDD4B
+#define mmMC_VM_L2_PERFCOUNTER6_CFG 0xDD4C
+#define mmMC_VM_L2_PERFCOUNTER7_CFG 0xDD4D
+#define mmMC_VM_L2_PERFCOUNTER8_CFG 0xDD4E
+#define mmMC_VM_L2_PERFCOUNTER9_CFG 0xDD4F
+#define mmMC_VM_L2_PERFCOUNTER10_CFG 0xDD50
+#define mmMC_VM_L2_PERFCOUNTER11_CFG 0xDD51
+#define mmMC_VM_L2_PERFCOUNTER12_CFG 0xDD52
+#define mmMC_VM_L2_PERFCOUNTER13_CFG 0xDD53
+#define mmMC_VM_L2_PERFCOUNTER14_CFG 0xDD54
+#define mmMC_VM_L2_PERFCOUNTER15_CFG 0xDD55
+#define mmMC_VM_L2_PERFCOUNTER_RSLT_CNTL 0xDD56
+#define mmMC_VM_L2_PERFCOUNTER_LO 0xD502
+#define mmMC_VM_L2_PERFCOUNTER_HI 0xD503
+
 #endif

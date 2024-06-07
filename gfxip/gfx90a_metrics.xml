@@ -5379,130 +5379,274 @@
     name="MCVML2_BANK3_AGGREGATE_UPDATE" block=MCVML2 event=48 descr="bank3 aggregate update"
   ></metric>
   <metric
-    name="MCVML2_RETRY" block=MCVML2 event=49 descr="retry"
+    name="MCVML2_BANK4_PTE_CACHE_BIGK0_REQUEST" block=MCVML2 event=49 descr="bank4 pte cache bigk0 request"
   ></metric>
   <metric
-    name="MCVML2_NO_RETRY" block=MCVML2 event=50 descr="no retry"
+    name="MCVML2_BANK4_PTE_CACHE_BIGK0_HIT" block=MCVML2 event=50 descr="bank4 pte cache bigk0 hit"
   ></metric>
   <metric
-    name="MCVML2_INTERRUPT" block=MCVML2 event=51 descr="interrupt"
+    name="MCVML2_BANK4_PTE_CACHE_BIGK0_MISS" block=MCVML2 event=51 descr="bank4 pte cache bigk0 miss"
   ></metric>
   <metric
-    name="MCVML2_PDE0_CACHE_REQUEST" block=MCVML2 event=52 descr="pde0 cache request"
+    name="MCVML2_BANK4_PTE_CACHE_BIGK0_UPDATE" block=MCVML2 event=52 descr="bank4 pte cache bigk0 update"
   ></metric>
   <metric
-    name="MCVML2_PDE0_CACHE_HIT" block=MCVML2 event=53 descr="pde0 cache hit"
+    name="MCVML2_BANK4_PTE_CACHE_4K0_REQUEST" block=MCVML2 event=53 descr="bank4 pte cache 4k0 request"
   ></metric>
   <metric
-    name="MCVML2_PDE0_CACHE_MISS" block=MCVML2 event=54 descr="pde0 cache miss"
+    name="MCVML2_BANK4_PTE_CACHE_4K0_HIT" block=MCVML2 event=54 descr="bank4 pte cache 4k0 hit"
   ></metric>
   <metric
-    name="MCVML2_PDE0_CACHE_UPDATE" block=MCVML2 event=55 descr="pde0 cache update"
+    name="MCVML2_BANK4_PTE_CACHE_4K0_MISS" block=MCVML2 event=55 descr="bank4 pte cache 4k0 miss"
   ></metric>
   <metric
-    name="MCVML2_PDE0_CACHE_PTE" block=MCVML2 event=56 descr="pde0 cache pte"
+    name="MCVML2_BANK4_PTE_CACHE_4K0_UPDATE" block=MCVML2 event=56 descr="bank4 pte cache 4k0 update"
   ></metric>
   <metric
-    name="MCVML2_PDE1_CACHE_REQUEST" block=MCVML2 event=57 descr="pde1 cache request"
+    name="MCVML2_BANK4_AGGREGATE_REQUEST" block=MCVML2 event=57 descr="bank4 aggregate request"
   ></metric>
   <metric
-    name="MCVML2_PDE1_CACHE_HIT" block=MCVML2 event=58 descr="pde1 cache hit"
+    name="MCVML2_BANK4_AGGREGATE_HIT" block=MCVML2 event=58 descr="bank4 aggregate hit"
   ></metric>
   <metric
-    name="MCVML2_PDE1_CACHE_MISS" block=MCVML2 event=59 descr="pde1 cache miss"
+    name="MCVML2_BANK4_AGGREGATE_MISS" block=MCVML2 event=59 descr="bank4 aggregate miss"
   ></metric>
   <metric
-    name="MCVML2_PDE1_CACHE_UPDATE" block=MCVML2 event=60 descr="pde1 cache update"
+    name="MCVML2_BANK4_AGGREGATE_UPDATE" block=MCVML2 event=60 descr="bank4 aggregate update"
   ></metric>
   <metric
-    name="MCVML2_PDE1_CACHE_PTE" block=MCVML2 event=61 descr="pde1 cache pte"
+    name="MCVML2_BANK5_PTE_CACHE_BIGK0_REQUEST" block=MCVML2 event=61 descr="bank5 pte cache bigk0 request"
   ></metric>
   <metric
-    name="MCVML2_PDE2_CACHE_REQUEST" block=MCVML2 event=62 descr="pde2 cache request"
+    name="MCVML2_BANK5_PTE_CACHE_BIGK0_HIT" block=MCVML2 event=62 descr="bank5 pte cache bigk0 hit"
   ></metric>
   <metric
-    name="MCVML2_PDE2_CACHE_HIT" block=MCVML2 event=63 descr="pde2 cache hit"
+    name="MCVML2_BANK5_PTE_CACHE_BIGK0_MISS" block=MCVML2 event=63 descr="bank5 pte cache bigk0 miss"
   ></metric>
   <metric
-    name="MCVML2_PDE2_CACHE_MISS" block=MCVML2 event=64 descr="pde2 cache miss"
+    name="MCVML2_BANK5_PTE_CACHE_BIGK0_UPDATE" block=MCVML2 event=64 descr="bank5 pte cache bigk0 update"
   ></metric>
   <metric
-    name="MCVML2_PDE2_CACHE_UPDATE" block=MCVML2 event=65 descr="pde2 cache update"
+    name="MCVML2_BANK5_PTE_CACHE_4K0_REQUEST" block=MCVML2 event=65 descr="bank5 pte cache 4k0 request"
   ></metric>
   <metric
-    name="MCVML2_PDE2_CACHE_PTE" block=MCVML2 event=66 descr="pde2 cache pte"
+    name="MCVML2_BANK5_PTE_CACHE_4K0_HIT" block=MCVML2 event=66 descr="bank5 pte cache 4k0 hit"
   ></metric>
   <metric
-    name="MCVML2_LOG_INVAL" block=MCVML2 event=67 descr="log inval"
+    name="MCVML2_BANK5_PTE_CACHE_4K0_MISS" block=MCVML2 event=67 descr="bank5 pte cache 4k0 miss"
   ></metric>
   <metric
-    name="MCVML2_LOG_TRANS" block=MCVML2 event=68 descr="log trans"
+    name="MCVML2_BANK5_PTE_CACHE_4K0_UPDATE" block=MCVML2 event=68 descr="bank5 pte cache 4k0 update"
   ></metric>
   <metric
-    name="MCVML2_LOG_TRANS_SKIPPED" block=MCVML2 event=69 descr="log trans skipped"
+    name="MCVML2_BANK5_AGGREGATE_REQUEST" block=MCVML2 event=69 descr="bank5 aggregate request"
   ></metric>
   <metric
-    name="MCVML2_RDIF_REQUEST_PHYSICAL_SYSTEM" block=MCVML2 event=70 descr="rdif request physical system"
+    name="MCVML2_BANK5_AGGREGATE_HIT" block=MCVML2 event=70 descr="bank5 aggregate hit"
   ></metric>
   <metric
-    name="MCVML2_RDIF_REQUEST_PHYSICAL_SYSTEM_START_LATENCY" block=MCVML2 event=71 descr="rdif request physical system start (latency)"
+    name="MCVML2_BANK5_AGGREGATE_MISS" block=MCVML2 event=71 descr="bank5 aggregate miss"
   ></metric>
   <metric
-    name="MCVML2_RDIF_REQUEST_PHYSICAL_SYSTEM_STOP_LATENCY" block=MCVML2 event=72 descr="rdif request physical system stop (latency)"
+    name="MCVML2_BANK5_AGGREGATE_UPDATE" block=MCVML2 event=72 descr="bank5 aggregate update"
   ></metric>
   <metric
-    name="MCVML2_RDIF_REQUEST_OTHER" block=MCVML2 event=73 descr="rdif request other"
+    name="MCVML2_BANK6_PTE_CACHE_BIGK0_REQUEST" block=MCVML2 event=73 descr="bank6 pte cache bigk0 request"
   ></metric>
   <metric
-    name="MCVML2_RDIF_REQUEST_OTHER_START_LATENCY" block=MCVML2 event=74 descr="rdif request other start (latency)"
+    name="MCVML2_BANK6_PTE_CACHE_BIGK0_HIT" block=MCVML2 event=74 descr="bank6 pte cache bigk0 hit"
   ></metric>
   <metric
-    name="MCVML2_RDIF_REQUEST_OTHER_STOP_LATENCY" block=MCVML2 event=75 descr="rdif request other stop (latency)"
+    name="MCVML2_BANK6_PTE_CACHE_BIGK0_MISS" block=MCVML2 event=75 descr="bank6 pte cache bigk0 miss"
   ></metric>
   <metric
-    name="MCVML2_QOS_REQUEST" block=MCVML2 event=76 descr="qos request"
+    name="MCVML2_BANK6_PTE_CACHE_BIGK0_UPDATE" block=MCVML2 event=76 descr="bank6 pte cache bigk0 update"
   ></metric>
   <metric
-    name="MCVML2_QOS_HIT_FETCH_SKIPPED" block=MCVML2 event=77 descr="qos hit (fetch skipped)"
+    name="MCVML2_BANK6_PTE_CACHE_4K0_REQUEST" block=MCVML2 event=77 descr="bank6 pte cache 4k0 request"
   ></metric>
   <metric
-    name="MCVML2_QOS_MISS_FETCH_ISSUED" block=MCVML2 event=78 descr="qos miss (fetch issued)"
+    name="MCVML2_BANK6_PTE_CACHE_4K0_HIT" block=MCVML2 event=78 descr="bank6 pte cache 4k0 hit"
   ></metric>
   <metric
-    name="MCVML2_LEVEL0_REQUEST" block=MCVML2 event=79 descr="level0 request"
+    name="MCVML2_BANK6_PTE_CACHE_4K0_MISS" block=MCVML2 event=79 descr="bank6 pte cache 4k0 miss"
   ></metric>
   <metric
-    name="MCVML2_LEVEL1_REQUEST" block=MCVML2 event=80 descr="level1 request"
+    name="MCVML2_BANK6_PTE_CACHE_4K0_UPDATE" block=MCVML2 event=80 descr="bank6 pte cache 4k0 update"
   ></metric>
   <metric
-    name="MCVML2_LEVEL2_REQUEST" block=MCVML2 event=81 descr="level2 request"
+    name="MCVML2_BANK6_AGGREGATE_REQUEST" block=MCVML2 event=81 descr="bank6 aggregate request"
   ></metric>
   <metric
-    name="MCVML2_LEVEL3_REQUEST" block=MCVML2 event=82 descr="level3 request"
+    name="MCVML2_BANK6_AGGREGATE_HIT" block=MCVML2 event=82 descr="bank6 aggregate hit"
   ></metric>
   <metric
-    name="MCVML2_LEVEL0_REQUEST_START_LATENCY" block=MCVML2 event=83 descr="level0 request start (latency)"
+    name="MCVML2_BANK6_AGGREGATE_MISS" block=MCVML2 event=83 descr="bank6 aggregate miss"
   ></metric>
   <metric
-    name="MCVML2_LEVEL0_REQUEST_STOP_LATENCY" block=MCVML2 event=84 descr="level0 request stop (latency)"
+    name="MCVML2_BANK6_AGGREGATE_UPDATE" block=MCVML2 event=84 descr="bank6 aggregate update"
   ></metric>
   <metric
-    name="MCVML2_LEVEL1_REQUEST_START_LATENCY" block=MCVML2 event=85 descr="level1 request start (latency)"
+    name="MCVML2_BANK7_PTE_CACHE_BIGK0_REQUEST" block=MCVML2 event=85 descr="bank7 pte cache bigk0 request"
   ></metric>
   <metric
-    name="MCVML2_LEVEL1_REQUEST_STOP_LATENCY" block=MCVML2 event=86 descr="level1 request stop (latency)"
+    name="MCVML2_BANK7_PTE_CACHE_BIGK0_HIT" block=MCVML2 event=86 descr="bank7 pte cache bigk0 hit"
   ></metric>
   <metric
-    name="MCVML2_LEVEL2_REQUEST_START_LATENCY" block=MCVML2 event=87 descr="level2 request start (latency)"
+    name="MCVML2_BANK7_PTE_CACHE_BIGK0_MISS" block=MCVML2 event=87 descr="bank7 pte cache bigk0 miss"
   ></metric>
   <metric
-    name="MCVML2_LEVEL2_REQUEST_STOP_LATENCY" block=MCVML2 event=88 descr="level2 request stop (latency)"
+    name="MCVML2_BANK7_PTE_CACHE_BIGK0_UPDATE" block=MCVML2 event=88 descr="bank7 pte cache bigk0 update"
   ></metric>
   <metric
-    name="MCVML2_LEVEL3_REQUEST_START_LATENCY" block=MCVML2 event=89 descr="level3 request start (latency)"
+    name="MCVML2_BANK7_PTE_CACHE_4K0_REQUEST" block=MCVML2 event=89 descr="bank7 pte cache 4k0 request"
   ></metric>
   <metric
-    name="MCVML2_LEVEL3_REQUEST_STOP_LATENCY" block=MCVML2 event=90 descr="level3 request stop (latency)"
+    name="MCVML2_BANK7_PTE_CACHE_4K0_HIT" block=MCVML2 event=90 descr="bank7 pte cache 4k0 hit"
+  ></metric>
+  <metric
+    name="MCVML2_BANK7_PTE_CACHE_4K0_MISS" block=MCVML2 event=91 descr="bank7 pte cache 4k0 miss"
+  ></metric>
+  <metric
+    name="MCVML2_BANK7_PTE_CACHE_4K0_UPDATE" block=MCVML2 event=92 descr="bank7 pte cache 4k0 update"
+  ></metric>
+  <metric
+    name="MCVML2_BANK7_AGGREGATE_REQUEST" block=MCVML2 event=93 descr="bank7 aggregate request"
+  ></metric>
+  <metric
+    name="MCVML2_BANK7_AGGREGATE_HIT" block=MCVML2 event=94 descr="bank7 aggregate hit"
+  ></metric>
+  <metric
+    name="MCVML2_BANK7_AGGREGATE_MISS" block=MCVML2 event=95 descr="bank7 aggregate miss"
+  ></metric>
+  <metric
+    name="MCVML2_BANK7_AGGREGATE_UPDATE" block=MCVML2 event=96 descr="bank7 aggregate update"
+  ></metric>
+  <metric
+    name="MCVML2_RETRY" block=MCVML2 event=97 descr="retry"
+  ></metric>
+  <metric
+    name="MCVML2_NO_RETRY" block=MCVML2 event=98 descr="no retry"
+  ></metric>
+  <metric
+    name="MCVML2_INTERRUPT" block=MCVML2 event=99 descr="interrupt"
+  ></metric>
+  <metric
+    name="MCVML2_PDE0_CACHE_REQUEST" block=MCVML2 event=100 descr="pde0 cache request"
+  ></metric>
+  <metric
+    name="MCVML2_PDE0_CACHE_HIT" block=MCVML2 event=101 descr="pde0 cache hit"
+  ></metric>
+  <metric
+    name="MCVML2_PDE0_CACHE_MISS" block=MCVML2 event=102 descr="pde0 cache miss"
+  ></metric>
+  <metric
+    name="MCVML2_PDE0_CACHE_UPDATE" block=MCVML2 event=103 descr="pde0 cache update"
+  ></metric>
+  <metric
+    name="MCVML2_PDE0_CACHE_PTE" block=MCVML2 event=104 descr="pde0 cache pte"
+  ></metric>
+  <metric
+    name="MCVML2_PDE1_CACHE_REQUEST" block=MCVML2 event=105 descr="pde1 cache request"
+  ></metric>
+  <metric
+    name="MCVML2_PDE1_CACHE_HIT" block=MCVML2 event=106 descr="pde1 cache hit"
+  ></metric>
+  <metric
+    name="MCVML2_PDE1_CACHE_MISS" block=MCVML2 event=107 descr="pde1 cache miss"
+  ></metric>
+  <metric
+    name="MCVML2_PDE1_CACHE_UPDATE" block=MCVML2 event=108 descr="pde1 cache update"
+  ></metric>
+  <metric
+    name="MCVML2_PDE1_CACHE_PTE" block=MCVML2 event=109 descr="pde1 cache pte"
+  ></metric>
+  <metric
+    name="MCVML2_PDE2_CACHE_REQUEST" block=MCVML2 event=110 descr="pde2 cache request"
+  ></metric>
+  <metric
+    name="MCVML2_PDE2_CACHE_HIT" block=MCVML2 event=111 descr="pde2 cache hit"
+  ></metric>
+  <metric
+    name="MCVML2_PDE2_CACHE_MISS" block=MCVML2 event=112 descr="pde2 cache miss"
+  ></metric>
+  <metric
+    name="MCVML2_PDE2_CACHE_UPDATE" block=MCVML2 event=113 descr="pde2 cache update"
+  ></metric>
+  <metric
+    name="MCVML2_PDE2_CACHE_PTE" block=MCVML2 event=114 descr="pde2 cache pte"
+  ></metric>
+  <metric
+    name="MCVML2_LOG_INVAL" block=MCVML2 event=115 descr="log inval"
+  ></metric>
+  <metric
+    name="MCVML2_LOG_TRANS" block=MCVML2 event=116 descr="log trans"
+  ></metric>
+  <metric
+    name="MCVML2_LOG_TRANS_SKIPPED" block=MCVML2 event=117 descr="log trans skipped"
+  ></metric>
+  <metric
+    name="MCVML2_RDIF_REQUEST_PHYSICAL_SYSTEM" block=MCVML2 event=118 descr="rdif request physical system"
+  ></metric>
+  <metric
+    name="MCVML2_RDIF_REQUEST_PHYSICAL_SYSTEM_START_LATENCY" block=MCVML2 event=119 descr="rdif request physical system start (latency)"
+  ></metric>
+  <metric
+    name="MCVML2_RDIF_REQUEST_PHYSICAL_SYSTEM_STOP_LATENCY" block=MCVML2 event=120 descr="rdif request physical system stop (latency)"
+  ></metric>
+  <metric
+    name="MCVML2_RDIF_REQUEST_OTHER" block=MCVML2 event=121 descr="rdif request other"
+  ></metric>
+  <metric
+    name="MCVML2_RDIF_REQUEST_OTHER_START_LATENCY" block=MCVML2 event=122 descr="rdif request other start (latency)"
+  ></metric>
+  <metric
+    name="MCVML2_RDIF_REQUEST_OTHER_STOP_LATENCY" block=MCVML2 event=123 descr="rdif request other stop (latency)"
+  ></metric>
+  <metric
+    name="MCVML2_QOS_REQUEST" block=MCVML2 event=124 descr="qos request"
+  ></metric>
+  <metric
+    name="MCVML2_QOS_HIT_FETCH_SKIPPED" block=MCVML2 event=125 descr="qos hit (fetch skipped)"
+  ></metric>
+  <metric
+    name="MCVML2_QOS_MISS_FETCH_ISSUED" block=MCVML2 event=126 descr="qos miss (fetch issued)"
+  ></metric>
+  <metric
+    name="MCVML2_LEVEL0_REQUEST" block=MCVML2 event=127 descr="level0 request"
+  ></metric>
+  <metric
+    name="MCVML2_LEVEL1_REQUEST" block=MCVML2 event=128 descr="level1 request"
+  ></metric>
+  <metric
+    name="MCVML2_LEVEL2_REQUEST" block=MCVML2 event=129 descr="level2 request"
+  ></metric>
+  <metric
+    name="MCVML2_LEVEL3_REQUEST" block=MCVML2 event=130 descr="level3 request"
+  ></metric>
+  <metric
+    name="MCVML2_LEVEL0_REQUEST_START_LATENCY" block=MCVML2 event=131 descr="level0 request start (latency)"
+  ></metric>
+  <metric
+    name="MCVML2_LEVEL0_REQUEST_STOP_LATENCY" block=MCVML2 event=132 descr="level0 request stop (latency)"
+  ></metric>
+  <metric
+    name="MCVML2_LEVEL1_REQUEST_START_LATENCY" block=MCVML2 event=133 descr="level1 request start (latency)"
+  ></metric>
+  <metric
+    name="MCVML2_LEVEL1_REQUEST_STOP_LATENCY" block=MCVML2 event=134 descr="level1 request stop (latency)"
+  ></metric>
+  <metric
+    name="MCVML2_LEVEL2_REQUEST_START_LATENCY" block=MCVML2 event=135 descr="level2 request start (latency)"
+  ></metric>
+  <metric
+    name="MCVML2_LEVEL2_REQUEST_STOP_LATENCY" block=MCVML2 event=136 descr="level2 request stop (latency)"
+  ></metric>
+  <metric
+    name="MCVML2_LEVEL3_REQUEST_START_LATENCY" block=MCVML2 event=137 descr="level3 request start (latency)"
+  ></metric>
+  <metric
+    name="MCVML2_LEVEL3_REQUEST_STOP_LATENCY" block=MCVML2 event=138 descr="level3 request stop (latency)"
   ></metric>
   # ATC counters
   <metric

@@ -131,7 +131,12 @@ static const uint32_t WdCounterBlockNumCounters     = 4;
 static const uint32_t GceaCounterBlockNumCounters   = 2;
 static const uint32_t AtcCounterBlockNumCounters    = 4;
 static const uint32_t AtcL2CounterBlockNumCounters  = 2;
+#ifndef _mi300_OFFSET_HEADER
 static const uint32_t McVmL2CounterBlockNumCounters = 8;
+#else
+// MI300 bumped this to 16
+static const uint32_t McVmL2CounterBlockNumCounters = 16;
+#endif
 static const uint32_t RpbCounterBlockNumCounters    = 4;
 static const uint32_t RmiCounterBlockNumCounters    = 4;
 
