@@ -574,6 +574,28 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
                                          Primitives::MC_SEQ_PERFCOUNTER_RSLT_CNTL_M3_ADDR,
                                          Primitives::mc_seq_hbm_stop_value());
     }
+
+    // counters have UMC events: MI300 Loop over MI300 XCCs for each counter_des
+    if (counters_vec.get_attr() & CounterBlockUmcAttr)
+    for (const auto& counter_des : counters_vec)
+    {
+      const auto* block_info = counter_des.block_info;
+      if (block_info->attr & CounterBlockAidAttr)
+      {
+        const auto& block_des = counter_des.block_des;
+        const auto* reg_table = get_reg_table(counter_des);
+        const auto& reg_info = reg_table[counter_des.index];
+        // MI300 UMC event: insert master XCC PRED_EXEC packet here
+        PrecExecBuilder<Builder> prec_exec_builder(this, cmd_buffer, VIRTUALXCCID_SELECT, xcc_number_ > 1);
+
+        const auto umc_index = counter_des.block_des.index;
+        const auto target_aid_index = umc_index >> 5;
+
+        // Stop UMC
+        auto smn_control_addr = get_smn_addr(reg_info.control_addr, target_aid_index);
+        Builder::BuildWritePConfigRegPacket(cmd_buffer, smn_control_addr, Primitives::umc_stop_value());
+      }
+    }
   
     // Issue barrier command to wait commands to complete
     if (counters_vec.get_attr() & CounterBlockCpmonAttr)
@@ -613,10 +635,6 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
 
         const auto umc_index = counter_des.block_des.index;
         const auto target_aid_index = umc_index >> 5;
-
-        // Stop UMC
-        auto smn_control_addr = get_smn_addr(reg_info.control_addr, target_aid_index);
-        Builder::BuildWritePConfigRegPacket(cmd_buffer, smn_control_addr, Primitives::umc_stop_value());
 
         // Read UMC
         uint32_t* smn_data_buffer = reinterpret_cast<uint32_t*>(data_buffer) + read_counter;
