@@ -1054,18 +1054,6 @@ typedef struct PM4_MEC_EVENT_WRITE
         uint32_t ordinal2;
     };
 
-    union
-    {
-        struct
-        {
-            uint32_t reserved3:3;
-            uint32_t address_lo:29;
-        } bitfields3;
-        uint32_t ordinal3;
-    };
-
-    uint32_t address_hi;
-
 } PM4MEC_EVENT_WRITE, *PPM4MEC_EVENT_WRITE;
 #endif
 
