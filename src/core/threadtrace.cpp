@@ -225,10 +225,9 @@ hsa_status_t _internal_aqlprofile_att_create_packets(
             trace_config.perfCTRL = ((p->value & 0x1F) << 8) | 0xFFFF007F;
             break;
         case HSA_VEN_AMD_AQLPROFILE_PARAMETER_NAME_PERFCOUNTER_NAME:
-            if (trace_config.perfcounters.size() < 8)
-                trace_config.perfcounters.push_back(p->value);
-            else
+            if (trace_config.perfcounters.size() >= 8)
                 return HSA_STATUS_ERROR_INVALID_ARGUMENT;
+            trace_config.perfcounters.push_back({p->counter_id, p->simd_mask});
             break;
         default:
             ERR_LOGGING << "Bad trace parameter name (" << p->parameter_name << ")";

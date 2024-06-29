@@ -20,7 +20,7 @@ struct TraceConfig {
   // PERF
   uint32_t perfMASK = (1ul << 32) - 1;
   uint32_t perfCTRL = 0;
-  std::vector<size_t> perfcounters{};
+  std::vector<std::pair<size_t, size_t>> perfcounters{};
   // SPM mode
   bool spm_sq_32bit_mode = true;
   bool spm_kfd_mode = true;
