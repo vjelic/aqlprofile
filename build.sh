@@ -98,10 +98,4 @@ cmake --build "$BUILD_DIR" -- $MAKE_OPTS
 cmake --build "$BUILD_DIR" -- $MAKE_OPTS test
 cmake --build "$BUILD_DIR" -- $MAKE_OPTS package
 
-pushd $BUILD_DIR
-if [ "$?" = 0 ] ; then
-  ./run.sh
-fi
-popd
-
 exit 0
