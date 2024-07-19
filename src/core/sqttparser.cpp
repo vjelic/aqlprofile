@@ -5,9 +5,12 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <shared_mutex>
 #include "../rocprofv2_att/tracebranch.hpp"
 #include "../rocprofv2_att/trace_parser.hpp"
 #include "../rocprofv2_att/stitch/stitch.hpp"
+
+std::shared_mutex mut;
 
 class CodeService: public ICodeServicer
 {
@@ -87,7 +90,6 @@ PUBLIC_API void aqlprofile_att_parser_iterate_event_list(
         callback(id, metadata.c_str(), userdata);
 }
 
-
 PUBLIC_API hsa_status_t aqlprofile_att_parse_data(
     aqlprofile_att_se_data_callback_t se_data_callback,
     aqlprofile_att_trace_callback_t trace_callback,
@@ -96,6 +98,18 @@ PUBLIC_API hsa_status_t aqlprofile_att_parse_data(
 ) {
     std::shared_ptr<ICodeServicer> service = std::make_shared<CodeService>(isa_callback, cbdata);
     std::unique_ptr<Stitcher> stitcher{nullptr};
+
+    if (WaveDataInternal::current_kernel_unique_id > 0x800)
+    {
+        std::unique_lock<std::shared_mutex> unique_lk(mut);
+        WaveDataInternal::kernelID = {{{0,0},0}};
+        WaveDataInternal::current_kernel_unique_id.store(1);
+    }
+    std::shared_lock<std::shared_mutex> lk(mut);
+
+    auto EmitWarning = [trace_callback, cbdata](const std::string& warning) {
+        trace_callback(WARNING, 0, (void*)warning.data(), warning.size(), cbdata);
+    };
 
     int shader = 0;
     uint8_t* buffer = nullptr;
@@ -110,11 +124,13 @@ PUBLIC_API hsa_status_t aqlprofile_att_parse_data(
         auto ret = CppReturnInfo::UnSerialize(buffer, buffer_size);
 #endif
 
-        trace_callback(GFXIP, 0, reinterpret_cast<void*>(ret->flags.gfxip), 0, cbdata);
-        auto& kernels = ret->kernel_ids_addr;
-        trace_callback(KERNEL_ID_ADDR, shader, (void*)kernels.data(), kernels.size(), cbdata);
-        auto& occ = ret->occupancy;
-        trace_callback(OCCUPANCY, shader, (void*)occ.data(), occ.size(), cbdata);
+        trace_callback(GFXIP, shader, reinterpret_cast<void*>(ret->flags.gfxip), 0, cbdata);
+        trace_callback(KERNEL_ID_ADDR, shader, (void*)ret->kernel_ids_addr.data(), ret->kernel_ids_addr.size(), cbdata);
+        trace_callback(OCCUPANCY, shader, (void*)ret->occupancy.data(), ret->occupancy.size(), cbdata);
+        ret->kernel_ids_addr.clear();
+        ret->occupancy.clear();
+        if (WaveDataInternal::current_kernel_unique_id.load() >= 0x1000)
+            EmitWarning("Kernel IDs exceeded 12bit limit");
 
         if (!stitcher)
             stitcher = std::make_unique<Stitcher>(service, !ret->flags.isNavi);
@@ -126,11 +142,7 @@ PUBLIC_API hsa_status_t aqlprofile_att_parse_data(
             trace_callback(TRACE_DATA, ret->traceIDs.at(t), (void*)trace.data(), trace.size(), cbdata);
 
             if (stitch_rate != ret->traces.at(t).size())
-            {
-                std::string diag =  "Stitching rate: " + std::to_string(stitch_rate)
-                                    + " of " + std::to_string(ret->traces.at(t).size());
-                trace_callback(WARNING, ret->traceIDs.at(t), (void*)diag.data(), diag.size(), cbdata);
-            }
+                EmitWarning("Stitching rate: " + std::to_string(stitch_rate) + " of " + std::to_string(ret->traces.at(t).size()));
         }
 
 #ifdef AMD_AQLPROFILE_SQTT_NDA
