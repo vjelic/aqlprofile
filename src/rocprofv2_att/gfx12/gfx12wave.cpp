@@ -215,7 +215,7 @@ static std::unordered_map<EINST, std::pair<WaveInstCategory, uint16_t>> table_in
     {EINST::trap, {WaveInstCategory::TRAP, 1}},
     {EINST::salu_no_exec, {WaveInstCategory::SALU, 1}},
     {EINST::fatal_halt, {WaveInstCategory::TRAP, 1}},
-    {EINST::message, {WaveInstCategory::NONE, 1}},
+    {EINST::message, {WaveInstCategory::IMMED, 1}},
     {EINST::valu_1, {WaveInstCategory::VALU, 1}},
     {EINST::valut_4, {WaveInstCategory::VALU, 4}},
     {EINST::valub_1, {WaveInstCategory::VALU, 1}},
