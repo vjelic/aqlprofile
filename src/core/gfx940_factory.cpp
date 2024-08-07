@@ -51,7 +51,22 @@ class Mi300Factory : public Mi100Factory {
 
 Pm4Factory* Pm4Factory::Mi300Create(const AgentInfo* agent_info) {
   auto p = new Mi300Factory(agent_info);
-  if (p == NULL) throw aql_profile_exc_msg("FijiFactory allocation failed");
+  if (p == NULL) throw aql_profile_exc_msg("Mi300Factory allocation failed");
+  return p;
+}
+
+
+
+class Mi350Factory : public Mi300Factory {
+ public:
+  // MI350 is a copy of Mi300
+  explicit Mi350Factory(const AgentInfo* agent_info) : Mi300Factory(agent_info)
+  {}
+};
+
+Pm4Factory* Pm4Factory::Mi350Create(const AgentInfo* agent_info) {
+  auto p = new Mi350Factory(agent_info);
+  if (p == NULL) throw aql_profile_exc_msg("Mi350Factory allocation failed");
   return p;
 }
 
