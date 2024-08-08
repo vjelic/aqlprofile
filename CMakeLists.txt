@@ -126,10 +126,6 @@ if ( DEFINED ENV{ROCM_LIBPATCH_VERSION} )
   set ( CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION}.$ENV{ROCM_LIBPATCH_VERSION}" )
 endif()
 
-if ( DEFINED ENV{ROCM_LIBPATCH_VERSION} )
-  set ( CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION}.$ENV{ROCM_LIBPATCH_VERSION}" )
-endif()
-
 ## Debian package specific variables
 set ( CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/RadeonOpenCompute/HSA-AqlProfile-AMD-extension" )
 ## Process the Debian install/remove scripts to update the CPACK variables
