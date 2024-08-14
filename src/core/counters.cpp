@@ -346,7 +346,7 @@ PUBLIC_API hsa_status_t aqlprofile_iterate_event_coord(
 
         std::vector<uint8_t> coord;
         coord.resize(attrib.get_num());
-        attrib.get_coordinates(coord.data(), counter_id & (1ul<<32));
+        attrib.get_coordinates(coord.data(), counter_id);
 
         for (size_t i=0; i<attrib.get_num(); i++)
         {
