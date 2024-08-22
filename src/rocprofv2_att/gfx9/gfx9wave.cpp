@@ -115,7 +115,6 @@ void wave_t::apply_inst(Token& token)
   if (this->trap_status != WaveTrapStatus::TRAP_RESTORED || !issued_instructions.size())
     return;
 
-  this->inst_time = token.time;
   Instruction& the_inst = instructions.at(*issued_instructions.begin());
   the_inst.cycles = token.time - the_inst.time;
   int64_t phase = (16-global_target_cu.load()+simd)%4;
@@ -421,35 +420,31 @@ int64_t wave_t::apply_issue(uint64_t wave_status, int64_t token_time)
   if (wave_status == SQTT_ISSUE_IMMED)
   {
     int64_t immed_time = token_time;
-    int64_t cycles_time = 4;
 
-    if (instructions.back().category != WaveInstCategory::PCINFO &&
+    if (instructions.size() &&
+        instructions.back().category != WaveInstCategory::PCINFO &&
         instructions.back().category != WaveInstCategory::WAVE_NOT_FINISHED)
     {
       int64_t last_cycles = std::max(instructions.back().cycles, instructions.back().stall_time);
       immed_time = std::max(last_message_time, instructions.back().time + last_cycles);
     }
 
-    cycles_time = token_time - immed_time;
-    instructions.push_back({immed_time, WaveInstCategory::IMMED, 0, std::max((int)cycles_time, 4)});
+    int64_t cycles_time = std::max<int64_t>(0, 4 + token_time - immed_time);
+    instructions.push_back({immed_time, WaveInstCategory::IMMED, 0, (int)cycles_time});
 
     this->last_message_time = 0;
-    this->inst_time = token_time;
     this->cur_state = WAVESLOT_STATE::WS_EXEC;
 
-    if (cycles_time > 0)
+    if (state_start_cycle < immed_time)
     {
-      if (state_start_cycle < immed_time)
-      {
-        if (timeline.size())
-          timeline.back().second += immed_time - state_start_cycle;
-        else
-          timeline.push_back({WAVESLOT_STATE::WS_WAIT, immed_time - state_start_cycle});
-      }
-
-      timeline.push_back({WAVESLOT_STATE::WS_WAIT, cycles_time});
-      state_start_cycle = immed_time + cycles_time;
+      if (timeline.size())
+        timeline.back().second += immed_time - state_start_cycle;
+      else
+        timeline.push_back({WAVESLOT_STATE::WS_WAIT, immed_time - state_start_cycle});
     }
+
+    timeline.push_back({WAVESLOT_STATE::WS_WAIT, cycles_time});
+    state_start_cycle = immed_time + cycles_time;
   }
   else
   {

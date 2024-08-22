@@ -43,7 +43,6 @@ struct gfx9wave_t : public WaveDataInternal {
     // [Internal] mem instruction issued. paired with IMMED to get latency
     uint64_t mem_access_started = 0;
     uint64_t issue_time = 0;  // use to calculate instruction cycles
-    uint64_t inst_time = 0;   // use to calculate instruction cycles
     int last_jump_inst = -1;
     int64_t last_message_time = 0;
     int64_t stall_start_time;
