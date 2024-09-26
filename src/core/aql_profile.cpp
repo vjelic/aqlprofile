@@ -80,8 +80,7 @@ static inline pm4_builder::counters_vector CountersVec(const profile_t* profile,
     ++reg_index;
   }
 
-  if (pm4_factory->IsGFX10() && (vec.get_attr() & CounterBlockSqAttr) != 0 &&
-      (vec.get_attr() & CounterBlockGRBMAttr) == 0) {
+  if (pm4_factory->IsGFX10() && (vec.get_attr() & CounterBlockGRBMAttr) == 0) {
     event_t grbm_event{
         .block_name = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_GRBM, .block_index = 0, .counter_id = 0};
     const GpuBlockInfo* block_info = pm4_factory->GetBlockInfo(&grbm_event);

@@ -98,7 +98,6 @@ pm4_builder::counters_vector CountersVec(
         vec.push_back(GetCounter(pm4_factory, event, index_map));
 
     if (pm4_factory->IsGFX10() &&
-        (vec.get_attr() & CounterBlockSqAttr) != 0 &&
         (vec.get_attr() & CounterBlockGRBMAttr) == 0
     ) {
         aqlprofile_pmc_event_t grbm_event{0};
