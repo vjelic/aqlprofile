@@ -441,6 +441,16 @@ class gfx11_cntx_prim {
     return 0; //sdma_perfmon_cntl.u32All;
   }
 
+  static uint32_t sdma_enable_value() {
+#if 0
+    regSDMA0_PERFMON_CNTL sdma_perfmon_cntl{};
+    sdma_perfmon_cntl.bits.PERF_ENABLE0  = 0x1;
+    sdma_perfmon_cntl.bits.PERF_ENABLE1  = 0x1;
+    return sdma_perfmon_cntl.u32All;
+#endif
+    return 0;
+  }
+
   static uint32_t sdma_select_value(const counter_des_t& counter_des) {
 #if 0
     regSDMA0_PERFMON_CNTL sdma_perfmon_cntl{};
@@ -457,7 +467,7 @@ class gfx11_cntx_prim {
     return 0; //sdma_perfmon_cntl.u32All;
   }
 
-  static uint32_t sdma_stop_value() {
+  static uint32_t sdma_stop_value(const counter_des_t& counter_des) {
    // regSDMA0_PERFMON_CNTL sdma_perfmon_cntl{};
     return 0;  //sdma_perfmon_cntl.u32All;
   }

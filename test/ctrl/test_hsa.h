@@ -83,6 +83,9 @@ class TestHsa : public TestAql {
   // @return bool true on success and false on failure
   bool Cleanup();
 
+  virtual bool RunSdma(size_t sdma_size);
+  // test SDMA of @sdma_size bytes.
+
   // To get test name
   // @return test name
   const char* Name() { return name_.c_str(); }

@@ -224500,6 +224500,57 @@ union GCEA_SECURE_CTRL {
   float f32All;
 };
 
+	union SDMA0_PERFCNT_PERFCOUNTER0_CFG {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t                        PERF_SEL : 8;
+        uint32_t                    PERF_SEL_END : 8;
+        uint32_t                                 : 8;
+        uint32_t                       PERF_MODE : 4;
+        uint32_t                          ENABLE : 1;
+        uint32_t                           CLEAR : 1;
+        uint32_t                                 : 2;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                                 : 2;
+        uint32_t                           CLEAR : 1;
+        uint32_t                          ENABLE : 1;
+        uint32_t                       PERF_MODE : 4;
+        uint32_t                                 : 8;
+        uint32_t                    PERF_SEL_END : 8;
+        uint32_t                        PERF_SEL : 8;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
+
+	union SDMA0_PERFCNT_PERFCOUNTER_RSLT_CNTL {
+	struct {
+#if		defined(LITTLEENDIAN_CPU)
+        uint32_t             PERF_COUNTER_SELECT : 4;
+        uint32_t                                 : 4;
+        uint32_t                   START_TRIGGER : 8;
+        uint32_t                    STOP_TRIGGER : 8;
+        uint32_t                      ENABLE_ANY : 1;
+        uint32_t                       CLEAR_ALL : 1;
+        uint32_t            STOP_ALL_ON_SATURATE : 1;
+        uint32_t                                 : 5;
+#elif		defined(BIGENDIAN_CPU)
+        uint32_t                                 : 5;
+        uint32_t            STOP_ALL_ON_SATURATE : 1;
+        uint32_t                       CLEAR_ALL : 1;
+        uint32_t                      ENABLE_ANY : 1;
+        uint32_t                    STOP_TRIGGER : 8;
+        uint32_t                   START_TRIGGER : 8;
+        uint32_t                                 : 4;
+        uint32_t             PERF_COUNTER_SELECT : 4;
+#endif
+    } bitfields, bits;
+    uint32_t    u32All;
+    int32_t    i32All;
+    float    f32All;
+    };
 
 	union UMCCH_PerfMonCtlClk {
 	struct {
@@ -225073,6 +225124,15 @@ union GCEA_SECURE_CTRL {
     int32_t    i32All;
     float    f32All;
     };
+
+
+
+
+
+
+
+
+
 
 }  // gfx9
 }  // gfxip

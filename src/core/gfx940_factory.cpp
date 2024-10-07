@@ -12,7 +12,13 @@ class Mi300Factory : public Mi100Factory {
     for (unsigned i = 0; i < HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER; ++i) {
       const GpuBlockInfo* base_table_ptr = Gfx9Factory::block_table_[i];
       if (base_table_ptr == NULL) continue;
-      GpuBlockInfo* block_info = new GpuBlockInfo(*base_table_ptr);
+      GpuBlockInfo* block_info = nullptr;
+      if (base_table_ptr->id == SdmaCounterBlockId)
+        block_info = new GpuBlockInfo(SdmaCounterBlockInfo);
+      else if (base_table_ptr->id == HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_UMC)
+        block_info = new GpuBlockInfo(UmcCounterBlockInfo);
+      else
+        block_info = new GpuBlockInfo(*base_table_ptr);
       block_table_[i] = block_info;
       // overwrite block info for any update from gfx9 to mi300
       switch (block_info->id) {
@@ -35,11 +41,11 @@ class Mi300Factory : public Mi100Factory {
         block_info->event_id_max = 82;
         break;
       case SdmaCounterBlockId:
-        block_info->instance_count = gfx9_cntx_prim::SDMA_COUNTER_BLOCK_NUM_INSTANCES;
+        block_info->instance_count = 4 * pm4_builder::MAX_AID;
         break;
       case UmcCounterBlockId:
         block_info->counter_count = 11;
-        block_info->instance_count = 128;
+        block_info->instance_count = 32 * pm4_builder::MAX_AID;
         break;
       }
     }

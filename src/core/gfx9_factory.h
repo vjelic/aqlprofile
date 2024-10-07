@@ -21,6 +21,8 @@ class Gfx9Factory : public Pm4Factory {
  protected:
   void Init(const AgentInfo* agent_info);
   static const GpuBlockInfo* block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER];
+
+  static void Print(const GpuBlockInfo* block_info);
 };
 
 // Mi100 factory class

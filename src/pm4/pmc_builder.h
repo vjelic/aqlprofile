@@ -161,15 +161,10 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
     // Program Compute Perfcount WaiteIdle register to support perf counting
     Builder::BuildWriteWaitIdlePacket(cmd_buffer);
   }
-
+ 
   // Build PMC start PM4 comands
   void Start(CmdBuffer* cmd_buffer, const counters_vector& counters_vec) override
   {
-    // sdma performance monitor control value accumulator
-    std::pair<reg_addr_t, uint32_t>
-        sdma_select_accumulator[Primitives::SDMA_COUNTER_BLOCK_NUM_INSTANCES];
-    // umc performance monitor control address
-    reg_addr_t umc_control_accumulator[Primitives::UMC_COUNTER_BLOCK_NUM_INSTANCES];
     // Issue barrier command
     if (!concurrent) Builder::BuildWriteWaitIdlePacket(cmd_buffer);
     // Reset Grbm to its default state - broadcast
@@ -231,7 +226,12 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
 #endif
 
     // SDMA mask
+    // sdma performance monitor control value accumulator
+    std::pair<reg_addr_t, uint32_t>
+        sdma_select_accumulator[Primitives::SDMA_COUNTER_BLOCK_NUM_INSTANCES];
     uint32_t sdma_mask = 0;
+    std::map<uint32_t, uint64_t> sdmas;
+    bool is_mi100 = false;
     // UMC channels and their control register (for enable/disable) per channel
     std::map<uint32_t, uint64_t> umcchs;
     // Programming perf counters
@@ -296,9 +296,48 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       }
       if (block_info->attr & CounterBlockSdmaAttr) {
         const auto sdma_index = counter_des.block_des.index;
-        sdma_mask |= 1u << sdma_index;
-        sdma_select_accumulator[sdma_index].first = reg_info.select_addr;
-        sdma_select_accumulator[sdma_index].second |= Primitives::sdma_select_value(counter_des);
+        is_mi100 = (reg_info.control_addr == 0) ? true : false;
+        if (is_mi100) {
+          // MI100: A SDMA instance shares a common control register for PERF_SEL and ENABLE/CLEAR.
+          sdma_mask |= 1u << sdma_index;
+          sdma_select_accumulator[sdma_index].first = reg_info.select_addr;
+          sdma_select_accumulator[sdma_index].second |= Primitives::sdma_select_value(counter_des);
+        } else {
+          // MI200 and MI300 have seperate select and control registers
+          const auto sdma_index = counter_des.block_des.index;
+          const auto target_aid_index = sdma_index / (block_info->instance_count / MAX_AID);
+          uint64_t control_addr = (xcc_number_ > 1) ? get_smn_addr(reg_info.control_addr, target_aid_index) :
+            (uint64_t)reg_info.control_addr;
+          // sdma enable/clear/stop is programmed per instance and saved in sdmas
+          sdmas.insert({sdma_index, control_addr});
+
+	  if (xcc_number_ > 1) {
+	    PrecExecBuilder<Builder> prec_exec_builder(this, cmd_buffer, VIRTUALXCCID_SELECT, xcc_number_ > 1);
+	    Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x4B30 >> 2, 1),  0x04000100);
+	    Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x6330 >> 2, 1),  0x04000100);
+	    Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x651B0 >> 2, 1), 0x04000100);
+	    Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x661B0 >> 2, 1), 0x04000100);
+
+	    Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x4B30 >> 2, 2),  0x04000100);
+	    Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x6330 >> 2, 2),  0x04000100);
+	    Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x651B0 >> 2, 2), 0x04000100);
+	    Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x661B0 >> 2, 2), 0x04000100);
+
+	    Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x4B30 >> 2, 3),  0x04000100);
+	    Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x6330 >> 2, 3),  0x04000100);
+	    Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x651B0 >> 2, 3), 0x04000100);
+	    Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x661B0 >> 2, 3), 0x04000100);
+	  }
+
+          // insert master XCC PRED_EXEC packet here if it is MI300
+          PrecExecBuilder<Builder> prec_exec_builder(this, cmd_buffer, VIRTUALXCCID_SELECT, xcc_number_ > 1);
+
+          // sdma counter select is programmed per performance counter
+	  uint64_t select_addr = (xcc_number_ > 1) ? get_smn_addr(reg_info.select_addr, target_aid_index) :
+            (uint64_t)reg_info.select_addr;
+          Builder::BuildWritePConfigRegPacket(cmd_buffer, select_addr,
+                                              Primitives::sdma_select_value(counter_des));
+        }
       }
       if (block_info->attr & CounterBlockUmcAttr) {
         const auto umc_index = counter_des.block_des.index;
@@ -310,7 +349,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
         // insert master XCC PRED_EXEC packet here if it is MI300
         PrecExecBuilder<Builder> prec_exec_builder(this, cmd_buffer, VIRTUALXCCID_SELECT, xcc_number_ > 1);
 
-        // umc counter select
+        // umc counter select per UMC counter
         uint64_t select_addr = (xcc_number_ > 1) ? get_smn_addr(reg_info.select_addr, target_aid_index) :
           (uint64_t)reg_info.select_addr;
         Builder::BuildWritePConfigRegPacket(cmd_buffer, select_addr,
@@ -342,9 +381,9 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
                                            Primitives::gus_select_value(counter_des));
 #endif
     }
-
-    // SDMA start
+    // SDMA start for all SDMA chnnels/instances recorded earlier
     if (sdma_mask != 0) {
+      // MI100
       for (uint32_t sdma_index = 0, mask = sdma_mask; mask != 0; sdma_index++, mask >>= 1) {
         if (mask & 1) {
           Builder::BuildWritePConfigRegPacket(cmd_buffer, sdma_select_accumulator[sdma_index].first,
@@ -354,7 +393,23 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
         }
       }
     }
+    if (! sdmas.empty()) {
+      // MI200 and MI300
+      // insert master XCC PRED_EXEC packet here if it is MI300
+      PrecExecBuilder<Builder> prec_exec_builder(this, cmd_buffer, VIRTUALXCCID_SELECT, xcc_number_ > 1);
 
+      for (const auto& i : sdmas) {
+        uint32_t sdma_index = i.first;
+        uint64_t control_addr = i.second;
+        // sdma per channel/instance clear
+        Builder::BuildWritePConfigRegPacket(cmd_buffer, control_addr,
+                                            Primitives::sdma_disable_clear_value());
+
+        // sdma per channel/instance enable
+        Builder::BuildWritePConfigRegPacket(cmd_buffer, control_addr,
+                                            Primitives::sdma_enable_value());
+      }
+    }
     // UMC start for all UMC chnnels/instances recorded earlier
     if (!umcchs.empty())
     {
@@ -364,9 +419,9 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       {
         uint32_t umc_index = i.first;
         uint64_t control_addr = i.second;
-        // umc channel/instance clear
+        // umc per channel/instance clear
         Builder::BuildWritePConfigRegPacket(cmd_buffer, control_addr, Primitives::umc_disable_clear_value());
-        // umc channel/instance enable
+        // umc per channel/instance enable
         Builder::BuildWritePConfigRegPacket(cmd_buffer, control_addr, Primitives::umc_enable_value());
       }
     }
@@ -449,8 +504,8 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       const auto* reg_table = get_reg_table(counter_des);
       const auto& reg_info = reg_table[counter_des.index];
 
-      // Skip UMC counters
-      if (block_info->attr & CounterBlockUmcAttr)
+      // Skip UMC/SDMA counters
+      if (block_info->attr & CounterBlockAidAttr)
         continue;
 
       if (SPISkip(block_info->attr, counter_des.id))
@@ -502,18 +557,45 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
                                             reg_info.register_addr_hi, data, 3);
         read_counter += 2;
       } else if (block_info->attr & CounterBlockSdmaAttr) {
-        // Stop SDMA
-        if (block_info->attr & CounterBlockSdmaAttr) {
+        // Stop SDMA: this code path appplies only to non-MI300
+        if (reg_info.control_addr == 0) {
+          // MI100: stopped per instance
           const uint32_t mask = 1u << counter_des.block_des.index;
           if ((sdma_mask & mask) == 0) {
             sdma_mask |= mask;
-            Builder::BuildWritePConfigRegPacket(cmd_buffer, reg_info.select_addr,
-                                                Primitives::sdma_stop_value());
+            auto control_addr = (reg_info.control_addr == 0) ? reg_info.select_addr : reg_info.control_addr;
+            Builder::BuildWritePConfigRegPacket(cmd_buffer, control_addr,
+                                                Primitives::sdma_stop_value(counter_des));
           }
+        } else {
+          // MI200: stopped per counter to choose which counter to read
+          Builder::BuildWritePConfigRegPacket(cmd_buffer, reg_info.control_addr,
+                                              Primitives::sdma_stop_value(counter_des));
         }
         // Read SDMA
+	uint32_t dw_mask = 0x1;
+	if (reg_info.register_addr_hi != 0)
+	  dw_mask = 0x3;
         uint32_t* data = reinterpret_cast<uint32_t*>(data_buffer) + read_counter;
-        Builder::BuildCopyCounterDataPacket(cmd_buffer, reg_info.register_addr_lo, 0x0, data, 0x1);
+        if (data_buffer != 0) {
+          *reinterpret_cast<uint64_t*>(data) = 0;
+        }
+        Builder::BuildCopyCounterDataPacket(cmd_buffer, reg_info.register_addr_lo, reg_info.register_addr_hi, data, dw_mask);
+        read_counter += 2;
+      } else if (block_info->attr & CounterBlockUmcAttr) {
+        // Stop UMC: this code path appplies only to non-MI300
+        const uint32_t mask = 1u << counter_des.block_des.index;
+        if ((umc_mask & mask) == 0) {
+          // Stop UMC per channel as individual mask bit
+          umc_mask |= mask;
+          Builder::BuildWritePConfigRegPacket(cmd_buffer, reg_info.control_addr, Primitives::umc_stop_value());
+        }
+        // Read UMC per counter as represented by reg_info
+        uint32_t* data = reinterpret_cast<uint32_t*>(data_buffer) + read_counter;
+        if (data_buffer != 0) {
+          *reinterpret_cast<uint64_t*>(data) = 0;
+        }
+        Builder::BuildCopyCounterDataPacket(cmd_buffer, reg_info.register_addr_lo, reg_info.register_addr_hi, data, 3);
         read_counter += 2;
       } else {
         const uint32_t se_end_index = (block_info->attr & CounterBlockSeAttr) ? se_number_ : 1;
@@ -596,28 +678,55 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
                                          Primitives::mc_seq_hbm_stop_value());
     }
 
-    // counters have UMC events: MI300 Loop over MI300 XCCs for each counter_des
-    if (counters_vec.get_attr() & CounterBlockUmcAttr)
-    for (const auto& counter_des : counters_vec)
-    {
-      const auto* block_info = counter_des.block_info;
-      if (block_info->attr & CounterBlockAidAttr)
-      {
-        const auto& block_des = counter_des.block_des;
-        const auto* reg_table = get_reg_table(counter_des);
-        const auto& reg_info = reg_table[counter_des.index];
-        // MI300 UMC event: insert master XCC PRED_EXEC packet here
-        PrecExecBuilder<Builder> prec_exec_builder(this, cmd_buffer, VIRTUALXCCID_SELECT, xcc_number_ > 1);
+    uint32_t sdma_mask = 0;
+    if (counters_vec.get_attr() & CounterBlockAidAttr)
+      // counters have AID block event like UMC/SDMA
+      for (const auto& counter_des : counters_vec) {
+	const auto* block_info = counter_des.block_info;
+	const auto& block_des = counter_des.block_des;
+	const auto* reg_table = get_reg_table(counter_des);
+	const auto& reg_info = reg_table[counter_des.index];
 
-        const auto umc_index = counter_des.block_des.index;
-        const auto target_aid_index = umc_index >> 5;
+	if (block_info->attr & CounterBlockUmcAttr) {
+	  // insert master XCC PRED_EXEC packet accordingly
+	  PrecExecBuilder<Builder> prec_exec_builder(this, cmd_buffer, VIRTUALXCCID_SELECT, xcc_number_ > 1);
 
-        // Stop UMC
-        auto smn_control_addr = get_smn_addr(reg_info.control_addr, target_aid_index);
-        Builder::BuildWritePConfigRegPacket(cmd_buffer, smn_control_addr, Primitives::umc_stop_value());
+	  const auto umc_index = counter_des.block_des.index;
+	  const auto target_aid_index = umc_index >> 5;
+
+	  // Stop UMC
+	  auto smn_control_addr = get_smn_addr(reg_info.control_addr, target_aid_index);
+	  uint64_t control_addr = (xcc_number_ > 1) ? smn_control_addr : (uint64_t)reg_info.control_addr;
+	  Builder::BuildWritePConfigRegPacket(cmd_buffer, control_addr, Primitives::umc_stop_value());
+	} else if (block_info->attr & CounterBlockSdmaAttr) {
+	  // Stop SDMA
+	  if (reg_info.control_addr == 0) {
+	    // MI100: stopped per instance
+	    const uint32_t mask = 1u << counter_des.block_des.index;
+	    if ((sdma_mask & mask) == 0) {
+	      sdma_mask |= mask;
+	      auto control_addr = (reg_info.control_addr == 0) ? reg_info.select_addr : reg_info.control_addr;
+	      Builder::BuildWritePConfigRegPacket(cmd_buffer, control_addr,
+						  Primitives::sdma_stop_value(counter_des));
+	    }
+	  } else if (xcc_number_ > 1) {
+	    // MI300 SDMA event: insert master XCC PRED_EXEC packet here
+	    PrecExecBuilder<Builder> prec_exec_builder(this, cmd_buffer, VIRTUALXCCID_SELECT, xcc_number_ > 1);
+
+	    const auto sdma_index = counter_des.block_des.index;
+	    const auto target_aid_index = sdma_index >> 2;
+
+	    auto smn_control_addr = get_smn_addr(reg_info.control_addr, target_aid_index);
+	    uint64_t control_addr = (xcc_number_ > 1) ? smn_control_addr : (uint64_t)reg_info.control_addr;
+	    Builder::BuildWritePConfigRegPacket(cmd_buffer, control_addr, Primitives::sdma_stop_value(counter_des));
+	  } else {
+	    // MI200: stopped per counter to choose which counter to read
+	    Builder::BuildWritePConfigRegPacket(cmd_buffer, reg_info.control_addr,
+						Primitives::sdma_stop_value(counter_des));
+	  }
+	}
       }
-    }
-  
+
     // Issue barrier command to wait commands to complete
     if (counters_vec.get_attr() & CounterBlockCpmonAttr)
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::CP_PERFMON_CNTL_ADDR,
@@ -642,16 +751,17 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
                                           Primitives::cp_perfmon_cntl_read_value());
 
     // counters have UMC events: MI300 Loop over MI300 XCCs for each counter_des
-    if (counters_attr & CounterBlockUmcAttr)
+    if (counters_attr & CounterBlockAidAttr)
     for (const auto& counter_des : counters_vec)
     {
       const auto* block_info = counter_des.block_info;
-      if (block_info->attr & CounterBlockAidAttr)
+      const auto& block_des = counter_des.block_des;
+      const auto* reg_table = get_reg_table(counter_des);
+      const auto& reg_info = reg_table[counter_des.index];
+
+      if (block_info->attr & CounterBlockUmcAttr)
       {
-        const auto& block_des = counter_des.block_des;
-        const auto* reg_table = get_reg_table(counter_des);
-        const auto& reg_info = reg_table[counter_des.index];
-        // MI300 UMC event: insert master XCC PRED_EXEC packet here
+        // insert master XCC PRED_EXEC packet accordingly
         PrecExecBuilder<Builder> prec_exec_builder(this, cmd_buffer, VIRTUALXCCID_SELECT, xcc_number_ > 1);
 
         const auto umc_index = counter_des.block_des.index;
@@ -661,9 +771,36 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
         uint32_t* smn_data_buffer = reinterpret_cast<uint32_t*>(data_buffer) + read_counter;
         auto smn_register_addr_lo = get_smn_addr(reg_info.register_addr_lo, target_aid_index);
         auto smn_register_addr_hi = get_smn_addr(reg_info.register_addr_hi, target_aid_index);
-        Builder::BuildCopyCounterDataPacket(cmd_buffer, smn_register_addr_lo, smn_register_addr_hi,
+	uint64_t register_addr_lo = (xcc_number_ > 1) ? smn_register_addr_lo : reg_info.register_addr_lo;
+	uint64_t register_addr_hi = (xcc_number_ > 1) ? smn_register_addr_hi : reg_info.register_addr_hi;
+        Builder::BuildCopyCounterDataPacket(cmd_buffer, register_addr_lo, register_addr_hi,
                                             smn_data_buffer, 3);
         read_counter += 2;
+      } else if (block_info->attr & CounterBlockSdmaAttr) {
+	// insert master XCC PRED_EXEC packet accordingly
+	PrecExecBuilder<Builder> prec_exec_builder(this, cmd_buffer, VIRTUALXCCID_SELECT, xcc_number_ > 1);
+
+	const auto sdma_index = counter_des.block_des.index;
+	const auto target_aid_index = sdma_index >> 2;
+
+	// Read SDMA
+	uint32_t dw_mask = 0x1;
+	if (reg_info.register_addr_hi != 0) {
+	  // MI200 and MI300 both have register_addr_hi
+	  // Select which SDMA perf counter to read
+	  auto smn_control_addr = get_smn_addr(reg_info.control_addr, target_aid_index);
+	  Builder::BuildWritePConfigRegPacket(cmd_buffer, smn_control_addr,
+					      Primitives::sdma_stop_value(counter_des));
+	  dw_mask = 0x3;
+	}
+	uint32_t* smn_data_buffer = reinterpret_cast<uint32_t*>(data_buffer) + read_counter;
+	auto smn_register_addr_lo = get_smn_addr(reg_info.register_addr_lo, target_aid_index);
+	auto smn_register_addr_hi = get_smn_addr(reg_info.register_addr_hi, target_aid_index);
+	uint64_t register_addr_lo = (xcc_number_ > 1) ? smn_register_addr_lo : reg_info.register_addr_lo;
+	uint64_t register_addr_hi = (xcc_number_ > 1) ? smn_register_addr_hi : reg_info.register_addr_hi;
+	Builder::BuildCopyCounterDataPacket(cmd_buffer, register_addr_lo, register_addr_hi,
+					    smn_data_buffer, dw_mask);
+	read_counter += 2;
       }
     }
 
@@ -672,7 +809,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       PrecExecBuilder<Builder> prec_exec_builder(this, cmd_buffer, xcc_selected, xcc_number_ > 1);
       ReadXccPackets(cmd_buffer, counters_vec, data_buffer, read_counter);
     }
- 
+
     Builder::BuildCacheFlushPacket(cmd_buffer, size_t(data_buffer), read_counter * sizeof(uint32_t));
 
     // Return amount of data to read

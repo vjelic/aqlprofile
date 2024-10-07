@@ -10749,6 +10749,10 @@ typedef union GCEA_SDP_BACKDOOR_MISCCREDITS regGCEA_SDP_BACKDOOR_MISCCREDITS;
 typedef union GCEA_SDP_ENABLE regGCEA_SDP_ENABLE;
 typedef union GCEA_CGTT_CLK_CTRL regGCEA_CGTT_CLK_CTRL;
 typedef union GCEA_SECURE_CTRL regGCEA_SECURE_CTRL;
+
+typedef union SDMA0_PERFCNT_PERFCOUNTER0_CFG         regSDMA0_PERFCNT_PERFCOUNTER0_CFG;
+typedef union SDMA0_PERFCNT_PERFCOUNTER_RSLT_CNTL    regSDMA0_PERFCNT_PERFCOUNTER_RSLT_CNTL;
+
 typedef union UMCCH_PerfMonCtlClk                    regUMCCH_PerfMonCtlClk;
 typedef union UMCCH_PerfMonCtrClk_Lo                 regUMCCH_PerfMonCtrClk_Lo;
 typedef union UMCCH_PerfMonCtrClk_Hi                 regUMCCH_PerfMonCtrClk_Hi;

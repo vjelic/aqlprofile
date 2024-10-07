@@ -416,6 +416,13 @@ class gfx10_cntx_prim {
   }
 
   // SDMA primitives
+  static uint32_t sdma_enable_value() {
+    regSDMA0_PERFMON_CNTL sdma_perfmon_cntl{};
+    sdma_perfmon_cntl.bits.PERF_ENABLE0  = 0x1;
+    sdma_perfmon_cntl.bits.PERF_ENABLE1  = 0x1;
+    return sdma_perfmon_cntl.u32All;
+  }
+
   static uint32_t sdma_disable_clear_value() {
     regSDMA0_PERFMON_CNTL sdma_perfmon_cntl{};
     sdma_perfmon_cntl.bits.PERF_CLEAR0  = 0x1;
@@ -437,7 +444,7 @@ class gfx10_cntx_prim {
     return sdma_perfmon_cntl.u32All;
   }
 
-  static uint32_t sdma_stop_value() {
+  static uint32_t sdma_stop_value(const counter_des_t& counter_des) {
     regSDMA0_PERFMON_CNTL sdma_perfmon_cntl{};
     return sdma_perfmon_cntl.u32All;
   }

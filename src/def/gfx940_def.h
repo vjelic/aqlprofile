@@ -5,6 +5,7 @@
 #include "gfxip/gfx9/gfx9_mask.h"
 #include "gfxip/gfx9/gfx9_offset.h"
 #include "gfxip/gfx9/gfx940_offset.h"
+#include "gfxip/gfx9/gfx940_sdma_offset.h"
 #include "gfxip/gfx9/gfx9_typedef.h"
 #include "gfxip/gfx9/gfx9_registers.h"
 #include "gfxip/gfx9/gfx9_pm4defs.h"

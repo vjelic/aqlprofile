@@ -61,6 +61,7 @@ class TestAql {
   // Run the kernel
   // @return bool true on success and false on failure
   virtual bool Run() { return (test_) ? test_->Run() : true; }
+  virtual bool RunSdma(size_t sdma_size) { return (test_) ? test_->RunSdma(sdma_size) : true; }
 
   // Verify results
   // @return bool true on success and false on failure

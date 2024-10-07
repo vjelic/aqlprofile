@@ -26,11 +26,14 @@ Mi200Factory::Mi200Factory(const AgentInfo* agent_info)
   for (unsigned i = 0; i < HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER; ++i) {
     const GpuBlockInfo* base_table_ptr = Gfx9Factory::block_table_[i];
     if (base_table_ptr == NULL) continue;
-    GpuBlockInfo* block_info = new GpuBlockInfo(*base_table_ptr);
-    if (i == HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_UMC)
+    GpuBlockInfo* block_info = nullptr;
+    if (base_table_ptr->id == SdmaCounterBlockId)
+      block_info = new GpuBlockInfo(SdmaCounterBlockInfo);
+    else if (base_table_ptr->id == HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_UMC)
       block_info = new GpuBlockInfo(UmcCounterBlockInfo);
+    else
+      block_info = new GpuBlockInfo(*base_table_ptr);
     block_table_[i] = block_info;
-
     // overwrite block info for any update from gfx9 to mi100
     switch (block_info->id) {
     case SqCounterBlockId:
@@ -52,7 +55,8 @@ Mi200Factory::Mi200Factory(const AgentInfo* agent_info)
       block_info->event_id_max = 83;
       break;
     case SdmaCounterBlockId:
-      block_info->instance_count = gfx9_cntx_prim::SDMA_COUNTER_BLOCK_NUM_INSTANCES;
+      block_info->instance_count = 5;
+      //Print(block_info);
       break;
     case UmcCounterBlockId:
       block_info->counter_count = 9;

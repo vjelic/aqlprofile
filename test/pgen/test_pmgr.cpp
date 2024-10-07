@@ -81,6 +81,8 @@ bool TestPMgr::Run() {
   }
 
   Test()->Run();
+  if (getenv("AQLPROFILE_SDMA") != NULL)
+    Test()->RunSdma(0x1000);
 
   if (mode == RUN_MODE) {
     // Submit Post-Dispatch Aql packet

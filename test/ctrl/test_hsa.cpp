@@ -28,6 +28,7 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ctrl/test_hsa.h"
 
 #include <atomic>
+#include <cassert>
 
 #include "util/helper_funcs.h"
 #include "util/hsa_rsrc_factory.h"
@@ -280,5 +281,92 @@ void TestHsa::PrintTime() {
 bool TestHsa::Cleanup() {
   hsa_executable_destroy(hsa_exec_);
   hsa_signal_destroy(hsa_signal_);
+  return true;
+}
+
+bool TestHsa::RunSdma(size_t sdma_size)
+{
+  std:: cout << "Run SDMA test ..." << std::endl;
+  const AgentInfo* cpu_agent {nullptr};
+  hsa_rsrc_->GetCpuAgentInfo(0, &cpu_agent);
+  const AgentInfo* gpu_agent {nullptr};
+  hsa_rsrc_->GetGpuAgentInfo(0, &gpu_agent);
+
+
+  // allocate SDMA buffers: src_buf, dest_buf and gpu_buf.
+  void* src_buf = hsa_rsrc_->AllocateSysMemory(gpu_agent, sdma_size);
+  assert(src_buf != nullptr);
+  void* dest_buf = hsa_rsrc_->AllocateSysMemory(gpu_agent, sdma_size);
+  assert(dest_buf != nullptr);
+  void* gpu_buf = hsa_rsrc_->AllocateLocalMemory(gpu_agent, sdma_size);
+  assert(gpu_buf != nullptr);
+
+  for (size_t i = 0; i < sdma_size; ++i) {
+    ((char*)src_buf)[i] = i;
+    ((char*)dest_buf)[sdma_size - 1 - i] = i  & 0xFF;
+  }
+
+  for (size_t i = 0; i < 10; ++i)
+    std::cout << i << ": src_buf = " << (unsigned)(((char*)src_buf)[i] & 0xFF) << ", dest_buf = "
+              << (unsigned)(((char*)dest_buf)[i] & 0xFF) <<  std::endl;
+
+  hsa_status_t status;
+
+  hsa_signal_t completion_signal;
+  status = hsa_signal_create(1, 0, NULL, &completion_signal);
+  CHECK_STATUS("hsa_signal_create", status);
+
+  // SDMA src_buf -> gpu_buf
+  status = hsa_amd_memory_async_copy(gpu_buf, gpu_agent->dev_id,
+                                     src_buf, cpu_agent->dev_id, sdma_size,
+                                     0, nullptr, completion_signal);
+  CHECK_STATUS("hsa_amd_memory_async_copy(...): src_buf -> gpu_buf", status);
+
+  while (1) {
+    const hsa_signal_value_t signal_value = hsa_signal_wait_scacquire(
+        completion_signal, HSA_SIGNAL_CONDITION_LT, 1, 5000000, HSA_WAIT_STATE_BLOCKED);
+    if (signal_value == 0) {
+      break;
+    } else {
+      CHECK_STATUS("hsa_signal_wait_scacquire(): src_buf -> gpu_buf", HSA_STATUS_ERROR);
+    }
+  }
+  status = hsa_signal_destroy(completion_signal);
+  CHECK_STATUS("hsa_signal_destroy()", status);
+
+  // SDMA gpu_buf -> dest_buf
+  hsa_signal_t completion_signal1;
+  status = hsa_signal_create(1, 0, NULL, &completion_signal1);
+  CHECK_STATUS("hsa_signal_create", status);
+
+  status = hsa_amd_memory_async_copy(dest_buf, cpu_agent->dev_id,
+                                     gpu_buf, gpu_agent->dev_id, sdma_size,
+                                     0, nullptr, completion_signal1);
+  CHECK_STATUS("hsa_amd_memory_async_copy(...): gpu_buf -> dest_buf", status);
+
+  while (1) {
+    const hsa_signal_value_t signal_value = hsa_signal_wait_scacquire(
+        completion_signal1, HSA_SIGNAL_CONDITION_LT, 1, 500000, HSA_WAIT_STATE_BLOCKED);
+    if (signal_value == 0) {
+      break;
+    } else {
+      CHECK_STATUS("hsa_signal_wait_scacquire(): gpu_buf -> dest_buf", HSA_STATUS_ERROR);
+    }
+  }
+  status = hsa_signal_destroy(completion_signal1);
+  CHECK_STATUS("hsa_signal_destroy()", status);
+
+  // check copy results
+  for (size_t i = 0; i < sdma_size; ++i) {
+    assert(((char*)src_buf)[i] == ((char*)dest_buf)[i]);
+  }
+
+  std::cout << std::endl;
+
+  // print out some dma data.
+  for (size_t i = 0; i < 10; ++i)
+    std::cout << i << ": src_buf = " << (int)((char*)src_buf)[i] << ", dest_buf = "
+              << (int)((char*)dest_buf)[i] << std::endl;
+
   return true;
 }

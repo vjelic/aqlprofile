@@ -34,6 +34,23 @@ void Gfx9Factory::Init(const AgentInfo* agent_info) {
   agent_info_ = agent_info;
 }
 
+void Gfx9Factory::Print(const GpuBlockInfo* block_info) {
+  std::cout << "Block name: " << block_info->name << std::endl;
+  std::cout << "\tInstances: " << block_info->instance_count << std::endl;
+  std::cout << "\tMax Events: " << block_info->event_id_max << std::endl;
+  std::cout << "\tCounters: " << block_info->counter_count << std::endl;
+  auto counters = block_info->instance_count * block_info->counter_count;
+  for (int i = 0; i < counters; ++i) {
+    auto reg_info = block_info->counter_reg_info[i];
+    std::cout << "\t   " << i
+	      << ": select_addr = 0x" << std::hex << reg_info.select_addr << "(" << reg_info.select_addr * 4 << ")"
+	      << ", control_addr = 0x" << reg_info.control_addr << "(" << reg_info.control_addr * 4 << ")"
+	      << ", counter_addr_lo = 0x" << reg_info.register_addr_lo << "(" << reg_info.register_addr_lo * 4 << ")"
+	      << ", counter_addr_hi = 0x" << reg_info.register_addr_hi << "(" << reg_info.register_addr_hi * 4 << ")"
+	      << std::dec << std::endl;
+  }
+}
+
 // GFX9 block table
 const GpuBlockInfo* Gfx9Factory::block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER] = {
     &CpcCounterBlockInfo, &CpfCounterBlockInfo, &GdsCounterBlockInfo, &GrbmCounterBlockInfo,

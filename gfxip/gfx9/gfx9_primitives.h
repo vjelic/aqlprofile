@@ -408,13 +408,33 @@ class gfx9_cntx_prim {
 
   // SDMA primitives
   static uint32_t sdma_disable_clear_value() {
+#if defined(_mi100_SDMA_OFFSET_HEADER)
     regSDMA0_PERFMON_CNTL sdma_perfmon_cntl{};
     sdma_perfmon_cntl.bits.PERF_CLEAR0  = 0x1;
     sdma_perfmon_cntl.bits.PERF_CLEAR1  = 0x1;
     return sdma_perfmon_cntl.u32All;
+#else
+    regSDMA0_PERFCNT_PERFCOUNTER_RSLT_CNTL sdma_perfcounter_rslt_cntl{};
+    sdma_perfcounter_rslt_cntl.bits.CLEAR_ALL = 1;
+    return sdma_perfcounter_rslt_cntl.u32All;
+#endif
+  }
+
+  static uint32_t sdma_enable_value() {
+#if defined(_mi100_SDMA_OFFSET_HEADER)
+    regSDMA0_PERFMON_CNTL sdma_perfmon_cntl{};
+    sdma_perfmon_cntl.bits.PERF_ENABLE0  = 0x1;
+    sdma_perfmon_cntl.bits.PERF_ENABLE1  = 0x1;
+    return sdma_perfmon_cntl.u32All;
+#else
+    regSDMA0_PERFCNT_PERFCOUNTER_RSLT_CNTL sdma_perfcounter_rslt_cntl{};
+    sdma_perfcounter_rslt_cntl.bits.ENABLE_ANY = 1;
+    return sdma_perfcounter_rslt_cntl.u32All;
+#endif
   }
 
   static uint32_t sdma_select_value(const counter_des_t& counter_des) {
+#if defined(_mi100_SDMA_OFFSET_HEADER)
     regSDMA0_PERFMON_CNTL sdma_perfmon_cntl{};
     if (counter_des.index == 0) {
       sdma_perfmon_cntl.bits.PERF_ENABLE0 = 0x1;
@@ -426,11 +446,23 @@ class gfx9_cntx_prim {
       sdma_perfmon_cntl.bits.PERF_SEL1 = counter_des.id;
     }
     return sdma_perfmon_cntl.u32All;
+#else
+    regSDMA0_PERFCNT_PERFCOUNTER0_CFG sdma_perfcounter_cfg {};
+    sdma_perfcounter_cfg.bits.PERF_SEL = counter_des.id;
+    sdma_perfcounter_cfg.bits.ENABLE = 1;
+    return sdma_perfcounter_cfg.u32All;
+#endif
   }
 
-  static uint32_t sdma_stop_value() {
+  static uint32_t sdma_stop_value(const counter_des_t& counter_des) {
+#if defined(_mi100_SDMA_OFFSET_HEADER)
     regSDMA0_PERFMON_CNTL sdma_perfmon_cntl{};
     return sdma_perfmon_cntl.u32All;
+#else
+    regSDMA0_PERFCNT_PERFCOUNTER_RSLT_CNTL sdma_perfcounter_rslt_cntl{};
+    sdma_perfcounter_rslt_cntl.bits.PERF_COUNTER_SELECT = counter_des.index;
+    return sdma_perfcounter_rslt_cntl.u32All;
+#endif
   }
 
   // UMC primitives

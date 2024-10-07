@@ -227,9 +227,9 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
       pmc_builder->Start(&commands, countersVec);
       cmd_buffer_mgr.SetPreSize(commands.Size());
 
+      // Generate stop commands
       if (!aql_profile::read_api_enabled)
         pmc_builder->Read(&commands, countersVec, profile->output_buffer.ptr);
-      // Generate stop commands
       pmc_builder->Stop(&commands, countersVec);
 
       if (profile->output_buffer.size < data_size) {
@@ -581,8 +581,8 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
     if (profile->type == HSA_VEN_AMD_AQLPROFILE_EVENT_TYPE_PMC) {
       uint64_t* samples = reinterpret_cast<uint64_t*>(profile->output_buffer.ptr);
 
-      if (xcc_num > 1) for (const hsa_ven_amd_aqlprofile_event_t* p = profile->events;
-                            p < profile->events + profile->event_count; ++p)
+      for (const hsa_ven_amd_aqlprofile_event_t* p = profile->events;
+	   p < profile->events + profile->event_count; ++p)
       {
         if ((char*)samples >= (char*)profile->output_buffer.ptr + profile->output_buffer.size)
           return HSA_STATUS_ERROR;
@@ -620,7 +620,7 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
         {
           // this check needs to be the first check as it takes care of a corner case 
           // in which a UMC event is the last event in profile->events
-          if (pm4_factory->GetBlockInfo(p)->attr & CounterBlockUmcAttr) continue;
+          if (pm4_factory->GetBlockInfo(p)->attr & CounterBlockAidAttr) continue;
 
           if ((char*)samples > (char*)profile->output_buffer.ptr + profile->output_buffer.size)
             return HSA_STATUS_ERROR;
