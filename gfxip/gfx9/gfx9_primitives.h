@@ -75,6 +75,8 @@ class gfx9_cntx_prim {
   static const uint32_t SQ_THREAD_TRACE_USERDATA_2 = mmSQ_THREAD_TRACE_USERDATA_2;
   static const uint32_t SQ_THREAD_TRACE_USERDATA_3 = mmSQ_THREAD_TRACE_USERDATA_3;
 
+  static const uint32_t REG_SPI_DEBUG_CNTL = mmSPI_DEBUG_CNTL;
+
   static uint32_t sqtt_perfcounter_addr(uint32_t index) {
     static constexpr uint32_t SQTT_PERFCOUNTERS_SELECT[16] = {
       mmSQ_PERFCOUNTER0_SELECT, mmSQ_PERFCOUNTER1_SELECT, mmSQ_PERFCOUNTER2_SELECT, mmSQ_PERFCOUNTER3_SELECT,
@@ -714,6 +716,13 @@ class gfx9_cntx_prim {
     const uint32_t NUM_PIPES = 8;
     return (1u << NUM_PIPES) - 1;
   }
+
+  static uint32_t spi_cntl_debug(int pipe)
+  {
+    SPI_DEBUG_CNTL cntl{};
+    cntl.bitfields.DEBUG_PIPE_SEL = pipe;
+    return cntl.u32All;
+  };
 
 };
 

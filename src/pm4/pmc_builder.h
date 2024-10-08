@@ -13,6 +13,8 @@
 #include "pm4/cmd_config.h"
 #include "util/hsa_rsrc_factory.h"
 
+#define SPI_SPECIAL_CNT 0x1000000
+
 namespace pm4_builder {
 // MI300 UMC constants
 constexpr uint32_t VIRTUALXCCID_SELECT = 0;
@@ -223,6 +225,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
                                          Primitives::gus_start_value());
     }
 #endif
+    bool bHasSPISel = false;
     // SDMA mask
     uint32_t sdma_mask = 0;
     // UMC channels and their control register (for enable/disable) per channel
@@ -233,6 +236,14 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       const auto& block_des = counter_des.block_des;
       const auto* reg_table = get_reg_table(counter_des);
       const auto& reg_info = reg_table[counter_des.index];
+
+      if ((block_info->attr & CounterBlockSPIAttr) != 0 && counter_des.id >= SPI_SPECIAL_CNT)
+      {
+        Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR, Primitives::grbm_broadcast_value());
+        Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::REG_SPI_DEBUG_CNTL, Primitives::spi_cntl_debug(counter_des.id - SPI_SPECIAL_CNT));
+        bHasSPISel = true;
+        continue;
+      }
 
       //std:: cout << std::hex << "block id("<<block_des.id<<") index("<<block_des.index<<") counter id ("<<counter_des.id
       //            <<") index("<<counter_des.index<<") sel-addr("<<reg_info.select_addr<<")" << std::endl;
@@ -327,6 +338,11 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
         Builder::BuildWriteConfigRegPacket(cmd_buffer, reg_info.select_addr,
                                            Primitives::gus_select_value(counter_des));
 #endif
+    }
+    if (!bHasSPISel && (counters_vec.get_attr() & CounterBlockSPIAttr) != 0)
+    {
+      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR, Primitives::grbm_broadcast_value());
+      Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::REG_SPI_DEBUG_CNTL, 0); // Reset to default
     }
     // SDMA start
     if (sdma_mask != 0) {
@@ -436,6 +452,9 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
 
       // Skip UMC counters
       if (block_info->attr & CounterBlockUmcAttr)
+        continue;
+
+      if ((block_info->attr & CounterBlockSPIAttr) != 0 && counter_des.id >= SPI_SPECIAL_CNT)
         continue;
 
       // Reset Grbm to its default state - broadcast

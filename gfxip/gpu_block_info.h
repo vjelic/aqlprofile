@@ -41,7 +41,9 @@ enum CounterBlockAttr {
   // SE and SA-dependent blocks
   CounterBlockSaAttr = 0x20000,
   // MI300 AID blocks
-  CounterBlockAidAttr = 0x40000
+  CounterBlockAidAttr = 0x40000,
+  // SPI counter
+  CounterBlockSPIAttr = 0x80000
 };
 
 // Register address corresponding to each counter

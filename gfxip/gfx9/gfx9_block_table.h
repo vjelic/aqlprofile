@@ -1113,7 +1113,7 @@ static const GpuBlockInfo PaSuCounterBlockInfo = {"PA_SU", PaSuCounterBlockId, 1
 // Counter block PA_SC
 static const GpuBlockInfo PaScCounterBlockInfo = {"PA_SC", PaScCounterBlockId, 1, PaScCounterBlockMaxEvent, PaScCounterBlockNumCounters, PaScCounterRegAddr, gfx9_cntx_prim::select_value<regPA_SC_PERFCOUNTER0_SELECT>, CounterBlockSeAttr, PaScBlockDelayInfo, SPM_SE_BLOCK_NAME_SC};
 // Counter block SPI
-static const GpuBlockInfo SpiCounterBlockInfo = {"SPI", SpiCounterBlockId, 1, SpiCounterBlockMaxEvent, SpiCounterBlockNumCounters, SpiCounterRegAddr, gfx9_cntx_prim::select_value<regSPI_PERFCOUNTER0_SELECT>, CounterBlockSeAttr, SpiBlockDelayInfo, SPM_SE_BLOCK_NAME_SPI};
+static const GpuBlockInfo SpiCounterBlockInfo = {"SPI", SpiCounterBlockId, 1, SpiCounterBlockMaxEvent, SpiCounterBlockNumCounters, SpiCounterRegAddr, gfx9_cntx_prim::select_value<regSPI_PERFCOUNTER0_SELECT>, CounterBlockSeAttr|CounterBlockSPIAttr, SpiBlockDelayInfo, SPM_SE_BLOCK_NAME_SPI};
 // Counter block SQ
 static const GpuBlockInfo SqCounterBlockInfo = {"SQ", SqCounterBlockId, 1, SqCounterBlockMaxEvent, SqCounterBlockNumCounters, SqCounterRegAddr, gfx9_cntx_prim::sq_select_value, CounterBlockSeAttr|CounterBlockSqAttr, SqBlockDelayInfo, SPM_SE_BLOCK_NAME_SQG};
 static const GpuBlockInfo SqGsCounterBlockInfo = {"SQ_GS", SqCounterBlockId, 1, SqCounterBlockMaxEvent, SqCounterBlockNumCounters, SqCounterRegAddr, gfx9_cntx_prim::sq_select_value, CounterBlockSeAttr|CounterBlockSqAttr};
