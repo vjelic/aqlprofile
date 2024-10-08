@@ -235,13 +235,12 @@ class Pm4Factory {
 
  private:
   // PM4 factory instance map type
-  typedef std::pair<gpu_id_t, int> instances_key_t;
   struct instances_fncomp_t {
-    bool operator()(const instances_key_t& a, const instances_key_t& b) const {
-      return (a.first < b.first) || ((a.first == b.first) && (a.second < b.second));
+    bool operator()(const hsa_agent_t& a, const hsa_agent_t& b) const {
+      return a.handle < b.handle;
     }
   };
-  typedef std::map<instances_key_t, Pm4Factory*, instances_fncomp_t> instances_t;
+  typedef std::map<hsa_agent_t, Pm4Factory*, instances_fncomp_t> instances_t;
 
   // Create GFX9 generic factory
   static Pm4Factory* Gfx9Create(const AgentInfo* agent_info);
@@ -276,7 +275,7 @@ class Pm4Factory {
 inline Pm4Factory* Pm4Factory::Create(const AgentInfo* agent_info,  gpu_id_t gpu_id, bool concurrent) {
     // Check if we have the instance already created
   if (instances_ == NULL) instances_ = new instances_t;
-  const auto ret = instances_->insert({instances_key_t{gpu_id, concurrent}, NULL});
+  const auto ret = instances_->insert({agent_info->dev_id, NULL});
   instances_t::iterator it = ret.first;
 
   concurrent_create_mode_ = concurrent;
