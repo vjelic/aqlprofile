@@ -167,7 +167,7 @@ public:
         outputbuf_size = size;
     }
 
-    const std::vector<EventRequest>& GetEvents() const { return events; }
+    std::vector<EventRequest>& GetEvents() { return events; }
     void CopyEvents(const aqlprofile_pmc_event_t* events, size_t count);
 
 protected:

@@ -71,6 +71,12 @@ static inline pm4_builder::counters_vector CountersVec(const profile_t* profile,
     const auto ret = index_map.insert({block_des, 0});
     uint32_t& reg_index = ret.first->second;
 
+    if (pm4_builder::SPISkip(block_info->attr, p->counter_id))
+    {
+      vec.push_back({p->counter_id, reg_index, block_des, block_info});
+      continue;
+    }
+
     if (reg_index >= block_info->counter_count) {
       throw event_exception("Event is out of block counter registers number limit, ", *p);
     }
