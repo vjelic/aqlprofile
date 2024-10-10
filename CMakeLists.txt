@@ -39,6 +39,8 @@ include ( utils )
 ## Set build environment
 include ( env )
 
+set(CMAKE_INSTALL_LIBDIR "lib")
+
 ## Setup the package version.
 get_version ( "1.0.0" )
 message ( "-- BUILD-VERSION: ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}" )
@@ -113,6 +115,9 @@ set ( CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md" )
 set ( ENABLE_LDCONFIG ON CACHE BOOL "Set library links and caches using ldconfig.")
 set ( ROCM_AQLPROF_EULA_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/EULA" )
 set ( ROCM_AQLPROF_EULA_DISCLAIMER "${CMAKE_CURRENT_SOURCE_DIR}/DISCLAIMER.txt" )
+
+set(CPACK_STGZ_HEADER_FILE ${PROJECT_SOURCE_DIR}/cmake_modules/CPack.STGZ_Header.sh.in)
+set(CPACK_STGZ_INCLUDE_SUBDIR OFF)
 
 # Install license file
 install(FILES ${CPACK_RESOURCE_FILE_LICENSE} DESTINATION ${CMAKE_INSTALL_DOCDIR}-asan COMPONENT asan)
