@@ -221,10 +221,10 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
       pmc_builder->Start(&commands, countersVec);
       cmd_buffer_mgr.SetPreSize(commands.Size());
 
-      // Generate stop commands
-      pmc_builder->Stop(&commands, countersVec);
       if (!aql_profile::read_api_enabled)
         pmc_builder->Read(&commands, countersVec, profile->output_buffer.ptr);
+      // Generate stop commands
+      pmc_builder->Stop(&commands, countersVec);
 
       if (profile->output_buffer.size < data_size) {
         profile->output_buffer.size = data_size;
