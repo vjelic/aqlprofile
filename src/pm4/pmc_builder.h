@@ -13,8 +13,6 @@
 #include "pm4/cmd_config.h"
 #include "util/hsa_rsrc_factory.h"
 
-#define SPI_SPECIAL_CNT 0x1000000
-
 namespace pm4_builder {
 // MI300 UMC constants
 constexpr uint32_t VIRTUALXCCID_SELECT = 0;
@@ -23,6 +21,12 @@ constexpr uint32_t MAX_AID = 4;
 constexpr uint32_t UMC_USR_BIT = 34 - 2;
 constexpr uint32_t UMC_AID_BIT = 32 - 2;
 constexpr uint32_t UMC_SAMPLE_BYTE_SIZE = 8;
+
+constexpr size_t SPI_SPECIAL_CNT = 0x1000000;
+inline bool SPISkip(size_t block, size_t id)
+{
+  return (block & CounterBlockSPIAttr) != 0 && id >= SPI_SPECIAL_CNT;
+}
 
 class CmdBuffer;
 class CmdBuilder;
@@ -237,7 +241,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       const auto* reg_table = get_reg_table(counter_des);
       const auto& reg_info = reg_table[counter_des.index];
 
-      if ((block_info->attr & CounterBlockSPIAttr) != 0 && counter_des.id >= SPI_SPECIAL_CNT)
+      if (SPISkip(block_info->attr, counter_des.id))
       {
         Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR, Primitives::grbm_broadcast_value());
         Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::REG_SPI_DEBUG_CNTL, Primitives::spi_cntl_debug(counter_des.id - SPI_SPECIAL_CNT));
@@ -454,8 +458,11 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       if (block_info->attr & CounterBlockUmcAttr)
         continue;
 
-      if ((block_info->attr & CounterBlockSPIAttr) != 0 && counter_des.id >= SPI_SPECIAL_CNT)
+      if (SPISkip(block_info->attr, counter_des.id))
+      {
+        read_counter += 2*se_number_; // Skip two 64-bit SPI counters per SE
         continue;
+      }
 
       // Reset Grbm to its default state - broadcast
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR,

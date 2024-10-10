@@ -58,7 +58,7 @@ uint32_t HandleSQFlagsBlock(Pm4Factory* pm4_factory, const aqlprofile_pmc_event_
 
 counter_des_t GetCounter(
     Pm4Factory* pm4_factory,
-    const aqlprofile_pmc_event_t& event,
+    EventRequest& event,
     std::map<block_des_t, uint32_t, lt_block_des>& index_map
 ) {
     const GpuBlockInfo* block_info = pm4_factory->GetBlockInfo(event.block_name);
@@ -67,9 +67,14 @@ counter_des_t GetCounter(
     auto reg_index = ret.first->second;
     auto visible_id = event.event_id;
 
+    if (pm4_builder::SPISkip(block_info->attr, visible_id))
+    {
+        event.bInternal = true;
+        return {visible_id, reg_index, block_des, block_info};
+    }
+
     if (reg_index >= block_info->counter_count)
         throw std::string("Event is out of block counter registers number limit");
-
 
     if (event.flags.raw)
     {
@@ -88,7 +93,7 @@ counter_des_t GetCounter(
 }
 
 pm4_builder::counters_vector CountersVec(
-    const std::vector<EventRequest>& events,
+    std::vector<EventRequest>& events,
     Pm4Factory* pm4_factory
 ) {
     pm4_builder::counters_vector vec;
@@ -100,7 +105,7 @@ pm4_builder::counters_vector CountersVec(
     if (pm4_factory->IsGFX10() &&
         (vec.get_attr() & CounterBlockGRBMAttr) == 0
     ) {
-        aqlprofile_pmc_event_t grbm_event{0};
+        EventRequest grbm_event{0};
         grbm_event.block_name = HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_GRBM;
         vec.push_back(GetCounter(pm4_factory, grbm_event, index_map));
     }
