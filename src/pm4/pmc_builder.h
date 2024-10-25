@@ -229,7 +229,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
                                          Primitives::gus_start_value());
     }
 #endif
-    bool bHasSPISel = false;
+
     // SDMA mask
     uint32_t sdma_mask = 0;
     // UMC channels and their control register (for enable/disable) per channel
@@ -245,7 +245,6 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       {
         Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR, Primitives::grbm_broadcast_value());
         Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::REG_SPI_DEBUG_CNTL, Primitives::spi_cntl_debug(counter_des.id - SPI_SPECIAL_CNT));
-        bHasSPISel = true;
         continue;
       }
 
@@ -343,11 +342,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
                                            Primitives::gus_select_value(counter_des));
 #endif
     }
-    if (!bHasSPISel && (counters_vec.get_attr() & CounterBlockSPIAttr) != 0)
-    {
-      Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR, Primitives::grbm_broadcast_value());
-      Builder::BuildWritePConfigRegPacket(cmd_buffer, Primitives::REG_SPI_DEBUG_CNTL, 0); // Reset to default
-    }
+
     // SDMA start
     if (sdma_mask != 0) {
       for (uint32_t sdma_index = 0, mask = sdma_mask; mask != 0; sdma_index++, mask >>= 1) {
