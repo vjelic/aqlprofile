@@ -29,7 +29,6 @@ struct EventDimension
         dimension_list.push_back("AID");
         dimension_list.push_back("SE");
         dimension_list.push_back("SA");
-        dimension_list.push_back("CU");
         dimension_list.push_back("WGP");
         dimension_list.push_back("INSTANCE");
 
@@ -56,14 +55,14 @@ public:
 class EventAttribDimension
 {
 public:
-    template<typename AgentType, typename EventType>
-    EventAttribDimension(AgentType agent, const EventType& event):
-        key({agent.handle, event.block_name})
+    template<typename AgentType>
+    EventAttribDimension(AgentType agent, hsa_ven_amd_aqlprofile_block_name_t block_name):
+        key({agent.handle, block_name})
     {
         EventDimension::init();
 
         aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(agent);
-        this->block_info = pm4_factory->GetBlockInfo(event.block_name);
+        this->block_info = pm4_factory->GetBlockInfo(block_name);
 
         bIsGFX11 = pm4_factory->IsGFX11();
         bIsGFX9 = pm4_factory->IsGFX9();
@@ -76,31 +75,23 @@ public:
         shader_engine = HasAttr(CounterBlockSeAttr);
         shader_array = HasAttr(CounterBlockSaAttr);
 
-/*
-        bool bPerCuAttr = HasAttr(CounterBlockTcAttr) && shader_engine;
-        bool texture_cache = HasAttr(CounterBlockTcAttr) && !bPerCuAttr;
-
         if (bIsGFX9)
-            compute_unit = bPerCuAttr;
+            compute_unit = HasAttr(CounterBlockTcAttr) && shader_engine;
         else if (bIsGFX11)
-            workgroup_processor = bPerCuAttr || HasAttr(CounterBlockSqAttr);
-        else
-            workgroup_processor = bPerCuAttr;
-*/
-
-        bool texture_cache = HasAttr(CounterBlockTcAttr);
-        if (bIsGFX11)
             workgroup_processor = HasAttr(CounterBlockSqAttr);
 
         se_num = pm4_factory->GetShaderEnginesNumber();
-        sarrays = pm4_factory->GetShaderArraysNumber();
+        sarrays = pm4_factory->GetShaderArraysNumber() * se_num;
 
-        size_t sas = num_xccs * se_num * sarrays;
+        cu_num = (pm4_factory->GetComputeUnitNumber() + sarrays - 1) / sarrays;
+        wgp_num = (pm4_factory->GetComputeUnitNumber()/2 + sarrays - 1) / sarrays;
 
-        cu_num = (pm4_factory->GetComputeUnitNumber() + sas - 1) / sas;
-        wgp_num = (pm4_factory->GetComputeUnitNumber()/2 + sas - 1) / sas;
-        block_instance_count = HasAttr(CounterBlockUmcAttr) ? block_info->instance_count / num_aid
-                                                            : block_info->instance_count;
+        if (HasAttr(CounterBlockUmcAttr))
+            block_instance_count = block_info->instance_count / num_aid;
+        else if (compute_unit)
+            block_instance_count = std::min<size_t>(block_info->instance_count, cu_num+1);
+        else
+            block_instance_count = block_info->instance_count;
 
         if (num_xccs > 1)
             dimensions.push_back({"XCD", num_xccs});
@@ -111,9 +102,7 @@ public:
         if (shader_array)
             dimensions.push_back({"SA", pm4_factory->GetShaderArraysNumber()});
 
-        if (compute_unit)
-            dimensions.push_back({"CU", cu_num});
-        else if (workgroup_processor)
+        if (workgroup_processor)
             dimensions.push_back({"WGP", wgp_num});
         else
             dimensions.push_back({"INSTANCE", block_instance_count});
@@ -157,7 +146,6 @@ private:
     bool shader_array = false;
     bool compute_unit = false;
     bool workgroup_processor = false;
-    bool texture_cache = false;
 
     size_t num_xccs = 1;
     size_t num_aid = 1;
@@ -170,14 +158,14 @@ private:
     std::vector<EventDimension> dimensions;
 
 public:
-    template<typename AgentType, typename EventType>
-    static const EventAttribDimension& get(AgentType agent, const EventType& event)
+    template<typename AgentType>
+    static const EventAttribDimension& get(AgentType agent, hsa_ven_amd_aqlprofile_block_name_t block_name)
     {
         thread_local std::unique_ptr<EventAttribDimension> event_cache{nullptr};
-        EventKey key{agent.handle, event.block_name};
+        EventKey key{agent.handle, block_name};
 
         if (!event_cache || event_cache->key != key)
-            event_cache = std::make_unique<EventAttribDimension>(agent, event);
+            event_cache = std::make_unique<EventAttribDimension>(agent, block_name);
 
         return *event_cache;
     }

@@ -344,7 +344,7 @@ PUBLIC_API hsa_status_t aqlprofile_iterate_event_coord(
 ) {
     try
     {
-        const EventAttribDimension& attrib = EventAttribDimension::get(agent, event);
+        const EventAttribDimension& attrib = EventAttribDimension::get(agent, event.block_name);
 
         if (!attrib.get_num()) return HSA_STATUS_ERROR;
 
@@ -413,28 +413,31 @@ PUBLIC_API hsa_status_t
 aqlprofile_get_pmc_info(const aqlprofile_pmc_profile_t* profile,
                             aqlprofile_pmc_info_type_t attribute, void* value) {
     if (!profile) return HSA_STATUS_ERROR;
-    hsa_status_t status = HSA_STATUS_SUCCESS;
+
     try
     {
         aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(profile->agent);
+
         switch (attribute) {
             case AQLPROFILE_INFO_BLOCK_ID: {
                 hsa_ven_amd_aqlprofile_id_query_t* query =
                     reinterpret_cast<hsa_ven_amd_aqlprofile_id_query_t*>(value);
                 const uint32_t block = pm4_factory->FindBlock(query->name);
                 const GpuBlockInfo* info = pm4_factory->GetBlockInfo(block);
-                auto status = (info == NULL) ? HSA_STATUS_ERROR : HSA_STATUS_SUCCESS;
-                if (status == HSA_STATUS_SUCCESS) {
-                    query->id = block;
-                    query->instance_count = info->instance_count;
-                }
+                if (!info) return HSA_STATUS_ERROR;
+
+                const auto& attrib = EventAttribDimension::get(profile->agent,  (hsa_ven_amd_aqlprofile_block_name_t)block);
+                if (!attrib.get_num()) return HSA_STATUS_ERROR;
+
+                query->id = block;
+                query->instance_count = attrib.get_num_instances();
             } break;
             case AQLPROFILE_INFO_BLOCK_COUNTERS: {
                 *reinterpret_cast<uint32_t*>(value) =
                     pm4_factory->GetBlockInfo(&profile->events[0])->counter_count;
             } break;
             default:
-                status = HSA_STATUS_ERROR_INVALID_ARGUMENT;
+                return HSA_STATUS_ERROR_INVALID_ARGUMENT;
         }
 
     } 

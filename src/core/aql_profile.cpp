@@ -546,7 +546,7 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_iterate_event_coord(
 ) {
   try
   {
-    const EventAttribDimension& attrib = EventAttribDimension::get(agent, event);
+    const EventAttribDimension& attrib = EventAttribDimension::get(agent, event.block_name);
 
     if (!attrib.get_num()) return HSA_STATUS_ERROR;
 
