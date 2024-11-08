@@ -350,7 +350,7 @@ PUBLIC_API hsa_status_t aqlprofile_iterate_event_coord(
 
         std::array<uint8_t, 32> coord;
         assert(attrib.get_num() < coord.size());
-        attrib.get_coordinates(coord.data(), counter_id);
+        attrib.get_coordinates(coord.data(), counter_id + event.block_index);
 
         for (size_t i=0; i<attrib.get_num(); i++)
         {
