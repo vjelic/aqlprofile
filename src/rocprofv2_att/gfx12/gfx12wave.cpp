@@ -298,7 +298,7 @@ static std::unordered_map<EINST, std::pair<WaveInstCategory, uint16_t>> table_in
     // TODO: Get cycles
     {EINST::valu_scl_trans, {WaveInstCategory::VALU, 1}},
     {EINST::salu2, {WaveInstCategory::SALU, 2}},
-    {EINST::salu5, {WaveInstCategory::VALU, 5}},
+    {EINST::salu5, {WaveInstCategory::SALU, 5}},
     {EINST::valu_scl_trans, {WaveInstCategory::VALU, 1}},
 };
 

@@ -51,6 +51,7 @@ std::unordered_map<std::string, InstCategory> Trie::type_dict = {
     {"s_ttrace", InstCategory::IMMED},
     {"s_clause", InstCategory::IMMED},
     {"s_call", InstCategory::SALU},
+    {"s_cvt", InstCategory::SALU},
 
     {"s_load", InstCategory::SMEM},
     {"s_buffer", InstCategory::SMEM},

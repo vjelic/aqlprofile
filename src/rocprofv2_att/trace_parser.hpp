@@ -90,7 +90,7 @@ struct Instruction
         };
         pcinfo_t pc;
     };
-    int8_t category;
+    int8_t category{};
 };
 
 struct InstructionExt: public att_trace_event_t
