@@ -32,8 +32,8 @@ public:
     int64_t getDelta(gfx10type type, uint64_t contents) {
         auto res = time_bits[type];
         uint64_t beg = res.first;
-        uint64_t end = res.second;
-        return (contents >> beg) & ((1ull << (end-beg)) - 1);
+        uint64_t mask = (1ull << (res.second - beg)) - 1;
+        return ((contents >> beg) & mask) + 4 * (type==gfx10type::TIME);
     };
     int64_t getTime(gfx10type type, uint64_t contents, int64_t cur_time) {
         if (type == gfx10type::TIMESTAMP) {

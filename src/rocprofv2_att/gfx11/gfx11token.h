@@ -44,8 +44,8 @@ union timestamp_gfx11_type {
 union util_ctr_gfx11_type {
     struct {
         uint64_t header : 7;
+        uint64_t cID : 2; // Reversed in users guide
         uint64_t tm : 2;
-        uint64_t cID : 2;
         uint64_t spi_busy : 4;
         uint64_t vdata0 : 4;
         uint64_t vdata1 : 4;

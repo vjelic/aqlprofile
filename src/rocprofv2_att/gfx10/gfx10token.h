@@ -182,12 +182,12 @@ union header_type {
 };
 
 struct inst_type_common {
-    uint64_t header : 3;
-    uint64_t tm : 3;
+    uint64_t header : 6;
+    uint64_t tm : 6;
     uint64_t w64h : 1;
-    uint64_t wid : 5;
-    uint64_t inst : 8;
-    uint64_t bGFX12 : 1;
+    uint64_t wid : 7;
+    uint64_t inst : 10;
+    uint64_t bGFX12 : 2;
 
     void print() const {
         /*std::cout << "INST - wid:" << wid << " inst:" << inst << " w64:" << (bool)w64h << std::endl;*/

@@ -49,7 +49,7 @@ std::unordered_map<int, std::pair<int,int>> gfx11TokenLookupTable::time_bits = {
     {gfx10type::WAVE_END, {5,8}},
     {gfx10type::SHADER_DATA, {5,8}},
     {gfx10type::SHADER_DATA_SHORT, {5,8}},
-    {gfx10type::UTIL_COUNTER, {7,9}},
+    {gfx10type::UTIL_COUNTER, {9,11}},
     {gfx10type::TIME, {4,8}},
     {gfx10type::NOP, {0,0}},
     {gfx10type::MISC_GFX10, {7,16}},
