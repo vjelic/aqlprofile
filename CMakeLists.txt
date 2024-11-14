@@ -39,7 +39,7 @@ include ( utils )
 ## Set build environment
 include ( env )
 
-set(CMAKE_INSTALL_LIBDIR "lib")
+set(CMAKE_INSTALL_LIBDIR "lib" CACHE STRING "Library install directory")
 
 ## Setup the package version.
 get_version ( "1.0.0" )
