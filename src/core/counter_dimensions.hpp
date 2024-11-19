@@ -8,6 +8,9 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <unordered_map>
+#include <memory>
+#include <array>
 
 struct EventDimension
 {
@@ -42,7 +45,7 @@ class EventKey
 {
 public:
     uint64_t agent;
-    hsa_ven_amd_aqlprofile_block_name_t block;
+    uint64_t block;
 
     bool operator==(const EventKey& other) const {
         return  agent == other.agent && block == other.block;
@@ -52,12 +55,19 @@ public:
     }
 };
 
+template<>
+struct std::hash<EventKey> {
+    uint64_t operator()(const EventKey& ev) const { return ev.agent | (ev.block << 56) | (ev.block >> 8); }
+};
+
 class EventAttribDimension
 {
 public:
+    static constexpr size_t event_id_bit = 24;
+
     template<typename AgentType>
     EventAttribDimension(AgentType agent, hsa_ven_amd_aqlprofile_block_name_t block_name):
-        key({agent.handle, block_name})
+        key({agent.handle, (uint64_t)block_name})
     {
         EventDimension::init();
 
@@ -161,11 +171,18 @@ public:
     template<typename AgentType>
     static const EventAttribDimension& get(AgentType agent, hsa_ven_amd_aqlprofile_block_name_t block_name)
     {
-        thread_local std::unique_ptr<EventAttribDimension> event_cache{nullptr};
-        EventKey key{agent.handle, block_name};
+        thread_local std::unordered_map<EventKey, std::shared_ptr<EventAttribDimension>> event_map{};
+        thread_local std::shared_ptr<EventAttribDimension> event_cache{nullptr};
 
-        if (!event_cache || event_cache->key != key)
-            event_cache = std::make_unique<EventAttribDimension>(agent, block_name);
+        EventKey key{agent.handle, (uint64_t)block_name};
+
+        if (!event_cache || event_cache->key != key) {
+            auto it = event_map.find(key);
+            if (auto it = event_map.find(key); it != event_map.end())
+                event_cache = it->second;
+            else
+                event_cache = event_map.emplace(key, std::make_shared<EventAttribDimension>(agent, block_name)).first->second;
+        }
 
         return *event_cache;
     }

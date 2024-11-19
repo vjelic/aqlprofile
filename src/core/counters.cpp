@@ -348,14 +348,14 @@ PUBLIC_API hsa_status_t aqlprofile_iterate_event_coord(
 
         if (!attrib.get_num()) return HSA_STATUS_ERROR;
 
-        std::vector<uint8_t> coord;
-        coord.resize(attrib.get_num());
+        std::array<uint8_t, 32> coord;
+        assert(attrib.get_num() < coord.size());
         attrib.get_coordinates(coord.data(), counter_id);
 
         for (size_t i=0; i<attrib.get_num(); i++)
         {
             EventDimension dim = attrib.get_dim(i);
-            callback(i, dim.id, dim.extent, coord[i], dim.name.data(), userdata);
+            callback(i, dim.id, dim.extent, coord.at(i), dim.name.data(), userdata);
         }
     } 
     catch (hsa_status_t err) {
