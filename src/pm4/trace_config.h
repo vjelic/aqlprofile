@@ -9,7 +9,7 @@ namespace pm4_builder
 // SqttBuilder config
 struct TraceConfig {
   uint32_t targetCu = 0;
-  uint32_t vmIdMask = 0xF;
+  uint32_t vmIdMask = 0;
   uint32_t simd_sel = 0x3;
   uint32_t occupancy_mode = 0;
   uint32_t deprecated_mask = 0;

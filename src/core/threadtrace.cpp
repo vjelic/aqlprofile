@@ -162,7 +162,7 @@ hsa_status_t _internal_aqlprofile_att_create_packets(
 
     auto& trace_config = memorymgr->config;
 
-    trace_config.vmIdMask = 0xF;
+    trace_config.vmIdMask = 0;
     trace_config.simd_sel = 0xF;
     trace_config.perfMASK = (1ul << 32) - 1;
     trace_config.se_mask = 0x11111111;
