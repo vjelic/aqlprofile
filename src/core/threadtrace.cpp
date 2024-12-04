@@ -6,6 +6,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <shared_mutex>
 
 #include "core/logger.h"
 #include "core/pm4_factory.h"
@@ -282,7 +283,22 @@ hsa_status_t _internal_aqlprofile_att_codeobj_marker(
     aqlprofile_memory_dealloc_callback_t dealloc_cb,
     void*                                userdata
 ) {
-    aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(data.agent);
+    static auto* mut = new std::shared_mutex{};
+    static auto* factory_cache = new std::map<uint64_t, aql_profile::Pm4Factory*>{};
+
+    auto _slk = std::shared_lock{*mut};
+
+    if (factory_cache->find(data.agent.handle) == factory_cache->end())
+    {
+        _slk.unlock();
+        {
+            auto _unique = std::unique_lock{*mut};
+            factory_cache->emplace(data.agent.handle, aql_profile::Pm4Factory::Create(data.agent));
+        }
+        _slk.lock();
+    }
+
+    aql_profile::Pm4Factory* pm4_factory = factory_cache->at(data.agent.handle);
     pm4_builder::SqttBuilder* sqttbuilder = pm4_factory->GetSqttBuilder();
     pm4_builder::CmdBuilder* cmd_writer = pm4_factory->GetCmdBuilder();
     pm4_builder::CmdBuffer commands;
