@@ -1,6 +1,7 @@
 #include "core/aql_profile.hpp"
 #include "core/include/aql_profile_v2.h"
 
+#include <array>
 #include <cstdint>
 #include <future>
 #include <map>
