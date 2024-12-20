@@ -571,8 +571,8 @@ class gfx12_cntx_prim {
                                    SQ_TT_TOKEN_MASK_CONTEXT_BIT |
                                    SQ_TT_TOKEN_MASK_COMP_BIT); // 0x8;
     token_mask.bits.TOKEN_EXCLUDE = ((1 << SQ_TT_TOKEN_EXCLUDE_VMEMEXEC_SHIFT) |
-                                     (1 << SQ_TT_TOKEN_EXCLUDE_ALUEXEC_SHIFT)  |
-                                     (1 << SQ_TT_TOKEN_EXCLUDE_WAVERDY_SHIFT)); // 0x689;
+                                     (1 << SQ_TT_TOKEN_EXCLUDE_ALUEXEC_SHIFT));
+    token_mask.bits.EXCLUDE_BARRIER_WAIT = 1; // See DEGFX12-10117
     return token_mask.u32All;
   }
   static uint32_t sqtt_token_mask_off_value() {
