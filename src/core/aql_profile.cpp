@@ -734,8 +734,10 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
               bool bIsGFX9 = pm4_factory->GetGpuId() < aql_profile::GFX10_GPU_ID;
               int gfx9_target_cu = bIsGFX9 ? trace_config.GetTargetCU(se_index) : -1;
 
-              size_t used_data = sample_capacity;
+              size_t used_data = 0;
+              if (sample_size != 0)
               {
+                used_data = sample_capacity;
                 auto return_info = AnalyseBinary_internal((uint8_t*)aql_profile::cpu_data.data(), sample_size, gfx9_target_cu);
                 if (return_info == nullptr) return HSA_STATUS_ERROR;
                 used_data = std::min(used_data, return_info->GetMemoryNeededForSerialization());
@@ -832,3 +834,4 @@ hsa_ven_amd_aqlprofile_att_marker(
 }
 
 }  // extern "C"
+
