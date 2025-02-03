@@ -122,7 +122,8 @@ void set_profiler_active_on_queue(
     const size_t mask = 0x1000 - 1;
     auto         size = (profile.command_buffer.size + mask) & ~mask;
 
-    CHECK_HSA(hsa_amd_memory_pool_allocate_fn(cpu_pool, size, 0, &profile.command_buffer.ptr));
+    CHECK_HSA(hsa_amd_memory_pool_allocate_fn(cpu_pool, size, 
+                                              HSA_AMD_MEMORY_POOL_EXECUTABLE_FLAG, &profile.command_buffer.ptr));
     CHECK_HSA(hsa_amd_agents_allow_access_fn(1, &hsa_agent, nullptr, profile.command_buffer.ptr));
 
     CHECK_HSA(hsa_ven_amd_aqlprofile_get_info(&profile, HSA_VEN_AMD_AQLPROFILE_INFO_ENABLE_CMD, &packet));
