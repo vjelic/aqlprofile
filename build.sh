@@ -95,7 +95,7 @@ popd
 
 MAKE_OPTS="-j -C $AQLPROFILE_ROOT/$BUILD_DIR"
 
-cmake --build "$BUILD_DIR" -- $MAKE_OPTS
+cmake --build "$BUILD_DIR" -- $MAKE_OPTS all mytest
 cmake --build "$BUILD_DIR" -- $MAKE_OPTS test
 cmake --build "$BUILD_DIR" -- $MAKE_OPTS package
 

@@ -64,8 +64,8 @@ foreach(target_id ${GPU_LIST})
   ## generate kernel bitcodes
   generate_hsaco(${target_id} ${TEST_DIR}/${TEST_NAME}/${TEST_NAME}.cl ${target_id}_${TEST_NAME}.hsaco)
 endforeach(target_id)
-add_custom_target(test DEPENDS ${HSACO_TARGET_LIST})
-add_custom_target(mytest DEPENDS ${HSACO_TARGET_LIST})
+# add_custom_target(test DEPENDS ${HSACO_TARGET_LIST})
+add_custom_target(mytest DEPENDS ${TARGET_NAME} ${HSACO_TARGET_LIST})
 
 ## Deploying test run scripts
 execute_process ( COMMAND sh -xc "cp --remove-destination ${TEST_DIR}/da_16b.py ${TEST_BINARY_DIR}" )
@@ -81,3 +81,5 @@ install(FILES ${TEST_DIR}/run_install.sh RENAME run_tests.sh
         DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME} COMPONENT tests)
 
 #add_subdirectory(parser)
+
+add_test(NAME legacy-tests COMMAND "${TEST_BINARY_DIR}/run.sh")

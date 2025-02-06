@@ -81,6 +81,8 @@ if ( "${CMAKE_BUILD_TYPE}" STREQUAL release )
 endif ()
 
 ## Build tests
+enable_testing()
+include(CTest)
 set ( TEST_BINARY_DIR ${PROJECT_BINARY_DIR}/test )
 add_subdirectory ( ${TEST_DIR} ${TEST_BINARY_DIR} )
 
