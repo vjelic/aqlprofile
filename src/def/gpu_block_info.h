@@ -16,14 +16,8 @@ enum CounterBlockAttr {
   CounterBlockCleanAttr = 8,
   // MC Block
   CounterBlockMcAttr = 0x10,
-  // MC SEQ Block
-  CounterBlockMcSeqAttr = 0x20,
-  // MC SEQ HBM Block
-  CounterBlockMcSeqHbmAttr = 0x40,
   // CP PERFMON controllable blocks
-  CounterBlockCpmonAttr = 0x7f,
-  // SRBM Block
-  CounterBlockSrbmAttr = 0x80,
+  CounterBlockCpmonAttr = 0x1f,
   // SDMA block
   CounterBlockSdmaAttr = 0x100,
   // Texture cache

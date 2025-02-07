@@ -16,18 +16,8 @@ class gfx11_cntx_prim {
   static const uint32_t COMPUTE_PERFCOUNT_ENABLE_ADDR = mmCOMPUTE_PERFCOUNT_ENABLE;
   static const uint32_t RLC_PERFMON_CLK_CNTL_ADDR = mmRLC_PERFMON_CNTL;  //mmRLC_PERFMON_CLK_CNTL;
   static const uint32_t CP_PERFMON_CNTL_ADDR = mmCP_PERFMON_CNTL;
-  static const uint32_t SRBM_PERFMON_CNTL_ADDR = 0;
 
   static const uint32_t COMPUTE_THREAD_TRACE_ENABLE_ADDR = mmCOMPUTE_THREAD_TRACE_ENABLE;
-
-  static const uint32_t MC_CONFIG_MCD_ADDR = 0;
-  static const uint32_t MC_SEQ_SELECT_ADDR = 0;
-  static const uint32_t MC_SEQ_SELECT1_ADDR = 0;
-  static const uint32_t MC_SEQ_CONTROL_ADDR = 0;
-  static const uint32_t MC_SEQ_PERFCOUNTER_RSLT_CNTL_ADDR = 0;
-  static const uint32_t MC_SEQ_PERFCOUNTER_RSLT_CNTL_M1_ADDR = 0;
-  static const uint32_t MC_SEQ_PERFCOUNTER_RSLT_CNTL_M2_ADDR = 0;
-  static const uint32_t MC_SEQ_PERFCOUNTER_RSLT_CNTL_M3_ADDR = 0;
 
   static const uint32_t MC_PERFCOUNTER_RSLT_CNTL__ENABLE_ANY_MASK_PRM = 0x01000000L;
   static const uint32_t MC_PERFCOUNTER_RSLT_CNTL__CLEAR_ALL_MASK_PRM = 0x02000000L;
@@ -303,36 +293,9 @@ class gfx11_cntx_prim {
   // MC Block primitives
 
   // MC Channel value
-  static uint32_t mc_channel_mask(const counter_des_t& counter_des) {
-    return 3;
-  }
-  static uint32_t mc_broadcast_mcd_value() { return 0; }
   static uint32_t mc_config_value(const counter_des_t& counter_des) {
     return counter_des.index;
   }
-  // The following function is unused in gfx9.
-  static uint32_t mc_seq_config_val(const counter_des_t& counter_des) {
-    return 0;
-  }
-  static uint32_t mc_hbm_broadcast_mcd_value() { return 0; }
-
-  // MC SQE registers values
-  static uint32_t mc_seq_reset_value() { return 0; }
-  static uint32_t mc_seq_start_value() { return 0; }
-  static uint32_t mc_seq_select_value(const counter_des_t&) { return 0; }
-  static uint32_t mc_seq_select1_value(const counter_des_t&) { return 0; }
-  static uint32_t mc_seq_hbm_reset_value() { return 0; }
-  static uint32_t mc_seq_hbm_start_value() { return 0; }
-  static uint32_t mc_seq_hbm_stop_value() { return 0; }
-  static uint32_t mc_config_mcd_select_value(const counter_des_t&) { return 0; }
-  static uint32_t mc_seq_perfcounter_cfg_addr(const counter_des_t&) { return 0; }
-  static uint32_t mc_seq_perfcounter_select_value(const counter_des_t&) { return 0; }
-  static uint32_t mc_config_mcd_hbm_sample_value(const counter_des_t&) { return 0; }
-  static uint32_t mc_seq_hbm_sample_value(const counter_des_t&) { return 0; }
-  static uint32_t mc_seq_perfcounter_rslt_cntl_addr(const counter_des_t&) { return 0; }
-  static uint32_t mc_seq_perfcounter_rslt_cntl_value(const counter_des_t&) { return 0; }
-  static uint32_t mc_hbm_register_lo_addr(const counter_des_t& counter_des) { return 0; }
-  static uint32_t mc_hbm_register_hi_addr(const counter_des_t& counter_des) { return 0; }
 
   // MC registers values
   template <typename Select> static uint32_t mc_select_value(const counter_des_t& counter_des) {
@@ -402,11 +365,6 @@ class gfx11_cntx_prim {
     if (!(incr_idx % RLC_SPM_COUNTERS_PER_LINE)) incr_idx += RLC_SPM_COUNTERS_PER_LINE;
     return incr_idx;
   }
-
-  // SRBM Registers values
-  static uint32_t srbm_reset_value() { return 0; }
-  static uint32_t srbm_start_value() { return 0; }
-  static uint32_t srbm_stop_value() { return 0; }
 
   // GUS primitives
   static uint32_t gus_disable_clear_value() {
@@ -530,7 +488,7 @@ class gfx11_cntx_prim {
     return cp_perfmon_cntl.u32All;
   }
   static uint32_t rlc_spm_muxsel_data(const uint32_t& value, const counter_des_t& counter_des,
-    		  const uint32_t& block, const uint32_t& hi) {
+                                      const uint32_t& block, const uint32_t& hi) {
 #if 0    
     RLC_SPM_SE_MUXSEL_DATA data{};
     data.u32All = value;
