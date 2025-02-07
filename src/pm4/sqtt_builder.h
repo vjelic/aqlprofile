@@ -324,9 +324,14 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
 
         base_addr += sqtt_size;
       }
+      for (uint64_t index = 0; index < se_number_total; index ++)
+      {
+        if (config->target_cu_per_se.at(index) < 0) continue;  // Ignore masked SEs
+        Select_GRBM_SE_SH0(cmd_buffer, index);
+        Builder::BuildWriteShRegPacket(cmd_buffer, Primitives::COMPUTE_THREAD_TRACE_ENABLE_ADDR, 1);
+      }
       // Reset the GRBM to broadcast mode
       SetGRBMToBroadcast(cmd_buffer);
-      Builder::BuildWriteShRegPacket(cmd_buffer, Primitives::COMPUTE_THREAD_TRACE_ENABLE_ADDR, 1);
     }
     Builder::BuildWriteWaitIdlePacket(cmd_buffer);
 
