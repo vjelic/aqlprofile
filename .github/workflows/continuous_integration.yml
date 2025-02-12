@@ -48,6 +48,10 @@ jobs:
 
     runs-on: ${{ matrix.runner }}-emu-runner-set
 
+    permissions:
+      contents: read
+      pull-requests: write
+
     # define this for containers
     env:
       GIT_DISCOVERY_ACROSS_FILESYSTEM: 1
@@ -99,6 +103,10 @@ jobs:
         ci-flags: ['--linter clang-tidy']
 
     runs-on: ${{ matrix.os }}-runner-set
+
+    permissions:
+      contents: read
+      pull-requests: write
 
     # define this for containers
     env:
