@@ -10,7 +10,7 @@ if argc == 1 or sys.argv[1] == "-h" or sys.argv[1] == "--help":
     print("  <gfx> GPU gfx id, i.e. gfx908")
     print("  <block> SPM block name, one of CPC, CPF, GDS, SPI, SQ, SX, TA, TCA, TCC, TCP, TD")
     print("  <event> SPM block event names specified by <block> above")
-    print("  counter_events_file lists one event counter <block>_<event> per line"
+    print("  counter_events_file lists one event counter <block>_<event> per line")
     print("  spmltgen.py print out the layout of counter events in SPM sample data buffer")
     print("  Output layout lines format:")
     print("  <number of 256bit aligned line instances>: <space delimeted timestamp/event/gap list>")
