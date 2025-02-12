@@ -74,7 +74,7 @@ simple_convolution::simple_convolution():
   SetHostDescr(REFOUT_BUF_ID, REFOUT_DES_ID, input_size_bytes);
 
   input_data_ = get_input_data(width_, height_);
-  TEST_ASSERT(input_data_.size() == width_ * height_);
+  TEST_ASSERT(input_data_.size() == static_cast<uint64_t>(width_) * height_);
 }
 
 void simple_convolution::Init() {
