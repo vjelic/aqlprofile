@@ -3,14 +3,14 @@ Provides AQL packets helper methods for perfcounters (PMC) and SQ threadtraces (
 
 Library supports GFX9 APIs.
 The library source tree:
- - doc  - Documantation, the API specification and the presentation
+ - doc  - Documentation, the API specification and the presentation
  - <hsa-runtime>/inc/hsa_ven_amd_aqlprofile.h - AMD AQL profile library public API
  - src  - AMD AQL profile library sources
    - core - AQL API sources
    - pm4 - cmd/pmc/sqtt pm4 builders
    - def - Generated GFXIP definition headers
  - test - library test suite
-   - ctrl - Test controll
+   - ctrl - Test control
    - util - Test utils
    - simple_convolution - Simple convolution test kernel
 
