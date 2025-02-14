@@ -18,7 +18,6 @@
 #include "pm4/sqtt_builder.h"
 
 #include "core/commandbuffermgr.hpp"
-#include "src/rocprofv2_att/trace_parser.hpp"
 
 #define CONSTRUCTOR_API __attribute__((constructor))
 #define DESTRUCTOR_API __attribute__((destructor))
@@ -54,10 +53,6 @@ namespace aql_profile {
 
 static std::unordered_map<void*, pm4_builder::TraceConfig> configs;
 static std::mutex config_mut;
-
-#ifndef AMD_AQLPROFILE_SQTT_NDA
-  std::vector<size_t> cpu_data{};
-#endif
 
 static inline pm4_builder::counters_vector CountersVec(const profile_t* profile,
                                                        const Pm4Factory* pm4_factory) {
@@ -723,34 +718,7 @@ hsa_ven_amd_aqlprofile_iterate_data(const hsa_ven_amd_aqlprofile_profile_t* prof
               info.trace_data.ptr = sample_ptr;
               info.trace_data.size = sample_size;
 
-#ifdef AMD_AQLPROFILE_SQTT_NDA
               status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, &info, data);
-#else
-              if (aql_profile::cpu_data.size()*sizeof(size_t) < sample_capacity)
-                aql_profile::cpu_data.resize(sample_capacity/sizeof(size_t)+0x1000);
-
-              hsa_memory_copy(aql_profile::cpu_data.data(), sample_ptr, sample_size);
-
-              bool bIsGFX9 = pm4_factory->GetGpuId() < aql_profile::GFX10_GPU_ID;
-              int gfx9_target_cu = bIsGFX9 ? trace_config.GetTargetCU(se_index) : -1;
-
-              size_t used_data = 0;
-              if (sample_size != 0)
-              {
-                used_data = sample_capacity;
-                auto return_info = AnalyseBinary_internal((uint8_t*)aql_profile::cpu_data.data(), sample_size, gfx9_target_cu);
-                if (return_info == nullptr) return HSA_STATUS_ERROR;
-                used_data = std::min(used_data, return_info->GetMemoryNeededForSerialization());
-
-                return_info->Serialize((uint8_t*)aql_profile::cpu_data.data(), used_data, bIsGFX9);
-                if (used_data < sample_size)
-                  hsa_amd_memory_fill((uint8_t*)sample_ptr + used_data, 0, (sample_size-used_data)/4);
-                hsa_memory_copy(sample_ptr, aql_profile::cpu_data.data(), used_data);
-              }
-
-              info.trace_data.size = used_data;
-              status = callback(HSA_VEN_AMD_AQLPROFILE_INFO_TRACE_DATA, &info, data);
-#endif
             }
           } else {  // PC sampling
             pcsmp_callback_data_t* pcsmp_data = reinterpret_cast<pcsmp_callback_data_t*>(data);

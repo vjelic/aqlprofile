@@ -6,7 +6,6 @@ set ( LIB_SRC
   ${LIB_DIR}/core/aql_profile.cpp
   ${LIB_DIR}/core/counters.cpp
   ${LIB_DIR}/core/threadtrace.cpp
-  ${LIB_DIR}/core/sqttparser.cpp
   ${LIB_DIR}/core/spm_data.cpp
   ${LIB_DIR}/core/populate_aql.cpp
   ${LIB_DIR}/core/memorymanager.cpp
@@ -19,23 +18,6 @@ set ( LIB_SRC
   ${LIB_DIR}/core/gfx11_factory.cpp
   ${LIB_DIR}/core/gfx12_factory.cpp
   ${LIB_DIR}/util/hsa_rsrc_factory.cpp
-
-  ${LIB_DIR}/rocprofv2_att/trace_parser.cpp
-  ${LIB_DIR}/rocprofv2_att/tracebranch.cpp
-  ${LIB_DIR}/rocprofv2_att/gfx9/gfx9wave.cpp
-  ${LIB_DIR}/rocprofv2_att/gfx9/gfx9token.cpp
-  ${LIB_DIR}/rocprofv2_att/gfx10/gfx10wave.cpp
-  ${LIB_DIR}/rocprofv2_att/gfx10/gfx10token.cpp
-  ${LIB_DIR}/rocprofv2_att/gfx11/gfx11wave.cpp
-  ${LIB_DIR}/rocprofv2_att/gfx11/gfx11token.cpp
-  ${LIB_DIR}/rocprofv2_att/gfx12/gfx12wave.cpp
-  ${LIB_DIR}/rocprofv2_att/gfx12/gfx12token.cpp
-
-  ${LIB_DIR}/rocprofv2_att/stitch/pctranslator.cpp
-  ${LIB_DIR}/rocprofv2_att/stitch/stitch.cpp
-  ${LIB_DIR}/rocprofv2_att/stitch/codeservice.cpp
-  ${LIB_DIR}/rocprofv2_att/assembly_parser.cpp
-  ${LIB_DIR}/rocprofv2_att/trie.cpp
 )
 
 add_library ( ${TARGET_LIB} SHARED ${LIB_SRC} )

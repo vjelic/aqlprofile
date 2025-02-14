@@ -15,10 +15,43 @@
 
 #include "core/commandbuffermgr.hpp"
 #include "memorymanager.hpp"
-#include "../rocprofv2_att/trace_parser.hpp"
 
 #define THREAD_TRACE_PREFIX_SIZE 0x100
 #define DEFAULT_TRACE_BUFFER_SIZE (3<<26)
+
+typedef union {
+    struct {
+        uint64_t legacy_version : 13;
+        uint64_t gfx9_version2 : 3;
+        uint64_t DSIMDM : 4;
+        uint64_t DCU : 5;
+        uint64_t DSA : 1;
+        uint64_t SEID : 6;
+        uint64_t reserved2 : 32;
+    };
+    uint64_t raw;
+} att_header_packet_t;
+
+typedef enum {
+    ATT_MARKER_HEADER_CHANNEL = 0,
+    ATT_MARKER_SIZE_LO_CHANNEL,
+    ATT_MARKER_ADDR_LO_CHANNEL,
+    ATT_MARKER_ADDR_HI_CHANNEL,
+    ATT_MARKER_SIZE_HI_CHANNEL,
+    ATT_MARKER_ID_LO_CHANNEL,
+    ATT_MARKER_ID_HI_CHANNEL,
+    ATT_MARKER_WAIT_FOR_HEADER = 32
+} att_marker_state;
+
+typedef union
+{
+    struct {
+        uint32_t isUnload   : 1;  // 0 if code object is being loaded, 1 for unload
+        uint32_t bFromStart : 1;  // Has this code object been loaded before thread trace started?
+        uint32_t legacy_id  : 30; // Legacy code object ID, if it fits in 30 bits.
+    };
+    uint32_t raw;
+} aqlprofile_att_header_marker_t;
 
 inline att_header_packet_t getHeaderPacket(int SE, int CU, int SIMD)
 {
@@ -125,15 +158,7 @@ hsa_status_t _internal_aqlprofile_att_iterate_data(
         }
 
         memorymgr->CopyMemory((void*)sample_data_ptr, sample_ptr, sample_size);
-#ifdef AMD_AQLPROFILE_SQTT_NDA
         callback(se_index, (void*)cpu_sample.data(), sample_size_plus_header, userdata);
-#else
-        auto return_info = AnalyseBinary_internal((uint8_t*)cpu_sample.data(), sample_size_plus_header, -1);
-        std::vector<uint8_t> mem;
-        mem.resize(return_info->GetMemoryNeededForSerialization());
-        return_info->Serialize(mem.data(), mem.size(), false);
-        callback(se_index, (void*)mem.data(), mem.size(), userdata);
-#endif
     }
 
     return status;

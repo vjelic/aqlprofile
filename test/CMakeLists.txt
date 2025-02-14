@@ -19,7 +19,6 @@ set ( CTRL_SRC
   ${TEST_DIR}/app/test.cpp
   ${TEST_DIR}/ctrl/test_hsa.cpp
   ${TEST_DIR}/pgen/test_pmgr.cpp
-  ${TEST_DIR}/parser/parser_test.cpp
 )
 
 ## Test kernels sources
@@ -32,7 +31,7 @@ find_package(Clang REQUIRED CONFIG
 
 ## Building test executable
 add_executable ( ${EXE_NAME} ${KERN_SRC} ${CTRL_SRC} ${UTIL_SRC} )
-target_include_directories ( ${EXE_NAME} PRIVATE ${TEST_DIR} ${API_PATH} ${ROCM_ROOT_DIR}/include ${TEST_DIR}/parser/ )
+target_include_directories ( ${EXE_NAME} PRIVATE ${TEST_DIR} ${API_PATH} ${ROCM_ROOT_DIR}/include )
 target_link_libraries( ${EXE_NAME} PRIVATE pthread hsa-runtime64::hsa-runtime64 dl )
 install(TARGETS ${EXE_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME} COMPONENT tests)
 

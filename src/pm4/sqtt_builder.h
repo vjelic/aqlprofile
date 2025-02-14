@@ -7,7 +7,6 @@
 #include <unordered_map>
 
 #include "pm4/cmd_config.h"
-#include "src/rocprofv2_att/thread_trace_viewer_def.h"
 
 #define SQTT_PERFCOUNTER_TOKEN (1u << 14)
 #define SQTT_PERFCOUNTER_SIMD_MASK 24
@@ -15,6 +14,31 @@
 namespace pm4_builder {
 class CmdBuffer;
 class CmdBuilder;
+
+constexpr size_t ATT_CODEOBJ_OPCODE = 4;
+
+union att_decoder_codeobj_header_t
+{
+  struct
+  {
+    unsigned int opcode   :  8;
+    unsigned int type     :  4;
+    unsigned int reserved : 20;
+  };
+  unsigned int u32All;
+};
+
+union att_decoder_rocm_header_t
+{
+  struct
+  {
+    unsigned int char1 : 8; //!< '\0'
+    unsigned int char2 : 8; //!< 'R'
+    unsigned int char3 : 8; //!< 'O'
+    unsigned int char4 : 8; //!< 'C'
+  };
+  unsigned int u32All;
+};
 
 /* Class responsible for locking PM4 packets to a specific XCC (mask).
 Starts locking future packets on constructor.
@@ -335,21 +359,15 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
     }
     Builder::BuildWriteWaitIdlePacket(cmd_buffer);
 
-    thread_trace_viewer_user_data_header_fourcc fourcc;
-    fourcc.opcode = thread_trace_viewer_user_data_opcode_fourcc;
-    fourcc.char2 = 'R';
-    fourcc.char3 = 'O';
-    fourcc.char4 = 'C';
+    att_decoder_rocm_header_t header{};
+    header.char1 = '\0';
+    header.char2 = 'R';
+    header.char3 = 'O';
+    header.char4 = 'C';
     auto userdata_channel = Primitives::SQ_THREAD_TRACE_USERDATA_2;
 
-    Builder::BuildWriteUConfigRegPacket(cmd_buffer, userdata_channel, fourcc.u32All);
-
-    thread_trace_viewer_user_data_header_version version;
-    version.opcode = thread_trace_viewer_user_data_opcode_version;
-    version.major = TT_VIEWER_USER_DATA_FORMAT_MAJOR_VERSION;
-    version.minor = TT_VIEWER_USER_DATA_FORMAT_MINOR_VERSION;
-
-    Builder::BuildWriteUConfigRegPacket(cmd_buffer, userdata_channel, version.u32All);
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, userdata_channel, header.u32All);
+    Builder::BuildWriteUConfigRegPacket(cmd_buffer, userdata_channel, 524801);
   }
 
   void End(CmdBuffer* cmd_buffer, TraceConfig* config) override {
@@ -485,9 +503,10 @@ class GpuSqttBuilder : public SqttBuilder, protected Builder, protected Primitiv
     unsigned channel
   ) override
   {
-    ttv_user_data_header_codeobj header{};
-    header.opcode = thread_trace_viewer_user_data_opcode_codeobj;
+    att_decoder_codeobj_header_t header{};
+    header.opcode = ATT_CODEOBJ_OPCODE;
     header.type = channel;
+    header.reserved = 0;
     auto userdata_channel = Primitives::SQ_THREAD_TRACE_USERDATA_2;
 
     SetGRBMToBroadcast(cmd_buffer);

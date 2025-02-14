@@ -35,7 +35,6 @@ OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "pgen/test_pgen.h"
 #include "util/test_assert.h"
-#include "parser_test.hpp"
 
 typedef std::vector<hsa_ven_amd_aqlprofile_info_data_t> callback_data_t;
 
@@ -123,7 +122,6 @@ class TestPGenSqtt : public TestPGen {
     std::clog << "TestPGenSqtt::DumpData :" << std::endl;
 
     bool bSomeSECollected = false;
-    bool bSomeSEFailed = false;
     callback_data_t data;
     api_->hsa_ven_amd_aqlprofile_iterate_data(&profile_, TestPGenSqttCallback, &data);
     for (callback_data_t::iterator it = data.begin(); it != data.end(); ++it) {
@@ -140,7 +138,6 @@ class TestPGenSqtt : public TestPGen {
       TEST_ASSERT(status == HSA_STATUS_SUCCESS);
       if (status != HSA_STATUS_SUCCESS) return false;
 
-#ifdef AMD_AQLPROFILE_SQTT_NDA
       {
         std::ofstream out_file("sqtt_dump_" + std::to_string(it->sample_id) + ".txt");
         if (out_file.is_open())
@@ -159,26 +156,11 @@ class TestPGenSqtt : public TestPGen {
         if (out_file.is_open())
           out_file.write(static_cast<const char*>(sys_buf), it->trace_data.size);
       }
-#endif
-
-      try {
-        bool bGFX9 = std::string_view(GetAgentInfo()->gfxip).find("gfx9") != std::string::npos;
-        bSomeSECollected |= test_buffer(static_cast<const char*>(sys_buf), it->trace_data.size, bGFX9);
-      } catch(std::string& s) {
-          std::cerr << "SQTT Parser for " << it->sample_id << " string test error: " << s << std::endl;
-          bSomeSEFailed = true;
-      } catch(const char* s) {
-          std::cerr << "SQTT Parser for " << it->sample_id << " string test error: " << s << std::endl;
-          bSomeSEFailed = true;
-      } catch(std::exception& e) {
-          std::cerr << "SQTT Parser for " << it->sample_id << " generic test error. " << e.what() << std::endl;
-          bSomeSEFailed = true;
-      }
 
       GetRsrcFactory()->FreeMemory(sys_buf);
+      bSomeSECollected = true;
     }
     TEST_ASSERT(bSomeSECollected == true);
-    TEST_ASSERT(bSomeSEFailed == false);
 
     return true;
   }
