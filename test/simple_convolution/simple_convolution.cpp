@@ -65,7 +65,7 @@ simple_convolution::simple_convolution():
   assert(mask_height_ % 2 == 1);
 
   const uint32_t input_size_bytes = width_ * height_ * sizeof(uint32_t);
-  const uint32_t mask_size_bytes = mask_width_ * mask_height_ * sizeof(float);
+  const uint32_t mask_size_bytes = static_cast<uint64_t>(mask_width_) * mask_height_ * sizeof(float);
 
   SetInDescr(KERNARG_BUF_ID, KERNARG_DES_ID, sizeof(kernel_args_t));
   SetInDescr(INPUT_BUF_ID, SYS_DES_ID, input_size_bytes);
