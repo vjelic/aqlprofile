@@ -174,7 +174,7 @@ _internal_aqlprofile_pmc_iterate_data(
                   xcc_index, blk, event.block_name, event.block_index, event.event_id, *samples);
 #endif
             xcc_sample_count += xcc_index == 0;
-            size_t xcc_sample_id = xcc_sample_count * xcc_index + blk;
+            size_t xcc_sample_id = xcc_sample_count * xcc_index + static_cast<size_t>(event.block_index) * block_samples_count + blk;
 
             if (!event.bInternal)
             {
@@ -351,7 +351,7 @@ PUBLIC_API hsa_status_t aqlprofile_iterate_event_coord(
 
         std::array<uint8_t, 32> coord;
         assert(attrib.get_num() < coord.size());
-        attrib.get_coordinates(coord.data(), counter_id + event.block_index);
+        attrib.get_coordinates(coord.data(), counter_id);
 
         for (size_t i=0; i<attrib.get_num(); i++)
         {

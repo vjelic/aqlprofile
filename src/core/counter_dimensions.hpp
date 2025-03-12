@@ -74,6 +74,7 @@ public:
         aql_profile::Pm4Factory* pm4_factory = aql_profile::Pm4Factory::Create(agent);
         this->block_info = pm4_factory->GetBlockInfo(block_name);
 
+        bIsGFX12 = pm4_factory->IsGFX12();
         bIsGFX11 = pm4_factory->IsGFX11();
         bIsGFX9 = pm4_factory->IsGFX9();
 
@@ -87,7 +88,7 @@ public:
 
         if (bIsGFX9)
             compute_unit = HasAttr(CounterBlockTcAttr) && shader_engine;
-        else if (bIsGFX11)
+        else if (bIsGFX11 || bIsGFX12)
             workgroup_processor = HasAttr(CounterBlockSqAttr);
 
         se_num = pm4_factory->GetShaderEnginesNumber();
@@ -107,15 +108,16 @@ public:
             dimensions.push_back({"XCD", num_xccs});
         if (num_aid > 1)
             dimensions.push_back({"AID", num_aid});
-        if (shader_engine)
-            dimensions.push_back({"SE", pm4_factory->GetShaderEnginesNumber()});
-        if (shader_array)
-            dimensions.push_back({"SA", pm4_factory->GetShaderArraysNumber()});
-
+        
         if (workgroup_processor)
             dimensions.push_back({"WGP", wgp_num});
         else
             dimensions.push_back({"INSTANCE", block_instance_count});
+
+        if (shader_engine)
+            dimensions.push_back({"SE", pm4_factory->GetShaderEnginesNumber()/(num_xccs>0?num_xccs:1)});
+        if (shader_array)
+            dimensions.push_back({"SA", pm4_factory->GetShaderArraysNumber()});
     }
 
     size_t get_num_xccs() const { return num_xccs; };
@@ -132,8 +134,8 @@ public:
         const int end = static_cast<int>(get_num())-1;
         for (int i=end; i>=0; i--)
         {
-            coordinates[end-i] = static_cast<uint8_t>(cumulative_id % dimensions.at(end-i).extent);
-            cumulative_id /= dimensions.at(end-i).extent;
+            coordinates[i] = static_cast<uint8_t>(cumulative_id % dimensions.at(i).extent);
+            cumulative_id /= dimensions.at(i).extent;
         }
         if (cumulative_id != 0)
             return HSA_STATUS_ERROR_INVALID_INDEX;
@@ -149,6 +151,7 @@ private:
     const GpuBlockInfo* block_info = nullptr;
     hsa_ven_amd_aqlprofile_event_t event{};
 
+    bool bIsGFX12;
     bool bIsGFX11;
     bool bIsGFX9;
 
