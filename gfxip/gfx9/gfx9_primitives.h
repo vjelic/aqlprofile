@@ -335,13 +335,13 @@ class gfx9_cntx_prim {
   static uint32_t spm_even_select_value(const counter_des_t& counter_des) {
     regTCC_PERFCOUNTER0_SELECT select{};
     select.bits.PERF_SEL = counter_des.id;
-    select.bits.CNTR_MODE = 3;  // PERFMON_SPM_MODE_32BIT_CLAMP
+    select.bits.CNTR_MODE = 1;  // PERFMON_SPM_MODE_16BIT_CLAMP
     return select.u32All;
   }
   static uint32_t spm_odd_select_value(const counter_des_t& counter_des) {
     regTCC_PERFCOUNTER0_SELECT select{};
     select.bits.PERF_SEL1 = counter_des.id;
-    select.bits.CNTR_MODE = 3;  // PERFMON_SPM_MODE_32BIT_CLAMP
+    select.bits.CNTR_MODE = 1;  // PERFMON_SPM_MODE_16BIT_CLAMP
     return select.u32All;
   }
   static mux_info_t spm_mux_ram_value(const counter_des_t& counter_des) {

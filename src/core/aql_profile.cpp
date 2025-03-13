@@ -320,8 +320,10 @@ PUBLIC_API hsa_status_t hsa_ven_amd_aqlprofile_start(hsa_ven_amd_aqlprofile_prof
         // Generate stop commands
         sqtt_builder->End(&commands, &trace_config);
       } else {
+        const char* sz_sampling_rate = getenv("AQLPROFILE_SPM_SAMPLE_RATE");
+        if (sz_sampling_rate != NULL) trace_config.sampleRate = atoi(sz_sampling_rate);
+
         pm4_builder::SpmBuilder* spm_builder = pm4_factory->GetSpmBuilder();
-        trace_config.mi100 = (pm4_factory->GetGpuId() == aql_profile::MI100_GPU_ID);
         // Generate start commands
         spm_builder->Begin(&commands, &trace_config, countersVec);
         cmd_buffer_mgr.SetPreSize(commands.Size());

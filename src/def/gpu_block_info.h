@@ -31,14 +31,18 @@ enum CounterBlockAttr {
   CounterBlockGusAttr = 0x4000,
   // GRBM block
   CounterBlockGRBMAttr = 0x8000,
-  // UMC blocks
+  // UMC block
   CounterBlockUmcAttr = 0x10000,
   // SE and SA-dependent blocks
   CounterBlockSaAttr = 0x20000,
   // MI300 AID blocks
   CounterBlockAidAttr = 0x40000,
   // SPI special
-  CounterBlockSPIAttr = 0x80000
+  CounterBlockSPIAttr = 0x80000,
+  // RPB block
+  CounterBlockRpbAttr = 0x200000,
+  // ATC block
+  CounterBlockAtcAttr = 0x400000,
 };
 
 // Register address corresponding to each counter

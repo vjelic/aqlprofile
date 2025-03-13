@@ -230,13 +230,6 @@ namespace gfx9 {
 #define mmRPB_SWITCH_CNTL2 0x0CFE
 #define mmRPB_DEINTRLV_COMBINE_CNTL 0x0CFF
 #define mmRPB_VC_SWITCH_RDWR 0x0D00
-#define mmRPB_PERFCOUNTER_LO 0x0D01
-#define mmRPB_PERFCOUNTER_HI 0x0D02
-#define mmRPB_PERFCOUNTER0_CFG 0x0D03
-#define mmRPB_PERFCOUNTER1_CFG 0x0D04
-#define mmRPB_PERFCOUNTER2_CFG 0x0D05
-#define mmRPB_PERFCOUNTER3_CFG 0x0D06
-#define mmRPB_PERFCOUNTER_RSLT_CNTL 0x0D07
 #define mmRPB_MISC_CG 0x0D08
 #define mmRPB_RD_QUEUE_CNTL 0x0D09
 #define mmRPB_RD_QUEUE_CNTL2 0x0D0A
@@ -17426,5 +17419,65 @@ namespace gfx9 {
 
 }  // gfx9
 }  // gfxip
+
+#endif
+
+
+#if defined(_GFX940_DEF_H_)
+// MI300/MI350
+// Registers from RPB block
+#define mmRPB_PERFCOUNTER_LO        0x1188E
+#define mmRPB_PERFCOUNTER_HI        0x1188F
+#define mmRPB_PERFCOUNTER0_CFG      0x11890
+#define mmRPB_PERFCOUNTER1_CFG      0x11891
+#define mmRPB_PERFCOUNTER2_CFG      0x11892
+#define mmRPB_PERFCOUNTER3_CFG      0x11893
+#define mmRPB_PERFCOUNTER_RSLT_CNTL 0x11894
+
+#elif defined(_GFX90A_DEF_H_)
+// MI200
+// Registers from RPB block
+#define mmRPB_PERFCOUNTER_LO        0x0D03
+#define mmRPB_PERFCOUNTER_HI        0x0D04
+#define mmRPB_PERFCOUNTER0_CFG      0x0D05
+#define mmRPB_PERFCOUNTER1_CFG      0x0D06
+#define mmRPB_PERFCOUNTER2_CFG      0x0D07
+#define mmRPB_PERFCOUNTER3_CFG      0x0D08
+#define mmRPB_PERFCOUNTER_RSLT_CNTL 0x0D09
+
+#else
+// MI100/Greenland
+// Registers from RPB block
+#define mmRPB_PERFCOUNTER_LO        0x0D01
+#define mmRPB_PERFCOUNTER_HI        0x0D02
+#define mmRPB_PERFCOUNTER0_CFG      0x0D03
+#define mmRPB_PERFCOUNTER1_CFG      0x0D04
+#define mmRPB_PERFCOUNTER2_CFG      0x0D05
+#define mmRPB_PERFCOUNTER3_CFG      0x0D06
+#define mmRPB_PERFCOUNTER_RSLT_CNTL 0x0D07
+
+#endif
+
+
+// Registers from ATC block
+#if defined(_GFX940_DEF_H_)
+// MI300/MI350
+#define mmATC_PERFCOUNTER0_CFG      0x0C2A
+#define mmATC_PERFCOUNTER1_CFG      0x0C2B
+#define mmATC_PERFCOUNTER2_CFG      0x0C2C
+#define mmATC_PERFCOUNTER3_CFG      0x0C2D
+#define mmATC_PERFCOUNTER_RSLT_CNTL 0x0C2E
+#define mmATC_PERFCOUNTER_LO        0x0C2F
+#define mmATC_PERFCOUNTER_HI        0x0C30
+
+#else
+// MI200/MI100/Greenland
+#define mmATC_PERFCOUNTER0_CFG      0x0C3E
+#define mmATC_PERFCOUNTER1_CFG      0x0C3F
+#define mmATC_PERFCOUNTER2_CFG      0x0C40
+#define mmATC_PERFCOUNTER3_CFG      0x0C41
+#define mmATC_PERFCOUNTER_RSLT_CNTL 0x0C42
+#define mmATC_PERFCOUNTER_LO        0x0C43
+#define mmATC_PERFCOUNTER_HI        0x0C44
 
 #endif

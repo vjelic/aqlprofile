@@ -94,7 +94,7 @@ static const uint32_t TdCounterBlockNumInstances    = 16;
 static const uint32_t TcpCounterBlockNumInstances   = 16;
 static const uint32_t TcaCounterBlockNumInstances   = 2;
 static const uint32_t TccCounterBlockNumInstances   = 16;
-static const uint32_t SdmaCounterBlockNumInstances  = 4;
+static const uint32_t SdmaCounterBlockNumInstances  = 2;
 static const uint32_t UmcCounterBlockNumInstances   = 32;
 
 // MI100 has 8 SDMA instances

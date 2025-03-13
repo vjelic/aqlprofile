@@ -30,6 +30,10 @@ class Gfx9CmdBuilder : public CmdBuilder {
     return ((addr >= CONFIG_SPACE_START) && (addr <= CONFIG_SPACE_END));
   }
 
+  static constexpr bool IsUConfigReg(uint32_t addr) {
+    return (addr >= UCONFIG_SPACE_START) && (addr <= UCONFIG_SPACE_END);
+  }
+
   virtual void BuildBarrierCommand(CmdBuffer* cmdBuf) {
     PM4MEC_EVENT_WRITE event_write{};
 
@@ -204,8 +208,10 @@ class Gfx9CmdBuilder : public CmdBuilder {
   }
 
   void BuildWriteConfigRegPacket(CmdBuffer* cmdbuf, uint32_t addr, uint32_t value) {
-    return IsPrivilegedConfigReg(addr) ? BuildWritePConfigRegPacket(cmdbuf, addr, value)
-                                       : BuildWriteUConfigRegPacket(cmdbuf, addr, value);
+    if (IsUConfigReg(addr))
+      BuildWriteUConfigRegPacket(cmdbuf, addr, value);
+    else
+      BuildWritePConfigRegPacket(cmdbuf, addr, value);
   }
 #ifndef SRC_PM4_GFX10_CMD_BUILDER_H_
   inline void build_pm4_copy_data(PM4MEC_COPY_DATA& copy_data, uint64_t src_reg_addr, const void* dst_addr,

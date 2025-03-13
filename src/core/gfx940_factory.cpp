@@ -9,17 +9,21 @@ namespace aql_profile {
 class Mi300Factory : public Mi100Factory {
  public:
   explicit Mi300Factory(const AgentInfo* agent_info) : Mi100Factory(agent_info) {
-    for (unsigned i = 0; i < HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER; ++i) {
-      const GpuBlockInfo* base_table_ptr = Gfx9Factory::block_table_[i];
+    for (unsigned blockname_id = 0; blockname_id < HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER; ++blockname_id) {
+      const GpuBlockInfo* base_table_ptr = Gfx9Factory::block_table_[blockname_id];
       if (base_table_ptr == NULL) continue;
       GpuBlockInfo* block_info = nullptr;
-      if (base_table_ptr->id == SdmaCounterBlockId)
+      if (blockname_id == HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_SDMA)
         block_info = new GpuBlockInfo(SdmaCounterBlockInfo);
-      else if (base_table_ptr->id == HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_UMC)
+      else if (blockname_id == HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_UMC)
         block_info = new GpuBlockInfo(UmcCounterBlockInfo);
+      else if (blockname_id == HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_RPB)
+        block_info = new GpuBlockInfo(RpbCounterBlockInfo);
+      else if (blockname_id == HSA_VEN_AMD_AQLPROFILE_BLOCK_NAME_ATC)
+        block_info = new GpuBlockInfo(AtcCounterBlockInfo);
       else
         block_info = new GpuBlockInfo(*base_table_ptr);
-      block_table_[i] = block_info;
+      block_table_[blockname_id] = block_info;
       // overwrite block info for any update from gfx9 to mi300
       switch (block_info->id) {
       case SqCounterBlockId:
@@ -47,6 +51,12 @@ class Mi300Factory : public Mi100Factory {
         block_info->counter_count = 11;
         block_info->instance_count = 32 * pm4_builder::MAX_AID;
         break;
+      case RpbCounterBlockId:
+	      block_info->instance_count = 4;
+	      break;
+      case AtcCounterBlockId:
+        block_info->instance_count = 4;
+	      break;
       }
     }
   }
@@ -68,6 +78,9 @@ class Mi350Factory : public Mi300Factory {
   // MI350 is a copy of Mi300
   explicit Mi350Factory(const AgentInfo* agent_info) : Mi300Factory(agent_info)
   {}
+
+  virtual int GetAccumLowID() const override { return 1; };
+  virtual int GetAccumHiID() const override { return 200; };
 };
 
 Pm4Factory* Pm4Factory::Mi350Create(const AgentInfo* agent_info) {

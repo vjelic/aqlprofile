@@ -1,7 +1,8 @@
 #ifndef _mi300_SDMA_OFFSET_HEADER
 #define _mi300_SDMA_OFFSET_HEADER
 
-// Registers from UMC block
+// Registers from SDMA block
+
 #define mmSDMA_PERFCNT_PERFCOUNTER0_CFG                 0x12B7
 #define mmSDMA_PERFCNT_PERFCOUNTER0_CFG_alt_1           0x18B7
 #define mmSDMA_PERFCNT_PERFCOUNTER0_CFG_alt_2           0x19457
