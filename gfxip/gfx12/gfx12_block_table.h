@@ -70,6 +70,13 @@ static const CounterRegInfo GcrCounterRegAddr[] = {
 };
 
 /*
+ * TD
+ */
+static const CounterRegInfo TdCounterRegAddr[] = {
+    {mmTD_PERFCOUNTER0_SELECT, 0, mmTD_PERFCOUNTER0_LO, mmTD_PERFCOUNTER0_HI},
+    {mmTD_PERFCOUNTER1_SELECT, 0, mmTD_PERFCOUNTER1_LO, mmTD_PERFCOUNTER1_HI}};
+
+/*
  * TCP
  */
 static const CounterRegInfo TcpCounterRegAddr[] = {
@@ -152,6 +159,8 @@ static const GpuBlockInfo SpiCounterBlockInfo = {"SPI", SpiCounterBlockId, 1, Sp
 static const GpuBlockInfo SqCounterBlockInfo = {"SQ", SqCounterBlockId, 1, SqCounterBlockMaxEvent, SqCounterBlockNumCounters, SqCounterRegAddr, gfx12_cntx_prim::sq_select_value, CounterBlockSeAttr|CounterBlockSaAttr|CounterBlockSqAttr, NULL, SPM_SE_BLOCK_NAME_SQG};
 // Counter block SX
 static const GpuBlockInfo SxCounterBlockInfo = {"SX", SxCounterBlockId, 1, SxCounterBlockMaxEvent, SxCounterBlockNumCounters, SxCounterRegAddr, gfx12_cntx_prim::select_value<regSX_PERFCOUNTER0_SELECT>, CounterBlockSeAttr|CounterBlockCleanAttr, NULL /*SxBlockDelayInfo*/, SPM_SE_BLOCK_NAME_SX};
+// Counter block TD
+static const GpuBlockInfo TdCounterBlockInfo = {"TD", TdCounterBlockId, 2, TdCounterBlockMaxEvent, TdCounterBlockNumCounters, TdCounterRegAddr, gfx12_cntx_prim::select_value<regTD_PERFCOUNTER0_SELECT>, CounterBlockSeAttr|CounterBlockTcAttr, NULL /*TdBlockDelayInfo*/, SPM_SE_BLOCK_NAME_TD};
 // Counter block TCP
 static const GpuBlockInfo TcpCounterBlockInfo = {"TCP", TcpCounterBlockId, 16, TcpCounterBlockMaxEvent, TcpCounterBlockNumCounters, TcpCounterRegAddr, gfx12_cntx_prim::select_value<regTCP_PERFCOUNTER0_SELECT>, CounterBlockDfltAttr|CounterBlockSeAttr|CounterBlockSaAttr};
 // Counter block GL1A
