@@ -570,11 +570,26 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
             grbm_value = Primitives::grbm_se_index_value(se_index);
           }
 
-          bool bIsWGPcounter = Primitives::GFXIP_LEVEL >= 11 && (block_info->attr & CounterBlockSqAttr);
+          bool bIsWGPcounter11 = Primitives::GFXIP_LEVEL == 11 && (block_info->attr & CounterBlockSqAttr);
+          bool bIsWGPcounter12 = Primitives::GFXIP_LEVEL >= 12 && (block_info->attr & CounterBlockWgpAttr);
 
-          if (bIsWGPcounter) {
+          if (bIsWGPcounter11) {
             for (int wgp=0; wgp<wgp_per_sa; wgp++) {
               grbm_value = Primitives::grbm_se_sh_wgp_index_value(se_index, wgp, sarray);
+              Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR, grbm_value);
+              Builder::BuildCopyCounterDataPacket(
+                  cmd_buffer, reg_info.register_addr_lo, reg_info.register_addr_hi,
+                  reinterpret_cast<uint32_t*>(data_buffer) + read_counter, 1);
+              read_counter += 2;
+            }
+          } else if (bIsWGPcounter12) {
+            for (int wgp=0; wgp<wgp_per_sa; wgp++) {
+#ifdef _GFX12_DEF_H_
+              if ((block_info->instance_count > 1)
+                grbm_value = Primitives::grbm_inst_se_sh_wgp_index_value(block_des.index, se_index, sarray, wgp);
+              else
+                grbm_value = Primitives::grbm_se_sh_wgp_index_value(se_index, sarray, wgp);
+#endif
               Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::GRBM_GFX_INDEX_ADDR, grbm_value);
               Builder::BuildCopyCounterDataPacket(
                   cmd_buffer, reg_info.register_addr_lo, reg_info.register_addr_hi,

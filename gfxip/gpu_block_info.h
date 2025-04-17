@@ -37,7 +37,9 @@ enum CounterBlockAttr {
   // MI300 AID blocks
   CounterBlockAidAttr = 0x40000,
   // SPI counter
-  CounterBlockSPIAttr = 0x80000
+  CounterBlockSPIAttr = 0x80000,
+  // Blocks within WGP
+  CounterBlockWgpAttr = 0x100000,
 };
 
 // Register address corresponding to each counter

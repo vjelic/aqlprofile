@@ -39,6 +39,8 @@ enum CounterBlockAttr {
   CounterBlockAidAttr = 0x40000,
   // SPI special
   CounterBlockSPIAttr = 0x80000,
+  // Blocks within WGP
+  CounterBlockWgpAttr = 0x100000,
   // RPB block
   CounterBlockRpbAttr = 0x200000,
   // ATC block

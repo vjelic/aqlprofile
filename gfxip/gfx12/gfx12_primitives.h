@@ -71,6 +71,9 @@ class gfx12_cntx_prim {
 
   static const uint32_t REG_SPI_DEBUG_CNTL = mmSPI_DEBUG_CNTL;
 
+  static const uint32_t NUM_WGP1_PER_SA = 0;
+  static const uint32_t NUM_ROWS_PER_WGP = 2;
+
   static uint32_t sqtt_perfcounter_addr(uint32_t index) { return 0; }
 
   union mux_info_t {
@@ -82,8 +85,8 @@ class gfx12_cntx_prim {
     } gfx;
   };
 
-  static const uint32_t SQ_BLOCK_ID = SqCounterBlockId;
-  static const uint32_t SQ_BLOCK_SPM_ID = 9;
+  static const uint32_t SQ_BLOCK_ID = __BLOCK_ID(SQ);
+  static const uint32_t SQ_BLOCK_SPM_ID = SPM_SE_BLOCK_NAME_SQG;
 
   static const uint32_t COPY_DATA_SEL_REG_PRM = COPY_DATA_SEL_REG;
   static const uint32_t COPY_DATA_SEL_SRC_SYS_PERF_COUNTER_PRM = COPY_DATA_SEL_SRC_SYS_PERF_COUNTER;
@@ -132,14 +135,6 @@ class gfx12_cntx_prim {
     return grbm_gfx_index.u32All;
   }
 
-  static uint32_t grbm_se_sh_wgp_index_value(uint32_t se_index, uint32_t wgp, uint32_t sa) {
-    regGRBM_GFX_INDEX grbm_gfx_index{};
-    grbm_gfx_index.bitfields.SE_INDEX = se_index;
-    grbm_gfx_index.bitfields.SA_INDEX = sa;
-    grbm_gfx_index.bitfields.INSTANCE_INDEX = wgp<<2;
-    return grbm_gfx_index.u32All;
-  }
-
   // GRBM SE/BlockInstance indexing
   static uint32_t grbm_inst_se_index_value(const uint32_t& instance_index,
                                            const uint32_t& se_index) {
@@ -167,6 +162,32 @@ class gfx12_cntx_prim {
     grbm_gfx_index.bitfields.INSTANCE_INDEX = instance_index;
     grbm_gfx_index.bitfields.SE_INDEX = se_index;
     grbm_gfx_index.bitfields.SA_INDEX = sa_index;
+    return grbm_gfx_index.u32All;
+  }
+
+  static uint32_t grbm_se_sh_wgp_index_value(const uint32_t& se_index,
+                                             const uint32_t& sa_index,
+                                             const uint32_t& wgp_index) {
+    regGRBM_GFX_INDEX grbm_gfx_index{};
+    // Hardcode wgp_side to 0 now because we don't have a product with wgp1 configuration
+    uint32_t wgp_side = 0;
+    grbm_gfx_index.bitfields.SE_INDEX = se_index;
+    grbm_gfx_index.bitfields.SA_INDEX = sa_index;
+    grbm_gfx_index.bitfields.INSTANCE_INDEX = (wgp_side<<6) | (wgp_index << 2);
+    return grbm_gfx_index.u32All;
+  }
+
+  static uint32_t grbm_inst_se_sh_wgp_index_value(const uint32_t& instance_index,
+                                                  const uint32_t& se_index,
+                                                  const uint32_t& sa_index,
+                                                  const uint32_t& wgp_index) {
+    regGRBM_GFX_INDEX grbm_gfx_index{};
+    // Hardcode wgp_side to 0 now because we don't have a product with wgp1 configuration
+    uint32_t wgp_side = 0;
+    assert(instance_index < NUM_ROWS_PER_WGP);
+    grbm_gfx_index.bitfields.SE_INDEX = se_index;
+    grbm_gfx_index.bitfields.SA_INDEX = sa_index;
+    grbm_gfx_index.bitfields.INSTANCE_INDEX = (wgp_side<<6) | (wgp_index << 2) | (instance_index << 1);
     return grbm_gfx_index.u32All;
   }
 
@@ -237,23 +258,10 @@ class gfx12_cntx_prim {
   static uint32_t sq_control_value(const counter_des_t& counter_des) {
     const uint32_t block_id = counter_des.block_des.id;
     regSQ_PERFCOUNTER_CTRL sq_cntr_ctrl{};
-    if (block_id == SqCounterBlockId) {
-      sq_cntr_ctrl.bits.GS_EN = 0x1;
-      //sq_cntr_ctrl.bits.VS_EN = 0x1;
-      sq_cntr_ctrl.bits.PS_EN = 0x1;
-      sq_cntr_ctrl.bits.HS_EN = 0x1;
-      sq_cntr_ctrl.bits.CS_EN = 0x1;
-    } else if (block_id == SqGsCounterBlockId) {
-      sq_cntr_ctrl.bits.GS_EN = 0x1;
-    } /*else if (block_id == SqVsCounterBlockId) {
-      sq_cntr_ctrl.bits.VS_EN = 0x1;
-    } */else if (block_id == SqPsCounterBlockId) {
-      sq_cntr_ctrl.bits.PS_EN = 0x1;
-    } else if (block_id == SqHsCounterBlockId) {
-      sq_cntr_ctrl.bits.HS_EN = 0x1;
-    } else if (block_id == SqCsCounterBlockId) {
-      sq_cntr_ctrl.bits.CS_EN = 0x1;
-    }
+    sq_cntr_ctrl.bits.PS_EN = 0x1;
+    sq_cntr_ctrl.bits.GS_EN = 0x1;
+    sq_cntr_ctrl.bits.HS_EN = 0x1;
+    sq_cntr_ctrl.bits.CS_EN = 0x1;
     return sq_cntr_ctrl.u32All;
   }
 
@@ -270,11 +278,8 @@ class gfx12_cntx_prim {
   static uint32_t sq_control_enable_value() {
     regSQ_PERFCOUNTER_CTRL sq_cntr_ctrl{};
     sq_cntr_ctrl.bits.PS_EN = 0x1;
-    //sq_cntr_ctrl.bits.VS_EN = 0x1;
     sq_cntr_ctrl.bits.GS_EN = 0x1;
-    //sq_cntr_ctrl.bits.ES_EN = 0x1;
     sq_cntr_ctrl.bits.HS_EN = 0x1;
-    //sq_cntr_ctrl.bits.LS_EN = 0x1;
     sq_cntr_ctrl.bits.CS_EN = 0x1;
     return sq_cntr_ctrl.u32All;
   }
@@ -314,21 +319,12 @@ class gfx12_cntx_prim {
   }
 
   // Counter Select Register value templates
-  template <typename Select> static uint32_t select_value(const counter_des_t& counter_des) {
-    Select select{};
+  static uint32_t select_value(const counter_des_t& counter_des) {
+    regCPC_PERFCOUNTER0_SELECT select{};
     select.bits.PERF_SEL = counter_des.id;
     return select.u32All;
   }
-  template <typename Select> static uint32_t select_value_t2(const counter_des_t& counter_des) {
-    Select select{};
-    select.bits.PERF_SEL = counter_des.id;
-    return select.u32All;
-  }
-  template <typename Select> static uint32_t select_value_t3(const counter_des_t& counter_des) {
-    Select select{};
-    select.bits.CNTR_SEL0 = counter_des.id;
-    return select.u32All;
-  }
+
   static uint32_t spm_select_value(const counter_des_t& counter_des) {
     regTCP_PERFCOUNTER0_SELECT select{};
     select.bits.PERF_SEL = counter_des.id;
@@ -658,12 +654,6 @@ class gfx12_cntx_prim {
     return cntl.u32All;
   };
 };
-
-template <>
-inline uint32_t gfx12_cntx_prim::select_value<regSX_PERFCOUNTER0_SELECT>(
-    const counter_des_t& counter_des) {
-  return select_value_t2<regSX_PERFCOUNTER0_SELECT>(counter_des);
-}
 
 }  // namespace gfx12
 }  // namespace gfxip

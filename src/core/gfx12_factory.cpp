@@ -22,15 +22,17 @@ class Gfx12Factory : public Pm4Factory {
   bool IsGFX12() const override { return true; }
 
  protected:
-  //void ConstructTable(const AgentInfo* agent_info);
-  void Init(const AgentInfo* agent_info);
-  //void ConstructBuilders(const AgentInfo* agent_info);
-  static const GpuBlockInfo* block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER];
+  void ConstructBuilders(const AgentInfo* agent_info);
+  void ConstructTable(const AgentInfo* agent_info);
+  void Init(const AgentInfo* agent_info) {
+    agent_info_ = agent_info;
+    ConstructBuilders(agent_info);
+    ConstructTable(agent_info);
+  }
+  const GpuBlockInfo* block_table_[LastCounterBlockId + 1]{};
 };
 
-// Gfx builders init
-// void Gfx12Factory::ConstructBuilders(const AgentInfo* agent_info) {
-void Gfx12Factory::Init(const AgentInfo* agent_info) {
+void Gfx12Factory::ConstructBuilders(const AgentInfo* agent_info) {
   Pm4Factory::cmd_builder_ = new pm4_builder::Gfx12CmdBuilder;
   if (Pm4Factory::cmd_builder_ == NULL) throw aql_profile_exc_msg("CmdBuilder allocation failed");
 
@@ -51,48 +53,26 @@ void Gfx12Factory::Init(const AgentInfo* agent_info) {
   Pm4Factory::sqtt_builder_ =
       new pm4_builder::GpuSqttBuilder<pm4_builder::Gfx12CmdBuilder, gfx12_cntx_prim>(agent_info);
   if (Pm4Factory::sqtt_builder_ == NULL) throw aql_profile_exc_msg("SqttBuilder allocation failed");
-
-  agent_info_ = agent_info;
 }
 
-// GFX12 block table
-const GpuBlockInfo* Gfx12Factory::block_table_[HSA_VEN_AMD_AQLPROFILE_BLOCKS_NUMBER] = {
-    &CpcCounterBlockInfo,
-    &CpfCounterBlockInfo,
-    NULL /*&GdsCounterBlockInfo*/,
-    &GrbmCounterBlockInfo,
-    NULL /*&GrbmSeCounterBlockInfo*/,
-    &SpiCounterBlockInfo,
-    &SqCounterBlockInfo,
-    NULL /*&SqCsCounterBlockInfo*/,
-    NULL /*GFX8 SRBM*/,
-    &SxCounterBlockInfo,
-    &TaCounterBlockInfo,
-    NULL /*&TcaCounterBlockInfo*/,
-    NULL /*&TccCounterBlockInfo*/,
-    &TcpCounterBlockInfo,
-    &TdCounterBlockInfo,
-    // MC blocks
-    NULL /*MC_ARB*/,
-    NULL /*MC_HUB*/,
-    NULL /*MC_MCBVM*/,
-    NULL /*MC_SEQ*/,
-    NULL /*&McVmL2CounterBlockInfo*/,
-    NULL /*MC_XBAR*/,
-    NULL /*&AtcCounterBlockInfo*/,
-    NULL /*&AtcL2CounterBlockInfo*/,
-    NULL /*&GceaCounterBlockInfo*/,
-    NULL /*&RpbCounterBlockInfo*/,
-    // System blocks
-    NULL /*&SdmaCounterBlockInfo*/,
-    // new navi blocks
-    &Gl1aCounterBlockInfo,
-    &Gl1cCounterBlockInfo,
-    &Gl2aCounterBlockInfo,
-    &Gl2cCounterBlockInfo,
-    &GcrCounterBlockInfo,
-    NULL /*&GusCounterBlockInfo*/,
-};
+void Gfx12Factory::ConstructTable(const AgentInfo* agent_info) {
+  block_table_[__BLOCK_ID(GRBM)] = &GrbmCounterBlockInfo;
+  block_table_[__BLOCK_ID(CPC)]  = &CpcCounterBlockInfo;
+  block_table_[__BLOCK_ID(CPF)]  = &CpfCounterBlockInfo;
+  block_table_[__BLOCK_ID(GCR)]  = &GcrCounterBlockInfo;
+  block_table_[__BLOCK_ID(GL2A)] = &Gl2aCounterBlockInfo;
+  block_table_[__BLOCK_ID(GL2C)] = &Gl2cCounterBlockInfo;
+  block_table_[__BLOCK_ID(SPI)]  = &SpiCounterBlockInfo;
+  block_table_[__BLOCK_ID(SQ)]   = &SqgCounterBlockInfo;
+  block_table_[__BLOCK_ID(GL1A)] = &Gl1aCounterBlockInfo;
+  block_table_[__BLOCK_ID(GL1C)] = &Gl1cCounterBlockInfo;
+  block_table_[__BLOCK_ID(SX)]   = &SxCounterBlockInfo;
+  block_table_[__BLOCK_ID(TA)]   = &TaCounterBlockInfo;
+  block_table_[__BLOCK_ID(TD)]   = &TdCounterBlockInfo;
+  block_table_[__BLOCK_ID(TCP)]  = &TcpCounterBlockInfo;
+  block_table_[__BLOCK_ID(CHA)]  = &ChaCounterBlockInfo;
+  block_table_[__BLOCK_ID(CHC)]  = &ChcCounterBlockInfo;
+}
 
 // Pm4Factory create mathods
 Pm4Factory* Pm4Factory::Gfx12Create(const AgentInfo* agent_info) {
