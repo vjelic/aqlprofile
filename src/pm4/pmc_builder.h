@@ -186,7 +186,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
     // Program Compute Perfcount WaiteIdle register to support perf counting
     Builder::BuildWriteWaitIdlePacket(cmd_buffer);
   }
- 
+
   // Build PMC start PM4 comands
   void Start(CmdBuffer* cmd_buffer, const counters_vector& counters_vec) override
   {
@@ -294,31 +294,31 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
           // sdma enable/clear/stop is programmed per instance and saved in sdmas
           sdmas.insert({sdma_index, control_addr});
 
-	  if (xcc_number_ > 1) {
-	    PrecExecBuilder<Builder> prec_exec_builder(this, cmd_buffer, VIRTUALXCCID_SELECT, xcc_number_ > 1);
+          if (xcc_number_ > 1) {
+            PrecExecBuilder<Builder> prec_exec_builder(this, cmd_buffer, VIRTUALXCCID_SELECT, xcc_number_ > 1);
 
-      Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x4B30 >> 2, 0),  0x04000100);
-      Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x6330 >> 2, 0),  0x04000100);
-      Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x651B0 >> 2, 0), 0x04000100);
-      Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x661B0 >> 2, 0), 0x04000100);
+            Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x4B30 >> 2, 0),  0x04000100);
+            Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x6330 >> 2, 0),  0x04000100);
+            Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x651B0 >> 2, 0), 0x04000100);
+            Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x661B0 >> 2, 0), 0x04000100);
 
-      Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x4B30 >> 2, 1),  0x04000100);
-      Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x6330 >> 2, 1),  0x04000100);
-      Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x651B0 >> 2, 1), 0x04000100);
-      Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x661B0 >> 2, 1), 0x04000100);
+            Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x4B30 >> 2, 1),  0x04000100);
+            Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x6330 >> 2, 1),  0x04000100);
+            Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x651B0 >> 2, 1), 0x04000100);
+            Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x661B0 >> 2, 1), 0x04000100);
 
-	    if (xcc_number_ > 4) {
-	      Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x4B30 >> 2, 2),  0x04000100);
-	      Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x6330 >> 2, 2),  0x04000100);
-	      Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x651B0 >> 2, 2), 0x04000100);
-	      Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x661B0 >> 2, 2), 0x04000100);
+            if (xcc_number_ > 4) {
+              Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x4B30 >> 2, 2),  0x04000100);
+              Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x6330 >> 2, 2),  0x04000100);
+              Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x651B0 >> 2, 2), 0x04000100);
+              Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x661B0 >> 2, 2), 0x04000100);
 
-	      Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x4B30 >> 2, 3),  0x04000100);
-	      Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x6330 >> 2, 3),  0x04000100);
-	      Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x651B0 >> 2, 3), 0x04000100);
-	      Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x661B0 >> 2, 3), 0x04000100);
-	    }
-	  }
+              Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x4B30 >> 2, 3),  0x04000100);
+              Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x6330 >> 2, 3),  0x04000100);
+              Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x651B0 >> 2, 3), 0x04000100);
+              Builder::BuildWritePConfigRegPacket(cmd_buffer, get_smn_addr(0x661B0 >> 2, 3), 0x04000100);
+            }
+          }
 
           // insert master XCC PRED_EXEC packet here if it is MI300
           PrecExecBuilder<Builder> prec_exec_builder(this, cmd_buffer, VIRTUALXCCID_SELECT, xcc_number_ > 1);
@@ -630,45 +630,45 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
       const auto& reg_info = reg_table[counter_des.index];
 
       if (!(block_info->attr & CounterBlockAidAttr))
-	// skip all non-AID blocks
-	continue;
+        // skip all non-AID blocks
+        continue;
 
       // MI300 AID blocks: UMC/RPB/ATC/SDMA event insert master XCC PRED_EXEC packet here
       PrecExecBuilder<Builder> prec_exec_builder(this, cmd_buffer, VIRTUALXCCID_SELECT, xcc_number_ > 1);
 
       const auto target_aid_index = GetTargetAid(counter_des);
       uint64_t smn_control_addr = (xcc_number_ > 1) ? get_smn_addr(reg_info.control_addr, target_aid_index) :
-	(uint64_t)reg_info.control_addr;
+        (uint64_t)reg_info.control_addr;
 
       if (block_info->attr & CounterBlockUmcAttr) {
-	// Stop UMC
-	Builder::BuildWritePConfigRegPacket(cmd_buffer, smn_control_addr, Primitives::umc_stop_value());
+        // Stop UMC
+        Builder::BuildWritePConfigRegPacket(cmd_buffer, smn_control_addr, Primitives::umc_stop_value());
       } else if (block_info->attr & (CounterBlockRpbAttr | CounterBlockAtcAttr)) {
-	// Stop RPB/ATC
-	Builder::BuildWritePConfigRegPacket(cmd_buffer, smn_control_addr, 0);
+        // Stop RPB/ATC
+        Builder::BuildWritePConfigRegPacket(cmd_buffer, smn_control_addr, 0);
       } else if (block_info->attr & CounterBlockSdmaAttr) {
-	// Stop SDMA
-	if (reg_info.control_addr == 0) {
-	  // MI100: stopped per instance
-	  const uint32_t mask = 1u << counter_des.block_des.index;
-	  if ((sdma_mask & mask) == 0) {
-	    sdma_mask |= mask;
-	    auto control_addr = (reg_info.control_addr == 0) ? reg_info.select_addr : reg_info.control_addr;
-	    Builder::BuildWritePConfigRegPacket(cmd_buffer, control_addr,
-						Primitives::sdma_stop_value(counter_des));
-	  }
-	} else if (xcc_number_ > 1) {
-	  // MI300 SDMA event: insert master XCC PRED_EXEC packet here
-	  Builder::BuildWritePConfigRegPacket(cmd_buffer, smn_control_addr,
-					      Primitives::sdma_stop_value(counter_des));
-	} else {
-	  // MI200: stopped per counter to choose which counter to read
-	  Builder::BuildWritePConfigRegPacket(cmd_buffer, reg_info.control_addr,
-					      Primitives::sdma_stop_value(counter_des));
-	}
+        // Stop SDMA
+        if (reg_info.control_addr == 0) {
+          // MI100: stopped per instance
+          const uint32_t mask = 1u << counter_des.block_des.index;
+          if ((sdma_mask & mask) == 0) {
+            sdma_mask |= mask;
+            auto control_addr = (reg_info.control_addr == 0) ? reg_info.select_addr : reg_info.control_addr;
+            Builder::BuildWritePConfigRegPacket(cmd_buffer, control_addr,
+                                                Primitives::sdma_stop_value(counter_des));
+          }
+        } else if (xcc_number_ > 1) {
+          // MI300 SDMA event: insert master XCC PRED_EXEC packet here
+          Builder::BuildWritePConfigRegPacket(cmd_buffer, smn_control_addr,
+                                              Primitives::sdma_stop_value(counter_des));
+        } else {
+          // MI200: stopped per counter to choose which counter to read
+          Builder::BuildWritePConfigRegPacket(cmd_buffer, reg_info.control_addr,
+                                              Primitives::sdma_stop_value(counter_des));
+        }
       }
     }
-  
+
     // Issue barrier command to wait commands to complete
     if (counters_vec.get_attr() & CounterBlockCpmonAttr)
       Builder::BuildWriteUConfigRegPacket(cmd_buffer, Primitives::CP_PERFMON_CNTL_ADDR,
@@ -684,7 +684,7 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
 
   // Build PMC read PM4 comands
   uint32_t Read(CmdBuffer* cmd_buffer, const counters_vector& counters_vec, void* data_buffer) override
-  { 
+  {
     uint32_t read_counter = 0;
     auto counters_attr = counters_vec.get_attr();
 
@@ -727,26 +727,26 @@ class GpuPmcBuilder : public PmcBuilder, protected Builder, protected Primitives
                     smn_data_buffer, dw_mask);
         read_counter += 2;
       } else if ((block_info->attr & CounterBlockAidAttr)) {
-	// Read UMC/ATC/RPB
-	// insert master XCC PRED_EXEC packet accordingly
-	PrecExecBuilder<Builder> prec_exec_builder(this, cmd_buffer, VIRTUALXCCID_SELECT, xcc_number_ > 1);
+        // Read UMC/ATC/RPB
+        // insert master XCC PRED_EXEC packet accordingly
+        PrecExecBuilder<Builder> prec_exec_builder(this, cmd_buffer, VIRTUALXCCID_SELECT, xcc_number_ > 1);
 
-	const auto target_aid_index = GetTargetAid(counter_des);
-	if (counters_attr & (CounterBlockRpbAttr | CounterBlockAtcAttr)) {
-	  // For RPB program to choose which counter to read
-	  uint64_t control_addr = (xcc_number_ > 1) ? get_smn_addr(reg_info.control_addr, target_aid_index) :
-	    (uint64_t)reg_info.control_addr;
-	  Builder::BuildWritePConfigRegPacket(cmd_buffer, control_addr,
-					      Primitives::mc_config_value(counter_des));
-	}
-	uint32_t* smn_data_buffer = reinterpret_cast<uint32_t*>(data_buffer) + read_counter;
-	auto smn_register_addr_lo = get_smn_addr(reg_info.register_addr_lo, target_aid_index);
-	auto smn_register_addr_hi = get_smn_addr(reg_info.register_addr_hi, target_aid_index);
-	uint64_t register_addr_lo = (xcc_number_ > 1) ? smn_register_addr_lo : reg_info.register_addr_lo;
-	uint64_t register_addr_hi = (xcc_number_ > 1) ? smn_register_addr_hi : reg_info.register_addr_hi;
-	Builder::BuildCopyCounterDataPacket(cmd_buffer, register_addr_lo, register_addr_hi,
-					    smn_data_buffer, 3);
-	read_counter += 2;
+        const auto target_aid_index = GetTargetAid(counter_des);
+        if (counters_attr & (CounterBlockRpbAttr | CounterBlockAtcAttr)) {
+          // For RPB program to choose which counter to read
+          uint64_t control_addr = (xcc_number_ > 1) ? get_smn_addr(reg_info.control_addr, target_aid_index) :
+            (uint64_t)reg_info.control_addr;
+          Builder::BuildWritePConfigRegPacket(cmd_buffer, control_addr,
+                                              Primitives::mc_config_value(counter_des));
+        }
+        uint32_t* smn_data_buffer = reinterpret_cast<uint32_t*>(data_buffer) + read_counter;
+        auto smn_register_addr_lo = get_smn_addr(reg_info.register_addr_lo, target_aid_index);
+        auto smn_register_addr_hi = get_smn_addr(reg_info.register_addr_hi, target_aid_index);
+        uint64_t register_addr_lo = (xcc_number_ > 1) ? smn_register_addr_lo : reg_info.register_addr_lo;
+        uint64_t register_addr_hi = (xcc_number_ > 1) ? smn_register_addr_hi : reg_info.register_addr_hi;
+        Builder::BuildCopyCounterDataPacket(cmd_buffer, register_addr_lo, register_addr_hi,
+                                            smn_data_buffer, 3);
+        read_counter += 2;
       }
     }
 
