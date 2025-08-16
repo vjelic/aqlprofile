@@ -1,0 +1,1671 @@
+{
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Glog.AI",
+          "organization": "Glog.AI",
+          "fullName": "Glog, Making software more secure",
+          "version": "1.0.0",
+          "semanticVersion": "1.0.0",
+          "informationUri": "https://www.glog.ai",
+          "rules": [
+            {
+              "id": "glog-0b01009d-b912-4c38-8412-b025dfdde3c2",
+              "name": "OpensslDoNotHardcodeSsltlsVersionsWithinAnApplication",
+              "shortDescription": {
+                "text": "SSL/TLS version usage should be based on an OS or external configuration."
+              },
+              "fullDescription": {
+                "text": "OpenSSL: Do not hardcode SSL/TLS versions within an application.: SSL/TLS version usage should be based on an OS or external configuration."
+              },
+              "defaultConfiguration": {
+                "enabled": true,
+                "level": "error"
+              },
+              "helpUri": "https://github.com/Microsoft/DevSkim/blob/main/guidance/DS440000.md",
+              "help": {
+                "text": "SSL/TLS version usage should be based on an OS or external configuration.",
+                "markdown": "Visit [https://github.com/Microsoft/DevSkim/blob/main/guidance/DS440000.md](https://github.com/Microsoft/DevSkim/blob/main/guidance/DS440000.md) for guidance on this issue."
+              },
+              "properties": {
+                "DevSkimSeverity": "Important",
+                "DevSkimConfidence": "High",
+                "precision": "high",
+                "problem.severity": "warning",
+                "tags": [
+                  "DS440010"
+                ]
+              }
+            },
+            {
+              "id": "glog-c0f58600-ea41-4853-8ca3-978f54ab27d6",
+              "name": "OpensslDoNotHardcodeSsltlsVersionsWithinAnApplication",
+              "shortDescription": {
+                "text": "SSL/TLS version usage should be based on an OS or external configuration."
+              },
+              "fullDescription": {
+                "text": "OpenSSL: Do not hardcode SSL/TLS versions within an application.: SSL/TLS version usage should be based on an OS or external configuration."
+              },
+              "defaultConfiguration": {
+                "enabled": true,
+                "level": "error"
+              },
+              "helpUri": "https://github.com/Microsoft/DevSkim/blob/main/guidance/DS440000.md",
+              "help": {
+                "text": "SSL/TLS version usage should be based on an OS or external configuration.",
+                "markdown": "Visit [https://github.com/Microsoft/DevSkim/blob/main/guidance/DS440000.md](https://github.com/Microsoft/DevSkim/blob/main/guidance/DS440000.md) for guidance on this issue."
+              },
+              "properties": {
+                "DevSkimSeverity": "Important",
+                "DevSkimConfidence": "High",
+                "precision": "high",
+                "problem.severity": "warning",
+                "tags": [
+                  "DS440010"
+                ]
+              }
+            },
+            {
+              "id": "glog-6380658f-af4d-427e-86f3-4753666f19ba",
+              "name": "OpensslDoNotHardcodeSsltlsVersionsWithinAnApplication",
+              "shortDescription": {
+                "text": "SSL/TLS version usage should be based on an OS or external configuration."
+              },
+              "fullDescription": {
+                "text": "OpenSSL: Do not hardcode SSL/TLS versions within an application.: SSL/TLS version usage should be based on an OS or external configuration."
+              },
+              "defaultConfiguration": {
+                "enabled": true,
+                "level": "error"
+              },
+              "helpUri": "https://github.com/Microsoft/DevSkim/blob/main/guidance/DS440000.md",
+              "help": {
+                "text": "SSL/TLS version usage should be based on an OS or external configuration.",
+                "markdown": "Visit [https://github.com/Microsoft/DevSkim/blob/main/guidance/DS440000.md](https://github.com/Microsoft/DevSkim/blob/main/guidance/DS440000.md) for guidance on this issue."
+              },
+              "properties": {
+                "DevSkimSeverity": "Important",
+                "DevSkimConfidence": "High",
+                "precision": "high",
+                "problem.severity": "warning",
+                "tags": [
+                  "DS440010"
+                ]
+              }
+            },
+            {
+              "id": "glog-c6da0b0c-098d-4c80-99d9-f3c6230a9d9b",
+              "name": "OpensslDoNotHardcodeSsltlsVersionsWithinAnApplication",
+              "shortDescription": {
+                "text": "SSL/TLS version usage should be based on an OS or external configuration."
+              },
+              "fullDescription": {
+                "text": "OpenSSL: Do not hardcode SSL/TLS versions within an application.: SSL/TLS version usage should be based on an OS or external configuration."
+              },
+              "defaultConfiguration": {
+                "enabled": true,
+                "level": "error"
+              },
+              "helpUri": "https://github.com/Microsoft/DevSkim/blob/main/guidance/DS440000.md",
+              "help": {
+                "text": "SSL/TLS version usage should be based on an OS or external configuration.",
+                "markdown": "Visit [https://github.com/Microsoft/DevSkim/blob/main/guidance/DS440000.md](https://github.com/Microsoft/DevSkim/blob/main/guidance/DS440000.md) for guidance on this issue."
+              },
+              "properties": {
+                "DevSkimSeverity": "Important",
+                "DevSkimConfidence": "High",
+                "precision": "high",
+                "problem.severity": "warning",
+                "tags": [
+                  "DS440010"
+                ]
+              }
+            },
+            {
+              "id": "glog-b93574dd-b04a-47fa-8ebb-921ea02c424d",
+              "help": {
+                "text": ""
+              },
+              "properties": {
+                "tags": [
+                  "DS126858"
+                ]
+              }
+            },
+            {
+              "id": "glog-110bfcf5-96c8-440a-a3ea-9ab3f9e3441e",
+              "help": {
+                "text": ""
+              },
+              "properties": {
+                "tags": [
+                  "DS126858"
+                ]
+              }
+            },
+            {
+              "id": "glog-7fa6e86d-7c64-4d1b-b8e0-e1c204cfb16d",
+              "help": {
+                "text": ""
+              },
+              "properties": {
+                "tags": [
+                  "DS121708"
+                ]
+              }
+            },
+            {
+              "id": "glog-4b8e12c6-3b02-4214-a832-5265425ae1c8",
+              "help": {
+                "text": ""
+              },
+              "properties": {
+                "tags": [
+                  "DS126858"
+                ]
+              }
+            },
+            {
+              "id": "glog-c8dba0d7-fc82-4cec-9b45-3056325a265e",
+              "help": {
+                "text": ""
+              },
+              "properties": {
+                "tags": [
+                  "DS140021"
+                ]
+              }
+            },
+            {
+              "id": "glog-6dec8ce2-d327-438b-ae69-3f1dfd9c4a29",
+              "help": {
+                "text": ""
+              },
+              "properties": {
+                "tags": [
+                  "DS121708"
+                ]
+              }
+            },
+            {
+              "id": "glog-821aca9e-8ffc-48a5-8837-8f7ee52e4f8e",
+              "help": {
+                "text": ""
+              },
+              "properties": {
+                "tags": [
+                  "DS121708"
+                ]
+              }
+            },
+            {
+              "id": "glog-2ee69d16-2e7c-4123-865a-dd4d70e5ddad",
+              "help": {
+                "text": ""
+              },
+              "properties": {
+                "tags": [
+                  "DS140021"
+                ]
+              }
+            },
+            {
+              "id": "glog-e3bc0107-dfc4-4161-9e3b-7250b8886389",
+              "help": {
+                "text": ""
+              },
+              "properties": {
+                "tags": [
+                  "DS121708"
+                ]
+              }
+            },
+            {
+              "id": "glog-6ddca30d-1e30-4b56-82a6-8e26ad9f4116",
+              "help": {
+                "text": ""
+              },
+              "properties": {
+                "tags": [
+                  "DS121708"
+                ]
+              }
+            },
+            {
+              "id": "glog-9697bb28-24e6-4c38-a697-d727753ef8e7",
+              "help": {
+                "text": ""
+              },
+              "properties": {
+                "tags": [
+                  "DS121708"
+                ]
+              }
+            },
+            {
+              "id": "glog-e3dc0602-82f8-4c64-a081-b96c24df500e",
+              "help": {
+                "text": ""
+              },
+              "properties": {
+                "tags": [
+                  "DS121708"
+                ]
+              }
+            },
+            {
+              "id": "glog-34aa7996-ebc1-46e6-ae2a-d3ed2e685233",
+              "help": {
+                "text": ""
+              },
+              "properties": {
+                "tags": [
+                  "DS121708"
+                ]
+              }
+            },
+            {
+              "id": "glog-b22598d2-eb62-421a-b431-6acc138f24ae",
+              "help": {
+                "text": ""
+              },
+              "properties": {
+                "tags": [
+                  "DS121708"
+                ]
+              }
+            },
+            {
+              "id": "glog-fc1fb29d-a974-4af3-bbeb-2b025f297a30",
+              "help": {
+                "text": ""
+              },
+              "properties": {
+                "tags": [
+                  "DS121708"
+                ]
+              }
+            },
+            {
+              "id": "glog-b61f5a07-70e9-4893-bbb5-f809589241d1",
+              "name": "OpensslDoNotHardcodeSsltlsVersionsWithinAnApplication",
+              "shortDescription": {
+                "text": "SSL/TLS version usage should be based on an OS or external configuration."
+              },
+              "fullDescription": {
+                "text": "OpenSSL: Do not hardcode SSL/TLS versions within an application.: SSL/TLS version usage should be based on an OS or external configuration."
+              },
+              "defaultConfiguration": {
+                "enabled": true,
+                "level": "error"
+              },
+              "helpUri": "https://github.com/Microsoft/DevSkim/blob/main/guidance/DS440000.md",
+              "help": {
+                "text": "SSL/TLS version usage should be based on an OS or external configuration.",
+                "markdown": "Visit [https://github.com/Microsoft/DevSkim/blob/main/guidance/DS440000.md](https://github.com/Microsoft/DevSkim/blob/main/guidance/DS440000.md) for guidance on this issue."
+              },
+              "properties": {
+                "DevSkimSeverity": "Important",
+                "DevSkimConfidence": "High",
+                "precision": "high",
+                "problem.severity": "warning",
+                "tags": [
+                  "DS440010"
+                ]
+              }
+            },
+            {
+              "id": "glog-8792d455-3771-4680-bbef-a765c835c826",
+              "help": {
+                "text": ""
+              },
+              "properties": {
+                "tags": [
+                  "DS121708"
+                ]
+              }
+            }
+          ],
+          "language": "en-US",
+          "contents": [
+            "localizedData",
+            "nonLocalizedData"
+          ],
+          "isComprehensive": false
+        }
+      },
+      "language": "en-US",
+      "results": [
+        {
+          "ruleId": "glog-0b01009d-b912-4c38-8412-b025dfdde3c2",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "OpenSSL: Do not hardcode SSL/TLS versions within an application."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "linux/vega10_enum.h"
+                },
+                "region": {
+                  "startLine": 13436,
+                  "startColumn": 27,
+                  "endLine": 13436,
+                  "endColumn": 42,
+                  "charOffset": 441361,
+                  "charLength": 15,
+                  "snippet": {
+                    "text": "NULL_TARGET_SHA",
+                    "rendered": {
+                      "text": "NULL_TARGET_SHA",
+                      "markdown": "`NULL_TARGET_SHA`"
+                    }
+                  },
+                  "sourceLanguage": "c"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Important",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "Cryptography.Protocol.TLS.Hardcoded"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-c0f58600-ea41-4853-8ca3-978f54ab27d6",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "OpenSSL: Do not hardcode SSL/TLS versions within an application."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "linux/navi10_enum.h"
+                },
+                "region": {
+                  "startLine": 11857,
+                  "startColumn": 27,
+                  "endLine": 11857,
+                  "endColumn": 42,
+                  "charOffset": 391975,
+                  "charLength": 15,
+                  "snippet": {
+                    "text": "NULL_TARGET_SHA",
+                    "rendered": {
+                      "text": "NULL_TARGET_SHA",
+                      "markdown": "`NULL_TARGET_SHA`"
+                    }
+                  },
+                  "sourceLanguage": "c"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Important",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "Cryptography.Protocol.TLS.Hardcoded"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-6380658f-af4d-427e-86f3-4753666f19ba",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "OpenSSL: Do not hardcode SSL/TLS versions within an application."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "linux/soc21_enum.h"
+                },
+                "region": {
+                  "startLine": 13638,
+                  "startColumn": 12,
+                  "endLine": 13638,
+                  "endColumn": 44,
+                  "charOffset": 454125,
+                  "charLength": 32,
+                  "snippet": {
+                    "text": "EXPORT_KILLED_BY_NULL_TARGET_SHA",
+                    "rendered": {
+                      "text": "EXPORT_KILLED_BY_NULL_TARGET_SHA",
+                      "markdown": "`EXPORT_KILLED_BY_NULL_TARGET_SHA`"
+                    }
+                  },
+                  "sourceLanguage": "c"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Important",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "Cryptography.Protocol.TLS.Hardcoded"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-c6da0b0c-098d-4c80-99d9-f3c6230a9d9b",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "OpenSSL: Do not hardcode SSL/TLS versions within an application."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "linux/soc24_enum.h"
+                },
+                "region": {
+                  "startLine": 14496,
+                  "startColumn": 12,
+                  "endLine": 14496,
+                  "endColumn": 44,
+                  "charOffset": 499254,
+                  "charLength": 32,
+                  "snippet": {
+                    "text": "EXPORT_KILLED_BY_NULL_TARGET_SHA",
+                    "rendered": {
+                      "text": "EXPORT_KILLED_BY_NULL_TARGET_SHA",
+                      "markdown": "`EXPORT_KILLED_BY_NULL_TARGET_SHA`"
+                    }
+                  },
+                  "sourceLanguage": "c"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Important",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "Cryptography.Protocol.TLS.Hardcoded"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-b93574dd-b04a-47fa-8ebb-921ea02c424d",
+          "kind": "fail",
+          "level": "error",
+          "message": {},
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "linux/soc21_enum.h"
+                },
+                "region": {
+                  "startLine": 16410,
+                  "startColumn": 26,
+                  "endLine": 16410,
+                  "endColumn": 29,
+                  "charOffset": 572073,
+                  "charLength": 3,
+                  "snippet": {
+                    "text": "MD2",
+                    "rendered": {
+                      "text": "MD2",
+                      "markdown": "`MD2`"
+                    }
+                  },
+                  "sourceLanguage": "c"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "A weak or broken hash algorithm was detected."
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "linux/soc21_enum.h"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 572073,
+                        "charLength": 3
+                      },
+                      "insertedContent": {
+                        "text": "SHA256"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "description": {
+                "text": "A weak or broken hash algorithm was detected."
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "linux/soc21_enum.h"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 572073,
+                        "charLength": 3
+                      },
+                      "insertedContent": {
+                        "text": "SHA512"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Critical",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "Cryptography.BannedHashAlgorithm"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-110bfcf5-96c8-440a-a3ea-9ab3f9e3441e",
+          "kind": "fail",
+          "level": "error",
+          "message": {},
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "linux/navi10_enum.h"
+                },
+                "region": {
+                  "startLine": 13996,
+                  "startColumn": 26,
+                  "endLine": 13996,
+                  "endColumn": 29,
+                  "charOffset": 490837,
+                  "charLength": 3,
+                  "snippet": {
+                    "text": "MD2",
+                    "rendered": {
+                      "text": "MD2",
+                      "markdown": "`MD2`"
+                    }
+                  },
+                  "sourceLanguage": "c"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "A weak or broken hash algorithm was detected."
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "linux/navi10_enum.h"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 490837,
+                        "charLength": 3
+                      },
+                      "insertedContent": {
+                        "text": "SHA256"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "description": {
+                "text": "A weak or broken hash algorithm was detected."
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "linux/navi10_enum.h"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 490837,
+                        "charLength": 3
+                      },
+                      "insertedContent": {
+                        "text": "SHA512"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Critical",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "Cryptography.BannedHashAlgorithm"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-7fa6e86d-7c64-4d1b-b8e0-e1c204cfb16d",
+          "kind": "fail",
+          "level": "note",
+          "message": {},
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/core/pm4_factory.cpp"
+                },
+                "region": {
+                  "startLine": 66,
+                  "startColumn": 2,
+                  "endLine": 67,
+                  "endColumn": 45,
+                  "charOffset": 2424,
+                  "charLength": 99,
+                  "snippet": {
+                    "text": "memcpy(int_agent_info.gfxip, agent_info->agent_gfxip,\n         (len >= sizeof(int_agent_info.gfxip)",
+                    "rendered": {
+                      "text": "memcpy(int_agent_info.gfxip, agent_info->agent_gfxip,\n         (len >= sizeof(int_agent_info.gfxip)",
+                      "markdown": "`memcpy(int_agent_info.gfxip, agent_info->agent_gfxip,\n         (len >= sizeof(int_agent_info.gfxip)`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "There are a number of conditions in which memcpy can introduce a vulnerability (mismatched buffer sizes, null pointers, etc.). More secure alternitives perform additional validation of the source and destination buffer"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "src/core/pm4_factory.cpp"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 2424,
+                        "charLength": 99
+                      },
+                      "insertedContent": {
+                        "text": "memcpy_s(int_agent_info.gfxip, <size of int_agent_info.gfxip>,  agent_info->agent_gfxip, \n         (len >= sizeof(int_agent_info.gfxip)"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "BestPractice",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.ProblematicFunction"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-4b8e12c6-3b02-4214-a832-5265425ae1c8",
+          "kind": "fail",
+          "level": "error",
+          "message": {},
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "linux/vega10_enum.h"
+                },
+                "region": {
+                  "startLine": 15319,
+                  "startColumn": 26,
+                  "endLine": 15319,
+                  "endColumn": 29,
+                  "charOffset": 527145,
+                  "charLength": 3,
+                  "snippet": {
+                    "text": "MD2",
+                    "rendered": {
+                      "text": "MD2",
+                      "markdown": "`MD2`"
+                    }
+                  },
+                  "sourceLanguage": "c"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "A weak or broken hash algorithm was detected."
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "linux/vega10_enum.h"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 527145,
+                        "charLength": 3
+                      },
+                      "insertedContent": {
+                        "text": "SHA256"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "description": {
+                "text": "A weak or broken hash algorithm was detected."
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "linux/vega10_enum.h"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 527145,
+                        "charLength": 3
+                      },
+                      "insertedContent": {
+                        "text": "SHA512"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Critical",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "Cryptography.BannedHashAlgorithm"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-c8dba0d7-fc82-4cec-9b45-3056325a265e",
+          "kind": "fail",
+          "level": "note",
+          "message": {},
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/core/pm4_factory.cpp"
+                },
+                "region": {
+                  "startLine": 64,
+                  "startColumn": 13,
+                  "endLine": 64,
+                  "endColumn": 44,
+                  "charOffset": 2324,
+                  "charLength": 31,
+                  "snippet": {
+                    "text": "strlen(agent_info->agent_gfxip)",
+                    "rendered": {
+                      "text": "strlen(agent_info->agent_gfxip)",
+                      "markdown": "`strlen(agent_info->agent_gfxip)`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "If a string is missing a null terminator, strlen will read past the end of the buffer"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "src/core/pm4_factory.cpp"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 2324,
+                        "charLength": 31
+                      },
+                      "insertedContent": {
+                        "text": "strlen_s(agent_info->agent_gfxip, <size of agent_info->agent_gfxip>)"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "description": {
+                "text": "If a string is missing a null terminator, strlen will read past the end of the buffer"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "src/core/pm4_factory.cpp"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 2324,
+                        "charLength": 31
+                      },
+                      "insertedContent": {
+                        "text": "strnlen(agent_info->agent_gfxip, <size of agent_info->agent_gfxip>)"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "BestPractice",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.ProblematicFunction"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-6dec8ce2-d327-438b-ae69-3f1dfd9c4a29",
+          "kind": "fail",
+          "level": "note",
+          "message": {},
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/util/hsa_rsrc_factory.cpp"
+                },
+                "region": {
+                  "startLine": 231,
+                  "startColumn": 4,
+                  "endLine": 231,
+                  "endColumn": 64,
+                  "charOffset": 9017,
+                  "charLength": 60,
+                  "snippet": {
+                    "text": "memcpy(agent_info->gfxip, agent_info->name, gfxip_label_len)",
+                    "rendered": {
+                      "text": "memcpy(agent_info->gfxip, agent_info->name, gfxip_label_len)",
+                      "markdown": "`memcpy(agent_info->gfxip, agent_info->name, gfxip_label_len)`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "There are a number of conditions in which memcpy can introduce a vulnerability (mismatched buffer sizes, null pointers, etc.). More secure alternitives perform additional validation of the source and destination buffer"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "src/util/hsa_rsrc_factory.cpp"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 9017,
+                        "charLength": 60
+                      },
+                      "insertedContent": {
+                        "text": "memcpy_s(agent_info->gfxip, <size of agent_info->gfxip>,  agent_info->name,  gfxip_label_len)"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "BestPractice",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.ProblematicFunction"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-821aca9e-8ffc-48a5-8837-8f7ee52e4f8e",
+          "kind": "fail",
+          "level": "note",
+          "message": {},
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/util/hsa_rsrc_factory.cpp"
+                },
+                "region": {
+                  "startLine": 592,
+                  "startColumn": 2,
+                  "endLine": 592,
+                  "endColumn": 70,
+                  "charOffset": 23700,
+                  "charLength": 68,
+                  "snippet": {
+                    "text": "memcpy(&queue_slot[1], &slot_data[1], slot_size_b - sizeof(uint32_t)",
+                    "rendered": {
+                      "text": "memcpy(&queue_slot[1], &slot_data[1], slot_size_b - sizeof(uint32_t)",
+                      "markdown": "`memcpy(&queue_slot[1], &slot_data[1], slot_size_b - sizeof(uint32_t)`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "There are a number of conditions in which memcpy can introduce a vulnerability (mismatched buffer sizes, null pointers, etc.). More secure alternitives perform additional validation of the source and destination buffer"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "src/util/hsa_rsrc_factory.cpp"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 23700,
+                        "charLength": 68
+                      },
+                      "insertedContent": {
+                        "text": "memcpy_s(&queue_slot[1], <size of &queue_slot[1]>,  &slot_data[1],  slot_size_b - sizeof(uint32_t)"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "BestPractice",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.ProblematicFunction"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-2ee69d16-2e7c-4123-865a-dd4d70e5ddad",
+          "kind": "fail",
+          "level": "note",
+          "message": {},
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/util/hsa_rsrc_factory.cpp"
+                },
+                "region": {
+                  "startLine": 230,
+                  "startColumn": 32,
+                  "endLine": 230,
+                  "endColumn": 56,
+                  "charOffset": 8983,
+                  "charLength": 24,
+                  "snippet": {
+                    "text": "strlen(agent_info->name)",
+                    "rendered": {
+                      "text": "strlen(agent_info->name)",
+                      "markdown": "`strlen(agent_info->name)`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "If a string is missing a null terminator, strlen will read past the end of the buffer"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "src/util/hsa_rsrc_factory.cpp"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 8983,
+                        "charLength": 24
+                      },
+                      "insertedContent": {
+                        "text": "strlen_s(agent_info->name, <size of agent_info->name>)"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "description": {
+                "text": "If a string is missing a null terminator, strlen will read past the end of the buffer"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "src/util/hsa_rsrc_factory.cpp"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 8983,
+                        "charLength": 24
+                      },
+                      "insertedContent": {
+                        "text": "strnlen(agent_info->name, <size of agent_info->name>)"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "BestPractice",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.ProblematicFunction"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-e3bc0107-dfc4-4161-9e3b-7250b8886389",
+          "kind": "fail",
+          "level": "note",
+          "message": {},
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/pm4/cmd_builder.h"
+                },
+                "region": {
+                  "startLine": 98,
+                  "startColumn": 4,
+                  "endLine": 98,
+                  "endColumn": 42,
+                  "charOffset": 3771,
+                  "charLength": 38,
+                  "snippet": {
+                    "text": "memcpy(&data_[pos], &packet, sizeof(T)",
+                    "rendered": {
+                      "text": "memcpy(&data_[pos], &packet, sizeof(T)",
+                      "markdown": "`memcpy(&data_[pos], &packet, sizeof(T)`"
+                    }
+                  },
+                  "sourceLanguage": "c"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "There are a number of conditions in which memcpy can introduce a vulnerability (mismatched buffer sizes, null pointers, etc.). More secure alternitives perform additional validation of the source and destination buffer"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "src/pm4/cmd_builder.h"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 3771,
+                        "charLength": 38
+                      },
+                      "insertedContent": {
+                        "text": "memcpy_s(&data_[pos], <size of &data_[pos]>,  &packet,  sizeof(T)"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "BestPractice",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.ProblematicFunction"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-6ddca30d-1e30-4b56-82a6-8e26ad9f4116",
+          "kind": "fail",
+          "level": "note",
+          "message": {},
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/core/threadtrace.cpp"
+                },
+                "region": {
+                  "startLine": 325,
+                  "startColumn": 2,
+                  "endLine": 325,
+                  "endColumn": 52,
+                  "charOffset": 13630,
+                  "charLength": 50,
+                  "snippet": {
+                    "text": "memcpy(cmdbuffer, commands.Data(), commands.Size()",
+                    "rendered": {
+                      "text": "memcpy(cmdbuffer, commands.Data(), commands.Size()",
+                      "markdown": "`memcpy(cmdbuffer, commands.Data(), commands.Size()`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "There are a number of conditions in which memcpy can introduce a vulnerability (mismatched buffer sizes, null pointers, etc.). More secure alternitives perform additional validation of the source and destination buffer"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "src/core/threadtrace.cpp"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 13630,
+                        "charLength": 50
+                      },
+                      "insertedContent": {
+                        "text": "memcpy_s(cmdbuffer, <size of cmdbuffer>,  commands.Data(),  commands.Size()"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "BestPractice",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.ProblematicFunction"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-9697bb28-24e6-4c38-a697-d727753ef8e7",
+          "kind": "fail",
+          "level": "note",
+          "message": {},
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/pm4/cmd_builder.h"
+                },
+                "region": {
+                  "startLine": 112,
+                  "startColumn": 4,
+                  "endLine": 112,
+                  "endColumn": 49,
+                  "charOffset": 4257,
+                  "charLength": 45,
+                  "snippet": {
+                    "text": "memcpy(&data_[pos], data_pointer, num_dwords)",
+                    "rendered": {
+                      "text": "memcpy(&data_[pos], data_pointer, num_dwords)",
+                      "markdown": "`memcpy(&data_[pos], data_pointer, num_dwords)`"
+                    }
+                  },
+                  "sourceLanguage": "c"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "There are a number of conditions in which memcpy can introduce a vulnerability (mismatched buffer sizes, null pointers, etc.). More secure alternitives perform additional validation of the source and destination buffer"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "src/pm4/cmd_builder.h"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 4257,
+                        "charLength": 45
+                      },
+                      "insertedContent": {
+                        "text": "memcpy_s(&data_[pos], <size of &data_[pos]>,  data_pointer,  num_dwords)"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "BestPractice",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.ProblematicFunction"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-e3dc0602-82f8-4c64-a081-b96c24df500e",
+          "kind": "fail",
+          "level": "note",
+          "message": {},
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/core/aql_profile.cpp"
+                },
+                "region": {
+                  "startLine": 801,
+                  "startColumn": 2,
+                  "endLine": 801,
+                  "endColumn": 56,
+                  "charOffset": 33933,
+                  "charLength": 54,
+                  "snippet": {
+                    "text": "memcpy(cmdbuffer.ptr, commands.Data(), commands.Size()",
+                    "rendered": {
+                      "text": "memcpy(cmdbuffer.ptr, commands.Data(), commands.Size()",
+                      "markdown": "`memcpy(cmdbuffer.ptr, commands.Data(), commands.Size()`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "There are a number of conditions in which memcpy can introduce a vulnerability (mismatched buffer sizes, null pointers, etc.). More secure alternitives perform additional validation of the source and destination buffer"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "src/core/aql_profile.cpp"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 33933,
+                        "charLength": 54
+                      },
+                      "insertedContent": {
+                        "text": "memcpy_s(cmdbuffer.ptr, <size of cmdbuffer.ptr>,  commands.Data(),  commands.Size()"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "BestPractice",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.ProblematicFunction"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-34aa7996-ebc1-46e6-ae2a-d3ed2e685233",
+          "kind": "fail",
+          "level": "note",
+          "message": {},
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/core/aql_profile.cpp"
+                },
+                "region": {
+                  "startLine": 529,
+                  "startColumn": 8,
+                  "endLine": 529,
+                  "endColumn": 90,
+                  "charOffset": 22178,
+                  "charLength": 82,
+                  "snippet": {
+                    "text": "memcpy(profile->command_buffer.ptr, commands.Data(), profile->command_buffer.size)",
+                    "rendered": {
+                      "text": "memcpy(profile->command_buffer.ptr, commands.Data(), profile->command_buffer.size)",
+                      "markdown": "`memcpy(profile->command_buffer.ptr, commands.Data(), profile->command_buffer.size)`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "There are a number of conditions in which memcpy can introduce a vulnerability (mismatched buffer sizes, null pointers, etc.). More secure alternitives perform additional validation of the source and destination buffer"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "src/core/aql_profile.cpp"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 22178,
+                        "charLength": 82
+                      },
+                      "insertedContent": {
+                        "text": "memcpy_s(profile->command_buffer.ptr, <size of profile->command_buffer.ptr>,  commands.Data(),  profile->command_buffer.size)"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "BestPractice",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.ProblematicFunction"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-b22598d2-eb62-421a-b431-6acc138f24ae",
+          "kind": "fail",
+          "level": "note",
+          "message": {},
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/core/aql_profile.cpp"
+                },
+                "region": {
+                  "startLine": 376,
+                  "startColumn": 6,
+                  "endLine": 377,
+                  "endColumn": 29,
+                  "charOffset": 15851,
+                  "charLength": 117,
+                  "snippet": {
+                    "text": "memcpy(post_descr.ptr, reinterpret_cast<const char*>(commands.Data()) + pre_descr.size,\n             post_descr.size)",
+                    "rendered": {
+                      "text": "memcpy(post_descr.ptr, reinterpret_cast<const char*>(commands.Data()) + pre_descr.size,\n             post_descr.size)",
+                      "markdown": "`memcpy(post_descr.ptr, reinterpret_cast<const char*>(commands.Data()) + pre_descr.size,\n             post_descr.size)`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "There are a number of conditions in which memcpy can introduce a vulnerability (mismatched buffer sizes, null pointers, etc.). More secure alternitives perform additional validation of the source and destination buffer"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "src/core/aql_profile.cpp"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 15851,
+                        "charLength": 117
+                      },
+                      "insertedContent": {
+                        "text": "memcpy_s(post_descr.ptr, <size of post_descr.ptr>,  reinterpret_cast<const char*>(commands.Data()) + pre_descr.size, \n             post_descr.size)"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "BestPractice",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.ProblematicFunction"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-fc1fb29d-a974-4af3-bbeb-2b025f297a30",
+          "kind": "fail",
+          "level": "note",
+          "message": {},
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/core/aql_profile.cpp"
+                },
+                "region": {
+                  "startLine": 375,
+                  "startColumn": 6,
+                  "endLine": 375,
+                  "endColumn": 60,
+                  "charOffset": 15789,
+                  "charLength": 54,
+                  "snippet": {
+                    "text": "memcpy(pre_descr.ptr, commands.Data(), pre_descr.size)",
+                    "rendered": {
+                      "text": "memcpy(pre_descr.ptr, commands.Data(), pre_descr.size)",
+                      "markdown": "`memcpy(pre_descr.ptr, commands.Data(), pre_descr.size)`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "There are a number of conditions in which memcpy can introduce a vulnerability (mismatched buffer sizes, null pointers, etc.). More secure alternitives perform additional validation of the source and destination buffer"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "src/core/aql_profile.cpp"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 15789,
+                        "charLength": 54
+                      },
+                      "insertedContent": {
+                        "text": "memcpy_s(pre_descr.ptr, <size of pre_descr.ptr>,  commands.Data(),  pre_descr.size)"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "BestPractice",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.ProblematicFunction"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-b61f5a07-70e9-4893-bbb5-f809589241d1",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "OpenSSL: Do not hardcode SSL/TLS versions within an application."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "gfxip/gfx11/gfx11_block_info.h"
+                },
+                "region": {
+                  "startLine": 174,
+                  "startColumn": 16,
+                  "endLine": 174,
+                  "endColumn": 48,
+                  "charOffset": 6144,
+                  "charLength": 32,
+                  "snippet": {
+                    "text": "EXPORT_KILLED_BY_NULL_TARGET_SHA",
+                    "rendered": {
+                      "text": "EXPORT_KILLED_BY_NULL_TARGET_SHA",
+                      "markdown": "`EXPORT_KILLED_BY_NULL_TARGET_SHA`"
+                    }
+                  },
+                  "sourceLanguage": "c"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Important",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "Cryptography.Protocol.TLS.Hardcoded"
+            ]
+          }
+        },
+        {
+          "ruleId": "glog-8792d455-3771-4680-bbef-a765c835c826",
+          "kind": "fail",
+          "level": "note",
+          "message": {},
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/core/aql_profile.cpp"
+                },
+                "region": {
+                  "startLine": 235,
+                  "startColumn": 8,
+                  "endLine": 235,
+                  "endColumn": 61,
+                  "charOffset": 8983,
+                  "charLength": 53,
+                  "snippet": {
+                    "text": "memcpy(rd_descr.ptr, commands.Data(), commands.Size()",
+                    "rendered": {
+                      "text": "memcpy(rd_descr.ptr, commands.Data(), commands.Size()",
+                      "markdown": "`memcpy(rd_descr.ptr, commands.Data(), commands.Size()`"
+                    }
+                  },
+                  "sourceLanguage": "cpp"
+                }
+              }
+            }
+          ],
+          "fixes": [
+            {
+              "description": {
+                "text": "There are a number of conditions in which memcpy can introduce a vulnerability (mismatched buffer sizes, null pointers, etc.). More secure alternitives perform additional validation of the source and destination buffer"
+              },
+              "artifactChanges": [
+                {
+                  "artifactLocation": {
+                    "uri": "src/core/aql_profile.cpp"
+                  },
+                  "replacements": [
+                    {
+                      "deletedRegion": {
+                        "charOffset": 8983,
+                        "charLength": 53
+                      },
+                      "insertedContent": {
+                        "text": "memcpy_s(rd_descr.ptr, <size of rd_descr.ptr>,  commands.Data(),  commands.Size()"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "BestPractice",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "API.DangerousAPI.ProblematicFunction"
+            ]
+          }
+        }
+      ],
+      "newlineSequences": [
+        "\r\n",
+        "\n"
+      ]
+    }
+  ]
+}
