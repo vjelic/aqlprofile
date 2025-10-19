@@ -12,7 +12,63 @@
           "informationUri": "https://www.glog.ai",
           "rules": [
             {
+              "id": "1b4d1871-b904-3bcb-89bc-c86d0074087d",
+              "name": "OpensslDoNotHardcodeSsltlsVersionsWithinAnApplication",
+              "shortDescription": {
+                "text": "SSL/TLS version usage should be based on an OS or external configuration."
+              },
+              "fullDescription": {
+                "text": "OpenSSL: Do not hardcode SSL/TLS versions within an application.: SSL/TLS version usage should be based on an OS or external configuration."
+              },
+              "defaultConfiguration": {
+                "enabled": true,
+                "level": "error"
+              },
+              "helpUri": "https://github.com/Microsoft/DevSkim/blob/main/guidance/DS440000.md",
+              "help": {
+                "text": "SSL/TLS version usage should be based on an OS or external configuration.",
+                "markdown": "Visit [https://github.com/Microsoft/DevSkim/blob/main/guidance/DS440000.md](https://github.com/Microsoft/DevSkim/blob/main/guidance/DS440000.md) for guidance on this issue."
+              },
+              "properties": {
+                "DevSkimSeverity": "Important",
+                "DevSkimConfidence": "High",
+                "precision": "high",
+                "problem.severity": "warning",
+                "tags": [
+                  "DS440010"
+                ]
+              }
+            },
+            {
               "id": "55e24005-30e6-3d03-b323-a799e6052971",
+              "name": "OpensslDoNotHardcodeSsltlsVersionsWithinAnApplication",
+              "shortDescription": {
+                "text": "SSL/TLS version usage should be based on an OS or external configuration."
+              },
+              "fullDescription": {
+                "text": "OpenSSL: Do not hardcode SSL/TLS versions within an application.: SSL/TLS version usage should be based on an OS or external configuration."
+              },
+              "defaultConfiguration": {
+                "enabled": true,
+                "level": "error"
+              },
+              "helpUri": "https://github.com/Microsoft/DevSkim/blob/main/guidance/DS440000.md",
+              "help": {
+                "text": "SSL/TLS version usage should be based on an OS or external configuration.",
+                "markdown": "Visit [https://github.com/Microsoft/DevSkim/blob/main/guidance/DS440000.md](https://github.com/Microsoft/DevSkim/blob/main/guidance/DS440000.md) for guidance on this issue."
+              },
+              "properties": {
+                "DevSkimSeverity": "Important",
+                "DevSkimConfidence": "High",
+                "precision": "high",
+                "problem.severity": "warning",
+                "tags": [
+                  "DS440010"
+                ]
+              }
+            },
+            {
+              "id": "4f983689-4d8d-3e1d-aa70-5a19868dc59f",
               "name": "OpensslDoNotHardcodeSsltlsVersionsWithinAnApplication",
               "shortDescription": {
                 "text": "SSL/TLS version usage should be based on an OS or external configuration."
@@ -68,63 +124,7 @@
               }
             },
             {
-              "id": "1b4d1871-b904-3bcb-89bc-c86d0074087d",
-              "name": "OpensslDoNotHardcodeSsltlsVersionsWithinAnApplication",
-              "shortDescription": {
-                "text": "SSL/TLS version usage should be based on an OS or external configuration."
-              },
-              "fullDescription": {
-                "text": "OpenSSL: Do not hardcode SSL/TLS versions within an application.: SSL/TLS version usage should be based on an OS or external configuration."
-              },
-              "defaultConfiguration": {
-                "enabled": true,
-                "level": "error"
-              },
-              "helpUri": "https://github.com/Microsoft/DevSkim/blob/main/guidance/DS440000.md",
-              "help": {
-                "text": "SSL/TLS version usage should be based on an OS or external configuration.",
-                "markdown": "Visit [https://github.com/Microsoft/DevSkim/blob/main/guidance/DS440000.md](https://github.com/Microsoft/DevSkim/blob/main/guidance/DS440000.md) for guidance on this issue."
-              },
-              "properties": {
-                "DevSkimSeverity": "Important",
-                "DevSkimConfidence": "High",
-                "precision": "high",
-                "problem.severity": "warning",
-                "tags": [
-                  "DS440010"
-                ]
-              }
-            },
-            {
               "id": "414bbaa9-b347-3836-bc9b-660c27bed2c2",
-              "name": "OpensslDoNotHardcodeSsltlsVersionsWithinAnApplication",
-              "shortDescription": {
-                "text": "SSL/TLS version usage should be based on an OS or external configuration."
-              },
-              "fullDescription": {
-                "text": "OpenSSL: Do not hardcode SSL/TLS versions within an application.: SSL/TLS version usage should be based on an OS or external configuration."
-              },
-              "defaultConfiguration": {
-                "enabled": true,
-                "level": "error"
-              },
-              "helpUri": "https://github.com/Microsoft/DevSkim/blob/main/guidance/DS440000.md",
-              "help": {
-                "text": "SSL/TLS version usage should be based on an OS or external configuration.",
-                "markdown": "Visit [https://github.com/Microsoft/DevSkim/blob/main/guidance/DS440000.md](https://github.com/Microsoft/DevSkim/blob/main/guidance/DS440000.md) for guidance on this issue."
-              },
-              "properties": {
-                "DevSkimSeverity": "Important",
-                "DevSkimConfidence": "High",
-                "precision": "high",
-                "problem.severity": "warning",
-                "tags": [
-                  "DS440010"
-                ]
-              }
-            },
-            {
-              "id": "4f983689-4d8d-3e1d-aa70-5a19868dc59f",
               "name": "OpensslDoNotHardcodeSsltlsVersionsWithinAnApplication",
               "shortDescription": {
                 "text": "SSL/TLS version usage should be based on an OS or external configuration."
@@ -163,6 +163,46 @@
       "language": "en-US",
       "results": [
         {
+          "ruleId": "1b4d1871-b904-3bcb-89bc-c86d0074087d",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "OpenSSL: Do not hardcode SSL/TLS versions within an application."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "linux/navi10_enum.h"
+                },
+                "region": {
+                  "startLine": 11857,
+                  "startColumn": 27,
+                  "endLine": 11857,
+                  "endColumn": 42,
+                  "charOffset": 391975,
+                  "charLength": 15,
+                  "snippet": {
+                    "text": "NULL_TARGET_SHA",
+                    "rendered": {
+                      "text": "NULL_TARGET_SHA",
+                      "markdown": "`NULL_TARGET_SHA`"
+                    }
+                  },
+                  "sourceLanguage": "c"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Important",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "Cryptography.Protocol.TLS.Hardcoded"
+            ]
+          }
+        },
+        {
           "ruleId": "55e24005-30e6-3d03-b323-a799e6052971",
           "kind": "fail",
           "level": "error",
@@ -187,6 +227,46 @@
                     "rendered": {
                       "text": "EXPORT_KILLED_BY_NULL_TARGET_SHA",
                       "markdown": "`EXPORT_KILLED_BY_NULL_TARGET_SHA`"
+                    }
+                  },
+                  "sourceLanguage": "c"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "DevSkimSeverity": "Important",
+            "DevSkimConfidence": "High",
+            "tags": [
+              "Cryptography.Protocol.TLS.Hardcoded"
+            ]
+          }
+        },
+        {
+          "ruleId": "4f983689-4d8d-3e1d-aa70-5a19868dc59f",
+          "kind": "fail",
+          "level": "error",
+          "message": {
+            "text": "OpenSSL: Do not hardcode SSL/TLS versions within an application."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "linux/vega10_enum.h"
+                },
+                "region": {
+                  "startLine": 13436,
+                  "startColumn": 27,
+                  "endLine": 13436,
+                  "endColumn": 42,
+                  "charOffset": 441361,
+                  "charLength": 15,
+                  "snippet": {
+                    "text": "NULL_TARGET_SHA",
+                    "rendered": {
+                      "text": "NULL_TARGET_SHA",
+                      "markdown": "`NULL_TARGET_SHA`"
                     }
                   },
                   "sourceLanguage": "c"
@@ -243,46 +323,6 @@
           }
         },
         {
-          "ruleId": "1b4d1871-b904-3bcb-89bc-c86d0074087d",
-          "kind": "fail",
-          "level": "error",
-          "message": {
-            "text": "OpenSSL: Do not hardcode SSL/TLS versions within an application."
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "linux/navi10_enum.h"
-                },
-                "region": {
-                  "startLine": 11857,
-                  "startColumn": 27,
-                  "endLine": 11857,
-                  "endColumn": 42,
-                  "charOffset": 391975,
-                  "charLength": 15,
-                  "snippet": {
-                    "text": "NULL_TARGET_SHA",
-                    "rendered": {
-                      "text": "NULL_TARGET_SHA",
-                      "markdown": "`NULL_TARGET_SHA`"
-                    }
-                  },
-                  "sourceLanguage": "c"
-                }
-              }
-            }
-          ],
-          "properties": {
-            "DevSkimSeverity": "Important",
-            "DevSkimConfidence": "High",
-            "tags": [
-              "Cryptography.Protocol.TLS.Hardcoded"
-            ]
-          }
-        },
-        {
           "ruleId": "414bbaa9-b347-3836-bc9b-660c27bed2c2",
           "kind": "fail",
           "level": "error",
@@ -307,46 +347,6 @@
                     "rendered": {
                       "text": "EXPORT_KILLED_BY_NULL_TARGET_SHA",
                       "markdown": "`EXPORT_KILLED_BY_NULL_TARGET_SHA`"
-                    }
-                  },
-                  "sourceLanguage": "c"
-                }
-              }
-            }
-          ],
-          "properties": {
-            "DevSkimSeverity": "Important",
-            "DevSkimConfidence": "High",
-            "tags": [
-              "Cryptography.Protocol.TLS.Hardcoded"
-            ]
-          }
-        },
-        {
-          "ruleId": "4f983689-4d8d-3e1d-aa70-5a19868dc59f",
-          "kind": "fail",
-          "level": "error",
-          "message": {
-            "text": "OpenSSL: Do not hardcode SSL/TLS versions within an application."
-          },
-          "locations": [
-            {
-              "physicalLocation": {
-                "artifactLocation": {
-                  "uri": "linux/vega10_enum.h"
-                },
-                "region": {
-                  "startLine": 13436,
-                  "startColumn": 27,
-                  "endLine": 13436,
-                  "endColumn": 42,
-                  "charOffset": 441361,
-                  "charLength": 15,
-                  "snippet": {
-                    "text": "NULL_TARGET_SHA",
-                    "rendered": {
-                      "text": "NULL_TARGET_SHA",
-                      "markdown": "`NULL_TARGET_SHA`"
                     }
                   },
                   "sourceLanguage": "c"
